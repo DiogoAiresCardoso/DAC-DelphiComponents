@@ -1,0 +1,13 @@
+package MaxxRuralSkiaComponentsDesign;
+
+{$IMPLICITBUILD ON}
+
+requires
+  rtl,
+  designide,
+  MaxxRuralSkiaComponentsRuntime;
+
+contains
+  MaxxRural.Components.Design.Register in '..\Source\DesignTime\MaxxRural.Components.Design.Register.pas';
+
+end.

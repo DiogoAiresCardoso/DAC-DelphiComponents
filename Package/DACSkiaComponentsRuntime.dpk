@@ -1,0 +1,66 @@
+package MaxxRuralSkiaComponentsRuntime;
+
+{$IMPLICITBUILD ON}
+{$R '..\..\..\MaxxRural.Fonts.RES'}
+
+requires
+  rtl,
+  vcl,
+  vcldb,
+  vclimg,
+  Skia.Package.RTL,
+  Skia.Package.VCL;
+
+contains
+  MaxxRural.Components.Types in '..\Source\Core\MaxxRural.Components.Types.pas',
+  MaxxRural.Components.Dpi in '..\Source\Core\MaxxRural.Components.Dpi.pas',
+  MaxxRural.Components.Geometry in '..\Source\Core\MaxxRural.Components.Geometry.pas',
+  MaxxRural.Components.DesignSystem.ColorTokens in '..\Source\DesignSystem\MaxxRural.Components.DesignSystem.ColorTokens.pas',
+  MaxxRural.Components.DesignSystem.OpacityTokens in '..\Source\DesignSystem\MaxxRural.Components.DesignSystem.OpacityTokens.pas',
+  MaxxRural.Components.DesignSystem.Fonts in '..\Source\DesignSystem\MaxxRural.Components.DesignSystem.Fonts.pas',
+  MaxxRural.Components.DesignSystem.TypographyTokens in '..\Source\DesignSystem\MaxxRural.Components.DesignSystem.TypographyTokens.pas',
+  MaxxRural.Components.DesignSystem.SpacingTokens in '..\Source\DesignSystem\MaxxRural.Components.DesignSystem.SpacingTokens.pas',
+  MaxxRural.Components.DesignSystem.RadiusTokens in '..\Source\DesignSystem\MaxxRural.Components.DesignSystem.RadiusTokens.pas',
+  MaxxRural.Components.DesignSystem.InteractionTokens in '..\Source\DesignSystem\MaxxRural.Components.DesignSystem.InteractionTokens.pas',
+  MaxxRural.Components.DesignSystem.CardTokens in '..\Source\DesignSystem\MaxxRural.Components.DesignSystem.CardTokens.pas',
+  MaxxRural.Components.DesignSystem.Tokens in '..\Source\DesignSystem\MaxxRural.Components.DesignSystem.Tokens.pas',
+  MaxxRural.Components.DesignSystem.ChartPalette in '..\Source\DesignSystem\MaxxRural.Components.DesignSystem.ChartPalette.pas',
+  MaxxRural.Components.DesignSystem.Metrics in '..\Source\DesignSystem\MaxxRural.Components.DesignSystem.Metrics.pas',
+  MaxxRural.Components.DesignSystem.SemanticColors in '..\Source\DesignSystem\MaxxRural.Components.DesignSystem.SemanticColors.pas',
+  MaxxRural.Components.DesignSystem.Theme in '..\Source\DesignSystem\MaxxRural.Components.DesignSystem.Theme.pas',
+  MaxxRural.Components.DesignSystem.DefaultTheme in '..\Source\DesignSystem\MaxxRural.Components.DesignSystem.DefaultTheme.pas',
+  MaxxRural.Components.DesignSystem.AssetResolver in '..\Source\DesignSystem\MaxxRural.Components.DesignSystem.AssetResolver.pas',
+  MaxxRural.Components.DesignSystem.IconAssets in '..\Source\DesignSystem\MaxxRural.Components.DesignSystem.IconAssets.pas',
+  MaxxRural.Components.Skia.Renderer in '..\Source\Skia\MaxxRural.Components.Skia.Renderer.pas',
+  MaxxRural.Components.Skia.BackgroundPainter in '..\Source\Skia\MaxxRural.Components.Skia.BackgroundPainter.pas',
+  MaxxRural.Components.Skia.BorderPainter in '..\Source\Skia\MaxxRural.Components.Skia.BorderPainter.pas',
+  MaxxRural.Components.Skia.IconPainter in '..\Source\Skia\MaxxRural.Components.Skia.IconPainter.pas',
+  MaxxRural.Components.Skia.VisualElement in '..\Source\Skia\MaxxRural.Components.Skia.VisualElement.pas',
+  MaxxRural.Components.Skia.Container in '..\Source\Skia\MaxxRural.Components.Skia.Container.pas',
+  MaxxRural.Components.Controls.SkiaControl in '..\Source\Controls\MaxxRural.Components.Controls.SkiaControl.pas',
+  MaxxRural.Components.Controls.SystemText in '..\Source\Controls\MaxxRural.Components.Controls.SystemText.pas',
+  MaxxRural.Components.Controls.Container in '..\Source\Controls\MaxxRural.Components.Controls.Container.pas',
+  MaxxRural.Components.Controls.ScrollContainer in '..\Source\Controls\MaxxRural.Components.Controls.ScrollContainer.pas',
+  MaxxRural.Components.Controls.GridContainer in '..\Source\Controls\MaxxRural.Components.Controls.GridContainer.pas',
+  MaxxRural.Components.Controls.Button in '..\Source\Controls\MaxxRural.Components.Controls.Button.pas',
+  MaxxRural.Components.Controls.Edit in '..\Source\Controls\MaxxRural.Components.Controls.Edit.pas',
+  MaxxRural.Components.Controls.ButtonEdit in '..\Source\Controls\MaxxRural.Components.Controls.ButtonEdit.pas',
+  MaxxRural.Components.Controls.DateTimePicker in '..\Source\Controls\MaxxRural.Components.Controls.DateTimePicker.pas',
+  MaxxRural.Components.Controls.ComboBox in '..\Source\Controls\MaxxRural.Components.Controls.ComboBox.pas',
+  MaxxRural.Components.Controls.Memo in '..\Source\Controls\MaxxRural.Components.Controls.Memo.pas',
+  MaxxRural.Components.Controls.Selectors in '..\Source\Controls\MaxxRural.Components.Controls.Selectors.pas',
+  MaxxRural.Components.Controls.DataAware in '..\Source\Controls\DataAware\MaxxRural.Components.Controls.DataAware.pas',
+  MaxxRural.Components.Controls.Tabs in '..\Source\Controls\MaxxRural.Components.Controls.Tabs.pas',
+  MaxxRural.Components.Controls.SummaryCard in '..\Source\Controls\MaxxRural.Components.Controls.SummaryCard.pas',
+  MaxxRural.Components.Controls.Charts in '..\Source\Controls\MaxxRural.Components.Controls.Charts.pas',
+  MaxxRural.Components.Controls.Badges in '..\Source\Controls\MaxxRural.Components.Controls.Badges.pas',
+  MaxxRural.Components.Controls.Progress in '..\Source\Controls\MaxxRural.Components.Controls.Progress.pas',
+  MaxxRural.Components.Controls.Pagination in '..\Source\Controls\MaxxRural.Components.Controls.Pagination.pas',
+  MaxxRural.Components.Controls.Loading in '..\Source\Controls\MaxxRural.Components.Controls.Loading.pas',
+  MaxxRural.Components.Controls.Feedback in '..\Source\Controls\MaxxRural.Components.Controls.Feedback.pas',
+  MaxxRural.Components.Controls.StatusBar in '..\Source\Controls\MaxxRural.Components.Controls.StatusBar.pas',
+  MaxxRural.Components.Controls.ReportViewer in '..\Source\Controls\MaxxRural.Components.Controls.ReportViewer.pas',
+  MaxxRural.Components.Controls.DataGrid in '..\Source\Controls\MaxxRural.Components.Controls.DataGrid.pas',
+  MaxxRural.Components.Hooks.Register in '..\Source\Hooks\MaxxRural.Components.Hooks.Register.pas';
+
+end.

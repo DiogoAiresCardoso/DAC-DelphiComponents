@@ -365,7 +365,7 @@
           Left = 576
           Top = 82
           Width = 220
-          Height = 60
+          Height = 52
           Cursor = crIBeam
           EditKind = mekMasked
           EditMask = '(99) 99999-9999;0;_'
@@ -379,7 +379,7 @@
           Left = 36
           Top = 184
           Width = 240
-          Height = 60
+          Height = 52
           Cursor = crIBeam
           EditKind = mekPassword
           LabelText = 'Password'
@@ -392,7 +392,7 @@
           Left = 306
           Top = 184
           Width = 240
-          Height = 60
+          Height = 52
           Cursor = crIBeam
           EditKind = mekSearch
           LabelText = 'Search'
@@ -452,7 +452,7 @@
           Left = 36
           Top = 404
           Width = 240
-          Height = 60
+          Height = 52
           Cursor = crIBeam
           EditKind = mekDate
           LabelText = 'Data'
@@ -464,7 +464,7 @@
           Left = 306
           Top = 404
           Width = 240
-          Height = 60
+          Height = 52
           Cursor = crIBeam
           EditKind = mekTime
           LabelText = 'Hora'
@@ -476,7 +476,7 @@
           Left = 576
           Top = 404
           Width = 220
-          Height = 60
+          Height = 52
           FormatString = 'dd/MM/yyyy HH:mm'
           LabelText = 'DateTimePicker'
           Required = True
@@ -499,7 +499,7 @@
           Left = 306
           Top = 494
           Width = 240
-          Height = 60
+          Height = 52
           ButtonIconKind = mikCalendar
           LabelText = 'Com icone'
           Placeholder = 'Selecione uma data...'
@@ -510,7 +510,7 @@
           Left = 576
           Top = 494
           Width = 220
-          Height = 60
+          Height = 52
           ButtonIconKind = mikMoreVertical
           LabelText = 'Mais opcoes'
           Placeholder = 'Escolha uma opcao...'
@@ -521,7 +521,7 @@
           Left = 36
           Top = 584
           Width = 240
-          Height = 60
+          Height = 52
           ButtonCaption = 'OK'
           ButtonIconKind = mikCheck
           ButtonWidth = 58
@@ -535,7 +535,7 @@
           Left = 306
           Top = 584
           Width = 240
-          Height = 60
+          Height = 52
           ButtonIconKind = mikChevronDown
           LabelText = 'Com dropdown'
           Placeholder = 'Selecione...'

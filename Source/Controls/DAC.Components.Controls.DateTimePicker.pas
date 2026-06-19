@@ -47,6 +47,7 @@ type
     procedure DoMouseLeave(Sender: TObject);
     function GetDateTime: TDateTime;
     function GetFormatString: string;
+    function IconRect: TRect;
     function GetPickerKind: TDateTimeKind;
     function HasLabel: Boolean;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
@@ -59,6 +60,7 @@ type
     procedure SetFormatString(const AValue: string);
     procedure SetLabelText(const AValue: string);
     procedure SetPickerKind(const AValue: TDateTimeKind);
+    procedure ShowCalendarPopup;
     procedure SetRequired(const AValue: Boolean);
     procedure SetStatus(const AValue: TDACEditStatus);
     procedure UpdateChildBounds;
@@ -126,7 +128,7 @@ begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque, csClickEvents, csCaptureMouse];
   Width := 220;
-  Height := 60;
+  Height := 52;
   TabStop := True;
   ParentColor := False;
   StyleElements := [];
@@ -294,6 +296,18 @@ begin
     OnExit(Self);
 end;
 
+function TDACDateTimePicker.IconRect: TRect;
+var
+  LIconSize: Integer;
+  LTop: Integer;
+  LBottom: Integer;
+begin
+  LIconSize := ScaleMetric(16);
+  LTop := ChromeTop + (Height - ChromeTop - LIconSize) div 2;
+  LBottom := ChromeTop + (Height - ChromeTop + LIconSize) div 2;
+  Result := Rect(Width - ScaleMetric(30), LTop, Width - ScaleMetric(14), LBottom);
+end;
+
 function TDACDateTimePicker.GetDateTime: TDateTime;
 begin
   Result := FPicker.DateTime;
@@ -329,7 +343,22 @@ procedure TDACDateTimePicker.MouseDown(Button: TMouseButton; Shift: TShiftState;
 begin
   inherited;
   if (Button = mbLeft) and Enabled and (FPicker <> nil) and FPicker.CanFocus then
-    FPicker.SetFocus;
+  begin
+    if PtInRect(IconRect, Point(X, Y)) then
+      ShowCalendarPopup
+    else
+      FPicker.SetFocus;
+  end;
+end;
+
+procedure TDACDateTimePicker.ShowCalendarPopup;
+begin
+  if (FPicker = nil) or not Enabled then
+    Exit;
+  if FPicker.Kind = dtkTime then
+    Exit;
+  FPicker.SetFocus;
+  FPicker.DropDown;
 end;
 
 procedure TDACDateTimePicker.PaintBoxDraw(Sender: TObject;

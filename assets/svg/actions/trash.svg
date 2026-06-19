@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Excluir" style="color:#2F9E22">
+  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="24" y1="32" x2="96" y2="32"/><line x1="46" y1="20" x2="74" y2="20"/><path d="M32 32 L38 100 H82 L88 32"/><line x1="50" y1="48" x2="52" y2="84"/><line x1="70" y1="48" x2="68" y2="84"/>
+  </g>
+</svg>

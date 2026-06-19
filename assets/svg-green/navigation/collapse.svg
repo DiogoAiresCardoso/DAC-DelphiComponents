@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Recolher" style="color:#2F9E22">
+  <g stroke="#2F9E22" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 50 H50 V20"/><line x1="50" y1="50" x2="24" y2="24"/><path d="M100 50 H70 V20"/><line x1="70" y1="50" x2="96" y2="24"/><path d="M20 70 H50 V100"/><line x1="50" y1="70" x2="24" y2="96"/><path d="M100 70 H70 V100"/><line x1="70" y1="70" x2="96" y2="96"/>
+  </g>
+</svg>

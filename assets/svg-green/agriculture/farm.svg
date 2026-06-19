@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Fazenda" style="color:#2F9E22">
+  <g stroke="#2F9E22" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="14,54 46,26 78,54"/><path d="M24 48 V100 H68 V48"/><rect x="40" y="72" width="16" height="28" rx="2"/><path d="M80 100 V46 H102 V100"/><line x1="80" y1="64" x2="102" y2="64"/><line x1="80" y1="82" x2="102" y2="82"/>
+  </g>
+</svg>

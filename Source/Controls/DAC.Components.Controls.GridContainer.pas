@@ -33,6 +33,7 @@ type
     function LayoutRect: TRect;
     procedure ArrangeChildren;
     procedure CMControlListChange(var AMessage: TCMControlListChange); message CM_CONTROLLISTCHANGE;
+    procedure WMSize(var AMessage: TWMSize); message WM_SIZE;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
     procedure RedrawChrome;
@@ -223,8 +224,21 @@ procedure TDACGridContainer.CMControlListChange(
   var AMessage: TCMControlListChange);
 begin
   inherited;
-  if AMessage.Inserting then
+  if AMessage.Inserting or AMessage.Removing then
+  begin
     ArrangeChildren;
+    Redraw;
+  end;
+end;
+
+procedure TDACGridContainer.WMSize(var AMessage: TWMSize);
+begin
+  inherited;
+  if (csDestroying in ComponentState) then
+    Exit;
+  UpdateChromeBounds;
+  ArrangeChildren;
+  Redraw;
 end;
 
 procedure TDACGridContainer.CreateWnd;

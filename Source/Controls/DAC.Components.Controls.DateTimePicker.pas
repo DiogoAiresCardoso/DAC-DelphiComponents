@@ -128,7 +128,7 @@ begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque, csClickEvents, csCaptureMouse];
   Width := 220;
-  Height := 52;
+  Height := 50;
   TabStop := True;
   ParentColor := False;
   StyleElements := [];
@@ -539,15 +539,20 @@ var
   LHorizontalPadding: Integer;
   LRightPadding: Integer;
   LTop: Integer;
+  LInputHeight: Integer;
+  LInputLeft: Integer;
+  LInputWidth: Integer;
 begin
   if FPicker = nil then
     Exit;
 
   LHorizontalPadding := ScaleMetric(12);
-  LRightPadding := ScaleMetric(38);
+  LRightPadding := ScaleMetric(54);
+  LInputLeft := LHorizontalPadding + ScaleMetric(2);
+  LInputHeight := ScaleMetric(20);
   LTop := ChromeTop + Max(0, (Height - ChromeTop - ScaleMetric(22)) div 2);
-  FPicker.SetBounds(LHorizontalPadding, LTop,
-    Max(0, Width - LHorizontalPadding - LRightPadding), ScaleMetric(22));
+  LInputWidth := Max(0, Width - LInputLeft - LRightPadding);
+  FPicker.SetBounds(LInputLeft, LTop, LInputWidth, LInputHeight);
 end;
 
 procedure TDACDateTimePicker.UpdatePaintBoxBounds;

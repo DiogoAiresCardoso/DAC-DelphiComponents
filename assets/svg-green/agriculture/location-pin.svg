@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Localização" style="color:#2F9E22">
+  <g stroke="#2F9E22" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M60 106 C60 106 94 72 94 46 A34 34 0 0 0 26 46 C26 72 60 106 60 106 Z"/><circle cx="60" cy="46" r="12"/>
+  </g>
+</svg>

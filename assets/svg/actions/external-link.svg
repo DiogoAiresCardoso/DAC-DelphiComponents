@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Abrir externamente" style="color:#2F9E22">
+  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="18" y="34" width="68" height="68" rx="5"/><line x1="54" y1="66" x2="100" y2="20"/><polyline points="70,20 100,20 100,50"/>
+  </g>
+</svg>

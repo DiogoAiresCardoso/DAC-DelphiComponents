@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Início / Fazenda" style="color:#2F9E22">
+  <g stroke="#2F9E22" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="16,56 60,18 104,56"/><path d="M28 50 V102 H92 V50"/><rect x="50" y="70" width="20" height="32" rx="2"/>
+  </g>
+</svg>

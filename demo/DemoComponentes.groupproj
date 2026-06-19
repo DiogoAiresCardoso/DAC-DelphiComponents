@@ -1,0 +1,60 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{27D279D8-7B84-4414-A5FD-FDA65B69ED76}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="..\Packages\SkiaComponents\Package\MaxxRuralSkiaComponentsRuntime.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\Packages\SkiaComponents\Package\MaxxRuralSkiaComponentsDesign.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Demo.dproj">
+            <Dependencies>..\Packages\SkiaComponents\Package\MaxxRuralSkiaComponentsRuntime.dproj;..\Packages\SkiaComponents\Package\MaxxRuralSkiaComponentsDesign.dproj</Dependencies>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="MaxxRuralSkiaComponentsRuntime">
+        <MSBuild Projects="..\Packages\SkiaComponents\Package\MaxxRuralSkiaComponentsRuntime.dproj"/>
+    </Target>
+    <Target Name="MaxxRuralSkiaComponentsRuntime:Clean">
+        <MSBuild Projects="..\Packages\SkiaComponents\Package\MaxxRuralSkiaComponentsRuntime.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="MaxxRuralSkiaComponentsRuntime:Make">
+        <MSBuild Projects="..\Packages\SkiaComponents\Package\MaxxRuralSkiaComponentsRuntime.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="MaxxRuralSkiaComponentsDesign">
+        <MSBuild Projects="..\Packages\SkiaComponents\Package\MaxxRuralSkiaComponentsDesign.dproj"/>
+    </Target>
+    <Target Name="MaxxRuralSkiaComponentsDesign:Clean">
+        <MSBuild Projects="..\Packages\SkiaComponents\Package\MaxxRuralSkiaComponentsDesign.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="MaxxRuralSkiaComponentsDesign:Make">
+        <MSBuild Projects="..\Packages\SkiaComponents\Package\MaxxRuralSkiaComponentsDesign.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Demo" DependsOnTargets="MaxxRuralSkiaComponentsRuntime;MaxxRuralSkiaComponentsDesign">
+        <MSBuild Projects="Demo.dproj"/>
+    </Target>
+    <Target Name="Demo:Clean" DependsOnTargets="MaxxRuralSkiaComponentsRuntime:Clean;MaxxRuralSkiaComponentsDesign:Clean">
+        <MSBuild Projects="Demo.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Demo:Make" DependsOnTargets="MaxxRuralSkiaComponentsRuntime:Make;MaxxRuralSkiaComponentsDesign:Make">
+        <MSBuild Projects="Demo.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="MaxxRuralSkiaComponentsRuntime;MaxxRuralSkiaComponentsDesign;Demo"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="MaxxRuralSkiaComponentsRuntime:Clean;MaxxRuralSkiaComponentsDesign:Clean;Demo:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="MaxxRuralSkiaComponentsRuntime:Make;MaxxRuralSkiaComponentsDesign:Make;Demo:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

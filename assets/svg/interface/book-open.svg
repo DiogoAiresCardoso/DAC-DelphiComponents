@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Documentação" style="color:#2F9E22">
+  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 24 C32 20 46 24 60 34 V100 C46 90 32 88 14 92 Z"/><path d="M106 24 C88 20 74 24 60 34 V100 C74 90 88 88 106 92 Z"/>
+  </g>
+</svg>

@@ -1,4 +1,4 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{41E3DB56-7C8F-4BBC-BDE2-84673E86A8BC}</ProjectGuid>
         <MainSource>DACComponentes.dpk</MainSource>
@@ -37,6 +37,8 @@
     <PropertyGroup Condition="'$(Base)'!=''">
         <DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
         <DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>
+        <DCC_BplOutput>..\\Build\\Bpl\\</DCC_BplOutput>
+        <DCC_DcpOutput>..\\Build\\Dcp\\</DCC_DcpOutput>
         <DCC_E>false</DCC_E>
         <DCC_N>false</DCC_N>
         <DCC_S>false</DCC_S>

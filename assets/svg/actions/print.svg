@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Imprimir" style="color:#2F9E22">
+  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="30" y="16" width="60" height="34" rx="3"/><rect x="24" y="48" width="72" height="40" rx="7"/><rect x="34" y="72" width="52" height="30" rx="3"/><circle cx="84" cy="61" r="3" fill="currentColor" stroke="none"/>
+  </g>
+</svg>

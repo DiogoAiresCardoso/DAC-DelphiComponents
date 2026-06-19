@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Usuários" style="color:#2F9E22">
+  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="48" cy="38" r="16"/><circle cx="82" cy="44" r="13"/><path d="M16 100 C18 76 30 66 48 66 C66 66 78 76 80 100"/><path d="M72 72 C89 72 100 82 102 100"/>
+  </g>
+</svg>

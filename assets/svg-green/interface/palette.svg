@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Temas / Paleta" style="color:#2F9E22">
+  <g stroke="#2F9E22" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M60 18 C34 18 16 36 16 60 C16 84 34 102 56 102 C68 102 72 92 68 84 C64 76 72 70 82 72 C96 74 104 66 104 54 C104 34 84 18 60 18 Z"/><circle cx="38" cy="50" r="5" fill="#2F9E22" stroke="none"/><circle cx="56" cy="38" r="5" fill="#2F9E22" stroke="none"/><circle cx="76" cy="42" r="5" fill="#2F9E22" stroke="none"/><circle cx="86" cy="58" r="5" fill="#2F9E22" stroke="none"/>
+  </g>
+</svg>

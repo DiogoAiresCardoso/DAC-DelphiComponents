@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Arquivo PDF" style="color:#2F9E22">
+  <g stroke="#2F9E22" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M26 14 H72 L96 38 V106 H26 Z"/><polyline points="72,14 72,38 96,38"/><path d="M38 86 V58 H48 A9 9 0 0 1 48 76 H38"/><path d="M58 58 V86 H66 A14 14 0 0 0 66 58 Z"/><path d="M82 86 V58 H98 M82 72 H94"/>
+  </g>
+</svg>

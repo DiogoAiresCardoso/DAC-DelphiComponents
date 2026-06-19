@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Ajustar página" style="color:#2F9E22">
+  <g stroke="#2F9E22" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="28" y="16" width="64" height="88" rx="4"/><path d="M42 36 H36 V42"/><path d="M78 36 H84 V42"/><path d="M42 84 H36 V78"/><path d="M78 84 H84 V78"/>
+  </g>
+</svg>

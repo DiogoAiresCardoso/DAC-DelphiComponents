@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Muda / Plantio" style="color:#2F9E22">
+  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="60" y1="98" x2="60" y2="50"/><path d="M60 58 C44 54 32 42 30 26 C48 24 60 34 60 50"/><path d="M60 70 C78 68 90 54 92 38 C74 36 62 46 60 62"/><line x1="24" y1="100" x2="96" y2="100"/>
+  </g>
+</svg>

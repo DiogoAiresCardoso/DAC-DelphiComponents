@@ -1,4 +1,4 @@
-object Form1: TForm1
+﻿object Form1: TForm1
   Left = 0
   Top = 0
   BorderStyle = bsNone
@@ -260,7 +260,7 @@ object Form1: TForm1
           Height = 36
           Cursor = crHandPoint
           Caption = ''
-          IconKind = mikMore
+          IconKind = mikMoreVertical
           IconSize = 18
           Kind = mbkTransparent
           ShowIcon = True

@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.DataGrid;
+unit DAC.Components.Controls.DataGrid;
 
 interface
 
@@ -15,14 +15,14 @@ uses
   Vcl.Graphics;
 
 type
-  TMaxxRuralDataGridActionKind = (
+  TDACDataGridActionKind = (
     mdgakNone,
     mdgakEdit,
     mdgakDelete,
     mdgakMore
   );
 
-  TMaxxRuralDataGridStatus = (
+  TDACDataGridStatus = (
     mdgsNone,
     mdgsSuccess,
     mdgsWarning,
@@ -30,35 +30,35 @@ type
     mdgsInfo
   );
 
-  TMaxxRuralDataGridActionClickEvent = procedure(Sender: TObject;
-    AAction: TMaxxRuralDataGridActionKind; AColumn: TColumn) of object;
+  TDACDataGridActionClickEvent = procedure(Sender: TObject;
+    AAction: TDACDataGridActionKind; AColumn: TColumn) of object;
 
-  TMaxxRuralDataGrid = class(TDBGrid)
+  TDACDataGrid = class(TDBGrid)
   private
     FCornerRadius: Integer;
     FFooterText: string;
     FFooterValue: string;
-    FHotAction: TMaxxRuralDataGridActionKind;
-    FOnActionClick: TMaxxRuralDataGridActionClickEvent;
-    FPressedAction: TMaxxRuralDataGridActionKind;
+    FHotAction: TDACDataGridActionKind;
+    FOnActionClick: TDACDataGridActionClickEvent;
+    FPressedAction: TDACDataGridActionKind;
     FShowFooter: Boolean;
     FStatusFieldName: string;
-    function ActionAt(const ACellRect: TRect; const X, Y: Integer): TMaxxRuralDataGridActionKind;
+    function ActionAt(const ACellRect: TRect; const X, Y: Integer): TDACDataGridActionKind;
     function ActionRect(const ACellRect: TRect;
-      const AAction: TMaxxRuralDataGridActionKind): TRect;
+      const AAction: TDACDataGridActionKind): TRect;
     procedure ApplyAppearance;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure CMMouseLeave(var AMessage: TMessage); message CM_MOUSELEAVE;
     function ColumnFromGridCoord(const ACoord: TGridCoord): TColumn;
-    procedure DoActionClick(const AAction: TMaxxRuralDataGridActionKind;
+    procedure DoActionClick(const AAction: TDACDataGridActionKind;
       AColumn: TColumn);
     procedure DrawActionsCell(const ARect: TRect);
     procedure DrawFooter(const ARect: TRect);
     procedure DrawPreview;
     procedure DrawPreviewRow(const ARowIndex: Integer; const AValues: array of string;
-      const AStatus: TMaxxRuralDataGridStatus; const ARect: TRect);
+      const AStatus: TDACDataGridStatus; const ARect: TRect);
     procedure DrawStatusPill(const ARect: TRect; const AText: string;
-      const AStatus: TMaxxRuralDataGridStatus);
+      const AStatus: TDACDataGridStatus);
     procedure DrawTextCell(const ARect: TRect; const AText: string;
       const AAlignment: TAlignment; const ABold: Boolean = False);
     function HasActiveDataSet: Boolean;
@@ -69,11 +69,11 @@ type
     procedure SetFooterValue(const AValue: string);
     procedure SetShowFooter(const AValue: Boolean);
     procedure SetStatusFieldName(const AValue: string);
-    function StatusBackgroundColor(const AStatus: TMaxxRuralDataGridStatus): TColor;
-    function StatusFromText(const AText: string): TMaxxRuralDataGridStatus;
-    function StatusTextColor(const AStatus: TMaxxRuralDataGridStatus): TColor;
+    function StatusBackgroundColor(const AStatus: TDACDataGridStatus): TColor;
+    function StatusFromText(const AText: string): TDACDataGridStatus;
+    function StatusTextColor(const AStatus: TDACDataGridStatus): TColor;
     function TryHitAction(const X, Y: Integer; out AColumn: TColumn;
-      out AAction: TMaxxRuralDataGridActionKind): Boolean;
+      out AAction: TDACDataGridActionKind): Boolean;
     function TokenColor(const AColor: TAlphaColor): TColor;
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
   protected
@@ -144,7 +144,7 @@ type
     property OnMouseLeave;
     property OnMouseMove;
     property OnMouseUp;
-    property OnActionClick: TMaxxRuralDataGridActionClickEvent read FOnActionClick write FOnActionClick;
+    property OnActionClick: TDACDataGridActionClickEvent read FOnActionClick write FOnActionClick;
     property OnStartDock;
     property OnStartDrag;
     property OnTitleClick;
@@ -156,14 +156,14 @@ uses
   System.Math,
   System.SysUtils,
   Winapi.Windows,
-  MaxxRural.Components.DesignSystem.ColorTokens,
-  MaxxRural.Components.DesignSystem.Fonts;
+  DAC.Components.DesignSystem.ColorTokens,
+  DAC.Components.DesignSystem.Fonts;
 
 const
   GridHeaderColor: TAlphaColor = TAlphaColor($FF111827);
 
-function TMaxxRuralDataGrid.ActionAt(const ACellRect: TRect; const X,
-  Y: Integer): TMaxxRuralDataGridActionKind;
+function TDACDataGrid.ActionAt(const ACellRect: TRect; const X,
+  Y: Integer): TDACDataGridActionKind;
 begin
   if PtInRect(ActionRect(ACellRect, mdgakEdit), Point(X, Y)) then
     Result := mdgakEdit
@@ -175,8 +175,8 @@ begin
     Result := mdgakNone;
 end;
 
-function TMaxxRuralDataGrid.ActionRect(const ACellRect: TRect;
-  const AAction: TMaxxRuralDataGridActionKind): TRect;
+function TDACDataGrid.ActionRect(const ACellRect: TRect;
+  const AAction: TDACDataGridActionKind): TRect;
 const
   ActionSize = 18;
   ActionGap = 5;
@@ -199,7 +199,7 @@ begin
   Result := Rect(LLeft, LTop, LLeft + ActionSize, LTop + ActionSize);
 end;
 
-constructor TMaxxRuralDataGrid.Create(AOwner: TComponent);
+constructor TDACDataGrid.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque];
@@ -225,32 +225,32 @@ begin
   ApplyAppearance;
 end;
 
-procedure TMaxxRuralDataGrid.ApplyAppearance;
+procedure TDACDataGrid.ApplyAppearance;
 begin
-  Color := TokenColor(TMaxxRuralComponentColors.White);
+  Color := TokenColor(TDACComponentColors.White);
   FixedColor := TokenColor(GridHeaderColor);
-  Font.Name := TMaxxRuralComponentFontInstaller.FontFamily;
+  Font.Name := TDACComponentFontInstaller.FontFamily;
   Font.Size := 9;
-  Font.Color := TokenColor(TMaxxRuralComponentColors.ControlText);
+  Font.Color := TokenColor(TDACComponentColors.ControlText);
   TitleFont.Assign(Font);
-  TitleFont.Color := TokenColor(TMaxxRuralComponentColors.White);
+  TitleFont.Color := TokenColor(TDACComponentColors.White);
   TitleFont.Style := [fsBold];
 end;
 
-procedure TMaxxRuralDataGrid.ChangeScale(M, D: Integer);
+procedure TDACDataGrid.ChangeScale(M, D: Integer);
 begin
   inherited;
   ApplyAppearance;
   Invalidate;
 end;
 
-procedure TMaxxRuralDataGrid.CMEnabledChanged(var AMessage: TMessage);
+procedure TDACDataGrid.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
   Invalidate;
 end;
 
-procedure TMaxxRuralDataGrid.CMMouseLeave(var AMessage: TMessage);
+procedure TDACDataGrid.CMMouseLeave(var AMessage: TMessage);
 begin
   inherited;
   if (FHotAction <> mdgakNone) or (FPressedAction <> mdgakNone) then
@@ -262,7 +262,7 @@ begin
   end;
 end;
 
-function TMaxxRuralDataGrid.ColumnFromGridCoord(
+function TDACDataGrid.ColumnFromGridCoord(
   const ACoord: TGridCoord): TColumn;
 var
   LColumnIndex: Integer;
@@ -276,20 +276,20 @@ begin
     Result := Columns[LColumnIndex];
 end;
 
-procedure TMaxxRuralDataGrid.CreateWnd;
+procedure TDACDataGrid.CreateWnd;
 begin
   inherited;
   ApplyAppearance;
 end;
 
-procedure TMaxxRuralDataGrid.DoActionClick(
-  const AAction: TMaxxRuralDataGridActionKind; AColumn: TColumn);
+procedure TDACDataGrid.DoActionClick(
+  const AAction: TDACDataGridActionKind; AColumn: TColumn);
 begin
   if Assigned(FOnActionClick) then
     FOnActionClick(Self, AAction, AColumn);
 end;
 
-procedure TMaxxRuralDataGrid.DrawActionsCell(const ARect: TRect);
+procedure TDACDataGrid.DrawActionsCell(const ARect: TRect);
 var
   LCenterY: Integer;
   LHotPoint: TPoint;
@@ -298,7 +298,7 @@ var
 begin
   Canvas.Brush.Style := bsClear;
   Canvas.Pen.Width := 1;
-  Canvas.Pen.Color := TokenColor(TMaxxRuralComponentColors.Alpha(71, 85, 105));
+  Canvas.Pen.Color := TokenColor(TDACComponentColors.Alpha(71, 85, 105));
   LCenterY := ARect.Top + (ARect.Height div 2);
 
   if FHotAction <> mdgakNone then
@@ -308,7 +308,7 @@ begin
     LHotRect := ActionRect(ARect, FHotAction);
     if PtInRect(LHotRect, LHotPoint) then
     begin
-      Canvas.Brush.Color := TokenColor(TMaxxRuralComponentColors.Alpha(239, 247, 237));
+      Canvas.Brush.Color := TokenColor(TDACComponentColors.Alpha(239, 247, 237));
       Canvas.Brush.Style := bsSolid;
       Canvas.Pen.Style := psClear;
       Canvas.RoundRect(LHotRect.Left, LHotRect.Top, LHotRect.Right, LHotRect.Bottom, 8, 8);
@@ -323,14 +323,14 @@ begin
   Canvas.LineTo(LRect.Right - 2, LRect.Top + 2);
   Canvas.Rectangle(LRect.Left, LRect.Top, LRect.Right, LRect.Bottom);
 
-  Canvas.Pen.Color := TokenColor(TMaxxRuralComponentColors.Danger);
+  Canvas.Pen.Color := TokenColor(TDACComponentColors.Danger);
   LRect := ActionRect(ARect, mdgakDelete);
   InflateRect(LRect, -3, -3);
   Canvas.Rectangle(LRect.Left + 2, LRect.Top + 4, LRect.Right - 2, LRect.Bottom);
   Canvas.MoveTo(LRect.Left + 1, LRect.Top + 3);
   Canvas.LineTo(LRect.Right - 1, LRect.Top + 3);
 
-  Canvas.Pen.Color := TokenColor(TMaxxRuralComponentColors.Alpha(100, 116, 139));
+  Canvas.Pen.Color := TokenColor(TDACComponentColors.Alpha(100, 116, 139));
   LRect := ActionRect(ARect, mdgakMore);
   InflateRect(LRect, -3, -3);
   Canvas.Ellipse(LRect.Left + 1, LCenterY - 1, LRect.Left + 3, LCenterY + 1);
@@ -338,19 +338,19 @@ begin
   Canvas.Ellipse(LRect.Left + 11, LCenterY - 1, LRect.Left + 13, LCenterY + 1);
 end;
 
-procedure TMaxxRuralDataGrid.DrawColumnCell(const Rect: TRect; DataCol: Integer;
+procedure TDACDataGrid.DrawColumnCell(const Rect: TRect; DataCol: Integer;
   Column: TColumn; State: TGridDrawState);
 var
   LAlignment: TAlignment;
   LRect: TRect;
-  LStatus: TMaxxRuralDataGridStatus;
+  LStatus: TDACDataGridStatus;
   LText: string;
 begin
   LRect := Rect;
   InflateRect(LRect, -1, -1);
 
   if gdSelected in State then
-    Canvas.Brush.Color := TokenColor(TMaxxRuralComponentColors.Alpha(239, 247, 237))
+    Canvas.Brush.Color := TokenColor(TDACComponentColors.Alpha(239, 247, 237))
   else
     Canvas.Brush.Color := Color;
   Canvas.FillRect(Rect);
@@ -379,7 +379,7 @@ begin
   DrawTextCell(LRect, LText, LAlignment);
 end;
 
-procedure TMaxxRuralDataGrid.DrawFooter(const ARect: TRect);
+procedure TDACDataGrid.DrawFooter(const ARect: TRect);
 var
   LRect: TRect;
 begin
@@ -395,7 +395,7 @@ begin
     FFooterValue, taRightJustify, True);
 end;
 
-procedure TMaxxRuralDataGrid.DrawPreview;
+procedure TDACDataGrid.DrawPreview;
 var
   LFooterRect: TRect;
   LHeaderRect: TRect;
@@ -407,7 +407,7 @@ begin
 
   LRect := ClientRect;
   InflateRect(LRect, -1, -1);
-  Canvas.Pen.Color := TokenColor(TMaxxRuralComponentColors.ControlBorder);
+  Canvas.Pen.Color := TokenColor(TDACComponentColors.ControlBorder);
   Canvas.Brush.Style := bsClear;
   Canvas.RoundRect(LRect.Left, LRect.Top, LRect.Right, LRect.Bottom,
     FCornerRadius, FCornerRadius);
@@ -454,18 +454,18 @@ begin
   end;
 end;
 
-procedure TMaxxRuralDataGrid.DrawPreviewRow(const ARowIndex: Integer;
-  const AValues: array of string; const AStatus: TMaxxRuralDataGridStatus;
+procedure TDACDataGrid.DrawPreviewRow(const ARowIndex: Integer;
+  const AValues: array of string; const AStatus: TDACDataGridStatus;
   const ARect: TRect);
 var
   LRect: TRect;
 begin
   if Odd(ARowIndex) then
-    Canvas.Brush.Color := TokenColor(TMaxxRuralComponentColors.Alpha(250, 252, 250))
+    Canvas.Brush.Color := TokenColor(TDACComponentColors.Alpha(250, 252, 250))
   else
     Canvas.Brush.Color := Color;
   Canvas.FillRect(ARect);
-  Canvas.Pen.Color := TokenColor(TMaxxRuralComponentColors.Alpha(226, 232, 240));
+  Canvas.Pen.Color := TokenColor(TDACComponentColors.Alpha(226, 232, 240));
   Canvas.MoveTo(ARect.Left, ARect.Bottom);
   Canvas.LineTo(ARect.Right, ARect.Bottom);
 
@@ -485,8 +485,8 @@ begin
   DrawActionsCell(LRect);
 end;
 
-procedure TMaxxRuralDataGrid.DrawStatusPill(const ARect: TRect;
-  const AText: string; const AStatus: TMaxxRuralDataGridStatus);
+procedure TDACDataGrid.DrawStatusPill(const ARect: TRect;
+  const AText: string; const AStatus: TDACDataGridStatus);
 var
   LRect: TRect;
   LTextWidth: Integer;
@@ -507,7 +507,7 @@ begin
   DrawTextCell(LRect, AText, taCenter);
 end;
 
-procedure TMaxxRuralDataGrid.DrawTextCell(const ARect: TRect; const AText: string;
+procedure TDACDataGrid.DrawTextCell(const ARect: TRect; const AText: string;
   const AAlignment: TAlignment; const ABold: Boolean);
 var
   LFlags: Cardinal;
@@ -533,13 +533,13 @@ begin
   DrawText(Canvas.Handle, PChar(AText), Length(AText), LRect, LFlags);
 end;
 
-function TMaxxRuralDataGrid.HasActiveDataSet: Boolean;
+function TDACDataGrid.HasActiveDataSet: Boolean;
 begin
   Result := (DataSource <> nil) and (DataSource.DataSet <> nil) and
     DataSource.DataSet.Active;
 end;
 
-function TMaxxRuralDataGrid.IsActionsColumn(const AColumn: TColumn): Boolean;
+function TDACDataGrid.IsActionsColumn(const AColumn: TColumn): Boolean;
 var
   LTitle: string;
 begin
@@ -552,7 +552,7 @@ begin
     SameText(LTitle, 'A' + #231 + #245 + 'es...');
 end;
 
-function TMaxxRuralDataGrid.IsStatusColumn(const AColumn: TColumn): Boolean;
+function TDACDataGrid.IsStatusColumn(const AColumn: TColumn): Boolean;
 begin
   Result := False;
   if AColumn = nil then
@@ -561,16 +561,16 @@ begin
     SameText(AColumn.Title.Caption, 'Status');
 end;
 
-procedure TMaxxRuralDataGrid.Loaded;
+procedure TDACDataGrid.Loaded;
 begin
   inherited;
   ApplyAppearance;
 end;
 
-procedure TMaxxRuralDataGrid.MouseDown(Button: TMouseButton; Shift: TShiftState;
+procedure TDACDataGrid.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 var
-  LAction: TMaxxRuralDataGridActionKind;
+  LAction: TDACDataGridActionKind;
   LColumn: TColumn;
 begin
   inherited;
@@ -584,9 +584,9 @@ begin
   end;
 end;
 
-procedure TMaxxRuralDataGrid.MouseMove(Shift: TShiftState; X, Y: Integer);
+procedure TDACDataGrid.MouseMove(Shift: TShiftState; X, Y: Integer);
 var
-  LAction: TMaxxRuralDataGridActionKind;
+  LAction: TDACDataGridActionKind;
   LColumn: TColumn;
 begin
   inherited;
@@ -612,12 +612,12 @@ begin
     Cursor := crDefault;
 end;
 
-procedure TMaxxRuralDataGrid.MouseUp(Button: TMouseButton; Shift: TShiftState;
+procedure TDACDataGrid.MouseUp(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 var
-  LAction: TMaxxRuralDataGridActionKind;
+  LAction: TDACDataGridActionKind;
   LColumn: TColumn;
-  LPressedAction: TMaxxRuralDataGridActionKind;
+  LPressedAction: TDACDataGridActionKind;
 begin
   inherited;
 
@@ -629,7 +629,7 @@ begin
     DoActionClick(LAction, LColumn);
 end;
 
-procedure TMaxxRuralDataGrid.Paint;
+procedure TDACDataGrid.Paint;
 var
   LFooterRect: TRect;
 begin
@@ -648,12 +648,12 @@ begin
   end;
 end;
 
-procedure TMaxxRuralDataGrid.Redraw;
+procedure TDACDataGrid.Redraw;
 begin
   Invalidate;
 end;
 
-procedure TMaxxRuralDataGrid.SetCornerRadius(const AValue: Integer);
+procedure TDACDataGrid.SetCornerRadius(const AValue: Integer);
 begin
   if FCornerRadius <> AValue then
   begin
@@ -662,7 +662,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralDataGrid.SetFooterText(const AValue: string);
+procedure TDACDataGrid.SetFooterText(const AValue: string);
 begin
   if FFooterText <> AValue then
   begin
@@ -671,7 +671,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralDataGrid.SetFooterValue(const AValue: string);
+procedure TDACDataGrid.SetFooterValue(const AValue: string);
 begin
   if FFooterValue <> AValue then
   begin
@@ -680,7 +680,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralDataGrid.SetShowFooter(const AValue: Boolean);
+procedure TDACDataGrid.SetShowFooter(const AValue: Boolean);
 begin
   if FShowFooter <> AValue then
   begin
@@ -689,7 +689,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralDataGrid.SetStatusFieldName(const AValue: string);
+procedure TDACDataGrid.SetStatusFieldName(const AValue: string);
 begin
   if FStatusFieldName <> AValue then
   begin
@@ -698,23 +698,23 @@ begin
   end;
 end;
 
-function TMaxxRuralDataGrid.StatusBackgroundColor(
-  const AStatus: TMaxxRuralDataGridStatus): TColor;
+function TDACDataGrid.StatusBackgroundColor(
+  const AStatus: TDACDataGridStatus): TColor;
 begin
   case AStatus of
     mdgsWarning:
-      Result := TokenColor(TMaxxRuralComponentColors.Alpha(255, 244, 205));
+      Result := TokenColor(TDACComponentColors.Alpha(255, 244, 205));
     mdgsDanger:
-      Result := TokenColor(TMaxxRuralComponentColors.Alpha(255, 224, 224));
+      Result := TokenColor(TDACComponentColors.Alpha(255, 224, 224));
     mdgsInfo:
-      Result := TokenColor(TMaxxRuralComponentColors.Alpha(219, 234, 254));
+      Result := TokenColor(TDACComponentColors.Alpha(219, 234, 254));
   else
-    Result := TokenColor(TMaxxRuralComponentColors.Alpha(220, 244, 215));
+    Result := TokenColor(TDACComponentColors.Alpha(220, 244, 215));
   end;
 end;
 
-function TMaxxRuralDataGrid.StatusFromText(
-  const AText: string): TMaxxRuralDataGridStatus;
+function TDACDataGrid.StatusFromText(
+  const AText: string): TDACDataGridStatus;
 begin
   if SameText(AText, 'Pendente') or SameText(AText, 'Alerta') then
     Result := mdgsWarning
@@ -728,23 +728,23 @@ begin
     Result := mdgsSuccess;
 end;
 
-function TMaxxRuralDataGrid.StatusTextColor(
-  const AStatus: TMaxxRuralDataGridStatus): TColor;
+function TDACDataGrid.StatusTextColor(
+  const AStatus: TDACDataGridStatus): TColor;
 begin
   case AStatus of
     mdgsWarning:
-      Result := TokenColor(TMaxxRuralComponentColors.Alpha(146, 100, 12));
+      Result := TokenColor(TDACComponentColors.Alpha(146, 100, 12));
     mdgsDanger:
-      Result := TokenColor(TMaxxRuralComponentColors.DangerDark);
+      Result := TokenColor(TDACComponentColors.DangerDark);
     mdgsInfo:
-      Result := TokenColor(TMaxxRuralComponentColors.Alpha(37, 99, 235));
+      Result := TokenColor(TDACComponentColors.Alpha(37, 99, 235));
   else
-    Result := TokenColor(TMaxxRuralComponentColors.Primary);
+    Result := TokenColor(TDACComponentColors.Primary);
   end;
 end;
 
-function TMaxxRuralDataGrid.TryHitAction(const X, Y: Integer;
-  out AColumn: TColumn; out AAction: TMaxxRuralDataGridActionKind): Boolean;
+function TDACDataGrid.TryHitAction(const X, Y: Integer;
+  out AColumn: TColumn; out AAction: TDACDataGridActionKind): Boolean;
 var
   LCellRect: TRect;
   LCoord: TGridCoord;
@@ -772,14 +772,15 @@ begin
   Result := AAction <> mdgakNone;
 end;
 
-function TMaxxRuralDataGrid.TokenColor(const AColor: TAlphaColor): TColor;
+function TDACDataGrid.TokenColor(const AColor: TAlphaColor): TColor;
 begin
-  Result := TMaxxRuralComponentColors.ToVclColor(AColor);
+  Result := TDACComponentColors.ToVclColor(AColor);
 end;
 
-procedure TMaxxRuralDataGrid.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACDataGrid.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
 end.
+

@@ -1,4 +1,4 @@
-unit MaxxRural.Components.DesignSystem.Fonts;
+unit DAC.Components.DesignSystem.Fonts;
 
 interface
 
@@ -6,10 +6,10 @@ uses
   System.Skia;
 
 const
-  MaxxRuralComponentFontFamily = 'Inter';
+  DACComponentFontFamily = 'Inter';
 
 type
-  TMaxxRuralComponentFontInstaller = class sealed
+  TDACComponentFontInstaller = class sealed
   public
     class function FontFamily: string; static;
     class function InterTypeface: ISkTypeface; static;
@@ -27,8 +27,8 @@ uses
   System.SysUtils;
 
 const
-  CInterResourceName = 'MAXXRURAL_FONT_INTER';
-  CInterTempFileName = 'MaxxRural-Components-Inter.ttf';
+  CInterResourceName = 'DAC_FONT_INTER';
+  CInterTempFileName = 'DAC-Components-Inter.ttf';
 
 var
   GInterFontFileName: string;
@@ -74,19 +74,19 @@ begin
   end;
 end;
 
-class function TMaxxRuralComponentFontInstaller.FontFamily: string;
+class function TDACComponentFontInstaller.FontFamily: string;
 begin
   InstallInter;
-  Result := MaxxRuralComponentFontFamily;
+  Result := DACComponentFontFamily;
 end;
 
-class function TMaxxRuralComponentFontInstaller.InterTypeface: ISkTypeface;
+class function TDACComponentFontInstaller.InterTypeface: ISkTypeface;
 begin
   InstallInter;
   Result := GInterTypeface;
 end;
 
-class procedure TMaxxRuralComponentFontInstaller.InstallInter;
+class procedure TDACComponentFontInstaller.InstallInter;
 var
   LFontDir: string;
   LSourceFile: string;
@@ -97,7 +97,7 @@ begin
   GInterInstallAttempted := True;
 
   try
-    LFontDir := TPath.Combine(TPath.GetTempPath, 'MaxxRural\Fonts');
+    LFontDir := TPath.Combine(TPath.GetTempPath, 'DAC\Fonts');
     TDirectory.CreateDirectory(LFontDir);
     GInterFontFileName := TPath.Combine(LFontDir, CInterTempFileName);
 
@@ -132,7 +132,7 @@ begin
   end;
 end;
 
-class procedure TMaxxRuralComponentFontInstaller.Uninstall;
+class procedure TDACComponentFontInstaller.Uninstall;
 begin
   if not GInterFontInstalled then
     Exit;
@@ -143,9 +143,10 @@ begin
 end;
 
 initialization
-  TMaxxRuralComponentFontInstaller.InstallInter;
+  TDACComponentFontInstaller.InstallInter;
 
 finalization
-  TMaxxRuralComponentFontInstaller.Uninstall;
+  TDACComponentFontInstaller.Uninstall;
 
 end.
+

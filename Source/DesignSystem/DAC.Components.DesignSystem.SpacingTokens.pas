@@ -1,9 +1,9 @@
-unit MaxxRural.Components.DesignSystem.SpacingTokens;
+unit DAC.Components.DesignSystem.SpacingTokens;
 
 interface
 
 type
-  TMaxxRuralSpacingTokens = record
+  TDACSpacingTokens = record
     S4: Single;
     S8: Single;
     S12: Single;
@@ -13,12 +13,12 @@ type
     S40: Single;
     S48: Single;
     S64: Single;
-    class function Default: TMaxxRuralSpacingTokens; static;
+    class function Default: TDACSpacingTokens; static;
   end;
 
 implementation
 
-class function TMaxxRuralSpacingTokens.Default: TMaxxRuralSpacingTokens;
+class function TDACSpacingTokens.Default: TDACSpacingTokens;
 begin
   Result.S4 := 4;
   Result.S8 := 8;
@@ -32,3 +32,4 @@ begin
 end;
 
 end.
+

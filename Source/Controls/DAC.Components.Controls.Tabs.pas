@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.Tabs;
+unit DAC.Components.Controls.Tabs;
 
 interface
 
@@ -12,24 +12,24 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
-  MaxxRural.Components.Controls.SystemText,
-  MaxxRural.Components.DesignSystem.Fonts,
-  MaxxRural.Components.Skia.BackgroundPainter,
-  MaxxRural.Components.Skia.BorderPainter,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.Controls.SystemText,
+  DAC.Components.DesignSystem.Fonts,
+  DAC.Components.Skia.BackgroundPainter,
+  DAC.Components.Skia.BorderPainter,
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralTabOrientation = (
+  TDACTabOrientation = (
     mtoHorizontal,
     mtoVertical
   );
 
-  TMaxxRuralTabAppearance = (
+  TDACTabAppearance = (
     mtaUnderline,
     mtaPills
   );
 
-  TMaxxRuralTabItem = class(TCollectionItem)
+  TDACTabItem = class(TCollectionItem)
   private
     FCaption: string;
     FEnabled: Boolean;
@@ -42,37 +42,37 @@ type
     property Enabled: Boolean read FEnabled write SetEnabled default True;
   end;
 
-  TMaxxRuralTabs = class;
+  TDACTabs = class;
 
-  TMaxxRuralTabItems = class(TCollection)
+  TDACTabItems = class(TCollection)
   private
     FOwner: TPersistent;
-    function GetItem(const AIndex: Integer): TMaxxRuralTabItem;
-    procedure SetItem(const AIndex: Integer; const AValue: TMaxxRuralTabItem);
+    function GetItem(const AIndex: Integer): TDACTabItem;
+    procedure SetItem(const AIndex: Integer; const AValue: TDACTabItem);
   protected
     function GetOwner: TPersistent; override;
     procedure Update(Item: TCollectionItem); override;
   public
     constructor Create(const AOwner: TPersistent);
-    function Add: TMaxxRuralTabItem;
-    property Items[const AIndex: Integer]: TMaxxRuralTabItem read GetItem write SetItem; default;
+    function Add: TDACTabItem;
+    property Items[const AIndex: Integer]: TDACTabItem read GetItem write SetItem; default;
   end;
 
-  TMaxxRuralTabs = class(TCustomControl)
+  TDACTabs = class(TCustomControl)
   private
     FActiveIndex: Integer;
-    FAppearance: TMaxxRuralTabAppearance;
-    FBackgroundPainter: TMaxxRuralSkiaBackgroundPainter;
-    FBorderPainter: TMaxxRuralSkiaBorderPainter;
+    FAppearance: TDACTabAppearance;
+    FBackgroundPainter: TDACSkiaBackgroundPainter;
+    FBorderPainter: TDACSkiaBorderPainter;
     FContentColor: TAlphaColor;
     FCornerRadius: Integer;
     FHotIndex: Integer;
-    FItems: TMaxxRuralTabItems;
-    FLabels: TObjectList<TMaxxRuralSystemText>;
-    FOrientation: TMaxxRuralTabOrientation;
+    FItems: TDACTabItems;
+    FLabels: TObjectList<TDACSystemText>;
+    FOrientation: TDACTabOrientation;
     FPaintBox: TSkPaintBox;
     FPressedIndex: Integer;
-    FRenderer: TMaxxRuralSkiaRenderer;
+    FRenderer: TDACSkiaRenderer;
     FShowContentBorder: Boolean;
     FTabHeight: Integer;
     FTabWidth: Integer;
@@ -114,11 +114,11 @@ type
     procedure ResetToFirstTab;
     procedure SelectTab(const AIndex: Integer; const ANotify: Boolean = True);
     procedure SetActiveIndex(const AValue: Integer);
-    procedure SetAppearance(const AValue: TMaxxRuralTabAppearance);
+    procedure SetAppearance(const AValue: TDACTabAppearance);
     procedure SetContentColor(const AValue: TAlphaColor);
     procedure SetCornerRadius(const AValue: Integer);
-    procedure SetItems(const AValue: TMaxxRuralTabItems);
-    procedure SetOrientation(const AValue: TMaxxRuralTabOrientation);
+    procedure SetItems(const AValue: TDACTabItems);
+    procedure SetOrientation(const AValue: TDACTabOrientation);
     procedure SetShowContentBorder(const AValue: Boolean);
     procedure SetTabHeight(const AValue: Integer);
     procedure SetTabWidth(const AValue: Integer);
@@ -151,14 +151,14 @@ type
     property ActiveIndex: Integer read FActiveIndex write SetActiveIndex default 0;
     property Align;
     property Anchors;
-    property Appearance: TMaxxRuralTabAppearance read FAppearance write SetAppearance default mtaUnderline;
+    property Appearance: TDACTabAppearance read FAppearance write SetAppearance default mtaUnderline;
     property Constraints;
     property ContentColor: TAlphaColor read FContentColor write SetContentColor;
     property CornerRadius: Integer read FCornerRadius write SetCornerRadius default 8;
     property Enabled;
     property Font;
-    property Items: TMaxxRuralTabItems read FItems write SetItems;
-    property Orientation: TMaxxRuralTabOrientation read FOrientation write SetOrientation default mtoHorizontal;
+    property Items: TDACTabItems read FItems write SetItems;
+    property Orientation: TDACTabOrientation read FOrientation write SetOrientation default mtoHorizontal;
     property ParentFont;
     property ParentShowHint;
     property PopupMenu;
@@ -186,7 +186,7 @@ type
 implementation
 
 uses
-  MaxxRural.Components.DesignSystem.ColorTokens,
+  DAC.Components.DesignSystem.ColorTokens,
   System.Math,
   System.TypInfo,
   Winapi.Windows;
@@ -223,14 +223,14 @@ begin
   SetOrdProp(AObject, LPropInfo, AValue);
 end;
 
-constructor TMaxxRuralTabItem.Create(Collection: TCollection);
+constructor TDACTabItem.Create(Collection: TCollection);
 begin
   inherited Create(Collection);
   FEnabled := True;
   FCaption := 'Aba';
 end;
 
-procedure TMaxxRuralTabItem.SetCaption(const AValue: string);
+procedure TDACTabItem.SetCaption(const AValue: string);
 begin
   if FCaption = AValue then
     Exit;
@@ -238,7 +238,7 @@ begin
   Changed(False);
 end;
 
-procedure TMaxxRuralTabItem.SetEnabled(const AValue: Boolean);
+procedure TDACTabItem.SetEnabled(const AValue: Boolean);
 begin
   if FEnabled = AValue then
     Exit;
@@ -246,41 +246,41 @@ begin
   Changed(False);
 end;
 
-constructor TMaxxRuralTabItems.Create(const AOwner: TPersistent);
+constructor TDACTabItems.Create(const AOwner: TPersistent);
 begin
-  inherited Create(TMaxxRuralTabItem);
+  inherited Create(TDACTabItem);
   FOwner := AOwner;
 end;
 
-function TMaxxRuralTabItems.Add: TMaxxRuralTabItem;
+function TDACTabItems.Add: TDACTabItem;
 begin
-  Result := TMaxxRuralTabItem(inherited Add);
+  Result := TDACTabItem(inherited Add);
 end;
 
-function TMaxxRuralTabItems.GetItem(const AIndex: Integer): TMaxxRuralTabItem;
+function TDACTabItems.GetItem(const AIndex: Integer): TDACTabItem;
 begin
-  Result := TMaxxRuralTabItem(inherited GetItem(AIndex));
+  Result := TDACTabItem(inherited GetItem(AIndex));
 end;
 
-function TMaxxRuralTabItems.GetOwner: TPersistent;
+function TDACTabItems.GetOwner: TPersistent;
 begin
   Result := FOwner;
 end;
 
-procedure TMaxxRuralTabItems.SetItem(const AIndex: Integer;
-  const AValue: TMaxxRuralTabItem);
+procedure TDACTabItems.SetItem(const AIndex: Integer;
+  const AValue: TDACTabItem);
 begin
   inherited SetItem(AIndex, AValue);
 end;
 
-procedure TMaxxRuralTabItems.Update(Item: TCollectionItem);
+procedure TDACTabItems.Update(Item: TCollectionItem);
 begin
   inherited;
-  if FOwner is TMaxxRuralTabs then
-    TMaxxRuralTabs(FOwner).ItemsChanged;
+  if FOwner is TDACTabs then
+    TDACTabs(FOwner).ItemsChanged;
 end;
 
-constructor TMaxxRuralTabs.Create(AOwner: TComponent);
+constructor TDACTabs.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csAcceptsControls, csOpaque, csClickEvents, csCaptureMouse];
@@ -294,7 +294,7 @@ begin
 
   FActiveIndex := 0;
   FAppearance := mtaUnderline;
-  FContentColor := TMaxxRuralComponentColors.White;
+  FContentColor := TDACComponentColors.White;
   FCornerRadius := 8;
   FHotIndex := -1;
   FOrientation := mtoHorizontal;
@@ -303,11 +303,11 @@ begin
   FTabHeight := 42;
   FTabWidth := 128;
 
-  FItems := TMaxxRuralTabItems.Create(Self);
-  FLabels := TObjectList<TMaxxRuralSystemText>.Create(False);
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
-  FBackgroundPainter := TMaxxRuralSkiaBackgroundPainter.Create(FRenderer);
-  FBorderPainter := TMaxxRuralSkiaBorderPainter.Create(FRenderer);
+  FItems := TDACTabItems.Create(Self);
+  FLabels := TObjectList<TDACSystemText>.Create(False);
+  FRenderer := TDACSkiaRenderer.Create;
+  FBackgroundPainter := TDACSkiaBackgroundPainter.Create(FRenderer);
+  FBorderPainter := TDACSkiaBorderPainter.Create(FRenderer);
 
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
@@ -332,7 +332,7 @@ begin
   UpdateLabels;
 end;
 
-destructor TMaxxRuralTabs.Destroy;
+destructor TDACTabs.Destroy;
 begin
   FLabels.Free;
   FItems.Free;
@@ -343,7 +343,7 @@ begin
   inherited;
 end;
 
-procedure TMaxxRuralTabs.ApplyContentSurfaceToChild(const AControl: TControl);
+procedure TDACTabs.ApplyContentSurfaceToChild(const AControl: TControl);
 var
   LColor: TColor;
 begin
@@ -351,17 +351,17 @@ begin
     Exit;
   if AControl = FPaintBox then
     Exit;
-  if (FLabels <> nil) and (AControl is TMaxxRuralSystemText) and
-    FLabels.Contains(TMaxxRuralSystemText(AControl)) then
+  if (FLabels <> nil) and (AControl is TDACSystemText) and
+    FLabels.Contains(TDACSystemText(AControl)) then
     Exit;
 
-  LColor := TMaxxRuralComponentColors.ToVclColor(FContentColor);
+  LColor := TDACComponentColors.ToVclColor(FContentColor);
   SetPublishedOrdProperty(AControl, 'ParentColor', Ord(False));
   SetPublishedOrdProperty(AControl, 'Color', LColor);
   RemovePublishedClientStyleElement(AControl);
 end;
 
-procedure TMaxxRuralTabs.AdjustClientRect(var Rect: TRect);
+procedure TDACTabs.AdjustClientRect(var Rect: TRect);
 var
   LOffset: Integer;
 begin
@@ -379,7 +379,7 @@ begin
     Rect.Bottom := Rect.Top;
 end;
 
-procedure TMaxxRuralTabs.ChangeScale(M, D: Integer);
+procedure TDACTabs.ChangeScale(M, D: Integer);
 begin
   inherited;
   UpdateInternalBounds;
@@ -387,14 +387,14 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralTabs.CMControlListChange(var AMessage: TCMControlListChange);
+procedure TDACTabs.CMControlListChange(var AMessage: TCMControlListChange);
 begin
   inherited;
   if AMessage.Inserting then
     ApplyContentSurfaceToChild(AMessage.Control);
 end;
 
-procedure TMaxxRuralTabs.CMMouseLeave(var AMessage: TMessage);
+procedure TDACTabs.CMMouseLeave(var AMessage: TMessage);
 begin
   inherited;
   if not MouseCapture then
@@ -406,13 +406,13 @@ begin
   end;
 end;
 
-procedure TMaxxRuralTabs.CMTextChanged(var AMessage: TMessage);
+procedure TDACTabs.CMTextChanged(var AMessage: TMessage);
 begin
   inherited;
   UpdateLabels;
 end;
 
-function TMaxxRuralTabs.ContentChromeRect(const AWidth, AHeight: Single): TRectF;
+function TDACTabs.ContentChromeRect(const AWidth, AHeight: Single): TRectF;
 var
   LOffset: Single;
 begin
@@ -423,7 +423,7 @@ begin
     Result := TRectF.Create(LOffset, 0, AWidth, AHeight);
 end;
 
-function TMaxxRuralTabs.ContentOffset: Integer;
+function TDACTabs.ContentOffset: Integer;
 begin
   if FOrientation = mtoHorizontal then
     Result := ScaleMetric(FTabHeight)
@@ -431,7 +431,7 @@ begin
     Result := ScaleMetric(FTabWidth);
 end;
 
-function TMaxxRuralTabs.CursorInside: Boolean;
+function TDACTabs.CursorInside: Boolean;
 var
   LPoint: TPoint;
 begin
@@ -444,7 +444,7 @@ begin
   Result := PtInRect(Rect(0, 0, Width, Height), LPoint);
 end;
 
-procedure TMaxxRuralTabs.CreateWnd;
+procedure TDACTabs.CreateWnd;
 begin
   inherited;
   NormalizeContentChildren;
@@ -454,11 +454,11 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralTabs.DrawPillTab(const ACanvas: ISkCanvas;
+procedure TDACTabs.DrawPillTab(const ACanvas: ISkCanvas;
   const ARect: TRectF; const ASelected, AHot, APressed, AEnabled: Boolean);
 var
-  LBackground: TMaxxRuralBackgroundStyle;
-  LBorder: TMaxxRuralBorderStyle;
+  LBackground: TDACBackgroundStyle;
+  LBorder: TDACBorderStyle;
   LRect: TRectF;
 begin
   LRect := ARect;
@@ -466,30 +466,30 @@ begin
 
   LBackground.Radius := FCornerRadius;
   LBackground.Alpha := 255;
-  LBorder.Color := TMaxxRuralComponentColors.ControlBorder;
+  LBorder.Color := TDACComponentColors.ControlBorder;
   LBorder.Radius := FCornerRadius;
   LBorder.Width := 1;
   LBorder.Alpha := 255;
 
   if ASelected then
   begin
-    LBackground.Color := TMaxxRuralComponentColors.Primary;
-    LBorder.Color := TMaxxRuralComponentColors.Primary;
+    LBackground.Color := TDACComponentColors.Primary;
+    LBorder.Color := TDACComponentColors.Primary;
   end
   else
   begin
-    LBackground.Color := TMaxxRuralComponentColors.White;
+    LBackground.Color := TDACComponentColors.White;
     if AHot then
     begin
-      LBackground.Color := TMaxxRuralComponentColors.PrimaryDark;
+      LBackground.Color := TDACComponentColors.PrimaryDark;
       LBackground.Alpha := 18;
-      LBorder.Color := TMaxxRuralComponentColors.PrimaryLight;
+      LBorder.Color := TDACComponentColors.PrimaryLight;
     end;
   end;
 
   if APressed and not ASelected then
   begin
-    LBackground.Color := TMaxxRuralComponentColors.PrimaryDark;
+    LBackground.Color := TDACComponentColors.PrimaryDark;
     LBackground.Alpha := 34;
   end;
   if not AEnabled then
@@ -499,7 +499,7 @@ begin
   FBorderPainter.Draw(ACanvas, LRect, LBorder);
 end;
 
-procedure TMaxxRuralTabs.DrawUnderlineTab(const ACanvas: ISkCanvas;
+procedure TDACTabs.DrawUnderlineTab(const ACanvas: ISkCanvas;
   const ARect: TRectF; const ASelected, AHot, APressed, AEnabled: Boolean);
 var
   LHoverIndicator: TRectF;
@@ -517,7 +517,7 @@ begin
       LIndicator := TRectF.Create(ARect.Left, ARect.Top + ScaleMetric(8),
         ARect.Left + ScaleMetric(4), ARect.Bottom - ScaleMetric(8));
 
-    FRenderer.FillRoundRect(ACanvas, LIndicator, TMaxxRuralComponentColors.PrimaryDark,
+    FRenderer.FillRoundRect(ACanvas, LIndicator, TDACComponentColors.PrimaryDark,
       LRadius, 255);
     Exit;
   end;
@@ -533,20 +533,20 @@ begin
       ARect.Left + ScaleMetric(3), ARect.Bottom - ScaleMetric(12));
 
   if APressed then
-    FRenderer.FillRoundRect(ACanvas, LHoverIndicator, TMaxxRuralComponentColors.PrimaryDark,
+    FRenderer.FillRoundRect(ACanvas, LHoverIndicator, TDACComponentColors.PrimaryDark,
       LRadius, 160)
   else
-    FRenderer.FillRoundRect(ACanvas, LHoverIndicator, TMaxxRuralComponentColors.PrimaryLight,
+    FRenderer.FillRoundRect(ACanvas, LHoverIndicator, TDACComponentColors.PrimaryLight,
       LRadius, 130);
 end;
 
-procedure TMaxxRuralTabs.EnsureLabels;
+procedure TDACTabs.EnsureLabels;
 var
-  LLabel: TMaxxRuralSystemText;
+  LLabel: TDACSystemText;
 begin
   while FLabels.Count < FItems.Count do
   begin
-    LLabel := TMaxxRuralSystemText.Create(Self);
+    LLabel := TDACSystemText.Create(Self);
     LLabel.Parent := Self;
     LLabel.SetSubComponent(True);
     LLabel.Cursor := crHandPoint;
@@ -566,7 +566,7 @@ begin
   end;
 end;
 
-function TMaxxRuralTabs.FirstEnabledTabIndex: Integer;
+function TDACTabs.FirstEnabledTabIndex: Integer;
 var
   I: Integer;
 begin
@@ -578,7 +578,7 @@ begin
   end;
 end;
 
-function TMaxxRuralTabs.HitTestTab(const X, Y: Integer): Integer;
+function TDACTabs.HitTestTab(const X, Y: Integer): Integer;
 var
   I: Integer;
 begin
@@ -590,14 +590,14 @@ begin
   end;
 end;
 
-procedure TMaxxRuralTabs.InvalidateTabs;
+procedure TDACTabs.InvalidateTabs;
 begin
   UpdateInternalBounds;
   UpdateLabels;
   Redraw;
 end;
 
-procedure TMaxxRuralTabs.ItemsChanged;
+procedure TDACTabs.ItemsChanged;
 begin
   if FItems.Count = 0 then
     FActiveIndex := -1
@@ -612,7 +612,7 @@ begin
   Realign;
 end;
 
-procedure TMaxxRuralTabs.KeyDown(var Key: Word; Shift: TShiftState);
+procedure TDACTabs.KeyDown(var Key: Word; Shift: TShiftState);
 var
   LNext: Integer;
 begin
@@ -647,54 +647,54 @@ begin
   end;
 end;
 
-procedure TMaxxRuralTabs.LabelMouseDown(Sender: TObject; Button: TMouseButton;
+procedure TDACTabs.LabelMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
   LIndex: Integer;
 begin
-  if Sender is TMaxxRuralSystemText then
+  if Sender is TDACSystemText then
   begin
-    LIndex := TMaxxRuralSystemText(Sender).Tag;
+    LIndex := TDACSystemText(Sender).Tag;
     MouseDown(Button, Shift, TabRect(LIndex).Left + X, TabRect(LIndex).Top + Y);
   end;
 end;
 
-procedure TMaxxRuralTabs.LabelMouseEnter(Sender: TObject);
+procedure TDACTabs.LabelMouseEnter(Sender: TObject);
 begin
   PaintBoxMouseEnter(Sender);
 end;
 
-procedure TMaxxRuralTabs.LabelMouseLeave(Sender: TObject);
+procedure TDACTabs.LabelMouseLeave(Sender: TObject);
 begin
   if not CursorInside then
     PaintBoxMouseLeave(Sender);
 end;
 
-procedure TMaxxRuralTabs.LabelMouseMove(Sender: TObject; Shift: TShiftState;
+procedure TDACTabs.LabelMouseMove(Sender: TObject; Shift: TShiftState;
   X, Y: Integer);
 var
   LIndex: Integer;
 begin
-  if Sender is TMaxxRuralSystemText then
+  if Sender is TDACSystemText then
   begin
-    LIndex := TMaxxRuralSystemText(Sender).Tag;
+    LIndex := TDACSystemText(Sender).Tag;
     MouseMove(Shift, TabRect(LIndex).Left + X, TabRect(LIndex).Top + Y);
   end;
 end;
 
-procedure TMaxxRuralTabs.LabelMouseUp(Sender: TObject; Button: TMouseButton;
+procedure TDACTabs.LabelMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
   LIndex: Integer;
 begin
-  if Sender is TMaxxRuralSystemText then
+  if Sender is TDACSystemText then
   begin
-    LIndex := TMaxxRuralSystemText(Sender).Tag;
+    LIndex := TDACSystemText(Sender).Tag;
     MouseUp(Button, Shift, TabRect(LIndex).Left + X, TabRect(LIndex).Top + Y);
   end;
 end;
 
-procedure TMaxxRuralTabs.Loaded;
+procedure TDACTabs.Loaded;
 begin
   inherited;
   ResetToFirstTab;
@@ -705,7 +705,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralTabs.MouseDown(Button: TMouseButton; Shift: TShiftState;
+procedure TDACTabs.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 var
   LIndex: Integer;
@@ -725,7 +725,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralTabs.MouseMove(Shift: TShiftState; X, Y: Integer);
+procedure TDACTabs.MouseMove(Shift: TShiftState; X, Y: Integer);
 var
   LIndex: Integer;
 begin
@@ -739,7 +739,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralTabs.MouseUp(Button: TMouseButton; Shift: TShiftState;
+procedure TDACTabs.MouseUp(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 var
   LIndex: Integer;
@@ -761,11 +761,11 @@ begin
     Redraw;
 end;
 
-procedure TMaxxRuralTabs.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
+procedure TDACTabs.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
   const ADest: TRectF; const AOpacity: Single);
 var
-  LBackground: TMaxxRuralBackgroundStyle;
-  LBorder: TMaxxRuralBorderStyle;
+  LBackground: TDACBackgroundStyle;
+  LBorder: TDACBorderStyle;
   LContentRect: TRectF;
   LLineRect: TRectF;
   LScale: Single;
@@ -785,7 +785,7 @@ begin
 
   if FShowContentBorder then
   begin
-    LBorder.Color := TMaxxRuralComponentColors.ControlBorder;
+    LBorder.Color := TDACComponentColors.ControlBorder;
     LBorder.Radius := FCornerRadius;
     LBorder.Width := 1;
     LBorder.Alpha := 255;
@@ -801,7 +801,7 @@ begin
       LLineRect := TRectF.Create(0, ContentOffset - 1, ADest.Width, ContentOffset)
     else
       LLineRect := TRectF.Create(ContentOffset - 1, 0, ContentOffset, ADest.Height);
-    FRenderer.FillRoundRect(ACanvas, LLineRect, TMaxxRuralComponentColors.ControlBorder,
+    FRenderer.FillRoundRect(ACanvas, LLineRect, TDACComponentColors.ControlBorder,
       0, 255);
   end;
 
@@ -817,18 +817,18 @@ begin
   end;
 end;
 
-procedure TMaxxRuralTabs.PaintBoxMouseDown(Sender: TObject; Button: TMouseButton;
+procedure TDACTabs.PaintBoxMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   MouseDown(Button, Shift, X, Y);
 end;
 
-procedure TMaxxRuralTabs.PaintBoxMouseEnter(Sender: TObject);
+procedure TDACTabs.PaintBoxMouseEnter(Sender: TObject);
 begin
   UpdateCursor;
 end;
 
-procedure TMaxxRuralTabs.PaintBoxMouseLeave(Sender: TObject);
+procedure TDACTabs.PaintBoxMouseLeave(Sender: TObject);
 begin
   if not MouseCapture and not CursorInside then
   begin
@@ -839,19 +839,19 @@ begin
   end;
 end;
 
-procedure TMaxxRuralTabs.PaintBoxMouseMove(Sender: TObject; Shift: TShiftState;
+procedure TDACTabs.PaintBoxMouseMove(Sender: TObject; Shift: TShiftState;
   X, Y: Integer);
 begin
   MouseMove(Shift, X, Y);
 end;
 
-procedure TMaxxRuralTabs.PaintBoxMouseUp(Sender: TObject; Button: TMouseButton;
+procedure TDACTabs.PaintBoxMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   MouseUp(Button, Shift, X, Y);
 end;
 
-procedure TMaxxRuralTabs.NormalizeContentChildren;
+procedure TDACTabs.NormalizeContentChildren;
 var
   I: Integer;
 begin
@@ -859,25 +859,25 @@ begin
     ApplyContentSurfaceToChild(Controls[I]);
 end;
 
-procedure TMaxxRuralTabs.ResetToFirstTab;
+procedure TDACTabs.ResetToFirstTab;
 begin
   FActiveIndex := FirstEnabledTabIndex;
   FHotIndex := -1;
   FPressedIndex := -1;
 end;
 
-function TMaxxRuralTabs.ParentSurfaceColor: TAlphaColor;
+function TDACTabs.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TMaxxRuralComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
-procedure TMaxxRuralTabs.Redraw;
+procedure TDACTabs.Redraw;
 begin
   if (FPaintBox <> nil) and HandleAllocated then
     FPaintBox.Redraw;
 end;
 
-procedure TMaxxRuralTabs.Resize;
+procedure TDACTabs.Resize;
 begin
   inherited;
   UpdateInternalBounds;
@@ -885,7 +885,7 @@ begin
   Redraw;
 end;
 
-function TMaxxRuralTabs.ScaleFactor: Single;
+function TDACTabs.ScaleFactor: Single;
 begin
   Result := 1;
   if FPaintBox <> nil then
@@ -894,14 +894,14 @@ begin
     Result := 1;
 end;
 
-function TMaxxRuralTabs.ScaleMetric(const AValue: Integer): Integer;
+function TDACTabs.ScaleMetric(const AValue: Integer): Integer;
 begin
   Result := Round(AValue * ScaleFactor);
   if (AValue > 0) and (Result < 1) then
     Result := 1;
 end;
 
-procedure TMaxxRuralTabs.SelectTab(const AIndex: Integer; const ANotify: Boolean);
+procedure TDACTabs.SelectTab(const AIndex: Integer; const ANotify: Boolean);
 begin
   if (AIndex < -1) or (AIndex >= FItems.Count) then
     Exit;
@@ -918,7 +918,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralTabs.SetActiveIndex(const AValue: Integer);
+procedure TDACTabs.SetActiveIndex(const AValue: Integer);
 begin
   if FItems.Count = 0 then
     SelectTab(-1, False)
@@ -926,7 +926,7 @@ begin
     SelectTab(Max(-1, Min(AValue, FItems.Count - 1)), False);
 end;
 
-procedure TMaxxRuralTabs.SetAppearance(const AValue: TMaxxRuralTabAppearance);
+procedure TDACTabs.SetAppearance(const AValue: TDACTabAppearance);
 begin
   if FAppearance = AValue then
     Exit;
@@ -934,11 +934,11 @@ begin
   InvalidateTabs;
 end;
 
-procedure TMaxxRuralTabs.SetContentColor(const AValue: TAlphaColor);
+procedure TDACTabs.SetContentColor(const AValue: TAlphaColor);
 var
   LValue: TAlphaColor;
 begin
-  LValue := TMaxxRuralComponentColors.Normalize(AValue);
+  LValue := TDACComponentColors.Normalize(AValue);
   if FContentColor = LValue then
     Exit;
 
@@ -947,7 +947,7 @@ begin
   InvalidateTabs;
 end;
 
-procedure TMaxxRuralTabs.SetCornerRadius(const AValue: Integer);
+procedure TDACTabs.SetCornerRadius(const AValue: Integer);
 begin
   if FCornerRadius = AValue then
     Exit;
@@ -955,13 +955,13 @@ begin
   InvalidateTabs;
 end;
 
-procedure TMaxxRuralTabs.SetItems(const AValue: TMaxxRuralTabItems);
+procedure TDACTabs.SetItems(const AValue: TDACTabItems);
 begin
   FItems.Assign(AValue);
   ItemsChanged;
 end;
 
-procedure TMaxxRuralTabs.SetOrientation(const AValue: TMaxxRuralTabOrientation);
+procedure TDACTabs.SetOrientation(const AValue: TDACTabOrientation);
 begin
   if FOrientation = AValue then
     Exit;
@@ -970,7 +970,7 @@ begin
   InvalidateTabs;
 end;
 
-procedure TMaxxRuralTabs.SetShowContentBorder(const AValue: Boolean);
+procedure TDACTabs.SetShowContentBorder(const AValue: Boolean);
 begin
   if FShowContentBorder = AValue then
     Exit;
@@ -978,7 +978,7 @@ begin
   InvalidateTabs;
 end;
 
-procedure TMaxxRuralTabs.SetTabHeight(const AValue: Integer);
+procedure TDACTabs.SetTabHeight(const AValue: Integer);
 begin
   if FTabHeight = AValue then
     Exit;
@@ -987,7 +987,7 @@ begin
   InvalidateTabs;
 end;
 
-procedure TMaxxRuralTabs.SetTabWidth(const AValue: Integer);
+procedure TDACTabs.SetTabWidth(const AValue: Integer);
 begin
   if FTabWidth = AValue then
     Exit;
@@ -996,7 +996,7 @@ begin
   InvalidateTabs;
 end;
 
-function TMaxxRuralTabs.TabRect(const AIndex: Integer): TRect;
+function TDACTabs.TabRect(const AIndex: Integer): TRect;
 var
   LHeight: Integer;
   LWidth: Integer;
@@ -1015,7 +1015,7 @@ begin
   end;
 end;
 
-function TMaxxRuralTabs.TabRectF(const AIndex: Integer): TRectF;
+function TDACTabs.TabRectF(const AIndex: Integer): TRectF;
 var
   LRect: TRect;
 begin
@@ -1023,34 +1023,34 @@ begin
   Result := TRectF.Create(LRect.Left, LRect.Top, LRect.Right, LRect.Bottom);
 end;
 
-function TMaxxRuralTabs.TabTextColor(const AIndex: Integer): TAlphaColor;
+function TDACTabs.TabTextColor(const AIndex: Integer): TAlphaColor;
 begin
   if not Enabled or not FItems[AIndex].Enabled then
-    Exit(TMaxxRuralComponentColors.ControlTextDisabled);
+    Exit(TDACComponentColors.ControlTextDisabled);
 
   if FAppearance = mtaPills then
   begin
     if AIndex = FActiveIndex then
-      Exit(TMaxxRuralComponentColors.White);
+      Exit(TDACComponentColors.White);
     if AIndex = FHotIndex then
-      Exit(TMaxxRuralComponentColors.PrimaryDark);
-    Exit(TMaxxRuralComponentColors.ControlText);
+      Exit(TDACComponentColors.PrimaryDark);
+    Exit(TDACComponentColors.ControlText);
   end;
 
   if AIndex = FActiveIndex then
-    Result := TMaxxRuralComponentColors.PrimaryDark
+    Result := TDACComponentColors.PrimaryDark
   else if AIndex = FHotIndex then
-    Result := TMaxxRuralComponentColors.Primary
+    Result := TDACComponentColors.Primary
   else
-    Result := TMaxxRuralComponentColors.Alpha(70, 82, 78);
+    Result := TDACComponentColors.Alpha(70, 82, 78);
 end;
 
-function TMaxxRuralTabs.TabTextBold(const AIndex: Integer): Boolean;
+function TDACTabs.TabTextBold(const AIndex: Integer): Boolean;
 begin
   Result := AIndex = FActiveIndex;
 end;
 
-procedure TMaxxRuralTabs.UpdateCursor;
+procedure TDACTabs.UpdateCursor;
 var
   LCursor: TCursor;
 begin
@@ -1063,7 +1063,7 @@ begin
     FPaintBox.Cursor := LCursor;
 end;
 
-procedure TMaxxRuralTabs.UpdateInternalBounds;
+procedure TDACTabs.UpdateInternalBounds;
 var
   LHeight: Integer;
   LWidth: Integer;
@@ -1087,7 +1087,7 @@ begin
     FPaintBox.SetBounds(0, 0, LWidth, LHeight);
 end;
 
-procedure TMaxxRuralTabs.UpdateInternalZOrder;
+procedure TDACTabs.UpdateInternalZOrder;
 begin
   if (csLoading in ComponentState) or (csDestroying in ComponentState) then
     Exit;
@@ -1102,12 +1102,12 @@ begin
   FPaintBox.SendToBack;
 end;
 
-procedure TMaxxRuralTabs.UpdateLabels;
+procedure TDACTabs.UpdateLabels;
 var
   I: Integer;
   LCursor: TCursor;
   LInset: Integer;
-  LLabel: TMaxxRuralSystemText;
+  LLabel: TDACSystemText;
   LRect: TRect;
 begin
   if (FLabels = nil) or (FItems = nil) then
@@ -1141,7 +1141,7 @@ begin
         LLabel.SetBounds(LRect.Left + LInset, LRect.Top,
           Max(0, LRect.Width - (LInset * 2)), LRect.Height);
       LLabel.Text := FItems[I].Caption;
-      LLabel.FontFamily := TMaxxRuralComponentFontInstaller.FontFamily;
+      LLabel.FontFamily := TDACComponentFontInstaller.FontFamily;
       LLabel.FontSize := 9;
       LLabel.Bold := TabTextBold(I);
       LLabel.TextColor := TabTextColor(I);
@@ -1154,9 +1154,10 @@ begin
   end;
 end;
 
-procedure TMaxxRuralTabs.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACTabs.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
 end.
+

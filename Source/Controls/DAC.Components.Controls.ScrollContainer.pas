@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.ScrollContainer;
+unit DAC.Components.Controls.ScrollContainer;
 
 interface
 
@@ -12,10 +12,10 @@ uses
   Vcl.Forms,
   Vcl.Graphics,
   Vcl.Skia,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralScrollBarMode = (
+  TDACScrollBarMode = (
     msbmAuto,
     msbmVertical,
     msbmHorizontal,
@@ -23,14 +23,14 @@ type
     msbmNone
   );
 
-  TMaxxRuralScrollContainer = class(TScrollBox)
+  TDACScrollContainer = class(TScrollBox)
   private
     FBackgroundColor: TAlphaColor;
     FBorderColor: TAlphaColor;
     FCornerRadius: Integer;
     FPaintBox: TSkPaintBox;
-    FRenderer: TMaxxRuralSkiaRenderer;
-    FScrollBarMode: TMaxxRuralScrollBarMode;
+    FRenderer: TDACSkiaRenderer;
+    FScrollBarMode: TDACScrollBarMode;
     function ParentSurfaceColor: TAlphaColor;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
@@ -38,7 +38,7 @@ type
     procedure SetBackgroundColor(const AValue: TAlphaColor);
     procedure SetBorderColor(const AValue: TAlphaColor);
     procedure SetCornerRadius(const AValue: Integer);
-    procedure SetScrollBarMode(const AValue: TMaxxRuralScrollBarMode);
+    procedure SetScrollBarMode(const AValue: TDACScrollBarMode);
     procedure UpdateChromeBounds;
     procedure UpdateScrollBars;
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
@@ -65,7 +65,7 @@ type
     property ParentFont;
     property ParentShowHint;
     property PopupMenu;
-    property ScrollBarMode: TMaxxRuralScrollBarMode read FScrollBarMode write SetScrollBarMode default msbmAuto;
+    property ScrollBarMode: TDACScrollBarMode read FScrollBarMode write SetScrollBarMode default msbmAuto;
     property ShowHint;
     property TabOrder;
     property TabStop default True;
@@ -76,9 +76,9 @@ implementation
 
 uses
   System.Math,
-  MaxxRural.Components.DesignSystem.ColorTokens;
+  DAC.Components.DesignSystem.ColorTokens;
 
-constructor TMaxxRuralScrollContainer.Create(AOwner: TComponent);
+constructor TDACScrollContainer.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csAcceptsControls, csOpaque];
@@ -90,11 +90,11 @@ begin
   TabStop := True;
   StyleElements := [];
 
-  FBackgroundColor := TMaxxRuralComponentColors.White;
-  FBorderColor := TMaxxRuralComponentColors.ControlBorder;
+  FBackgroundColor := TDACComponentColors.White;
+  FBorderColor := TDACComponentColors.ControlBorder;
   FCornerRadius := 8;
   FScrollBarMode := msbmAuto;
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
+  FRenderer := TDACSkiaRenderer.Create;
 
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
@@ -103,28 +103,20 @@ begin
   FPaintBox.OnDraw := PaintBoxDraw;
 end;
 
-destructor TMaxxRuralScrollContainer.Destroy;
+destructor TDACScrollContainer.Destroy;
 begin
   FPaintBox.Free;
   FRenderer.Free;
   inherited;
 end;
 
-procedure TMaxxRuralScrollContainer.ChangeScale(M, D: Integer);
+procedure TDACScrollContainer.ChangeScale(M, D: Integer);
 begin
   inherited;
   Redraw;
 end;
 
-procedure TMaxxRuralScrollContainer.CreateWnd;
-begin
-  inherited;
-  UpdateScrollBars;
-  UpdateChromeBounds;
-  Redraw;
-end;
-
-procedure TMaxxRuralScrollContainer.Loaded;
+procedure TDACScrollContainer.CreateWnd;
 begin
   inherited;
   UpdateScrollBars;
@@ -132,7 +124,15 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralScrollContainer.PaintBoxDraw(Sender: TObject;
+procedure TDACScrollContainer.Loaded;
+begin
+  inherited;
+  UpdateScrollBars;
+  UpdateChromeBounds;
+  Redraw;
+end;
+
+procedure TDACScrollContainer.PaintBoxDraw(Sender: TObject;
   const ACanvas: ISkCanvas; const ADest: TRectF; const AOpacity: Single);
 var
   LBackground: TAlphaColor;
@@ -142,7 +142,7 @@ begin
   if FBackgroundColor = TAlphaColor($00000000) then
     LBackground := ParentSurfaceColor
   else
-    LBackground := TMaxxRuralComponentColors.Normalize(FBackgroundColor);
+    LBackground := TDACComponentColors.Normalize(FBackgroundColor);
 
   LScale := 1;
   if FPaintBox <> nil then
@@ -155,20 +155,20 @@ begin
   LRect.Inflate(-0.5, -0.5);
   FRenderer.FillRoundRect(ACanvas, LRect, LBackground, FCornerRadius, 255);
   FRenderer.StrokeRoundRect(ACanvas, LRect,
-    TMaxxRuralComponentColors.Normalize(FBorderColor), FCornerRadius, 1, 255);
+    TDACComponentColors.Normalize(FBorderColor), FCornerRadius, 1, 255);
 end;
 
-function TMaxxRuralScrollContainer.ParentSurfaceColor: TAlphaColor;
+function TDACScrollContainer.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TMaxxRuralComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
-procedure TMaxxRuralScrollContainer.Redraw;
+procedure TDACScrollContainer.Redraw;
 begin
   RedrawChrome;
 end;
 
-procedure TMaxxRuralScrollContainer.RedrawChrome;
+procedure TDACScrollContainer.RedrawChrome;
 begin
   if (FPaintBox <> nil) and not (csDestroying in ComponentState) and
     ((Parent <> nil) or not (csDesigning in ComponentState)) then
@@ -176,14 +176,14 @@ begin
   Invalidate;
 end;
 
-procedure TMaxxRuralScrollContainer.Resize;
+procedure TDACScrollContainer.Resize;
 begin
   inherited;
   UpdateChromeBounds;
   Redraw;
 end;
 
-procedure TMaxxRuralScrollContainer.SetBackgroundColor(const AValue: TAlphaColor);
+procedure TDACScrollContainer.SetBackgroundColor(const AValue: TAlphaColor);
 begin
   if FBackgroundColor = AValue then
     Exit;
@@ -191,7 +191,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralScrollContainer.SetBorderColor(const AValue: TAlphaColor);
+procedure TDACScrollContainer.SetBorderColor(const AValue: TAlphaColor);
 begin
   if FBorderColor = AValue then
     Exit;
@@ -199,7 +199,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralScrollContainer.SetCornerRadius(const AValue: Integer);
+procedure TDACScrollContainer.SetCornerRadius(const AValue: Integer);
 begin
   if FCornerRadius = AValue then
     Exit;
@@ -207,8 +207,8 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralScrollContainer.SetScrollBarMode(
-  const AValue: TMaxxRuralScrollBarMode);
+procedure TDACScrollContainer.SetScrollBarMode(
+  const AValue: TDACScrollBarMode);
 begin
   if FScrollBarMode = AValue then
     Exit;
@@ -216,7 +216,7 @@ begin
   UpdateScrollBars;
 end;
 
-procedure TMaxxRuralScrollContainer.UpdateChromeBounds;
+procedure TDACScrollContainer.UpdateChromeBounds;
 begin
   if FPaintBox = nil then
     Exit;
@@ -227,15 +227,16 @@ begin
   FPaintBox.SendToBack;
 end;
 
-procedure TMaxxRuralScrollContainer.UpdateScrollBars;
+procedure TDACScrollContainer.UpdateScrollBars;
 begin
   HorzScrollBar.Visible := FScrollBarMode in [msbmAuto, msbmHorizontal, msbmBoth];
   VertScrollBar.Visible := FScrollBarMode in [msbmAuto, msbmVertical, msbmBoth];
 end;
 
-procedure TMaxxRuralScrollContainer.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACScrollContainer.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
 end.
+

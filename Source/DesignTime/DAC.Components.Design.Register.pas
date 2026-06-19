@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Design.Register;
+unit DAC.Components.Design.Register;
 
 interface
 
@@ -9,73 +9,74 @@ implementation
 uses
   System.Classes,
   DesignIntf,
-  MaxxRural.Components.Controls.Badges,
-  MaxxRural.Components.Controls.Button,
-  MaxxRural.Components.Controls.ButtonEdit,
-  MaxxRural.Components.Controls.Charts,
-  MaxxRural.Components.Controls.ComboBox,
-  MaxxRural.Components.Controls.Container,
-  MaxxRural.Components.Controls.DataAware,
-  MaxxRural.Components.Controls.DataGrid,
-  MaxxRural.Components.Controls.DateTimePicker,
-  MaxxRural.Components.Controls.Edit,
-  MaxxRural.Components.Controls.Feedback,
-  MaxxRural.Components.Controls.GridContainer,
-  MaxxRural.Components.Controls.Loading,
-  MaxxRural.Components.Controls.Memo,
-  MaxxRural.Components.Controls.Pagination,
-  MaxxRural.Components.Controls.Progress,
-  MaxxRural.Components.Controls.ReportViewer,
-  MaxxRural.Components.Controls.ScrollContainer,
-  MaxxRural.Components.Controls.Selectors,
-  MaxxRural.Components.Controls.StatusBar,
-  MaxxRural.Components.Controls.SummaryCard,
-  MaxxRural.Components.Controls.Tabs;
+  DAC.Components.Controls.Badges,
+  DAC.Components.Controls.Button,
+  DAC.Components.Controls.ButtonEdit,
+  DAC.Components.Controls.Charts,
+  DAC.Components.Controls.ComboBox,
+  DAC.Components.Controls.Container,
+  DAC.Components.Controls.DataAware,
+  DAC.Components.Controls.DataGrid,
+  DAC.Components.Controls.DateTimePicker,
+  DAC.Components.Controls.Edit,
+  DAC.Components.Controls.Feedback,
+  DAC.Components.Controls.GridContainer,
+  DAC.Components.Controls.Loading,
+  DAC.Components.Controls.Memo,
+  DAC.Components.Controls.Pagination,
+  DAC.Components.Controls.Progress,
+  DAC.Components.Controls.ReportViewer,
+  DAC.Components.Controls.ScrollContainer,
+  DAC.Components.Controls.Selectors,
+  DAC.Components.Controls.StatusBar,
+  DAC.Components.Controls.SummaryCard,
+  DAC.Components.Controls.Tabs;
 
 procedure Register;
 begin
-  RegisterComponents('MaxxRural Skia', [
-    TMaxxRuralContainer,
-    TMaxxRuralScrollContainer,
-    TMaxxRuralGridContainer,
-    TMaxxRuralButton,
-    TMaxxRuralEdit,
-    TMaxxRuralButtonEdit,
-    TMaxxRuralDateTimePicker,
-    TMaxxRuralComboBox,
-    TMaxxRuralMemo,
-    TMaxxRuralCheckBox,
-    TMaxxRuralRadioButton,
-    TMaxxRuralToggleSwitch,
-    TMaxxRuralSlider,
-    TMaxxRuralTabs,
-    TMaxxRuralSummaryCard,
-    TMaxxRuralChart,
-    TMaxxRuralBarChart,
-    TMaxxRuralLineChart,
-    TMaxxRuralAreaChart,
-    TMaxxRuralDoughnutChart,
-    TMaxxRuralBadge,
-    TMaxxRuralProgress,
-    TMaxxRuralPagination,
-    TMaxxRuralLoading,
-    TMaxxRuralToast,
-    TMaxxRuralModalDialog,
-    TMaxxRuralStatusBar,
-    TMaxxRuralReportViewer,
-    TMaxxRuralDataGrid
+  RegisterComponents('DAC Skia', [
+    TDACContainer,
+    TDACScrollContainer,
+    TDACGridContainer,
+    TDACButton,
+    TDACEdit,
+    TDACButtonEdit,
+    TDACDateTimePicker,
+    TDACComboBox,
+    TDACMemo,
+    TDACCheckBox,
+    TDACRadioButton,
+    TDACToggleSwitch,
+    TDACSlider,
+    TDACTabs,
+    TDACSummaryCard,
+    TDACChart,
+    TDACBarChart,
+    TDACLineChart,
+    TDACAreaChart,
+    TDACDoughnutChart,
+    TDACBadge,
+    TDACProgress,
+    TDACPagination,
+    TDACLoading,
+    TDACToast,
+    TDACModalDialog,
+    TDACStatusBar,
+    TDACReportViewer,
+    TDACDataGrid
   ]);
 
-  RegisterComponents('MaxxRural Skia DB', [
-    TMaxxRuralDBEdit,
-    TMaxxRuralDBMemo,
-    TMaxxRuralDBComboBox,
-    TMaxxRuralDBDateTimePicker,
-    TMaxxRuralDBCheckBox,
-    TMaxxRuralDBRadioButton,
-    TMaxxRuralDBToggleSwitch,
-    TMaxxRuralDBSlider
+  RegisterComponents('DAC Skia DB', [
+    TDACDBEdit,
+    TDACDBMemo,
+    TDACDBComboBox,
+    TDACDBDateTimePicker,
+    TDACDBCheckBox,
+    TDACDBRadioButton,
+    TDACDBToggleSwitch,
+    TDACDBSlider
   ]);
 end;
 
 end.
+

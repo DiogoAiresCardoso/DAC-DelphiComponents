@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Skia.VisualElement;
+unit DAC.Components.Skia.VisualElement;
 
 interface
 
@@ -6,16 +6,16 @@ uses
   System.Classes,
   System.Skia,
   System.Types,
-  MaxxRural.Components.DesignSystem.DefaultTheme,
-  MaxxRural.Components.DesignSystem.Theme,
-  MaxxRural.Components.Skia.Renderer,
-  MaxxRural.Components.Types;
+  DAC.Components.DesignSystem.DefaultTheme,
+  DAC.Components.DesignSystem.Theme,
+  DAC.Components.Skia.Renderer,
+  DAC.Components.Types;
 
 type
-  TMaxxRuralSkiaVisualElement = class
+  TDACSkiaVisualElement = class
   private
     FAccessibleName: string;
-    FAccessibleRole: TMaxxRuralAccessibleRole;
+    FAccessibleRole: TDACAccessibleRole;
     FBounds: TRectF;
     FComponentId: string;
     FEnabled: Boolean;
@@ -25,17 +25,17 @@ type
     FNeedsLayout: Boolean;
     FNeedsPaint: Boolean;
     FPressedElementId: string;
-    FRenderer: TMaxxRuralSkiaRenderer;
-    FTheme: IMaxxRuralComponentsTheme;
+    FRenderer: TDACSkiaRenderer;
+    FTheme: IDACComponentsTheme;
     FVisible: Boolean;
-    FVisualStates: TMaxxRuralVisualStates;
-    procedure SetTheme(const ATheme: IMaxxRuralComponentsTheme);
+    FVisualStates: TDACVisualStates;
+    procedure SetTheme(const ATheme: IDACComponentsTheme);
   protected
     function ContainsPoint(const APoint: TPointF): Boolean;
-    procedure ExcludeVisualState(const AState: TMaxxRuralVisualState);
-    procedure IncludeVisualState(const AState: TMaxxRuralVisualState);
+    procedure ExcludeVisualState(const AState: TDACVisualState);
+    procedure IncludeVisualState(const AState: TDACVisualState);
     procedure ThemeChanged; virtual;
-    property Renderer: TMaxxRuralSkiaRenderer read FRenderer;
+    property Renderer: TDACSkiaRenderer read FRenderer;
   public
     constructor Create(const AComponentId: string); virtual;
     destructor Destroy; override;
@@ -44,27 +44,27 @@ type
     procedure ClearInteractionState; virtual;
     procedure ClearPointerState; virtual;
     procedure Draw(const ACanvas: ISkCanvas); virtual;
-    function HitTest(const AEvent: TMaxxRuralPointerEvent): TMaxxRuralHitTestResult; virtual;
+    function HitTest(const AEvent: TDACPointerEvent): TDACHitTestResult; virtual;
     procedure InvalidateLayout; virtual;
     procedure InvalidatePaint; virtual;
     procedure KeyDown(var Key: Word; Shift: TShiftState); virtual;
     procedure KeyPress(var Key: Char); virtual;
     function Measure(const AAvailableSize: TSizeF): TSizeF; virtual;
-    procedure MouseDown(const AEvent: TMaxxRuralPointerEvent;
-      const AHit: TMaxxRuralHitTestResult); virtual;
-    procedure MouseEnter(const AHit: TMaxxRuralHitTestResult); virtual;
+    procedure MouseDown(const AEvent: TDACPointerEvent;
+      const AHit: TDACHitTestResult); virtual;
+    procedure MouseEnter(const AHit: TDACHitTestResult); virtual;
     procedure MouseLeave; virtual;
-    procedure MouseMove(const AEvent: TMaxxRuralPointerEvent;
-      const AHit: TMaxxRuralHitTestResult); virtual;
-    procedure MouseUp(const AEvent: TMaxxRuralPointerEvent;
-      const AHit: TMaxxRuralHitTestResult); virtual;
-    function MouseWheel(const AEvent: TMaxxRuralPointerEvent;
-      const AHit: TMaxxRuralHitTestResult): Boolean; virtual;
+    procedure MouseMove(const AEvent: TDACPointerEvent;
+      const AHit: TDACHitTestResult); virtual;
+    procedure MouseUp(const AEvent: TDACPointerEvent;
+      const AHit: TDACHitTestResult); virtual;
+    function MouseWheel(const AEvent: TDACPointerEvent;
+      const AHit: TDACHitTestResult): Boolean; virtual;
     function Activate: Boolean; virtual;
     procedure SetFocus(const AElementId: string); virtual;
     function HasFocus: Boolean;
     property AccessibleName: string read FAccessibleName write FAccessibleName;
-    property AccessibleRole: TMaxxRuralAccessibleRole read FAccessibleRole write FAccessibleRole;
+    property AccessibleRole: TDACAccessibleRole read FAccessibleRole write FAccessibleRole;
     property Bounds: TRectF read FBounds write Arrange;
     property ComponentId: string read FComponentId;
     property Enabled: Boolean read FEnabled write FEnabled;
@@ -72,19 +72,19 @@ type
     property FocusedElementId: string read FFocusedElementId;
     property NeedsLayout: Boolean read FNeedsLayout;
     property NeedsPaint: Boolean read FNeedsPaint;
-    property Theme: IMaxxRuralComponentsTheme read FTheme write SetTheme;
+    property Theme: IDACComponentsTheme read FTheme write SetTheme;
     property Visible: Boolean read FVisible write FVisible;
-    property VisualStates: TMaxxRuralVisualStates read FVisualStates;
+    property VisualStates: TDACVisualStates read FVisualStates;
   end;
 
 implementation
 
-constructor TMaxxRuralSkiaVisualElement.Create(const AComponentId: string);
+constructor TDACSkiaVisualElement.Create(const AComponentId: string);
 begin
   inherited Create;
   FComponentId := AComponentId;
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
-  FTheme := TMaxxRuralDefaultComponentsTheme.New;
+  FRenderer := TDACSkiaRenderer.Create;
+  FTheme := TDACDefaultComponentsTheme.New;
   FEnabled := True;
   FFocusable := True;
   FVisible := True;
@@ -93,31 +93,31 @@ begin
   FAccessibleRole := marNone;
 end;
 
-destructor TMaxxRuralSkiaVisualElement.Destroy;
+destructor TDACSkiaVisualElement.Destroy;
 begin
   FRenderer.Free;
   inherited;
 end;
 
-function TMaxxRuralSkiaVisualElement.Activate: Boolean;
+function TDACSkiaVisualElement.Activate: Boolean;
 begin
   Result := False;
 end;
 
-procedure TMaxxRuralSkiaVisualElement.Arrange(const ABounds: TRectF);
+procedure TDACSkiaVisualElement.Arrange(const ABounds: TRectF);
 begin
   FBounds := ABounds;
   FNeedsLayout := False;
   InvalidatePaint;
 end;
 
-procedure TMaxxRuralSkiaVisualElement.ClearFocus;
+procedure TDACSkiaVisualElement.ClearFocus;
 begin
   FFocusedElementId := '';
   ExcludeVisualState(mvsFocused);
 end;
 
-procedure TMaxxRuralSkiaVisualElement.ClearInteractionState;
+procedure TDACSkiaVisualElement.ClearInteractionState;
 begin
   FHoveredElementId := '';
   FPressedElementId := '';
@@ -126,7 +126,7 @@ begin
   InvalidatePaint;
 end;
 
-procedure TMaxxRuralSkiaVisualElement.ClearPointerState;
+procedure TDACSkiaVisualElement.ClearPointerState;
 begin
   FHoveredElementId := '';
   FPressedElementId := '';
@@ -134,19 +134,19 @@ begin
   ExcludeVisualState(mvsPressed);
 end;
 
-function TMaxxRuralSkiaVisualElement.ContainsPoint(const APoint: TPointF): Boolean;
+function TDACSkiaVisualElement.ContainsPoint(const APoint: TPointF): Boolean;
 begin
   Result := (APoint.X >= FBounds.Left) and (APoint.X <= FBounds.Right) and
     (APoint.Y >= FBounds.Top) and (APoint.Y <= FBounds.Bottom);
 end;
 
-procedure TMaxxRuralSkiaVisualElement.Draw(const ACanvas: ISkCanvas);
+procedure TDACSkiaVisualElement.Draw(const ACanvas: ISkCanvas);
 begin
   FNeedsPaint := False;
 end;
 
-procedure TMaxxRuralSkiaVisualElement.ExcludeVisualState(
-  const AState: TMaxxRuralVisualState);
+procedure TDACSkiaVisualElement.ExcludeVisualState(
+  const AState: TDACVisualState);
 begin
   if AState in FVisualStates then
   begin
@@ -155,21 +155,21 @@ begin
   end;
 end;
 
-function TMaxxRuralSkiaVisualElement.HasFocus: Boolean;
+function TDACSkiaVisualElement.HasFocus: Boolean;
 begin
   Result := mvsFocused in FVisualStates;
 end;
 
-function TMaxxRuralSkiaVisualElement.HitTest(
-  const AEvent: TMaxxRuralPointerEvent): TMaxxRuralHitTestResult;
+function TDACSkiaVisualElement.HitTest(
+  const AEvent: TDACPointerEvent): TDACHitTestResult;
 begin
-  Result := TMaxxRuralHitTestResult.Empty;
+  Result := TDACHitTestResult.Empty;
   if FVisible and FEnabled and ContainsPoint(AEvent.Position) then
-    Result := TMaxxRuralHitTestResult.Hit(FComponentId, '');
+    Result := TDACHitTestResult.Hit(FComponentId, '');
 end;
 
-procedure TMaxxRuralSkiaVisualElement.IncludeVisualState(
-  const AState: TMaxxRuralVisualState);
+procedure TDACSkiaVisualElement.IncludeVisualState(
+  const AState: TDACVisualState);
 begin
   if not (AState in FVisualStates) then
   begin
@@ -178,30 +178,30 @@ begin
   end;
 end;
 
-procedure TMaxxRuralSkiaVisualElement.InvalidateLayout;
+procedure TDACSkiaVisualElement.InvalidateLayout;
 begin
   FNeedsLayout := True;
   InvalidatePaint;
 end;
 
-procedure TMaxxRuralSkiaVisualElement.InvalidatePaint;
+procedure TDACSkiaVisualElement.InvalidatePaint;
 begin
   FNeedsPaint := True;
 end;
 
-procedure TMaxxRuralSkiaVisualElement.KeyDown(var Key: Word; Shift: TShiftState);
+procedure TDACSkiaVisualElement.KeyDown(var Key: Word; Shift: TShiftState);
 begin
   if Key = 0 then
     Exit;
 end;
 
-procedure TMaxxRuralSkiaVisualElement.KeyPress(var Key: Char);
+procedure TDACSkiaVisualElement.KeyPress(var Key: Char);
 begin
   if Key = #0 then
     Exit;
 end;
 
-function TMaxxRuralSkiaVisualElement.Measure(
+function TDACSkiaVisualElement.Measure(
   const AAvailableSize: TSizeF): TSizeF;
 begin
   Result := TSizeF.Create(FBounds.Width, FBounds.Height);
@@ -211,8 +211,8 @@ begin
     Result.Height := AAvailableSize.Height;
 end;
 
-procedure TMaxxRuralSkiaVisualElement.MouseDown(
-  const AEvent: TMaxxRuralPointerEvent; const AHit: TMaxxRuralHitTestResult);
+procedure TDACSkiaVisualElement.MouseDown(
+  const AEvent: TDACPointerEvent; const AHit: TDACHitTestResult);
 begin
   FPressedElementId := AHit.ElementId;
   FFocusedElementId := AHit.ElementId;
@@ -220,21 +220,21 @@ begin
   IncludeVisualState(mvsFocused);
 end;
 
-procedure TMaxxRuralSkiaVisualElement.MouseEnter(
-  const AHit: TMaxxRuralHitTestResult);
+procedure TDACSkiaVisualElement.MouseEnter(
+  const AHit: TDACHitTestResult);
 begin
   FHoveredElementId := AHit.ElementId;
   IncludeVisualState(mvsHovered);
 end;
 
-procedure TMaxxRuralSkiaVisualElement.MouseLeave;
+procedure TDACSkiaVisualElement.MouseLeave;
 begin
   FHoveredElementId := '';
   ExcludeVisualState(mvsHovered);
 end;
 
-procedure TMaxxRuralSkiaVisualElement.MouseMove(
-  const AEvent: TMaxxRuralPointerEvent; const AHit: TMaxxRuralHitTestResult);
+procedure TDACSkiaVisualElement.MouseMove(
+  const AEvent: TDACPointerEvent; const AHit: TDACHitTestResult);
 begin
   if FHoveredElementId <> AHit.ElementId then
   begin
@@ -243,39 +243,40 @@ begin
   end;
 end;
 
-procedure TMaxxRuralSkiaVisualElement.MouseUp(
-  const AEvent: TMaxxRuralPointerEvent; const AHit: TMaxxRuralHitTestResult);
+procedure TDACSkiaVisualElement.MouseUp(
+  const AEvent: TDACPointerEvent; const AHit: TDACHitTestResult);
 begin
   FPressedElementId := '';
   ExcludeVisualState(mvsPressed);
 end;
 
-function TMaxxRuralSkiaVisualElement.MouseWheel(
-  const AEvent: TMaxxRuralPointerEvent; const AHit: TMaxxRuralHitTestResult): Boolean;
+function TDACSkiaVisualElement.MouseWheel(
+  const AEvent: TDACPointerEvent; const AHit: TDACHitTestResult): Boolean;
 begin
   Result := False;
 end;
 
-procedure TMaxxRuralSkiaVisualElement.SetFocus(const AElementId: string);
+procedure TDACSkiaVisualElement.SetFocus(const AElementId: string);
 begin
   FFocusedElementId := AElementId;
   IncludeVisualState(mvsFocused);
 end;
 
-procedure TMaxxRuralSkiaVisualElement.SetTheme(
-  const ATheme: IMaxxRuralComponentsTheme);
+procedure TDACSkiaVisualElement.SetTheme(
+  const ATheme: IDACComponentsTheme);
 begin
   if ATheme = nil then
-    FTheme := TMaxxRuralDefaultComponentsTheme.New
+    FTheme := TDACDefaultComponentsTheme.New
   else
     FTheme := ATheme;
   ThemeChanged;
   InvalidateLayout;
 end;
 
-procedure TMaxxRuralSkiaVisualElement.ThemeChanged;
+procedure TDACSkiaVisualElement.ThemeChanged;
 begin
   InvalidatePaint;
 end;
 
 end.
+

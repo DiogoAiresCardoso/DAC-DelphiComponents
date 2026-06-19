@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.StatusBar;
+unit DAC.Components.Controls.StatusBar;
 
 interface
 
@@ -10,14 +10,14 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralStatusBar = class(TCustomControl)
+  TDACStatusBar = class(TCustomControl)
   private
     FLeftText: string;
     FPaintBox: TSkPaintBox;
-    FRenderer: TMaxxRuralSkiaRenderer;
+    FRenderer: TDACSkiaRenderer;
     FRightText: string;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
@@ -51,10 +51,10 @@ type
 implementation
 
 uses
-  MaxxRural.Components.DesignSystem.ColorTokens,
-  MaxxRural.Components.DesignSystem.Fonts;
+  DAC.Components.DesignSystem.ColorTokens,
+  DAC.Components.DesignSystem.Fonts;
 
-constructor TMaxxRuralStatusBar.Create(AOwner: TComponent);
+constructor TDACStatusBar.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque];
@@ -65,7 +65,7 @@ begin
   StyleElements := [];
   FLeftText := 'Conectado';
   FRightText := 'Delphi + VCL + Skia';
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
+  FRenderer := TDACSkiaRenderer.Create;
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
   FPaintBox.SetSubComponent(True);
@@ -73,49 +73,49 @@ begin
   FPaintBox.OnDraw := PaintBoxDraw;
 end;
 
-destructor TMaxxRuralStatusBar.Destroy;
+destructor TDACStatusBar.Destroy;
 begin
   FPaintBox.Free;
   FRenderer.Free;
   inherited;
 end;
 
-procedure TMaxxRuralStatusBar.CreateWnd;
+procedure TDACStatusBar.CreateWnd;
 begin
   inherited;
   UpdatePaintBoxBounds;
   Redraw;
 end;
 
-procedure TMaxxRuralStatusBar.Loaded;
+procedure TDACStatusBar.Loaded;
 begin
   inherited;
   UpdatePaintBoxBounds;
   Redraw;
 end;
 
-procedure TMaxxRuralStatusBar.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
+procedure TDACStatusBar.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
   const ADest: TRectF; const AOpacity: Single);
 var
   LPaint: ISkPaint;
   LRect: TRectF;
 begin
   LRect := TRectF.Create(0.5, 0.5, ADest.Width - 0.5, ADest.Height - 0.5);
-  FRenderer.FillRoundRect(ACanvas, LRect, TMaxxRuralComponentColors.White, 0, 255);
-  FRenderer.StrokeRoundRect(ACanvas, LRect, TMaxxRuralComponentColors.ControlBorder, 0, 1, 255);
+  FRenderer.FillRoundRect(ACanvas, LRect, TDACComponentColors.White, 0, 255);
+  FRenderer.StrokeRoundRect(ACanvas, LRect, TDACComponentColors.ControlBorder, 0, 1, 255);
   LPaint := TSkPaint.Create(TSkPaintStyle.Fill);
   LPaint.AntiAlias := True;
-  LPaint.Color := TMaxxRuralComponentColors.Primary;
+  LPaint.Color := TDACComponentColors.Primary;
   ACanvas.DrawCircle(16, ADest.Height / 2, 4, LPaint);
-  FRenderer.Text(ACanvas, FLeftText, TMaxxRuralComponentFontInstaller.FontFamily,
-    28, 22, 11, TMaxxRuralComponentColors.ControlText, False,
+  FRenderer.Text(ACanvas, FLeftText, TDACComponentFontInstaller.FontFamily,
+    28, 22, 11, TDACComponentColors.ControlText, False,
     (ADest.Width / 2) - 36);
-  FRenderer.Text(ACanvas, FRightText, TMaxxRuralComponentFontInstaller.FontFamily,
-    ADest.Width / 2, 22, 11, TMaxxRuralComponentColors.TextSecondary, False,
+  FRenderer.Text(ACanvas, FRightText, TDACComponentFontInstaller.FontFamily,
+    ADest.Width / 2, 22, 11, TDACComponentColors.TextSecondary, False,
     (ADest.Width / 2) - 16);
 end;
 
-procedure TMaxxRuralStatusBar.Redraw;
+procedure TDACStatusBar.Redraw;
 begin
   if (FPaintBox <> nil) and not (csDestroying in ComponentState) and
     ((Parent <> nil) or not (csDesigning in ComponentState)) then
@@ -123,14 +123,14 @@ begin
   Invalidate;
 end;
 
-procedure TMaxxRuralStatusBar.Resize;
+procedure TDACStatusBar.Resize;
 begin
   inherited;
   UpdatePaintBoxBounds;
   Redraw;
 end;
 
-procedure TMaxxRuralStatusBar.SetLeftText(const AValue: string);
+procedure TDACStatusBar.SetLeftText(const AValue: string);
 begin
   if FLeftText = AValue then
     Exit;
@@ -138,7 +138,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralStatusBar.SetRightText(const AValue: string);
+procedure TDACStatusBar.SetRightText(const AValue: string);
 begin
   if FRightText = AValue then
     Exit;
@@ -146,15 +146,16 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralStatusBar.UpdatePaintBoxBounds;
+procedure TDACStatusBar.UpdatePaintBoxBounds;
 begin
   if FPaintBox <> nil then
     FPaintBox.SetBounds(0, 0, Width, Height);
 end;
 
-procedure TMaxxRuralStatusBar.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACStatusBar.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
 end.
+

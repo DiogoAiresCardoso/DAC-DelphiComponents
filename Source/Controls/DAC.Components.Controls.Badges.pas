@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.Badges;
+unit DAC.Components.Controls.Badges;
 
 interface
 
@@ -11,25 +11,25 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
-  MaxxRural.Components.DesignSystem.IconAssets,
-  MaxxRural.Components.Skia.IconPainter,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.DesignSystem.IconAssets,
+  DAC.Components.Skia.IconPainter,
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralBadgeKind = (
+  TDACBadgeKind = (
     mbkBadge,
     mbkChip,
     mbkTag,
     mbkPill
   );
 
-  TMaxxRuralBadgeAppearance = (
+  TDACBadgeAppearance = (
     mbaFilled,
     mbaSoft,
     mbaOutline
   );
 
-  TMaxxRuralBadgeStatus = (
+  TDACBadgeStatus = (
     mbsNeutral,
     mbsSuccess,
     mbsWarning,
@@ -37,22 +37,22 @@ type
     mbsInfo
   );
 
-  TMaxxRuralBadge = class(TCustomControl)
+  TDACBadge = class(TCustomControl)
   private
-    FAppearance: TMaxxRuralBadgeAppearance;
+    FAppearance: TDACBadgeAppearance;
     FCloseMouseInside: Boolean;
     FClosePressed: Boolean;
     FCornerRadius: Integer;
-    FIconKind: TMaxxRuralIconKind;
-    FIconPainter: TMaxxRuralSkiaIconPainter;
-    FKind: TMaxxRuralBadgeKind;
+    FIconKind: TDACIconKind;
+    FIconPainter: TDACSkiaIconPainter;
+    FKind: TDACBadgeKind;
     FMouseInside: Boolean;
     FOnCloseClick: TNotifyEvent;
     FPaintBox: TSkPaintBox;
-    FRenderer: TMaxxRuralSkiaRenderer;
+    FRenderer: TDACSkiaRenderer;
     FShowClose: Boolean;
     FShowIcon: Boolean;
-    FStatus: TMaxxRuralBadgeStatus;
+    FStatus: TDACBadgeStatus;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure CMTextChanged(var AMessage: TMessage); message CM_TEXTCHANGED;
     function AccentColor: TAlphaColor;
@@ -77,13 +77,13 @@ type
     function ParentSurfaceColor: TAlphaColor;
     function ScaleFactor: Single;
     function ScaleMetric(const AValue: Integer): Integer;
-    procedure SetAppearance(const AValue: TMaxxRuralBadgeAppearance);
+    procedure SetAppearance(const AValue: TDACBadgeAppearance);
     procedure SetCornerRadius(const AValue: Integer);
-    procedure SetIconKind(const AValue: TMaxxRuralIconKind);
-    procedure SetKind(const AValue: TMaxxRuralBadgeKind);
+    procedure SetIconKind(const AValue: TDACIconKind);
+    procedure SetKind(const AValue: TDACBadgeKind);
     procedure SetShowClose(const AValue: Boolean);
     procedure SetShowIcon(const AValue: Boolean);
-    procedure SetStatus(const AValue: TMaxxRuralBadgeStatus);
+    procedure SetStatus(const AValue: TDACBadgeStatus);
     function TextColor: TAlphaColor;
     procedure UpdateCursor;
     procedure UpdatePaintBoxBounds;
@@ -103,20 +103,20 @@ type
   published
     property Align;
     property Anchors;
-    property Appearance: TMaxxRuralBadgeAppearance read FAppearance write SetAppearance default mbaSoft;
+    property Appearance: TDACBadgeAppearance read FAppearance write SetAppearance default mbaSoft;
     property Caption;
     property Constraints;
     property CornerRadius: Integer read FCornerRadius write SetCornerRadius default 10;
     property Enabled;
     property Hint;
-    property IconKind: TMaxxRuralIconKind read FIconKind write SetIconKind default mikTag;
-    property Kind: TMaxxRuralBadgeKind read FKind write SetKind default mbkChip;
+    property IconKind: TDACIconKind read FIconKind write SetIconKind default mikTag;
+    property Kind: TDACBadgeKind read FKind write SetKind default mbkChip;
     property ParentShowHint;
     property PopupMenu;
     property ShowClose: Boolean read FShowClose write SetShowClose default False;
     property ShowHint;
     property ShowIcon: Boolean read FShowIcon write SetShowIcon default False;
-    property Status: TMaxxRuralBadgeStatus read FStatus write SetStatus default mbsSuccess;
+    property Status: TDACBadgeStatus read FStatus write SetStatus default mbsSuccess;
     property TabOrder;
     property TabStop default False;
     property Visible;
@@ -134,10 +134,10 @@ implementation
 
 uses
   System.Math,
-  MaxxRural.Components.DesignSystem.ColorTokens,
-  MaxxRural.Components.DesignSystem.Fonts;
+  DAC.Components.DesignSystem.ColorTokens,
+  DAC.Components.DesignSystem.Fonts;
 
-constructor TMaxxRuralBadge.Create(AOwner: TComponent);
+constructor TDACBadge.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque, csClickEvents, csCaptureMouse];
@@ -157,8 +157,8 @@ begin
   FShowIcon := False;
   FStatus := mbsSuccess;
 
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
-  FIconPainter := TMaxxRuralSkiaIconPainter.Create(FRenderer);
+  FRenderer := TDACSkiaRenderer.Create;
+  FIconPainter := TDACSkiaIconPainter.Create(FRenderer);
 
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
@@ -174,7 +174,7 @@ begin
   UpdatePaintBoxBounds;
 end;
 
-destructor TMaxxRuralBadge.Destroy;
+destructor TDACBadge.Destroy;
 begin
   FPaintBox.Free;
   FIconPainter.Free;
@@ -182,23 +182,23 @@ begin
   inherited;
 end;
 
-function TMaxxRuralBadge.AccentColor: TAlphaColor;
+function TDACBadge.AccentColor: TAlphaColor;
 begin
   case FStatus of
     mbsWarning:
-      Result := TMaxxRuralComponentColors.Warning;
+      Result := TDACComponentColors.Warning;
     mbsDanger:
-      Result := TMaxxRuralComponentColors.Danger;
+      Result := TDACComponentColors.Danger;
     mbsInfo:
-      Result := TMaxxRuralComponentColors.Alpha(43, 125, 233);
+      Result := TDACComponentColors.Alpha(43, 125, 233);
     mbsNeutral:
-      Result := TMaxxRuralComponentColors.Alpha(71, 85, 105);
+      Result := TDACComponentColors.Alpha(71, 85, 105);
   else
-    Result := TMaxxRuralComponentColors.Primary;
+    Result := TDACComponentColors.Primary;
   end;
 end;
 
-function TMaxxRuralBadge.BackgroundColor: TAlphaColor;
+function TDACBadge.BackgroundColor: TAlphaColor;
 var
   LAccent: TAlphaColor;
   LSurface: TAlphaColor;
@@ -209,26 +209,26 @@ begin
     mbaFilled:
       Result := LAccent;
     mbaOutline:
-      Result := TMaxxRuralComponentColors.ControlBackgroundForSurface(LSurface);
+      Result := TDACComponentColors.ControlBackgroundForSurface(LSurface);
   else
-    if TMaxxRuralComponentColors.IsDarkSurface(LSurface) then
-      Exit(TMaxxRuralComponentColors.Alpha(18, 36, 24));
+    if TDACComponentColors.IsDarkSurface(LSurface) then
+      Exit(TDACComponentColors.Alpha(18, 36, 24));
     case FStatus of
       mbsWarning:
-        Result := TMaxxRuralComponentColors.Alpha(255, 246, 214);
+        Result := TDACComponentColors.Alpha(255, 246, 214);
       mbsDanger:
-        Result := TMaxxRuralComponentColors.Alpha(255, 232, 229);
+        Result := TDACComponentColors.Alpha(255, 232, 229);
       mbsInfo:
-        Result := TMaxxRuralComponentColors.Alpha(229, 241, 255);
+        Result := TDACComponentColors.Alpha(229, 241, 255);
       mbsNeutral:
-        Result := TMaxxRuralComponentColors.Alpha(241, 245, 249);
+        Result := TDACComponentColors.Alpha(241, 245, 249);
     else
-      Result := TMaxxRuralComponentColors.Alpha(230, 246, 227);
+      Result := TDACComponentColors.Alpha(230, 246, 227);
     end;
   end;
 end;
 
-function TMaxxRuralBadge.BorderAlpha: Byte;
+function TDACBadge.BorderAlpha: Byte;
 begin
   case FAppearance of
     mbaFilled:
@@ -242,23 +242,23 @@ begin
     Result := 110;
 end;
 
-function TMaxxRuralBadge.BorderColor: TAlphaColor;
+function TDACBadge.BorderColor: TAlphaColor;
 begin
   if FAppearance = mbaFilled then
     Exit(AccentColor);
   if FMouseInside and Enabled then
     Exit(AccentColor);
-  Result := TMaxxRuralComponentColors.ControlBorderForSurface(ParentSurfaceColor);
+  Result := TDACComponentColors.ControlBorderForSurface(ParentSurfaceColor);
 end;
 
-procedure TMaxxRuralBadge.ChangeScale(M, D: Integer);
+procedure TDACBadge.ChangeScale(M, D: Integer);
 begin
   inherited;
   UpdatePaintBoxBounds;
   InvalidateBadge;
 end;
 
-function TMaxxRuralBadge.CloseRect: TRect;
+function TDACBadge.CloseRect: TRect;
 var
   LSize: Integer;
 begin
@@ -269,20 +269,20 @@ begin
     (Height + LSize) div 2);
 end;
 
-procedure TMaxxRuralBadge.CMEnabledChanged(var AMessage: TMessage);
+procedure TDACBadge.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
   UpdateCursor;
   InvalidateBadge;
 end;
 
-procedure TMaxxRuralBadge.CMTextChanged(var AMessage: TMessage);
+procedure TDACBadge.CMTextChanged(var AMessage: TMessage);
 begin
   inherited;
   InvalidateBadge;
 end;
 
-function TMaxxRuralBadge.ContentPadding: Integer;
+function TDACBadge.ContentPadding: Integer;
 begin
   case FKind of
     mbkBadge:
@@ -294,14 +294,14 @@ begin
   end;
 end;
 
-procedure TMaxxRuralBadge.CreateWnd;
+procedure TDACBadge.CreateWnd;
 begin
   inherited;
   UpdatePaintBoxBounds;
   InvalidateBadge;
 end;
 
-function TMaxxRuralBadge.FontSize: Single;
+function TDACBadge.FontSize: Single;
 begin
   case FKind of
     mbkBadge:
@@ -313,7 +313,7 @@ begin
   end;
 end;
 
-function TMaxxRuralBadge.IconSize: Integer;
+function TDACBadge.IconSize: Integer;
 begin
   case FKind of
     mbkBadge:
@@ -325,21 +325,21 @@ begin
   end;
 end;
 
-procedure TMaxxRuralBadge.InvalidateBadge;
+procedure TDACBadge.InvalidateBadge;
 begin
   UpdatePaintBoxBounds;
   if (FPaintBox <> nil) and HandleAllocated then
     FPaintBox.Redraw;
 end;
 
-procedure TMaxxRuralBadge.Loaded;
+procedure TDACBadge.Loaded;
 begin
   inherited;
   UpdatePaintBoxBounds;
   InvalidateBadge;
 end;
 
-function TMaxxRuralBadge.IsClosePoint(const X, Y: Integer): Boolean;
+function TDACBadge.IsClosePoint(const X, Y: Integer): Boolean;
 var
   LRect: TRect;
 begin
@@ -353,7 +353,7 @@ begin
     (Y >= LRect.Top) and (Y < LRect.Bottom);
 end;
 
-procedure TMaxxRuralBadge.MouseDown(Button: TMouseButton; Shift: TShiftState;
+procedure TDACBadge.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 begin
   inherited;
@@ -364,7 +364,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralBadge.MouseMove(Shift: TShiftState; X, Y: Integer);
+procedure TDACBadge.MouseMove(Shift: TShiftState; X, Y: Integer);
 var
   LWasInside: Boolean;
 begin
@@ -378,7 +378,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralBadge.MouseUp(Button: TMouseButton; Shift: TShiftState;
+procedure TDACBadge.MouseUp(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 var
   LClickClose: Boolean;
@@ -391,7 +391,7 @@ begin
     FOnCloseClick(Self);
 end;
 
-procedure TMaxxRuralBadge.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
+procedure TDACBadge.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
   const ADest: TRectF; const AOpacity: Single);
 var
   LAlpha: Byte;
@@ -400,7 +400,7 @@ var
   LCloseControlRect: TRect;
   LCloseRect: TRectF;
   LIconRect: TRectF;
-  LIconStyle: TMaxxRuralIconStyle;
+  LIconStyle: TDACIconStyle;
   LPadding: Single;
   LRadius: Single;
   LRect: TRectF;
@@ -448,7 +448,7 @@ begin
   if FShowClose then
     LTextRight := CloseRect.Left - ScaleMetric(6);
 
-  FRenderer.TextCentered(ACanvas, Caption, TMaxxRuralComponentFontInstaller.FontFamily,
+  FRenderer.TextCentered(ACanvas, Caption, TDACComponentFontInstaller.FontFamily,
     TRectF.Create(LTextLeft, LRect.Top, LTextRight, LRect.Bottom), FontSize,
     LTextColor, True, Max(0, LTextRight - LTextLeft));
 
@@ -466,19 +466,19 @@ begin
   end;
 end;
 
-procedure TMaxxRuralBadge.PaintBoxMouseDown(Sender: TObject; Button: TMouseButton;
+procedure TDACBadge.PaintBoxMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   MouseDown(Button, Shift, X, Y);
 end;
 
-procedure TMaxxRuralBadge.PaintBoxMouseEnter(Sender: TObject);
+procedure TDACBadge.PaintBoxMouseEnter(Sender: TObject);
 begin
   FMouseInside := True;
   InvalidateBadge;
 end;
 
-procedure TMaxxRuralBadge.PaintBoxMouseLeave(Sender: TObject);
+procedure TDACBadge.PaintBoxMouseLeave(Sender: TObject);
 begin
   FMouseInside := False;
   FCloseMouseInside := False;
@@ -487,50 +487,50 @@ begin
   InvalidateBadge;
 end;
 
-procedure TMaxxRuralBadge.PaintBoxMouseMove(Sender: TObject; Shift: TShiftState;
+procedure TDACBadge.PaintBoxMouseMove(Sender: TObject; Shift: TShiftState;
   X, Y: Integer);
 begin
   MouseMove(Shift, X, Y);
 end;
 
-procedure TMaxxRuralBadge.PaintBoxMouseUp(Sender: TObject; Button: TMouseButton;
+procedure TDACBadge.PaintBoxMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   MouseUp(Button, Shift, X, Y);
 end;
 
-function TMaxxRuralBadge.ParentSurfaceColor: TAlphaColor;
+function TDACBadge.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TMaxxRuralComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
-procedure TMaxxRuralBadge.Redraw;
+procedure TDACBadge.Redraw;
 begin
   InvalidateBadge;
 end;
 
-procedure TMaxxRuralBadge.Resize;
+procedure TDACBadge.Resize;
 begin
   inherited;
   UpdatePaintBoxBounds;
   InvalidateBadge;
 end;
 
-function TMaxxRuralBadge.ScaleFactor: Single;
+function TDACBadge.ScaleFactor: Single;
 begin
   Result := 1;
   if FPaintBox <> nil then
     Result := FPaintBox.ScaleFactor;
 end;
 
-function TMaxxRuralBadge.ScaleMetric(const AValue: Integer): Integer;
+function TDACBadge.ScaleMetric(const AValue: Integer): Integer;
 begin
   if AValue <= 0 then
     Exit(0);
   Result := Max(1, Round(AValue * ScaleFactor));
 end;
 
-procedure TMaxxRuralBadge.SetAppearance(const AValue: TMaxxRuralBadgeAppearance);
+procedure TDACBadge.SetAppearance(const AValue: TDACBadgeAppearance);
 begin
   if FAppearance = AValue then
     Exit;
@@ -538,7 +538,7 @@ begin
   InvalidateBadge;
 end;
 
-procedure TMaxxRuralBadge.SetCornerRadius(const AValue: Integer);
+procedure TDACBadge.SetCornerRadius(const AValue: Integer);
 begin
   if FCornerRadius = AValue then
     Exit;
@@ -546,7 +546,7 @@ begin
   InvalidateBadge;
 end;
 
-procedure TMaxxRuralBadge.SetIconKind(const AValue: TMaxxRuralIconKind);
+procedure TDACBadge.SetIconKind(const AValue: TDACIconKind);
 begin
   if FIconKind = AValue then
     Exit;
@@ -554,7 +554,7 @@ begin
   InvalidateBadge;
 end;
 
-procedure TMaxxRuralBadge.SetKind(const AValue: TMaxxRuralBadgeKind);
+procedure TDACBadge.SetKind(const AValue: TDACBadgeKind);
 begin
   if FKind = AValue then
     Exit;
@@ -562,7 +562,7 @@ begin
   InvalidateBadge;
 end;
 
-procedure TMaxxRuralBadge.SetShowClose(const AValue: Boolean);
+procedure TDACBadge.SetShowClose(const AValue: Boolean);
 begin
   if FShowClose = AValue then
     Exit;
@@ -571,7 +571,7 @@ begin
   InvalidateBadge;
 end;
 
-procedure TMaxxRuralBadge.SetShowIcon(const AValue: Boolean);
+procedure TDACBadge.SetShowIcon(const AValue: Boolean);
 begin
   if FShowIcon = AValue then
     Exit;
@@ -579,7 +579,7 @@ begin
   InvalidateBadge;
 end;
 
-procedure TMaxxRuralBadge.SetStatus(const AValue: TMaxxRuralBadgeStatus);
+procedure TDACBadge.SetStatus(const AValue: TDACBadgeStatus);
 begin
   if FStatus = AValue then
     Exit;
@@ -587,26 +587,26 @@ begin
   InvalidateBadge;
 end;
 
-function TMaxxRuralBadge.TextColor: TAlphaColor;
+function TDACBadge.TextColor: TAlphaColor;
 begin
   if FAppearance = mbaFilled then
-    Exit(TMaxxRuralComponentColors.White);
+    Exit(TDACComponentColors.White);
 
   case FStatus of
     mbsWarning:
-      Result := TMaxxRuralComponentColors.WarningDark;
+      Result := TDACComponentColors.WarningDark;
     mbsDanger:
-      Result := TMaxxRuralComponentColors.DangerDark;
+      Result := TDACComponentColors.DangerDark;
     mbsInfo:
-      Result := TMaxxRuralComponentColors.Alpha(28, 94, 168);
+      Result := TDACComponentColors.Alpha(28, 94, 168);
     mbsNeutral:
-      Result := TMaxxRuralComponentColors.Alpha(51, 65, 85);
+      Result := TDACComponentColors.Alpha(51, 65, 85);
   else
-    Result := TMaxxRuralComponentColors.Primary;
+    Result := TDACComponentColors.Primary;
   end;
 end;
 
-procedure TMaxxRuralBadge.UpdateCursor;
+procedure TDACBadge.UpdateCursor;
 var
   LCursor: TCursor;
 begin
@@ -620,7 +620,7 @@ begin
     FPaintBox.Cursor := LCursor;
 end;
 
-procedure TMaxxRuralBadge.UpdatePaintBoxBounds;
+procedure TDACBadge.UpdatePaintBoxBounds;
 var
   LHeight: Integer;
   LWidth: Integer;
@@ -641,9 +641,10 @@ begin
     FPaintBox.SetBounds(0, 0, LWidth, LHeight);
 end;
 
-procedure TMaxxRuralBadge.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACBadge.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
 end.
+

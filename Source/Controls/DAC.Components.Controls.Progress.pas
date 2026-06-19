@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.Progress;
+unit DAC.Components.Controls.Progress;
 
 interface
 
@@ -11,15 +11,15 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralProgressKind = (
+  TDACProgressKind = (
     mpkLinear,
     mpkCircular
   );
 
-  TMaxxRuralProgressStatus = (
+  TDACProgressStatus = (
     mpsNeutral,
     mpsSuccess,
     mpsWarning,
@@ -27,14 +27,14 @@ type
     mpsInfo
   );
 
-  TMaxxRuralProgress = class(TCustomControl)
+  TDACProgress = class(TCustomControl)
   private
-    FKind: TMaxxRuralProgressKind;
+    FKind: TDACProgressKind;
     FMaximum: Integer;
     FPaintBox: TSkPaintBox;
-    FRenderer: TMaxxRuralSkiaRenderer;
+    FRenderer: TDACSkiaRenderer;
     FShowValue: Boolean;
-    FStatus: TMaxxRuralProgressStatus;
+    FStatus: TDACProgressStatus;
     FValue: Integer;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     function AccentColor: TAlphaColor;
@@ -48,10 +48,10 @@ type
     function Percent: Single;
     function ScaleFactor: Single;
     function ScaleMetric(const AValue: Integer): Integer;
-    procedure SetKind(const AValue: TMaxxRuralProgressKind);
+    procedure SetKind(const AValue: TDACProgressKind);
     procedure SetMaximum(const AValue: Integer);
     procedure SetShowValue(const AValue: Boolean);
-    procedure SetStatus(const AValue: TMaxxRuralProgressStatus);
+    procedure SetStatus(const AValue: TDACProgressStatus);
     procedure SetValue(const AValue: Integer);
     function TrackColor: TAlphaColor;
     procedure UpdatePaintBoxBounds;
@@ -71,13 +71,13 @@ type
     property Constraints;
     property Enabled;
     property Hint;
-    property Kind: TMaxxRuralProgressKind read FKind write SetKind default mpkLinear;
+    property Kind: TDACProgressKind read FKind write SetKind default mpkLinear;
     property Maximum: Integer read FMaximum write SetMaximum default 100;
     property ParentShowHint;
     property PopupMenu;
     property ShowHint;
     property ShowValue: Boolean read FShowValue write SetShowValue default True;
-    property Status: TMaxxRuralProgressStatus read FStatus write SetStatus default mpsSuccess;
+    property Status: TDACProgressStatus read FStatus write SetStatus default mpsSuccess;
     property TabOrder;
     property TabStop default False;
     property Value: Integer read FValue write SetValue default 0;
@@ -96,10 +96,10 @@ implementation
 uses
   System.Math,
   System.SysUtils,
-  MaxxRural.Components.DesignSystem.ColorTokens,
-  MaxxRural.Components.DesignSystem.Fonts;
+  DAC.Components.DesignSystem.ColorTokens,
+  DAC.Components.DesignSystem.Fonts;
 
-constructor TMaxxRuralProgress.Create(AOwner: TComponent);
+constructor TDACProgress.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque, csReplicatable];
@@ -115,7 +115,7 @@ begin
   FStatus := mpsSuccess;
   FValue := 0;
 
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
+  FRenderer := TDACSkiaRenderer.Create;
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
   FPaintBox.SetSubComponent(True);
@@ -125,50 +125,50 @@ begin
   UpdatePaintBoxBounds;
 end;
 
-destructor TMaxxRuralProgress.Destroy;
+destructor TDACProgress.Destroy;
 begin
   FPaintBox.Free;
   FRenderer.Free;
   inherited;
 end;
 
-function TMaxxRuralProgress.AccentColor: TAlphaColor;
+function TDACProgress.AccentColor: TAlphaColor;
 begin
   case FStatus of
     mpsWarning:
-      Result := TMaxxRuralComponentColors.Warning;
+      Result := TDACComponentColors.Warning;
     mpsDanger:
-      Result := TMaxxRuralComponentColors.Danger;
+      Result := TDACComponentColors.Danger;
     mpsInfo:
-      Result := TMaxxRuralComponentColors.Alpha(43, 125, 233);
+      Result := TDACComponentColors.Alpha(43, 125, 233);
     mpsNeutral:
-      Result := TMaxxRuralComponentColors.Alpha(71, 85, 105);
+      Result := TDACComponentColors.Alpha(71, 85, 105);
   else
-    Result := TMaxxRuralComponentColors.Primary;
+    Result := TDACComponentColors.Primary;
   end;
 end;
 
-procedure TMaxxRuralProgress.ChangeScale(M, D: Integer);
+procedure TDACProgress.ChangeScale(M, D: Integer);
 begin
   inherited;
   UpdatePaintBoxBounds;
   InvalidateProgress;
 end;
 
-procedure TMaxxRuralProgress.CMEnabledChanged(var AMessage: TMessage);
+procedure TDACProgress.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
   InvalidateProgress;
 end;
 
-procedure TMaxxRuralProgress.CreateWnd;
+procedure TDACProgress.CreateWnd;
 begin
   inherited;
   UpdatePaintBoxBounds;
   InvalidateProgress;
 end;
 
-procedure TMaxxRuralProgress.DrawArc(const ACanvas: ISkCanvas; const ARect: TRectF;
+procedure TDACProgress.DrawArc(const ACanvas: ISkCanvas; const ARect: TRectF;
   const AStartAngle, ASweepAngle, AStrokeWidth: Single; const AColor: TAlphaColor;
   const AAlpha: Byte);
 var
@@ -183,21 +183,21 @@ begin
   ACanvas.DrawArc(ARect, AStartAngle, ASweepAngle, False, LPaint);
 end;
 
-procedure TMaxxRuralProgress.InvalidateProgress;
+procedure TDACProgress.InvalidateProgress;
 begin
   UpdatePaintBoxBounds;
   if (FPaintBox <> nil) and HandleAllocated then
     FPaintBox.Redraw;
 end;
 
-procedure TMaxxRuralProgress.Loaded;
+procedure TDACProgress.Loaded;
 begin
   inherited;
   UpdatePaintBoxBounds;
   InvalidateProgress;
 end;
 
-procedure TMaxxRuralProgress.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
+procedure TDACProgress.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
   const ADest: TRectF; const AOpacity: Single);
 var
   LAlpha: Byte;
@@ -232,9 +232,9 @@ begin
     if FShowValue then
     begin
       LText := Format('%d%%', [Round(Percent * 100)]);
-      LFontColor := TMaxxRuralComponentColors.ControlTextForSurface(ParentSurfaceColor);
+      LFontColor := TDACComponentColors.ControlTextForSurface(ParentSurfaceColor);
       FRenderer.TextCentered(ACanvas, LText,
-        TMaxxRuralComponentFontInstaller.FontFamily,
+        TDACComponentFontInstaller.FontFamily,
         TRectF.Create(0, 0, ADest.Width, ADest.Height), 13, LFontColor, True);
     end;
     Exit;
@@ -254,52 +254,52 @@ begin
   if FShowValue then
   begin
     LText := Format('%d%%', [Round(Percent * 100)]);
-    LFontColor := TMaxxRuralComponentColors.ControlTextForSurface(ParentSurfaceColor);
-    FRenderer.Text(ACanvas, LText, TMaxxRuralComponentFontInstaller.FontFamily,
+    LFontColor := TDACComponentColors.ControlTextForSurface(ParentSurfaceColor);
+    FRenderer.Text(ACanvas, LText, TDACComponentFontInstaller.FontFamily,
       ADest.Width - ScaleMetric(36), (ADest.Height / 2) + ScaleMetric(4),
       9, LFontColor, True, ScaleMetric(34));
   end;
 end;
 
-function TMaxxRuralProgress.ParentSurfaceColor: TAlphaColor;
+function TDACProgress.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TMaxxRuralComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
-function TMaxxRuralProgress.Percent: Single;
+function TDACProgress.Percent: Single;
 begin
   if FMaximum <= 0 then
     Exit(0);
   Result := EnsureRange(FValue / FMaximum, 0, 1);
 end;
 
-procedure TMaxxRuralProgress.Redraw;
+procedure TDACProgress.Redraw;
 begin
   InvalidateProgress;
 end;
 
-procedure TMaxxRuralProgress.Resize;
+procedure TDACProgress.Resize;
 begin
   inherited;
   UpdatePaintBoxBounds;
   InvalidateProgress;
 end;
 
-function TMaxxRuralProgress.ScaleFactor: Single;
+function TDACProgress.ScaleFactor: Single;
 begin
   Result := 1;
   if FPaintBox <> nil then
     Result := FPaintBox.ScaleFactor;
 end;
 
-function TMaxxRuralProgress.ScaleMetric(const AValue: Integer): Integer;
+function TDACProgress.ScaleMetric(const AValue: Integer): Integer;
 begin
   if AValue <= 0 then
     Exit(0);
   Result := Max(1, Round(AValue * ScaleFactor));
 end;
 
-procedure TMaxxRuralProgress.SetKind(const AValue: TMaxxRuralProgressKind);
+procedure TDACProgress.SetKind(const AValue: TDACProgressKind);
 begin
   if FKind = AValue then
     Exit;
@@ -307,7 +307,7 @@ begin
   InvalidateProgress;
 end;
 
-procedure TMaxxRuralProgress.SetMaximum(const AValue: Integer);
+procedure TDACProgress.SetMaximum(const AValue: Integer);
 begin
   if FMaximum = AValue then
     Exit;
@@ -317,7 +317,7 @@ begin
   InvalidateProgress;
 end;
 
-procedure TMaxxRuralProgress.SetShowValue(const AValue: Boolean);
+procedure TDACProgress.SetShowValue(const AValue: Boolean);
 begin
   if FShowValue = AValue then
     Exit;
@@ -325,7 +325,7 @@ begin
   InvalidateProgress;
 end;
 
-procedure TMaxxRuralProgress.SetStatus(const AValue: TMaxxRuralProgressStatus);
+procedure TDACProgress.SetStatus(const AValue: TDACProgressStatus);
 begin
   if FStatus = AValue then
     Exit;
@@ -333,7 +333,7 @@ begin
   InvalidateProgress;
 end;
 
-procedure TMaxxRuralProgress.SetValue(const AValue: Integer);
+procedure TDACProgress.SetValue(const AValue: Integer);
 begin
   if FValue = AValue then
     Exit;
@@ -341,14 +341,14 @@ begin
   InvalidateProgress;
 end;
 
-function TMaxxRuralProgress.TrackColor: TAlphaColor;
+function TDACProgress.TrackColor: TAlphaColor;
 begin
-  if TMaxxRuralComponentColors.IsDarkSurface(ParentSurfaceColor) then
-    Exit(TMaxxRuralComponentColors.Alpha(38, 58, 44));
-  Result := TMaxxRuralComponentColors.Alpha(226, 232, 240);
+  if TDACComponentColors.IsDarkSurface(ParentSurfaceColor) then
+    Exit(TDACComponentColors.Alpha(38, 58, 44));
+  Result := TDACComponentColors.Alpha(226, 232, 240);
 end;
 
-procedure TMaxxRuralProgress.UpdatePaintBoxBounds;
+procedure TDACProgress.UpdatePaintBoxBounds;
 var
   LHeight: Integer;
   LWidth: Integer;
@@ -369,9 +369,10 @@ begin
     FPaintBox.SetBounds(0, 0, LWidth, LHeight);
 end;
 
-procedure TMaxxRuralProgress.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACProgress.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
 end.
+

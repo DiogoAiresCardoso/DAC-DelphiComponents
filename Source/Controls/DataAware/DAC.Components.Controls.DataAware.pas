@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.DataAware;
+unit DAC.Components.Controls.DataAware;
 
 interface
 
@@ -8,14 +8,14 @@ uses
   Winapi.Messages,
   Vcl.Controls,
   Vcl.DBCtrls,
-  MaxxRural.Components.Controls.ComboBox,
-  MaxxRural.Components.Controls.DateTimePicker,
-  MaxxRural.Components.Controls.Edit,
-  MaxxRural.Components.Controls.Memo,
-  MaxxRural.Components.Controls.Selectors;
+  DAC.Components.Controls.ComboBox,
+  DAC.Components.Controls.DateTimePicker,
+  DAC.Components.Controls.Edit,
+  DAC.Components.Controls.Memo,
+  DAC.Components.Controls.Selectors;
 
 type
-  TMaxxRuralDBEdit = class(TMaxxRuralEdit)
+  TDACDBEdit = class(TDACEdit)
   private
     FDataLink: TFieldDataLink;
     FOnChange: TNotifyEvent;
@@ -39,7 +39,7 @@ type
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
-  TMaxxRuralDBMemo = class(TMaxxRuralMemo)
+  TDACDBMemo = class(TDACMemo)
   private
     FDataLink: TFieldDataLink;
     FOnChange: TNotifyEvent;
@@ -63,7 +63,7 @@ type
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
-  TMaxxRuralDBComboBox = class(TMaxxRuralComboBox)
+  TDACDBComboBox = class(TDACComboBox)
   private
     FDataLink: TFieldDataLink;
     FOnChange: TNotifyEvent;
@@ -87,7 +87,7 @@ type
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
-  TMaxxRuralDBDateTimePicker = class(TMaxxRuralDateTimePicker)
+  TDACDBDateTimePicker = class(TDACDateTimePicker)
   private
     FDataLink: TFieldDataLink;
     FOnChange: TNotifyEvent;
@@ -111,7 +111,7 @@ type
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
-  TMaxxRuralDBCheckBox = class(TMaxxRuralCheckBox)
+  TDACDBCheckBox = class(TDACCheckBox)
   private
     FDataLink: TFieldDataLink;
     FOnChange: TNotifyEvent;
@@ -134,7 +134,7 @@ type
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
-  TMaxxRuralDBRadioButton = class(TMaxxRuralRadioButton)
+  TDACDBRadioButton = class(TDACRadioButton)
   private
     FDataLink: TFieldDataLink;
     FOnChange: TNotifyEvent;
@@ -157,7 +157,7 @@ type
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
-  TMaxxRuralDBToggleSwitch = class(TMaxxRuralToggleSwitch)
+  TDACDBToggleSwitch = class(TDACToggleSwitch)
   private
     FDataLink: TFieldDataLink;
     FOnChange: TNotifyEvent;
@@ -180,7 +180,7 @@ type
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
-  TMaxxRuralDBSlider = class(TMaxxRuralSlider)
+  TDACDBSlider = class(TDACSlider)
   private
     FDataLink: TFieldDataLink;
     FOnChange: TNotifyEvent;
@@ -218,9 +218,9 @@ begin
     AField.AsString := AText;
 end;
 
-{ TMaxxRuralDBEdit }
+{ TDACDBEdit }
 
-constructor TMaxxRuralDBEdit.Create(AOwner: TComponent);
+constructor TDACDBEdit.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FDataLink := TFieldDataLink.Create;
@@ -231,13 +231,13 @@ begin
   inherited OnChange := ControlChange;
 end;
 
-destructor TMaxxRuralDBEdit.Destroy;
+destructor TDACDBEdit.Destroy;
 begin
   FDataLink.Free;
   inherited;
 end;
 
-procedure TMaxxRuralDBEdit.CMExit(var AMessage: TCMExit);
+procedure TDACDBEdit.CMExit(var AMessage: TCMExit);
 begin
   try
     FDataLink.UpdateRecord;
@@ -246,14 +246,14 @@ begin
   end;
 end;
 
-procedure TMaxxRuralDBEdit.ControlChange(Sender: TObject);
+procedure TDACDBEdit.ControlChange(Sender: TObject);
 begin
   FDataLink.Modified;
   if Assigned(FOnChange) then
     FOnChange(Self);
 end;
 
-procedure TMaxxRuralDBEdit.DataChange(Sender: TObject);
+procedure TDACDBEdit.DataChange(Sender: TObject);
 begin
   if FDataLink.Field <> nil then
     Text := FDataLink.Field.DisplayText
@@ -261,22 +261,22 @@ begin
     Text := '';
 end;
 
-procedure TMaxxRuralDBEdit.EditingChange(Sender: TObject);
+procedure TDACDBEdit.EditingChange(Sender: TObject);
 begin
   ReadOnly := not FDataLink.CanModify;
 end;
 
-function TMaxxRuralDBEdit.GetDataField: string;
+function TDACDBEdit.GetDataField: string;
 begin
   Result := FDataLink.FieldName;
 end;
 
-function TMaxxRuralDBEdit.GetDataSource: TDataSource;
+function TDACDBEdit.GetDataSource: TDataSource;
 begin
   Result := FDataLink.DataSource;
 end;
 
-procedure TMaxxRuralDBEdit.Notification(AComponent: TComponent;
+procedure TDACDBEdit.Notification(AComponent: TComponent;
   Operation: TOperation);
 begin
   inherited;
@@ -285,26 +285,26 @@ begin
     FDataLink.DataSource := nil;
 end;
 
-procedure TMaxxRuralDBEdit.SetDataField(const AValue: string);
+procedure TDACDBEdit.SetDataField(const AValue: string);
 begin
   FDataLink.FieldName := AValue;
 end;
 
-procedure TMaxxRuralDBEdit.SetDataSource(const AValue: TDataSource);
+procedure TDACDBEdit.SetDataSource(const AValue: TDataSource);
 begin
   FDataLink.DataSource := AValue;
   if AValue <> nil then
     AValue.FreeNotification(Self);
 end;
 
-procedure TMaxxRuralDBEdit.UpdateData(Sender: TObject);
+procedure TDACDBEdit.UpdateData(Sender: TObject);
 begin
   UpdateFieldText(FDataLink.Field, Text);
 end;
 
-{ TMaxxRuralDBMemo }
+{ TDACDBMemo }
 
-constructor TMaxxRuralDBMemo.Create(AOwner: TComponent);
+constructor TDACDBMemo.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FDataLink := TFieldDataLink.Create;
@@ -315,13 +315,13 @@ begin
   inherited OnChange := ControlChange;
 end;
 
-destructor TMaxxRuralDBMemo.Destroy;
+destructor TDACDBMemo.Destroy;
 begin
   FDataLink.Free;
   inherited;
 end;
 
-procedure TMaxxRuralDBMemo.CMExit(var AMessage: TCMExit);
+procedure TDACDBMemo.CMExit(var AMessage: TCMExit);
 begin
   try
     FDataLink.UpdateRecord;
@@ -330,14 +330,14 @@ begin
   end;
 end;
 
-procedure TMaxxRuralDBMemo.ControlChange(Sender: TObject);
+procedure TDACDBMemo.ControlChange(Sender: TObject);
 begin
   FDataLink.Modified;
   if Assigned(FOnChange) then
     FOnChange(Self);
 end;
 
-procedure TMaxxRuralDBMemo.DataChange(Sender: TObject);
+procedure TDACDBMemo.DataChange(Sender: TObject);
 begin
   if FDataLink.Field <> nil then
     Text := FDataLink.Field.AsString
@@ -345,22 +345,22 @@ begin
     Text := '';
 end;
 
-procedure TMaxxRuralDBMemo.EditingChange(Sender: TObject);
+procedure TDACDBMemo.EditingChange(Sender: TObject);
 begin
   ReadOnly := not FDataLink.CanModify;
 end;
 
-function TMaxxRuralDBMemo.GetDataField: string;
+function TDACDBMemo.GetDataField: string;
 begin
   Result := FDataLink.FieldName;
 end;
 
-function TMaxxRuralDBMemo.GetDataSource: TDataSource;
+function TDACDBMemo.GetDataSource: TDataSource;
 begin
   Result := FDataLink.DataSource;
 end;
 
-procedure TMaxxRuralDBMemo.Notification(AComponent: TComponent;
+procedure TDACDBMemo.Notification(AComponent: TComponent;
   Operation: TOperation);
 begin
   inherited;
@@ -369,26 +369,26 @@ begin
     FDataLink.DataSource := nil;
 end;
 
-procedure TMaxxRuralDBMemo.SetDataField(const AValue: string);
+procedure TDACDBMemo.SetDataField(const AValue: string);
 begin
   FDataLink.FieldName := AValue;
 end;
 
-procedure TMaxxRuralDBMemo.SetDataSource(const AValue: TDataSource);
+procedure TDACDBMemo.SetDataSource(const AValue: TDataSource);
 begin
   FDataLink.DataSource := AValue;
   if AValue <> nil then
     AValue.FreeNotification(Self);
 end;
 
-procedure TMaxxRuralDBMemo.UpdateData(Sender: TObject);
+procedure TDACDBMemo.UpdateData(Sender: TObject);
 begin
   UpdateFieldText(FDataLink.Field, Text);
 end;
 
-{ TMaxxRuralDBComboBox }
+{ TDACDBComboBox }
 
-constructor TMaxxRuralDBComboBox.Create(AOwner: TComponent);
+constructor TDACDBComboBox.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FDataLink := TFieldDataLink.Create;
@@ -399,13 +399,13 @@ begin
   inherited OnChange := ControlChange;
 end;
 
-destructor TMaxxRuralDBComboBox.Destroy;
+destructor TDACDBComboBox.Destroy;
 begin
   FDataLink.Free;
   inherited;
 end;
 
-procedure TMaxxRuralDBComboBox.CMExit(var AMessage: TCMExit);
+procedure TDACDBComboBox.CMExit(var AMessage: TCMExit);
 begin
   try
     FDataLink.UpdateRecord;
@@ -414,14 +414,14 @@ begin
   end;
 end;
 
-procedure TMaxxRuralDBComboBox.ControlChange(Sender: TObject);
+procedure TDACDBComboBox.ControlChange(Sender: TObject);
 begin
   FDataLink.Modified;
   if Assigned(FOnChange) then
     FOnChange(Self);
 end;
 
-procedure TMaxxRuralDBComboBox.DataChange(Sender: TObject);
+procedure TDACDBComboBox.DataChange(Sender: TObject);
 var
   LIndex: Integer;
   LText: string;
@@ -437,22 +437,22 @@ begin
     ItemIndex := LIndex;
 end;
 
-procedure TMaxxRuralDBComboBox.EditingChange(Sender: TObject);
+procedure TDACDBComboBox.EditingChange(Sender: TObject);
 begin
   Enabled := FDataLink.CanModify;
 end;
 
-function TMaxxRuralDBComboBox.GetDataField: string;
+function TDACDBComboBox.GetDataField: string;
 begin
   Result := FDataLink.FieldName;
 end;
 
-function TMaxxRuralDBComboBox.GetDataSource: TDataSource;
+function TDACDBComboBox.GetDataSource: TDataSource;
 begin
   Result := FDataLink.DataSource;
 end;
 
-procedure TMaxxRuralDBComboBox.Notification(AComponent: TComponent;
+procedure TDACDBComboBox.Notification(AComponent: TComponent;
   Operation: TOperation);
 begin
   inherited;
@@ -461,26 +461,26 @@ begin
     FDataLink.DataSource := nil;
 end;
 
-procedure TMaxxRuralDBComboBox.SetDataField(const AValue: string);
+procedure TDACDBComboBox.SetDataField(const AValue: string);
 begin
   FDataLink.FieldName := AValue;
 end;
 
-procedure TMaxxRuralDBComboBox.SetDataSource(const AValue: TDataSource);
+procedure TDACDBComboBox.SetDataSource(const AValue: TDataSource);
 begin
   FDataLink.DataSource := AValue;
   if AValue <> nil then
     AValue.FreeNotification(Self);
 end;
 
-procedure TMaxxRuralDBComboBox.UpdateData(Sender: TObject);
+procedure TDACDBComboBox.UpdateData(Sender: TObject);
 begin
   UpdateFieldText(FDataLink.Field, Text);
 end;
 
-{ TMaxxRuralDBDateTimePicker }
+{ TDACDBDateTimePicker }
 
-constructor TMaxxRuralDBDateTimePicker.Create(AOwner: TComponent);
+constructor TDACDBDateTimePicker.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FDataLink := TFieldDataLink.Create;
@@ -491,13 +491,13 @@ begin
   inherited OnChange := ControlChange;
 end;
 
-destructor TMaxxRuralDBDateTimePicker.Destroy;
+destructor TDACDBDateTimePicker.Destroy;
 begin
   FDataLink.Free;
   inherited;
 end;
 
-procedure TMaxxRuralDBDateTimePicker.CMExit(var AMessage: TCMExit);
+procedure TDACDBDateTimePicker.CMExit(var AMessage: TCMExit);
 begin
   try
     FDataLink.UpdateRecord;
@@ -506,35 +506,35 @@ begin
   end;
 end;
 
-procedure TMaxxRuralDBDateTimePicker.ControlChange(Sender: TObject);
+procedure TDACDBDateTimePicker.ControlChange(Sender: TObject);
 begin
   FDataLink.Modified;
   if Assigned(FOnChange) then
     FOnChange(Self);
 end;
 
-procedure TMaxxRuralDBDateTimePicker.DataChange(Sender: TObject);
+procedure TDACDBDateTimePicker.DataChange(Sender: TObject);
 begin
   if (FDataLink.Field <> nil) and not FDataLink.Field.IsNull then
     DateTime := FDataLink.Field.AsDateTime;
 end;
 
-procedure TMaxxRuralDBDateTimePicker.EditingChange(Sender: TObject);
+procedure TDACDBDateTimePicker.EditingChange(Sender: TObject);
 begin
   Enabled := FDataLink.CanModify;
 end;
 
-function TMaxxRuralDBDateTimePicker.GetDataField: string;
+function TDACDBDateTimePicker.GetDataField: string;
 begin
   Result := FDataLink.FieldName;
 end;
 
-function TMaxxRuralDBDateTimePicker.GetDataSource: TDataSource;
+function TDACDBDateTimePicker.GetDataSource: TDataSource;
 begin
   Result := FDataLink.DataSource;
 end;
 
-procedure TMaxxRuralDBDateTimePicker.Notification(AComponent: TComponent;
+procedure TDACDBDateTimePicker.Notification(AComponent: TComponent;
   Operation: TOperation);
 begin
   inherited;
@@ -543,19 +543,19 @@ begin
     FDataLink.DataSource := nil;
 end;
 
-procedure TMaxxRuralDBDateTimePicker.SetDataField(const AValue: string);
+procedure TDACDBDateTimePicker.SetDataField(const AValue: string);
 begin
   FDataLink.FieldName := AValue;
 end;
 
-procedure TMaxxRuralDBDateTimePicker.SetDataSource(const AValue: TDataSource);
+procedure TDACDBDateTimePicker.SetDataSource(const AValue: TDataSource);
 begin
   FDataLink.DataSource := AValue;
   if AValue <> nil then
     AValue.FreeNotification(Self);
 end;
 
-procedure TMaxxRuralDBDateTimePicker.UpdateData(Sender: TObject);
+procedure TDACDBDateTimePicker.UpdateData(Sender: TObject);
 begin
   if FDataLink.Field <> nil then
     FDataLink.Field.AsDateTime := DateTime;
@@ -563,7 +563,7 @@ end;
 
 { Boolean controls }
 
-constructor TMaxxRuralDBCheckBox.Create(AOwner: TComponent);
+constructor TDACDBCheckBox.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FDataLink := TFieldDataLink.Create;
@@ -573,13 +573,13 @@ begin
   inherited OnChange := ControlChange;
 end;
 
-destructor TMaxxRuralDBCheckBox.Destroy;
+destructor TDACDBCheckBox.Destroy;
 begin
   FDataLink.Free;
   inherited;
 end;
 
-procedure TMaxxRuralDBCheckBox.CMExit(var AMessage: TCMExit);
+procedure TDACDBCheckBox.CMExit(var AMessage: TCMExit);
 begin
   try
     FDataLink.UpdateRecord;
@@ -588,29 +588,29 @@ begin
   end;
 end;
 
-procedure TMaxxRuralDBCheckBox.ControlChange(Sender: TObject);
+procedure TDACDBCheckBox.ControlChange(Sender: TObject);
 begin
   FDataLink.Modified;
   if Assigned(FOnChange) then
     FOnChange(Self);
 end;
 
-procedure TMaxxRuralDBCheckBox.DataChange(Sender: TObject);
+procedure TDACDBCheckBox.DataChange(Sender: TObject);
 begin
   Checked := (FDataLink.Field <> nil) and FDataLink.Field.AsBoolean;
 end;
 
-function TMaxxRuralDBCheckBox.GetDataField: string;
+function TDACDBCheckBox.GetDataField: string;
 begin
   Result := FDataLink.FieldName;
 end;
 
-function TMaxxRuralDBCheckBox.GetDataSource: TDataSource;
+function TDACDBCheckBox.GetDataSource: TDataSource;
 begin
   Result := FDataLink.DataSource;
 end;
 
-procedure TMaxxRuralDBCheckBox.Notification(AComponent: TComponent;
+procedure TDACDBCheckBox.Notification(AComponent: TComponent;
   Operation: TOperation);
 begin
   inherited;
@@ -619,25 +619,25 @@ begin
     FDataLink.DataSource := nil;
 end;
 
-procedure TMaxxRuralDBCheckBox.SetDataField(const AValue: string);
+procedure TDACDBCheckBox.SetDataField(const AValue: string);
 begin
   FDataLink.FieldName := AValue;
 end;
 
-procedure TMaxxRuralDBCheckBox.SetDataSource(const AValue: TDataSource);
+procedure TDACDBCheckBox.SetDataSource(const AValue: TDataSource);
 begin
   FDataLink.DataSource := AValue;
   if AValue <> nil then
     AValue.FreeNotification(Self);
 end;
 
-procedure TMaxxRuralDBCheckBox.UpdateData(Sender: TObject);
+procedure TDACDBCheckBox.UpdateData(Sender: TObject);
 begin
   if FDataLink.Field <> nil then
     FDataLink.Field.AsBoolean := Checked;
 end;
 
-constructor TMaxxRuralDBRadioButton.Create(AOwner: TComponent);
+constructor TDACDBRadioButton.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FDataLink := TFieldDataLink.Create;
@@ -647,13 +647,13 @@ begin
   inherited OnChange := ControlChange;
 end;
 
-destructor TMaxxRuralDBRadioButton.Destroy;
+destructor TDACDBRadioButton.Destroy;
 begin
   FDataLink.Free;
   inherited;
 end;
 
-procedure TMaxxRuralDBRadioButton.CMExit(var AMessage: TCMExit);
+procedure TDACDBRadioButton.CMExit(var AMessage: TCMExit);
 begin
   try
     FDataLink.UpdateRecord;
@@ -662,29 +662,29 @@ begin
   end;
 end;
 
-procedure TMaxxRuralDBRadioButton.ControlChange(Sender: TObject);
+procedure TDACDBRadioButton.ControlChange(Sender: TObject);
 begin
   FDataLink.Modified;
   if Assigned(FOnChange) then
     FOnChange(Self);
 end;
 
-procedure TMaxxRuralDBRadioButton.DataChange(Sender: TObject);
+procedure TDACDBRadioButton.DataChange(Sender: TObject);
 begin
   Checked := (FDataLink.Field <> nil) and FDataLink.Field.AsBoolean;
 end;
 
-function TMaxxRuralDBRadioButton.GetDataField: string;
+function TDACDBRadioButton.GetDataField: string;
 begin
   Result := FDataLink.FieldName;
 end;
 
-function TMaxxRuralDBRadioButton.GetDataSource: TDataSource;
+function TDACDBRadioButton.GetDataSource: TDataSource;
 begin
   Result := FDataLink.DataSource;
 end;
 
-procedure TMaxxRuralDBRadioButton.Notification(AComponent: TComponent;
+procedure TDACDBRadioButton.Notification(AComponent: TComponent;
   Operation: TOperation);
 begin
   inherited;
@@ -693,25 +693,25 @@ begin
     FDataLink.DataSource := nil;
 end;
 
-procedure TMaxxRuralDBRadioButton.SetDataField(const AValue: string);
+procedure TDACDBRadioButton.SetDataField(const AValue: string);
 begin
   FDataLink.FieldName := AValue;
 end;
 
-procedure TMaxxRuralDBRadioButton.SetDataSource(const AValue: TDataSource);
+procedure TDACDBRadioButton.SetDataSource(const AValue: TDataSource);
 begin
   FDataLink.DataSource := AValue;
   if AValue <> nil then
     AValue.FreeNotification(Self);
 end;
 
-procedure TMaxxRuralDBRadioButton.UpdateData(Sender: TObject);
+procedure TDACDBRadioButton.UpdateData(Sender: TObject);
 begin
   if FDataLink.Field <> nil then
     FDataLink.Field.AsBoolean := Checked;
 end;
 
-constructor TMaxxRuralDBToggleSwitch.Create(AOwner: TComponent);
+constructor TDACDBToggleSwitch.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FDataLink := TFieldDataLink.Create;
@@ -721,13 +721,13 @@ begin
   inherited OnChange := ControlChange;
 end;
 
-destructor TMaxxRuralDBToggleSwitch.Destroy;
+destructor TDACDBToggleSwitch.Destroy;
 begin
   FDataLink.Free;
   inherited;
 end;
 
-procedure TMaxxRuralDBToggleSwitch.CMExit(var AMessage: TCMExit);
+procedure TDACDBToggleSwitch.CMExit(var AMessage: TCMExit);
 begin
   try
     FDataLink.UpdateRecord;
@@ -736,29 +736,29 @@ begin
   end;
 end;
 
-procedure TMaxxRuralDBToggleSwitch.ControlChange(Sender: TObject);
+procedure TDACDBToggleSwitch.ControlChange(Sender: TObject);
 begin
   FDataLink.Modified;
   if Assigned(FOnChange) then
     FOnChange(Self);
 end;
 
-procedure TMaxxRuralDBToggleSwitch.DataChange(Sender: TObject);
+procedure TDACDBToggleSwitch.DataChange(Sender: TObject);
 begin
   Checked := (FDataLink.Field <> nil) and FDataLink.Field.AsBoolean;
 end;
 
-function TMaxxRuralDBToggleSwitch.GetDataField: string;
+function TDACDBToggleSwitch.GetDataField: string;
 begin
   Result := FDataLink.FieldName;
 end;
 
-function TMaxxRuralDBToggleSwitch.GetDataSource: TDataSource;
+function TDACDBToggleSwitch.GetDataSource: TDataSource;
 begin
   Result := FDataLink.DataSource;
 end;
 
-procedure TMaxxRuralDBToggleSwitch.Notification(AComponent: TComponent;
+procedure TDACDBToggleSwitch.Notification(AComponent: TComponent;
   Operation: TOperation);
 begin
   inherited;
@@ -767,27 +767,27 @@ begin
     FDataLink.DataSource := nil;
 end;
 
-procedure TMaxxRuralDBToggleSwitch.SetDataField(const AValue: string);
+procedure TDACDBToggleSwitch.SetDataField(const AValue: string);
 begin
   FDataLink.FieldName := AValue;
 end;
 
-procedure TMaxxRuralDBToggleSwitch.SetDataSource(const AValue: TDataSource);
+procedure TDACDBToggleSwitch.SetDataSource(const AValue: TDataSource);
 begin
   FDataLink.DataSource := AValue;
   if AValue <> nil then
     AValue.FreeNotification(Self);
 end;
 
-procedure TMaxxRuralDBToggleSwitch.UpdateData(Sender: TObject);
+procedure TDACDBToggleSwitch.UpdateData(Sender: TObject);
 begin
   if FDataLink.Field <> nil then
     FDataLink.Field.AsBoolean := Checked;
 end;
 
-{ TMaxxRuralDBSlider }
+{ TDACDBSlider }
 
-constructor TMaxxRuralDBSlider.Create(AOwner: TComponent);
+constructor TDACDBSlider.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FDataLink := TFieldDataLink.Create;
@@ -797,13 +797,13 @@ begin
   inherited OnChange := ControlChange;
 end;
 
-destructor TMaxxRuralDBSlider.Destroy;
+destructor TDACDBSlider.Destroy;
 begin
   FDataLink.Free;
   inherited;
 end;
 
-procedure TMaxxRuralDBSlider.CMExit(var AMessage: TCMExit);
+procedure TDACDBSlider.CMExit(var AMessage: TCMExit);
 begin
   try
     FDataLink.UpdateRecord;
@@ -812,30 +812,30 @@ begin
   end;
 end;
 
-procedure TMaxxRuralDBSlider.ControlChange(Sender: TObject);
+procedure TDACDBSlider.ControlChange(Sender: TObject);
 begin
   FDataLink.Modified;
   if Assigned(FOnChange) then
     FOnChange(Self);
 end;
 
-procedure TMaxxRuralDBSlider.DataChange(Sender: TObject);
+procedure TDACDBSlider.DataChange(Sender: TObject);
 begin
   if FDataLink.Field <> nil then
     Value := FDataLink.Field.AsInteger;
 end;
 
-function TMaxxRuralDBSlider.GetDataField: string;
+function TDACDBSlider.GetDataField: string;
 begin
   Result := FDataLink.FieldName;
 end;
 
-function TMaxxRuralDBSlider.GetDataSource: TDataSource;
+function TDACDBSlider.GetDataSource: TDataSource;
 begin
   Result := FDataLink.DataSource;
 end;
 
-procedure TMaxxRuralDBSlider.Notification(AComponent: TComponent;
+procedure TDACDBSlider.Notification(AComponent: TComponent;
   Operation: TOperation);
 begin
   inherited;
@@ -844,22 +844,23 @@ begin
     FDataLink.DataSource := nil;
 end;
 
-procedure TMaxxRuralDBSlider.SetDataField(const AValue: string);
+procedure TDACDBSlider.SetDataField(const AValue: string);
 begin
   FDataLink.FieldName := AValue;
 end;
 
-procedure TMaxxRuralDBSlider.SetDataSource(const AValue: TDataSource);
+procedure TDACDBSlider.SetDataSource(const AValue: TDataSource);
 begin
   FDataLink.DataSource := AValue;
   if AValue <> nil then
     AValue.FreeNotification(Self);
 end;
 
-procedure TMaxxRuralDBSlider.UpdateData(Sender: TObject);
+procedure TDACDBSlider.UpdateData(Sender: TObject);
 begin
   if FDataLink.Field <> nil then
     FDataLink.Field.AsInteger := Value;
 end;
 
 end.
+

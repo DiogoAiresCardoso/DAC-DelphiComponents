@@ -1,4 +1,4 @@
-﻿unit MaxxRural.Components.DesignSystem.IconAssets;
+unit DAC.Components.DesignSystem.IconAssets;
 
 interface
 
@@ -6,7 +6,7 @@ uses
   System.UITypes;
 
 type
-  TMaxxRuralIconKind = (
+  TDACIconKind = (
     mikNone,
     mikCheck,
     mikSearch,
@@ -116,127 +116,127 @@ type
     mikZoomOut
   );
 
-  TMaxxRuralIconInfo = record
+  TDACIconInfo = record
     Category: string;
     Name: string;
     DisplayName: string;
     RelativeFileName: string;
   end;
 
-  TMaxxRuralIconAssets = class
+  TDACIconAssets = class
   public
-    class function Info(const AKind: TMaxxRuralIconKind): TMaxxRuralIconInfo; static;
-    class function SvgSource(const AKind: TMaxxRuralIconKind;
+    class function Info(const AKind: TDACIconKind): TDACIconInfo; static;
+    class function SvgSource(const AKind: TDACIconKind;
       const AColor: TAlphaColor; const AAlpha: Byte = 255): string; static;
   end;
 
 const
-  MAXXRURAL_ICON_ACTIONS_ADD = 'actions\add.svg';
-  MAXXRURAL_ICON_ACTIONS_ATTACHMENT = 'actions\attachment.svg';
-  MAXXRURAL_ICON_ACTIONS_CHECK = 'actions\check.svg';
-  MAXXRURAL_ICON_ACTIONS_CLOSE = 'actions\close.svg';
-  MAXXRURAL_ICON_ACTIONS_COPY = 'actions\copy.svg';
-  MAXXRURAL_ICON_ACTIONS_DOWNLOAD = 'actions\download.svg';
-  MAXXRURAL_ICON_ACTIONS_EDIT = 'actions\edit.svg';
-  MAXXRURAL_ICON_ACTIONS_EXTERNAL_LINK = 'actions\external-link.svg';
-  MAXXRURAL_ICON_ACTIONS_FILTER = 'actions\filter.svg';
-  MAXXRURAL_ICON_ACTIONS_MINUS = 'actions\minus.svg';
-  MAXXRURAL_ICON_ACTIONS_MORE_HORIZONTAL = 'actions\more-horizontal.svg';
-  MAXXRURAL_ICON_ACTIONS_MORE_VERTICAL = 'actions\more-vertical.svg';
-  MAXXRURAL_ICON_ACTIONS_PRINT = 'actions\print.svg';
-  MAXXRURAL_ICON_ACTIONS_REFRESH = 'actions\refresh.svg';
-  MAXXRURAL_ICON_ACTIONS_SAVE = 'actions\save.svg';
-  MAXXRURAL_ICON_ACTIONS_SEARCH = 'actions\search.svg';
-  MAXXRURAL_ICON_ACTIONS_TRASH = 'actions\trash.svg';
-  MAXXRURAL_ICON_ACTIONS_UPLOAD = 'actions\upload.svg';
-  MAXXRURAL_ICON_AGRICULTURE_AREA_RULER = 'agriculture\area-ruler.svg';
-  MAXXRURAL_ICON_AGRICULTURE_BARN = 'agriculture\barn.svg';
-  MAXXRURAL_ICON_AGRICULTURE_CLOUD_RAIN = 'agriculture\cloud-rain.svg';
-  MAXXRURAL_ICON_AGRICULTURE_FARM = 'agriculture\farm.svg';
-  MAXXRURAL_ICON_AGRICULTURE_FIELD = 'agriculture\field.svg';
-  MAXXRURAL_ICON_AGRICULTURE_HARVEST = 'agriculture\harvest.svg';
-  MAXXRURAL_ICON_AGRICULTURE_HERBICIDE = 'agriculture\herbicide.svg';
-  MAXXRURAL_ICON_AGRICULTURE_LEAF = 'agriculture\leaf.svg';
-  MAXXRURAL_ICON_AGRICULTURE_LOCATION_PIN = 'agriculture\location-pin.svg';
-  MAXXRURAL_ICON_AGRICULTURE_PLOT = 'agriculture\plot.svg';
-  MAXXRURAL_ICON_AGRICULTURE_SEEDLING = 'agriculture\seedling.svg';
-  MAXXRURAL_ICON_AGRICULTURE_SOYBEAN = 'agriculture\soybean.svg';
-  MAXXRURAL_ICON_AGRICULTURE_SPRAYER = 'agriculture\sprayer.svg';
-  MAXXRURAL_ICON_AGRICULTURE_TEMPERATURE = 'agriculture\temperature.svg';
-  MAXXRURAL_ICON_AGRICULTURE_TRACTOR = 'agriculture\tractor.svg';
-  MAXXRURAL_ICON_CONTROLS_CHECKBOX_CHECKED = 'controls\checkbox-checked.svg';
-  MAXXRURAL_ICON_CONTROLS_CHECKBOX_UNCHECKED = 'controls\checkbox-unchecked.svg';
-  MAXXRURAL_ICON_CONTROLS_CLIPBOARD_CHECK = 'controls\clipboard-check.svg';
-  MAXXRURAL_ICON_CONTROLS_DOTS_LOADING = 'controls\dots-loading.svg';
-  MAXXRURAL_ICON_CONTROLS_FLAG = 'controls\flag.svg';
-  MAXXRURAL_ICON_CONTROLS_RADIO_CHECKED = 'controls\radio-checked.svg';
-  MAXXRURAL_ICON_CONTROLS_RADIO_UNCHECKED = 'controls\radio-unchecked.svg';
-  MAXXRURAL_ICON_CONTROLS_SLIDER = 'controls\slider.svg';
-  MAXXRURAL_ICON_CONTROLS_SPINNER = 'controls\spinner.svg';
-  MAXXRURAL_ICON_CONTROLS_TAG = 'controls\tag.svg';
-  MAXXRURAL_ICON_CONTROLS_TOGGLE_OFF = 'controls\toggle-off.svg';
-  MAXXRURAL_ICON_CONTROLS_TOGGLE_ON = 'controls\toggle-on.svg';
-  MAXXRURAL_ICON_DATA_CHART_AREA = 'data\chart-area.svg';
-  MAXXRURAL_ICON_DATA_CHART_BAR = 'data\chart-bar.svg';
-  MAXXRURAL_ICON_DATA_CHART_DONUT = 'data\chart-donut.svg';
-  MAXXRURAL_ICON_DATA_CHART_LINE = 'data\chart-line.svg';
-  MAXXRURAL_ICON_DATA_CLIPBOARD_ORDER = 'data\clipboard-order.svg';
-  MAXXRURAL_ICON_DATA_INVENTORY_STACK = 'data\inventory-stack.svg';
-  MAXXRURAL_ICON_DATA_LIST = 'data\list.svg';
-  MAXXRURAL_ICON_DATA_MONEY_CIRCLE = 'data\money-circle.svg';
-  MAXXRURAL_ICON_DATA_PACKAGE = 'data\package.svg';
-  MAXXRURAL_ICON_DATA_PERCENT = 'data\percent.svg';
-  MAXXRURAL_ICON_DATA_REPORT = 'data\report.svg';
-  MAXXRURAL_ICON_DATA_SHOPPING_CART = 'data\shopping-cart.svg';
-  MAXXRURAL_ICON_DATA_SORT_ASC = 'data\sort-asc.svg';
-  MAXXRURAL_ICON_DATA_SORT_DESC = 'data\sort-desc.svg';
-  MAXXRURAL_ICON_DATA_TABLE_GRID = 'data\table-grid.svg';
-  MAXXRURAL_ICON_INTERFACE_BELL = 'interface\bell.svg';
-  MAXXRURAL_ICON_INTERFACE_BOOK_OPEN = 'interface\book-open.svg';
-  MAXXRURAL_ICON_INTERFACE_CALENDAR = 'interface\calendar.svg';
-  MAXXRURAL_ICON_INTERFACE_CLOCK = 'interface\clock.svg';
-  MAXXRURAL_ICON_INTERFACE_CODE = 'interface\code.svg';
-  MAXXRURAL_ICON_INTERFACE_DOCUMENT = 'interface\document.svg';
-  MAXXRURAL_ICON_INTERFACE_DOCUMENT_TEXT = 'interface\document-text.svg';
-  MAXXRURAL_ICON_INTERFACE_ERROR_CIRCLE = 'interface\error-circle.svg';
-  MAXXRURAL_ICON_INTERFACE_EYE = 'interface\eye.svg';
-  MAXXRURAL_ICON_INTERFACE_EYE_OFF = 'interface\eye-off.svg';
-  MAXXRURAL_ICON_INTERFACE_HELP_CIRCLE = 'interface\help-circle.svg';
-  MAXXRURAL_ICON_INTERFACE_INFO_CIRCLE = 'interface\info-circle.svg';
-  MAXXRURAL_ICON_INTERFACE_LOCK = 'interface\lock.svg';
-  MAXXRURAL_ICON_INTERFACE_PALETTE = 'interface\palette.svg';
-  MAXXRURAL_ICON_INTERFACE_SETTINGS = 'interface\settings.svg';
-  MAXXRURAL_ICON_INTERFACE_STATUS_CONNECTED = 'interface\status-connected.svg';
-  MAXXRURAL_ICON_INTERFACE_STATUS_DISCONNECTED = 'interface\status-disconnected.svg';
-  MAXXRURAL_ICON_INTERFACE_SUCCESS_CIRCLE = 'interface\success-circle.svg';
-  MAXXRURAL_ICON_INTERFACE_THEME_MOON = 'interface\theme-moon.svg';
-  MAXXRURAL_ICON_INTERFACE_THEME_SUN = 'interface\theme-sun.svg';
-  MAXXRURAL_ICON_INTERFACE_UNLOCK = 'interface\unlock.svg';
-  MAXXRURAL_ICON_INTERFACE_USER = 'interface\user.svg';
-  MAXXRURAL_ICON_INTERFACE_USERS = 'interface\users.svg';
-  MAXXRURAL_ICON_INTERFACE_WARNING_TRIANGLE = 'interface\warning-triangle.svg';
-  MAXXRURAL_ICON_NAVIGATION_ARROW_DOWN = 'navigation\arrow-down.svg';
-  MAXXRURAL_ICON_NAVIGATION_ARROW_LEFT = 'navigation\arrow-left.svg';
-  MAXXRURAL_ICON_NAVIGATION_ARROW_RIGHT = 'navigation\arrow-right.svg';
-  MAXXRURAL_ICON_NAVIGATION_ARROW_UP = 'navigation\arrow-up.svg';
-  MAXXRURAL_ICON_NAVIGATION_CHEVRON_DOWN = 'navigation\chevron-down.svg';
-  MAXXRURAL_ICON_NAVIGATION_CHEVRON_LEFT = 'navigation\chevron-left.svg';
-  MAXXRURAL_ICON_NAVIGATION_CHEVRON_RIGHT = 'navigation\chevron-right.svg';
-  MAXXRURAL_ICON_NAVIGATION_CHEVRON_UP = 'navigation\chevron-up.svg';
-  MAXXRURAL_ICON_NAVIGATION_COLLAPSE = 'navigation\collapse.svg';
-  MAXXRURAL_ICON_NAVIGATION_EXPAND = 'navigation\expand.svg';
-  MAXXRURAL_ICON_NAVIGATION_FIRST_PAGE = 'navigation\first-page.svg';
-  MAXXRURAL_ICON_NAVIGATION_HOME = 'navigation\home.svg';
-  MAXXRURAL_ICON_NAVIGATION_LAST_PAGE = 'navigation\last-page.svg';
-  MAXXRURAL_ICON_NAVIGATION_MENU = 'navigation\menu.svg';
-  MAXXRURAL_ICON_NAVIGATION_NEXT_PAGE = 'navigation\next-page.svg';
-  MAXXRURAL_ICON_NAVIGATION_PREVIOUS_PAGE = 'navigation\previous-page.svg';
-  MAXXRURAL_ICON_REPORT_VIEWER_FILE_PDF = 'report-viewer\file-pdf.svg';
-  MAXXRURAL_ICON_REPORT_VIEWER_FIT_PAGE = 'report-viewer\fit-page.svg';
-  MAXXRURAL_ICON_REPORT_VIEWER_FULLSCREEN = 'report-viewer\fullscreen.svg';
-  MAXXRURAL_ICON_REPORT_VIEWER_PAGE_SEARCH = 'report-viewer\page-search.svg';
-  MAXXRURAL_ICON_REPORT_VIEWER_ZOOM_IN = 'report-viewer\zoom-in.svg';
-  MAXXRURAL_ICON_REPORT_VIEWER_ZOOM_OUT = 'report-viewer\zoom-out.svg';
+  DAC_ICON_ACTIONS_ADD = 'actions\add.svg';
+  DAC_ICON_ACTIONS_ATTACHMENT = 'actions\attachment.svg';
+  DAC_ICON_ACTIONS_CHECK = 'actions\check.svg';
+  DAC_ICON_ACTIONS_CLOSE = 'actions\close.svg';
+  DAC_ICON_ACTIONS_COPY = 'actions\copy.svg';
+  DAC_ICON_ACTIONS_DOWNLOAD = 'actions\download.svg';
+  DAC_ICON_ACTIONS_EDIT = 'actions\edit.svg';
+  DAC_ICON_ACTIONS_EXTERNAL_LINK = 'actions\external-link.svg';
+  DAC_ICON_ACTIONS_FILTER = 'actions\filter.svg';
+  DAC_ICON_ACTIONS_MINUS = 'actions\minus.svg';
+  DAC_ICON_ACTIONS_MORE_HORIZONTAL = 'actions\more-horizontal.svg';
+  DAC_ICON_ACTIONS_MORE_VERTICAL = 'actions\more-vertical.svg';
+  DAC_ICON_ACTIONS_PRINT = 'actions\print.svg';
+  DAC_ICON_ACTIONS_REFRESH = 'actions\refresh.svg';
+  DAC_ICON_ACTIONS_SAVE = 'actions\save.svg';
+  DAC_ICON_ACTIONS_SEARCH = 'actions\search.svg';
+  DAC_ICON_ACTIONS_TRASH = 'actions\trash.svg';
+  DAC_ICON_ACTIONS_UPLOAD = 'actions\upload.svg';
+  DAC_ICON_AGRICULTURE_AREA_RULER = 'agriculture\area-ruler.svg';
+  DAC_ICON_AGRICULTURE_BARN = 'agriculture\barn.svg';
+  DAC_ICON_AGRICULTURE_CLOUD_RAIN = 'agriculture\cloud-rain.svg';
+  DAC_ICON_AGRICULTURE_FARM = 'agriculture\farm.svg';
+  DAC_ICON_AGRICULTURE_FIELD = 'agriculture\field.svg';
+  DAC_ICON_AGRICULTURE_HARVEST = 'agriculture\harvest.svg';
+  DAC_ICON_AGRICULTURE_HERBICIDE = 'agriculture\herbicide.svg';
+  DAC_ICON_AGRICULTURE_LEAF = 'agriculture\leaf.svg';
+  DAC_ICON_AGRICULTURE_LOCATION_PIN = 'agriculture\location-pin.svg';
+  DAC_ICON_AGRICULTURE_PLOT = 'agriculture\plot.svg';
+  DAC_ICON_AGRICULTURE_SEEDLING = 'agriculture\seedling.svg';
+  DAC_ICON_AGRICULTURE_SOYBEAN = 'agriculture\soybean.svg';
+  DAC_ICON_AGRICULTURE_SPRAYER = 'agriculture\sprayer.svg';
+  DAC_ICON_AGRICULTURE_TEMPERATURE = 'agriculture\temperature.svg';
+  DAC_ICON_AGRICULTURE_TRACTOR = 'agriculture\tractor.svg';
+  DAC_ICON_CONTROLS_CHECKBOX_CHECKED = 'controls\checkbox-checked.svg';
+  DAC_ICON_CONTROLS_CHECKBOX_UNCHECKED = 'controls\checkbox-unchecked.svg';
+  DAC_ICON_CONTROLS_CLIPBOARD_CHECK = 'controls\clipboard-check.svg';
+  DAC_ICON_CONTROLS_DOTS_LOADING = 'controls\dots-loading.svg';
+  DAC_ICON_CONTROLS_FLAG = 'controls\flag.svg';
+  DAC_ICON_CONTROLS_RADIO_CHECKED = 'controls\radio-checked.svg';
+  DAC_ICON_CONTROLS_RADIO_UNCHECKED = 'controls\radio-unchecked.svg';
+  DAC_ICON_CONTROLS_SLIDER = 'controls\slider.svg';
+  DAC_ICON_CONTROLS_SPINNER = 'controls\spinner.svg';
+  DAC_ICON_CONTROLS_TAG = 'controls\tag.svg';
+  DAC_ICON_CONTROLS_TOGGLE_OFF = 'controls\toggle-off.svg';
+  DAC_ICON_CONTROLS_TOGGLE_ON = 'controls\toggle-on.svg';
+  DAC_ICON_DATA_CHART_AREA = 'data\chart-area.svg';
+  DAC_ICON_DATA_CHART_BAR = 'data\chart-bar.svg';
+  DAC_ICON_DATA_CHART_DONUT = 'data\chart-donut.svg';
+  DAC_ICON_DATA_CHART_LINE = 'data\chart-line.svg';
+  DAC_ICON_DATA_CLIPBOARD_ORDER = 'data\clipboard-order.svg';
+  DAC_ICON_DATA_INVENTORY_STACK = 'data\inventory-stack.svg';
+  DAC_ICON_DATA_LIST = 'data\list.svg';
+  DAC_ICON_DATA_MONEY_CIRCLE = 'data\money-circle.svg';
+  DAC_ICON_DATA_PACKAGE = 'data\package.svg';
+  DAC_ICON_DATA_PERCENT = 'data\percent.svg';
+  DAC_ICON_DATA_REPORT = 'data\report.svg';
+  DAC_ICON_DATA_SHOPPING_CART = 'data\shopping-cart.svg';
+  DAC_ICON_DATA_SORT_ASC = 'data\sort-asc.svg';
+  DAC_ICON_DATA_SORT_DESC = 'data\sort-desc.svg';
+  DAC_ICON_DATA_TABLE_GRID = 'data\table-grid.svg';
+  DAC_ICON_INTERFACE_BELL = 'interface\bell.svg';
+  DAC_ICON_INTERFACE_BOOK_OPEN = 'interface\book-open.svg';
+  DAC_ICON_INTERFACE_CALENDAR = 'interface\calendar.svg';
+  DAC_ICON_INTERFACE_CLOCK = 'interface\clock.svg';
+  DAC_ICON_INTERFACE_CODE = 'interface\code.svg';
+  DAC_ICON_INTERFACE_DOCUMENT = 'interface\document.svg';
+  DAC_ICON_INTERFACE_DOCUMENT_TEXT = 'interface\document-text.svg';
+  DAC_ICON_INTERFACE_ERROR_CIRCLE = 'interface\error-circle.svg';
+  DAC_ICON_INTERFACE_EYE = 'interface\eye.svg';
+  DAC_ICON_INTERFACE_EYE_OFF = 'interface\eye-off.svg';
+  DAC_ICON_INTERFACE_HELP_CIRCLE = 'interface\help-circle.svg';
+  DAC_ICON_INTERFACE_INFO_CIRCLE = 'interface\info-circle.svg';
+  DAC_ICON_INTERFACE_LOCK = 'interface\lock.svg';
+  DAC_ICON_INTERFACE_PALETTE = 'interface\palette.svg';
+  DAC_ICON_INTERFACE_SETTINGS = 'interface\settings.svg';
+  DAC_ICON_INTERFACE_STATUS_CONNECTED = 'interface\status-connected.svg';
+  DAC_ICON_INTERFACE_STATUS_DISCONNECTED = 'interface\status-disconnected.svg';
+  DAC_ICON_INTERFACE_SUCCESS_CIRCLE = 'interface\success-circle.svg';
+  DAC_ICON_INTERFACE_THEME_MOON = 'interface\theme-moon.svg';
+  DAC_ICON_INTERFACE_THEME_SUN = 'interface\theme-sun.svg';
+  DAC_ICON_INTERFACE_UNLOCK = 'interface\unlock.svg';
+  DAC_ICON_INTERFACE_USER = 'interface\user.svg';
+  DAC_ICON_INTERFACE_USERS = 'interface\users.svg';
+  DAC_ICON_INTERFACE_WARNING_TRIANGLE = 'interface\warning-triangle.svg';
+  DAC_ICON_NAVIGATION_ARROW_DOWN = 'navigation\arrow-down.svg';
+  DAC_ICON_NAVIGATION_ARROW_LEFT = 'navigation\arrow-left.svg';
+  DAC_ICON_NAVIGATION_ARROW_RIGHT = 'navigation\arrow-right.svg';
+  DAC_ICON_NAVIGATION_ARROW_UP = 'navigation\arrow-up.svg';
+  DAC_ICON_NAVIGATION_CHEVRON_DOWN = 'navigation\chevron-down.svg';
+  DAC_ICON_NAVIGATION_CHEVRON_LEFT = 'navigation\chevron-left.svg';
+  DAC_ICON_NAVIGATION_CHEVRON_RIGHT = 'navigation\chevron-right.svg';
+  DAC_ICON_NAVIGATION_CHEVRON_UP = 'navigation\chevron-up.svg';
+  DAC_ICON_NAVIGATION_COLLAPSE = 'navigation\collapse.svg';
+  DAC_ICON_NAVIGATION_EXPAND = 'navigation\expand.svg';
+  DAC_ICON_NAVIGATION_FIRST_PAGE = 'navigation\first-page.svg';
+  DAC_ICON_NAVIGATION_HOME = 'navigation\home.svg';
+  DAC_ICON_NAVIGATION_LAST_PAGE = 'navigation\last-page.svg';
+  DAC_ICON_NAVIGATION_MENU = 'navigation\menu.svg';
+  DAC_ICON_NAVIGATION_NEXT_PAGE = 'navigation\next-page.svg';
+  DAC_ICON_NAVIGATION_PREVIOUS_PAGE = 'navigation\previous-page.svg';
+  DAC_ICON_REPORT_VIEWER_FILE_PDF = 'report-viewer\file-pdf.svg';
+  DAC_ICON_REPORT_VIEWER_FIT_PAGE = 'report-viewer\fit-page.svg';
+  DAC_ICON_REPORT_VIEWER_FULLSCREEN = 'report-viewer\fullscreen.svg';
+  DAC_ICON_REPORT_VIEWER_PAGE_SEARCH = 'report-viewer\page-search.svg';
+  DAC_ICON_REPORT_VIEWER_ZOOM_IN = 'report-viewer\zoom-in.svg';
+  DAC_ICON_REPORT_VIEWER_ZOOM_OUT = 'report-viewer\zoom-out.svg';
 
 implementation
 
@@ -301,7 +301,7 @@ const CChevronRightSvg =
 const CUserSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Usuário" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Usu?rio" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <circle cx="60" cy="38" r="18"/><path d="M24 102 C26 76 40 66 60 66 C80 66 94 76 96 102"/>' + #13#10 +
       '  </g>' + #13#10 +
@@ -406,7 +406,7 @@ const CMinusSvg =
 const CMoreHorizontalSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Mais opções horizontal" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Mais op??es horizontal" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <circle cx="28" cy="60" r="6" fill="currentColor" stroke="none"/><circle cx="60" cy="60" r="6" f' +
       'ill="currentColor" stroke="none"/><circle cx="92" cy="60" r="6" fill="currentColor" stroke="none"/>' + #13#10 +
@@ -416,7 +416,7 @@ const CMoreHorizontalSvg =
 const CMoreVerticalSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Mais opções vertical" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Mais op??es vertical" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <circle cx="60" cy="28" r="6" fill="currentColor" stroke="none"/><circle cx="60" cy="60" r="6" f' +
       'ill="currentColor" stroke="none"/><circle cx="60" cy="92" r="6" fill="currentColor" stroke="none"/>' + #13#10 +
@@ -477,7 +477,7 @@ const CUploadSvg =
 const CAreaRulerSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Área estimada" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="?rea estimada" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <path d="M20 92 H92 V20"/><line x1="32" y1="92" x2="32" y2="82"/><line x1="46" y1="92" x2="46" y' +
       '2="76"/><line x1="60" y1="92" x2="60" y2="82"/><line x1="74" y1="92" x2="74" y2="76"/><line x1="92" ' +
@@ -490,7 +490,7 @@ const CAreaRulerSvg =
 const CBarnSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Galpão / Celeiro" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Galp?o / Celeiro" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <polyline points="14,52 60,18 106,52"/><path d="M24 46 V102 H96 V46"/><rect x="44" y="62" width=' +
       '"32" height="40" rx="2"/><line x1="44" y1="62" x2="76" y2="102"/><line x1="76" y1="62" x2="44" y2="1' +
@@ -565,7 +565,7 @@ const CLeafSvg =
 const CLocationPinSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Localização" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Localiza??o" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <path d="M60 106 C60 106 94 72 94 46 A34 34 0 0 0 26 46 C26 72 60 106 60 106 Z"/><circle cx="60"' +
       ' cy="46" r="12"/>' + #13#10 +
@@ -575,7 +575,7 @@ const CLocationPinSvg =
 const CPlotSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Talhão" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Talh?o" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <rect x="16" y="20" width="88" height="80" rx="6"/><path d="M30 88 C40 70 38 48 52 30"/><path d=' +
       '"M58 92 C68 70 66 48 80 26"/><line x1="20" y1="60" x2="100" y2="60"/>' + #13#10 +
@@ -656,7 +656,7 @@ const CCheckboxUncheckedSvg =
 const CClipboardCheckSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Validação" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Valida??o" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <rect x="28" y="24" width="64" height="80" rx="6"/><rect x="44" y="14" width="32" height="18" rx' +
       '="5"/><polyline points="42,66 54,78 80,50"/>' + #13#10 +
@@ -695,7 +695,7 @@ const CRadioCheckedSvg =
 const CRadioUncheckedSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Radio não selecionado" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Radio n?o selecionado" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <circle cx="60" cy="60" r="42"/>' + #13#10 +
       '  </g>' + #13#10 +
@@ -751,7 +751,7 @@ const CToggleOnSvg =
 const CChartAreaSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Gráfico de área" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Gr?fico de ?rea" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <line x1="18" y1="100" x2="104" y2="100"/><line x1="18" y1="100" x2="18" y2="20"/><path d="M24 8' +
       '2 L44 54 L60 68 L82 34 L100 48 V100 H24 Z" fill="currentColor" fill-opacity="0.18"/><polyline points' +
@@ -762,7 +762,7 @@ const CChartAreaSvg =
 const CChartBarSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Gráfico de barras" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Gr?fico de barras" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <line x1="20" y1="100" x2="104" y2="100"/><line x1="20" y1="100" x2="20" y2="20"/><rect x="34" y' +
       '="66" width="14" height="34" rx="2"/><rect x="56" y="46" width="14" height="54" rx="2"/><rect x="78"' +
@@ -773,7 +773,7 @@ const CChartBarSvg =
 const CChartDonutSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Gráfico de rosca" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Gr?fico de rosca" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <circle cx="60" cy="60" r="42"/><path d="M60 18 A42 42 0 0 1 100 48"/><line x1="60" y1="60" x2="' +
       '60" y2="18"/><line x1="60" y1="60" x2="100" y2="48"/><circle cx="60" cy="60" r="18"/>' + #13#10 +
@@ -783,7 +783,7 @@ const CChartDonutSvg =
 const CChartLineSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Gráfico de linha" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Gr?fico de linha" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <line x1="20" y1="100" x2="104" y2="100"/><line x1="20" y1="100" x2="20" y2="20"/><polyline poin' +
       'ts="30,78 48,58 64,68 82,38 100,50"/><circle cx="30" cy="78" r="4" fill="currentColor" stroke="none"' +
@@ -796,7 +796,7 @@ const CChartLineSvg =
 const CClipboardOrderSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Ordem de serviço" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Ordem de servi?o" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <rect x="28" y="24" width="64" height="80" rx="6"/><rect x="44" y="14" width="32" height="18" rx' +
       '="5"/><line x1="42" y1="50" x2="78" y2="50"/><line x1="42" y1="68" x2="78" y2="68"/><line x1="42" y1' +
@@ -861,7 +861,7 @@ const CPercentSvg =
 const CReportSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Relatório" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Relat?rio" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <path d="M26 14 H74 L96 36 V106 H26 Z"/><polyline points="74,14 74,36 96,36"/><line x1="42" y1="' +
       '88" x2="42" y2="72"/><line x1="58" y1="88" x2="58" y2="60"/><line x1="74" y1="88" x2="74" y2="48"/>' + #13#10 +
@@ -912,7 +912,7 @@ const CTableGridSvg =
 const CBellSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Notificação" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Notifica??o" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <path d="M28 82 H92 L84 70 V48 A24 24 0 0 0 36 48 V70 Z"/><path d="M50 94 A11 11 0 0 0 70 94"/>' + #13#10 +
       '  </g>' + #13#10 +
@@ -921,7 +921,7 @@ const CBellSvg =
 const CBookOpenSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Documentação" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Documenta??o" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <path d="M14 24 C32 20 46 24 60 34 V100 C46 90 32 88 14 92 Z"/><path d="M106 24 C88 20 74 24 60 ' +
       '34 V100 C74 90 88 88 106 92 Z"/>' + #13#10 +
@@ -931,7 +931,7 @@ const CBookOpenSvg =
 const CCalendarSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Calendário" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Calend?rio" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <rect x="18" y="24" width="84" height="78" rx="8"/><line x1="18" y1="48" x2="102" y2="48"/><line' +
       ' x1="38" y1="16" x2="38" y2="34"/><line x1="82" y1="16" x2="82" y2="34"/><circle cx="38" cy="68" r="' +
@@ -944,7 +944,7 @@ const CCalendarSvg =
 const CClockSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Relógio" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Rel?gio" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <circle cx="60" cy="60" r="44"/><line x1="60" y1="34" x2="60" y2="62"/><line x1="60" y1="62" x2=' +
       '"82" y2="74"/>' + #13#10 +
@@ -954,7 +954,7 @@ const CClockSvg =
 const CCodeSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Exemplos / Código" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Exemplos / C?digo" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <polyline points="42,30 18,60 42,90"/><polyline points="78,30 102,60 78,90"/><line x1="68" y1="2' +
       '2" x2="52" y2="98"/>' + #13#10 +
@@ -1004,7 +1004,7 @@ const CHelpCircleSvg =
 const CInfoCircleSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Informação" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Informa??o" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <circle cx="60" cy="60" r="46"/><line x1="60" y1="54" x2="60" y2="84"/><circle cx="60" cy="36" r' +
       '="4" fill="currentColor" stroke="none"/>' + #13#10 +
@@ -1037,7 +1037,7 @@ const CPaletteSvg =
 const CSettingsSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Configurações" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Configura??es" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <circle cx="60" cy="60" r="15"/><path d="M60 18 V30 M60 90 V102 M18 60 H30 M90 60 H102 M30 30 L3' +
       '9 39 M81 81 L90 90 M90 30 L81 39 M39 81 L30 90"/><circle cx="60" cy="60" r="38"/>' + #13#10 +
@@ -1108,7 +1108,7 @@ const CUnlockSvg =
 const CUsersSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Usuários" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Usu?rios" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <circle cx="48" cy="38" r="16"/><circle cx="82" cy="44" r="13"/><path d="M16 100 C18 76 30 66 48' +
       ' 66 C66 66 78 76 80 100"/><path d="M72 72 C89 72 100 82 102 100"/>' + #13#10 +
@@ -1194,7 +1194,7 @@ const CExpandSvg =
 const CFirstPageSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Primeira página" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Primeira p?gina" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <line x1="26" y1="24" x2="26" y2="96"/><line x1="92" y1="60" x2="38" y2="60"/><polyline points="' +
       '60,36 36,60 60,84"/>' + #13#10 +
@@ -1204,7 +1204,7 @@ const CFirstPageSvg =
 const CHomeSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Início / Fazenda" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="In?cio / Fazenda" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <polyline points="16,56 60,18 104,56"/><path d="M28 50 V102 H92 V50"/><rect x="50" y="70" width=' +
       '"20" height="32" rx="2"/>' + #13#10 +
@@ -1214,7 +1214,7 @@ const CHomeSvg =
 const CLastPageSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Última página" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="?ltima p?gina" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <line x1="94" y1="24" x2="94" y2="96"/><line x1="28" y1="60" x2="82" y2="60"/><polyline points="' +
       '60,36 84,60 60,84"/>' + #13#10 +
@@ -1234,7 +1234,7 @@ const CMenuSvg =
 const CNextPageSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Próxima página" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Pr?xima p?gina" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <line x1="26" y1="60" x2="88" y2="60"/><polyline points="66,36 90,60 66,84"/>' + #13#10 +
       '  </g>' + #13#10 +
@@ -1243,7 +1243,7 @@ const CNextPageSvg =
 const CPreviousPageSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Página anterior" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="P?gina anterior" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <line x1="94" y1="60" x2="32" y2="60"/><polyline points="54,36 30,60 54,84"/>' + #13#10 +
       '  </g>' + #13#10 +
@@ -1263,7 +1263,7 @@ const CFilePdfSvg =
 const CFitPageSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Ajustar página" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Ajustar p?gina" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <rect x="28" y="16" width="64" height="88" rx="4"/><path d="M42 36 H36 V42"/><path d="M78 36 H84' +
       ' V42"/><path d="M42 84 H36 V78"/><path d="M78 84 H84 V78"/>' + #13#10 +
@@ -1283,7 +1283,7 @@ const CFullscreenSvg =
 const CPageSearchSvg =
       '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +
       '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"' + #13#10 +
-      '     fill="none" role="img" aria-label="Pesquisar no relatório" style="color:#2F9E22">' + #13#10 +
+      '     fill="none" role="img" aria-label="Pesquisar no relat?rio" style="color:#2F9E22">' + #13#10 +
       '  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">' + #13#10 +
       '    <path d="M24 14 H68 L88 34 V70"/><polyline points="68,14 68,34 88,34"/><circle cx="70" cy="78" r' +
       '="18"/><line x1="84" y1="92" x2="104" y2="108"/>' + #13#10 +
@@ -1324,7 +1324,7 @@ begin
   Result := FloatToStrF(AAlpha / 255, ffFixed, 3, 2, LFormat);
 end;
 
-function RawSvg(const AKind: TMaxxRuralIconKind): string;
+function RawSvg(const AKind: TDACIconKind): string;
 begin
   case AKind of
     mikCheck: Result := CCheckSvg;
@@ -1438,8 +1438,8 @@ begin
   end;
 end;
 
-class function TMaxxRuralIconAssets.Info(
-  const AKind: TMaxxRuralIconKind): TMaxxRuralIconInfo;
+class function TDACIconAssets.Info(
+  const AKind: TDACIconKind): TDACIconInfo;
 begin
   case AKind of
     mikCheck:
@@ -2194,8 +2194,8 @@ begin
   end;
 end;
 
-class function TMaxxRuralIconAssets.SvgSource(
-  const AKind: TMaxxRuralIconKind; const AColor: TAlphaColor;
+class function TDACIconAssets.SvgSource(
+  const AKind: TDACIconKind; const AColor: TAlphaColor;
   const AAlpha: Byte): string;
 var
   LColor: string;
@@ -2215,3 +2215,4 @@ begin
 end;
 
 end.
+

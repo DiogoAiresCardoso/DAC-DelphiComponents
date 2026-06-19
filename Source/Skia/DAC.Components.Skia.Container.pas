@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Skia.Container;
+unit DAC.Components.Skia.Container;
 
 interface
 
@@ -8,31 +8,31 @@ uses
   System.Skia,
   System.Types,
   Vcl.Controls,
-  MaxxRural.Components.DesignSystem.DefaultTheme,
-  MaxxRural.Components.DesignSystem.Theme,
-  MaxxRural.Components.Skia.VisualElement,
-  MaxxRural.Components.Types;
+  DAC.Components.DesignSystem.DefaultTheme,
+  DAC.Components.DesignSystem.Theme,
+  DAC.Components.Skia.VisualElement,
+  DAC.Components.Types;
 
 type
-  TMaxxRuralSkiaElementContainer = class
+  TDACSkiaElementContainer = class
   private
     FCursor: TCursor;
-    FElements: TObjectList<TMaxxRuralSkiaVisualElement>;
-    FInteractionState: TMaxxRuralInteractionState;
-    FLayers: TDictionary<TMaxxRuralSkiaVisualElement, TMaxxRuralSkiaLayer>;
-    FTheme: IMaxxRuralComponentsTheme;
-    function ElementById(const AComponentId: string): TMaxxRuralSkiaVisualElement;
-    function ElementIsFocusable(const AElement: TMaxxRuralSkiaVisualElement): Boolean;
+    FElements: TObjectList<TDACSkiaVisualElement>;
+    FInteractionState: TDACInteractionState;
+    FLayers: TDictionary<TDACSkiaVisualElement, TDACSkiaLayer>;
+    FTheme: IDACComponentsTheme;
+    function ElementById(const AComponentId: string): TDACSkiaVisualElement;
+    function ElementIsFocusable(const AElement: TDACSkiaVisualElement): Boolean;
     function FirstFocusableIndex: Integer;
     function LastFocusableIndex: Integer;
-    procedure SetTheme(const ATheme: IMaxxRuralComponentsTheme);
+    procedure SetTheme(const ATheme: IDACComponentsTheme);
   public
     constructor Create;
     destructor Destroy; override;
-    procedure Add(const AElement: TMaxxRuralSkiaVisualElement);
-    procedure AddLayer(const AElement: TMaxxRuralSkiaVisualElement;
-      const ALayer: TMaxxRuralSkiaLayer);
-    procedure ApplyTheme(const ATheme: IMaxxRuralComponentsTheme);
+    procedure Add(const AElement: TDACSkiaVisualElement);
+    procedure AddLayer(const AElement: TDACSkiaVisualElement;
+      const ALayer: TDACSkiaLayer);
+    procedure ApplyTheme(const ATheme: IDACComponentsTheme);
     procedure ClearFocus;
     procedure ClearInteractionState;
     procedure ClearPointerState;
@@ -41,19 +41,19 @@ type
     procedure FocusComponent(const AComponentId: string; const AElementId: string = '');
     procedure FocusNext(const ADirection: Integer);
     function ActivateFocused: Boolean;
-    function HitTest(const APoint: TPointF): TMaxxRuralHitTestResult;
+    function HitTest(const APoint: TPointF): TDACHitTestResult;
     procedure KeyDown(var Key: Word; Shift: TShiftState);
     procedure KeyPress(var Key: Char);
     function MouseDown(const APoint: TPointF;
-      const AButton: TMaxxRuralPointerButton; const AShift: TShiftState = []): TMaxxRuralHitTestResult;
-    function MouseMove(const APoint: TPointF; const AShift: TShiftState = []): TMaxxRuralHitTestResult;
+      const AButton: TDACPointerButton; const AShift: TShiftState = []): TDACHitTestResult;
+    function MouseMove(const APoint: TPointF; const AShift: TShiftState = []): TDACHitTestResult;
     function MouseUp(const APoint: TPointF;
-      const AButton: TMaxxRuralPointerButton; const AShift: TShiftState = []): TMaxxRuralHitTestResult;
+      const AButton: TDACPointerButton; const AShift: TShiftState = []): TDACHitTestResult;
     function NeedsLayout: Boolean;
     function NeedsPaint: Boolean;
     property Cursor: TCursor read FCursor;
-    property InteractionState: TMaxxRuralInteractionState read FInteractionState;
-    property Theme: IMaxxRuralComponentsTheme read FTheme write SetTheme;
+    property InteractionState: TDACInteractionState read FInteractionState;
+    property Theme: IDACComponentsTheme read FTheme write SetTheme;
   end;
 
 implementation
@@ -62,39 +62,39 @@ uses
   System.Math,
   Winapi.Windows;
 
-constructor TMaxxRuralSkiaElementContainer.Create;
+constructor TDACSkiaElementContainer.Create;
 begin
   inherited Create;
-  FElements := TObjectList<TMaxxRuralSkiaVisualElement>.Create(False);
-  FLayers := TDictionary<TMaxxRuralSkiaVisualElement, TMaxxRuralSkiaLayer>.Create;
-  FTheme := TMaxxRuralDefaultComponentsTheme.New;
+  FElements := TObjectList<TDACSkiaVisualElement>.Create(False);
+  FLayers := TDictionary<TDACSkiaVisualElement, TDACSkiaLayer>.Create;
+  FTheme := TDACDefaultComponentsTheme.New;
   FCursor := crDefault;
   FInteractionState.Clear;
 end;
 
-destructor TMaxxRuralSkiaElementContainer.Destroy;
+destructor TDACSkiaElementContainer.Destroy;
 begin
   FLayers.Free;
   FElements.Free;
   inherited;
 end;
 
-function TMaxxRuralSkiaElementContainer.ActivateFocused: Boolean;
+function TDACSkiaElementContainer.ActivateFocused: Boolean;
 var
-  LElement: TMaxxRuralSkiaVisualElement;
+  LElement: TDACSkiaVisualElement;
 begin
   LElement := ElementById(FInteractionState.FocusedComponentId);
   Result := (LElement <> nil) and LElement.Activate;
 end;
 
-procedure TMaxxRuralSkiaElementContainer.Add(
-  const AElement: TMaxxRuralSkiaVisualElement);
+procedure TDACSkiaElementContainer.Add(
+  const AElement: TDACSkiaVisualElement);
 begin
   AddLayer(AElement, mslContent);
 end;
 
-procedure TMaxxRuralSkiaElementContainer.AddLayer(
-  const AElement: TMaxxRuralSkiaVisualElement; const ALayer: TMaxxRuralSkiaLayer);
+procedure TDACSkiaElementContainer.AddLayer(
+  const AElement: TDACSkiaVisualElement; const ALayer: TDACSkiaLayer);
 begin
   if AElement = nil then
     Exit;
@@ -106,15 +106,15 @@ begin
   FLayers.AddOrSetValue(AElement, ALayer);
 end;
 
-procedure TMaxxRuralSkiaElementContainer.ApplyTheme(
-  const ATheme: IMaxxRuralComponentsTheme);
+procedure TDACSkiaElementContainer.ApplyTheme(
+  const ATheme: IDACComponentsTheme);
 begin
   SetTheme(ATheme);
 end;
 
-procedure TMaxxRuralSkiaElementContainer.ClearFocus;
+procedure TDACSkiaElementContainer.ClearFocus;
 var
-  LElement: TMaxxRuralSkiaVisualElement;
+  LElement: TDACSkiaVisualElement;
 begin
   LElement := ElementById(FInteractionState.FocusedComponentId);
   if LElement <> nil then
@@ -122,31 +122,31 @@ begin
   FInteractionState.ClearFocus;
 end;
 
-procedure TMaxxRuralSkiaElementContainer.ClearInteractionState;
+procedure TDACSkiaElementContainer.ClearInteractionState;
 var
-  LElement: TMaxxRuralSkiaVisualElement;
+  LElement: TDACSkiaVisualElement;
 begin
   for LElement in FElements do
     LElement.ClearInteractionState;
   FInteractionState.Clear;
 end;
 
-procedure TMaxxRuralSkiaElementContainer.ClearPointerState;
+procedure TDACSkiaElementContainer.ClearPointerState;
 var
-  LElement: TMaxxRuralSkiaVisualElement;
+  LElement: TDACSkiaVisualElement;
 begin
   for LElement in FElements do
     LElement.ClearPointerState;
   FInteractionState.ClearPointer;
 end;
 
-procedure TMaxxRuralSkiaElementContainer.Draw(const ACanvas: ISkCanvas);
+procedure TDACSkiaElementContainer.Draw(const ACanvas: ISkCanvas);
 var
-  LElement: TMaxxRuralSkiaVisualElement;
-  LLayer: TMaxxRuralSkiaLayer;
-  LStage: TMaxxRuralSkiaLayer;
+  LElement: TDACSkiaVisualElement;
+  LLayer: TDACSkiaLayer;
+  LStage: TDACSkiaLayer;
 begin
-  for LStage := Low(TMaxxRuralSkiaLayer) to High(TMaxxRuralSkiaLayer) do
+  for LStage := Low(TDACSkiaLayer) to High(TDACSkiaLayer) do
     for LElement in FElements do
     begin
       if not LElement.Visible then
@@ -158,10 +158,10 @@ begin
     end;
 end;
 
-function TMaxxRuralSkiaElementContainer.ElementById(
-  const AComponentId: string): TMaxxRuralSkiaVisualElement;
+function TDACSkiaElementContainer.ElementById(
+  const AComponentId: string): TDACSkiaVisualElement;
 var
-  LElement: TMaxxRuralSkiaVisualElement;
+  LElement: TDACSkiaVisualElement;
 begin
   Result := nil;
   for LElement in FElements do
@@ -169,13 +169,13 @@ begin
       Exit(LElement);
 end;
 
-function TMaxxRuralSkiaElementContainer.ElementIsFocusable(
-  const AElement: TMaxxRuralSkiaVisualElement): Boolean;
+function TDACSkiaElementContainer.ElementIsFocusable(
+  const AElement: TDACSkiaVisualElement): Boolean;
 begin
   Result := (AElement <> nil) and AElement.Visible and AElement.Enabled and AElement.Focusable;
 end;
 
-function TMaxxRuralSkiaElementContainer.FirstFocusableIndex: Integer;
+function TDACSkiaElementContainer.FirstFocusableIndex: Integer;
 var
   I: Integer;
 begin
@@ -185,7 +185,7 @@ begin
       Exit(I);
 end;
 
-procedure TMaxxRuralSkiaElementContainer.FocusByIndex(const AIndex: Integer);
+procedure TDACSkiaElementContainer.FocusByIndex(const AIndex: Integer);
 var
   LIndex: Integer;
 begin
@@ -196,11 +196,11 @@ begin
     FocusComponent(FElements[LIndex].ComponentId);
 end;
 
-procedure TMaxxRuralSkiaElementContainer.FocusComponent(const AComponentId,
+procedure TDACSkiaElementContainer.FocusComponent(const AComponentId,
   AElementId: string);
 var
-  LElement: TMaxxRuralSkiaVisualElement;
-  LPrevious: TMaxxRuralSkiaVisualElement;
+  LElement: TDACSkiaVisualElement;
+  LPrevious: TDACSkiaVisualElement;
 begin
   LPrevious := ElementById(FInteractionState.FocusedComponentId);
   if LPrevious <> nil then
@@ -218,7 +218,7 @@ begin
   FInteractionState.FocusedElementId := AElementId;
 end;
 
-procedure TMaxxRuralSkiaElementContainer.FocusNext(const ADirection: Integer);
+procedure TDACSkiaElementContainer.FocusNext(const ADirection: Integer);
 var
   I: Integer;
   LCurrentIndex: Integer;
@@ -259,14 +259,14 @@ begin
   until LNextIndex = LCurrentIndex;
 end;
 
-function TMaxxRuralSkiaElementContainer.HitTest(
-  const APoint: TPointF): TMaxxRuralHitTestResult;
+function TDACSkiaElementContainer.HitTest(
+  const APoint: TPointF): TDACHitTestResult;
 var
   I: Integer;
-  LEvent: TMaxxRuralPointerEvent;
+  LEvent: TDACPointerEvent;
 begin
-  Result := TMaxxRuralHitTestResult.Empty;
-  LEvent := TMaxxRuralPointerEvent.Create(APoint);
+  Result := TDACHitTestResult.Empty;
+  LEvent := TDACPointerEvent.Create(APoint);
   for I := FElements.Count - 1 downto 0 do
   begin
     Result := FElements[I].HitTest(LEvent);
@@ -275,10 +275,10 @@ begin
   end;
 end;
 
-procedure TMaxxRuralSkiaElementContainer.KeyDown(var Key: Word;
+procedure TDACSkiaElementContainer.KeyDown(var Key: Word;
   Shift: TShiftState);
 var
-  LElement: TMaxxRuralSkiaVisualElement;
+  LElement: TDACSkiaVisualElement;
 begin
   case Key of
     VK_TAB:
@@ -299,16 +299,16 @@ begin
   end;
 end;
 
-procedure TMaxxRuralSkiaElementContainer.KeyPress(var Key: Char);
+procedure TDACSkiaElementContainer.KeyPress(var Key: Char);
 var
-  LElement: TMaxxRuralSkiaVisualElement;
+  LElement: TDACSkiaVisualElement;
 begin
   LElement := ElementById(FInteractionState.FocusedComponentId);
   if LElement <> nil then
     LElement.KeyPress(Key);
 end;
 
-function TMaxxRuralSkiaElementContainer.LastFocusableIndex: Integer;
+function TDACSkiaElementContainer.LastFocusableIndex: Integer;
 var
   I: Integer;
 begin
@@ -318,18 +318,18 @@ begin
       Exit(I);
 end;
 
-function TMaxxRuralSkiaElementContainer.MouseDown(const APoint: TPointF;
-  const AButton: TMaxxRuralPointerButton; const AShift: TShiftState): TMaxxRuralHitTestResult;
+function TDACSkiaElementContainer.MouseDown(const APoint: TPointF;
+  const AButton: TDACPointerButton; const AShift: TShiftState): TDACHitTestResult;
 var
-  LElement: TMaxxRuralSkiaVisualElement;
-  LEvent: TMaxxRuralPointerEvent;
+  LElement: TDACSkiaVisualElement;
+  LEvent: TDACPointerEvent;
 begin
   Result := HitTest(APoint);
   if not Result.Handled then
     Exit;
 
   LElement := ElementById(Result.ComponentId);
-  LEvent := TMaxxRuralPointerEvent.Create(APoint, AButton, AShift);
+  LEvent := TDACPointerEvent.Create(APoint, AButton, AShift);
   if LElement <> nil then
   begin
     LElement.MouseDown(LEvent, Result);
@@ -341,12 +341,12 @@ begin
   end;
 end;
 
-function TMaxxRuralSkiaElementContainer.MouseMove(const APoint: TPointF;
-  const AShift: TShiftState): TMaxxRuralHitTestResult;
+function TDACSkiaElementContainer.MouseMove(const APoint: TPointF;
+  const AShift: TShiftState): TDACHitTestResult;
 var
-  LElement: TMaxxRuralSkiaVisualElement;
-  LEvent: TMaxxRuralPointerEvent;
-  LPrevious: TMaxxRuralSkiaVisualElement;
+  LElement: TDACSkiaVisualElement;
+  LEvent: TDACPointerEvent;
+  LPrevious: TDACSkiaVisualElement;
 begin
   Result := HitTest(APoint);
   FCursor := Result.Cursor;
@@ -362,7 +362,7 @@ begin
   end;
 
   LElement := ElementById(Result.ComponentId);
-  LEvent := TMaxxRuralPointerEvent.Create(APoint, mpbNone, AShift);
+  LEvent := TDACPointerEvent.Create(APoint, mpbNone, AShift);
   if LElement <> nil then
     LElement.MouseMove(LEvent, Result);
 
@@ -370,15 +370,15 @@ begin
   FInteractionState.HoveredElementId := Result.ElementId;
 end;
 
-function TMaxxRuralSkiaElementContainer.MouseUp(const APoint: TPointF;
-  const AButton: TMaxxRuralPointerButton; const AShift: TShiftState): TMaxxRuralHitTestResult;
+function TDACSkiaElementContainer.MouseUp(const APoint: TPointF;
+  const AButton: TDACPointerButton; const AShift: TShiftState): TDACHitTestResult;
 var
-  LElement: TMaxxRuralSkiaVisualElement;
-  LEvent: TMaxxRuralPointerEvent;
+  LElement: TDACSkiaVisualElement;
+  LEvent: TDACPointerEvent;
 begin
   Result := HitTest(APoint);
   LElement := ElementById(FInteractionState.CapturedComponentId);
-  LEvent := TMaxxRuralPointerEvent.Create(APoint, AButton, AShift);
+  LEvent := TDACPointerEvent.Create(APoint, AButton, AShift);
   if LElement <> nil then
     LElement.MouseUp(LEvent, Result);
   FInteractionState.PressedComponentId := '';
@@ -387,9 +387,9 @@ begin
   FInteractionState.CapturedElementId := '';
 end;
 
-function TMaxxRuralSkiaElementContainer.NeedsLayout: Boolean;
+function TDACSkiaElementContainer.NeedsLayout: Boolean;
 var
-  LElement: TMaxxRuralSkiaVisualElement;
+  LElement: TDACSkiaVisualElement;
 begin
   Result := False;
   for LElement in FElements do
@@ -397,9 +397,9 @@ begin
       Exit(True);
 end;
 
-function TMaxxRuralSkiaElementContainer.NeedsPaint: Boolean;
+function TDACSkiaElementContainer.NeedsPaint: Boolean;
 var
-  LElement: TMaxxRuralSkiaVisualElement;
+  LElement: TDACSkiaVisualElement;
 begin
   Result := False;
   for LElement in FElements do
@@ -407,13 +407,13 @@ begin
       Exit(True);
 end;
 
-procedure TMaxxRuralSkiaElementContainer.SetTheme(
-  const ATheme: IMaxxRuralComponentsTheme);
+procedure TDACSkiaElementContainer.SetTheme(
+  const ATheme: IDACComponentsTheme);
 var
-  LElement: TMaxxRuralSkiaVisualElement;
+  LElement: TDACSkiaVisualElement;
 begin
   if ATheme = nil then
-    FTheme := TMaxxRuralDefaultComponentsTheme.New
+    FTheme := TDACDefaultComponentsTheme.New
   else
     FTheme := ATheme;
   for LElement in FElements do
@@ -421,3 +421,4 @@ begin
 end;
 
 end.
+

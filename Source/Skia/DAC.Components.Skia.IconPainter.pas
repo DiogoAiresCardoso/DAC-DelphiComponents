@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Skia.IconPainter;
+unit DAC.Components.Skia.IconPainter;
 
 interface
 
@@ -7,58 +7,58 @@ uses
   System.Skia,
   System.Types,
   System.UITypes,
-  MaxxRural.Components.DesignSystem.IconAssets,
-  MaxxRural.Components.DesignSystem.Theme,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.DesignSystem.IconAssets,
+  DAC.Components.DesignSystem.Theme,
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralIconStyle = record
+  TDACIconStyle = record
     Color: TAlphaColor;
     Alpha: Byte;
-    class function FromTheme(const ATheme: IMaxxRuralComponentsTheme): TMaxxRuralIconStyle; static;
-    class function Semantic(const ATheme: IMaxxRuralComponentsTheme;
-      const AKind: TMaxxRuralIconKind): TMaxxRuralIconStyle; static;
+    class function FromTheme(const ATheme: IDACComponentsTheme): TDACIconStyle; static;
+    class function Semantic(const ATheme: IDACComponentsTheme;
+      const AKind: TDACIconKind): TDACIconStyle; static;
   end;
 
-  TMaxxRuralSkiaIconPainter = class
+  TDACSkiaIconPainter = class
   private
     FIconCache: TDictionary<string, ISkSVGDOM>;
-    FRenderer: TMaxxRuralSkiaRenderer;
-    function IconCacheKey(const AKind: TMaxxRuralIconKind;
-      const AStyle: TMaxxRuralIconStyle): string;
-    function ResolveIcon(const AKind: TMaxxRuralIconKind;
-      const AStyle: TMaxxRuralIconStyle): ISkSVGDOM;
-    function SvgSource(const AKind: TMaxxRuralIconKind;
-      const AStyle: TMaxxRuralIconStyle): string;
+    FRenderer: TDACSkiaRenderer;
+    function IconCacheKey(const AKind: TDACIconKind;
+      const AStyle: TDACIconStyle): string;
+    function ResolveIcon(const AKind: TDACIconKind;
+      const AStyle: TDACIconStyle): ISkSVGDOM;
+    function SvgSource(const AKind: TDACIconKind;
+      const AStyle: TDACIconStyle): string;
   public
-    constructor Create(const ARenderer: TMaxxRuralSkiaRenderer);
+    constructor Create(const ARenderer: TDACSkiaRenderer);
     destructor Destroy; override;
     procedure ClearCache;
     procedure Draw(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const AKind: TMaxxRuralIconKind; const AStyle: TMaxxRuralIconStyle); overload;
+      const AKind: TDACIconKind; const AStyle: TDACIconStyle); overload;
     procedure Draw(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme; const AKind: TMaxxRuralIconKind); overload;
+      const ATheme: IDACComponentsTheme; const AKind: TDACIconKind); overload;
     procedure DrawSvg(const ACanvas: ISkCanvas; const ARect: TRectF;
       const ASvg: ISkSVGDOM);
     procedure DrawChevronDown(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme);
+      const ATheme: IDACComponentsTheme);
     procedure DrawChevronRight(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme);
+      const ATheme: IDACComponentsTheme);
     procedure DrawSearch(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme);
+      const ATheme: IDACComponentsTheme);
     procedure DrawUser(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme);
+      const ATheme: IDACComponentsTheme);
     procedure DrawCheck(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme);
+      const ATheme: IDACComponentsTheme);
     procedure DrawWarning(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme);
+      const ATheme: IDACComponentsTheme);
     procedure DrawDanger(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme);
+      const ATheme: IDACComponentsTheme);
     procedure DrawEye(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme);
+      const ATheme: IDACComponentsTheme);
     procedure DrawClose(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme);
-    property Renderer: TMaxxRuralSkiaRenderer read FRenderer;
+      const ATheme: IDACComponentsTheme);
+    property Renderer: TDACSkiaRenderer read FRenderer;
   end;
 
 implementation
@@ -66,31 +66,31 @@ implementation
 uses
   System.Math,
   System.SysUtils,
-  MaxxRural.Components.DesignSystem.DefaultTheme;
+  DAC.Components.DesignSystem.DefaultTheme;
 
-function ResolveTheme(const ATheme: IMaxxRuralComponentsTheme): IMaxxRuralComponentsTheme;
+function ResolveTheme(const ATheme: IDACComponentsTheme): IDACComponentsTheme;
 begin
   if ATheme = nil then
-    Result := TMaxxRuralDefaultComponentsTheme.New
+    Result := TDACDefaultComponentsTheme.New
   else
     Result := ATheme;
 end;
 
-class function TMaxxRuralIconStyle.FromTheme(
-  const ATheme: IMaxxRuralComponentsTheme): TMaxxRuralIconStyle;
+class function TDACIconStyle.FromTheme(
+  const ATheme: IDACComponentsTheme): TDACIconStyle;
 var
-  LTheme: IMaxxRuralComponentsTheme;
+  LTheme: IDACComponentsTheme;
 begin
   LTheme := ResolveTheme(ATheme);
   Result.Color := LTheme.Tokens.Colors.Text;
   Result.Alpha := 255;
 end;
 
-class function TMaxxRuralIconStyle.Semantic(
-  const ATheme: IMaxxRuralComponentsTheme;
-  const AKind: TMaxxRuralIconKind): TMaxxRuralIconStyle;
+class function TDACIconStyle.Semantic(
+  const ATheme: IDACComponentsTheme;
+  const AKind: TDACIconKind): TDACIconStyle;
 var
-  LTheme: IMaxxRuralComponentsTheme;
+  LTheme: IDACComponentsTheme;
 begin
   LTheme := ResolveTheme(ATheme);
   Result := FromTheme(LTheme);
@@ -109,28 +109,28 @@ begin
   end;
 end;
 
-constructor TMaxxRuralSkiaIconPainter.Create(
-  const ARenderer: TMaxxRuralSkiaRenderer);
+constructor TDACSkiaIconPainter.Create(
+  const ARenderer: TDACSkiaRenderer);
 begin
   inherited Create;
   FRenderer := ARenderer;
   FIconCache := TDictionary<string, ISkSVGDOM>.Create;
 end;
 
-destructor TMaxxRuralSkiaIconPainter.Destroy;
+destructor TDACSkiaIconPainter.Destroy;
 begin
   FIconCache.Free;
   inherited;
 end;
 
-procedure TMaxxRuralSkiaIconPainter.ClearCache;
+procedure TDACSkiaIconPainter.ClearCache;
 begin
   FIconCache.Clear;
 end;
 
-procedure TMaxxRuralSkiaIconPainter.Draw(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const AKind: TMaxxRuralIconKind;
-  const AStyle: TMaxxRuralIconStyle);
+procedure TDACSkiaIconPainter.Draw(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const AKind: TDACIconKind;
+  const AStyle: TDACIconStyle);
 begin
   if AKind = mikNone then
     Exit;
@@ -138,14 +138,14 @@ begin
   DrawSvg(ACanvas, ARect, ResolveIcon(AKind, AStyle));
 end;
 
-procedure TMaxxRuralSkiaIconPainter.Draw(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const ATheme: IMaxxRuralComponentsTheme;
-  const AKind: TMaxxRuralIconKind);
+procedure TDACSkiaIconPainter.Draw(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const ATheme: IDACComponentsTheme;
+  const AKind: TDACIconKind);
 begin
-  Draw(ACanvas, ARect, AKind, TMaxxRuralIconStyle.Semantic(ATheme, AKind));
+  Draw(ACanvas, ARect, AKind, TDACIconStyle.Semantic(ATheme, AKind));
 end;
 
-procedure TMaxxRuralSkiaIconPainter.DrawSvg(const ACanvas: ISkCanvas;
+procedure TDACSkiaIconPainter.DrawSvg(const ACanvas: ISkCanvas;
   const ARect: TRectF; const ASvg: ISkSVGDOM);
 const
   LIconViewBoxSize = 120;
@@ -172,70 +172,70 @@ begin
   end;
 end;
 
-procedure TMaxxRuralSkiaIconPainter.DrawChevronDown(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const ATheme: IMaxxRuralComponentsTheme);
+procedure TDACSkiaIconPainter.DrawChevronDown(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const ATheme: IDACComponentsTheme);
 begin
   Draw(ACanvas, ARect, ATheme, mikChevronDown);
 end;
 
-procedure TMaxxRuralSkiaIconPainter.DrawChevronRight(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const ATheme: IMaxxRuralComponentsTheme);
+procedure TDACSkiaIconPainter.DrawChevronRight(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const ATheme: IDACComponentsTheme);
 begin
   Draw(ACanvas, ARect, ATheme, mikChevronRight);
 end;
 
-procedure TMaxxRuralSkiaIconPainter.DrawSearch(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const ATheme: IMaxxRuralComponentsTheme);
+procedure TDACSkiaIconPainter.DrawSearch(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const ATheme: IDACComponentsTheme);
 begin
   Draw(ACanvas, ARect, ATheme, mikSearch);
 end;
 
-procedure TMaxxRuralSkiaIconPainter.DrawUser(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const ATheme: IMaxxRuralComponentsTheme);
+procedure TDACSkiaIconPainter.DrawUser(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const ATheme: IDACComponentsTheme);
 begin
   Draw(ACanvas, ARect, ATheme, mikUser);
 end;
 
-procedure TMaxxRuralSkiaIconPainter.DrawCheck(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const ATheme: IMaxxRuralComponentsTheme);
+procedure TDACSkiaIconPainter.DrawCheck(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const ATheme: IDACComponentsTheme);
 begin
   Draw(ACanvas, ARect, ATheme, mikCheck);
 end;
 
-procedure TMaxxRuralSkiaIconPainter.DrawWarning(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const ATheme: IMaxxRuralComponentsTheme);
+procedure TDACSkiaIconPainter.DrawWarning(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const ATheme: IDACComponentsTheme);
 begin
   Draw(ACanvas, ARect, ATheme, mikWarning);
 end;
 
-procedure TMaxxRuralSkiaIconPainter.DrawDanger(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const ATheme: IMaxxRuralComponentsTheme);
+procedure TDACSkiaIconPainter.DrawDanger(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const ATheme: IDACComponentsTheme);
 begin
   Draw(ACanvas, ARect, ATheme, mikDanger);
 end;
 
-procedure TMaxxRuralSkiaIconPainter.DrawEye(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const ATheme: IMaxxRuralComponentsTheme);
+procedure TDACSkiaIconPainter.DrawEye(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const ATheme: IDACComponentsTheme);
 begin
   Draw(ACanvas, ARect, ATheme, mikEye);
 end;
 
-procedure TMaxxRuralSkiaIconPainter.DrawClose(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const ATheme: IMaxxRuralComponentsTheme);
+procedure TDACSkiaIconPainter.DrawClose(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const ATheme: IDACComponentsTheme);
 begin
   Draw(ACanvas, ARect, ATheme, mikClose);
 end;
 
-function TMaxxRuralSkiaIconPainter.IconCacheKey(
-  const AKind: TMaxxRuralIconKind; const AStyle: TMaxxRuralIconStyle): string;
+function TDACSkiaIconPainter.IconCacheKey(
+  const AKind: TDACIconKind; const AStyle: TDACIconStyle): string;
 begin
   Result := Format('%d|%s|%d', [Ord(AKind), IntToHex(AStyle.Color, 8),
     AStyle.Alpha]);
 end;
 
-function TMaxxRuralSkiaIconPainter.ResolveIcon(
-  const AKind: TMaxxRuralIconKind;
-  const AStyle: TMaxxRuralIconStyle): ISkSVGDOM;
+function TDACSkiaIconPainter.ResolveIcon(
+  const AKind: TDACIconKind;
+  const AStyle: TDACIconStyle): ISkSVGDOM;
 var
   LKey: string;
 begin
@@ -247,12 +247,13 @@ begin
   end;
 end;
 
-function TMaxxRuralSkiaIconPainter.SvgSource(
-  const AKind: TMaxxRuralIconKind;
-  const AStyle: TMaxxRuralIconStyle): string;
+function TDACSkiaIconPainter.SvgSource(
+  const AKind: TDACIconKind;
+  const AStyle: TDACIconStyle): string;
 begin
-  Result := TMaxxRuralIconAssets.SvgSource(AKind, AStyle.Color,
+  Result := TDACIconAssets.SvgSource(AKind, AStyle.Color,
     AStyle.Alpha);
 end;
 
 end.
+

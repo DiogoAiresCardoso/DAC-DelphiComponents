@@ -1,4 +1,4 @@
-unit MaxxRural.Components.DesignSystem.AssetResolver;
+unit DAC.Components.DesignSystem.AssetResolver;
 
 interface
 
@@ -6,7 +6,7 @@ uses
   System.Skia;
 
 type
-  TMaxxRuralComponentAssetResolver = class
+  TDACComponentAssetResolver = class
   private
     FBasePath: string;
   public
@@ -22,13 +22,13 @@ uses
   System.IOUtils,
   System.SysUtils;
 
-constructor TMaxxRuralComponentAssetResolver.Create(const ABasePath: string);
+constructor TDACComponentAssetResolver.Create(const ABasePath: string);
 begin
   inherited Create;
   FBasePath := IncludeTrailingPathDelimiter(Trim(ABasePath));
 end;
 
-function TMaxxRuralComponentAssetResolver.ResolveFileName(
+function TDACComponentAssetResolver.ResolveFileName(
   const ARelativeFileName: string): string;
 var
   LFileName: string;
@@ -42,7 +42,7 @@ begin
     Result := LFileName;
 end;
 
-function TMaxxRuralComponentAssetResolver.SvgFromFile(
+function TDACComponentAssetResolver.SvgFromFile(
   const ARelativeFileName: string): ISkSVGDOM;
 var
   LFileName: string;
@@ -54,3 +54,4 @@ begin
 end;
 
 end.
+

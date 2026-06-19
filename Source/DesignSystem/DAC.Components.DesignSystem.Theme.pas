@@ -1,21 +1,22 @@
-unit MaxxRural.Components.DesignSystem.Theme;
+unit DAC.Components.DesignSystem.Theme;
 
 interface
 
 uses
-  MaxxRural.Components.DesignSystem.ChartPalette,
-  MaxxRural.Components.DesignSystem.Metrics,
-  MaxxRural.Components.DesignSystem.Tokens;
+  DAC.Components.DesignSystem.ChartPalette,
+  DAC.Components.DesignSystem.Metrics,
+  DAC.Components.DesignSystem.Tokens;
 
 type
-  IMaxxRuralComponentsTheme = interface
+  IDACComponentsTheme = interface
     ['{216C6F89-4EBE-4C7C-B521-50B9B9D47337}']
     function DisplayName: string;
-    function Tokens: TMaxxRuralDesignTokens;
-    function Metrics: TMaxxRuralComponentMetrics;
-    function ChartPalette: TMaxxRuralChartPalette;
+    function Tokens: TDACDesignTokens;
+    function Metrics: TDACComponentMetrics;
+    function ChartPalette: TDACChartPalette;
   end;
 
 implementation
 
 end.
+

@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.GridContainer;
+unit DAC.Components.Controls.GridContainer;
 
 interface
 
@@ -11,10 +11,10 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralGridContainer = class(TCustomControl)
+  TDACGridContainer = class(TCustomControl)
   private
     FAutoLayout: Boolean;
     FBackgroundColor: TAlphaColor;
@@ -24,7 +24,7 @@ type
     FGutter: Integer;
     FPaintBox: TSkPaintBox;
     FContentPadding: Integer;
-    FRenderer: TMaxxRuralSkiaRenderer;
+    FRenderer: TDACSkiaRenderer;
     FRowHeight: Integer;
     function ChildColumnSpan(const AControl: TControl): Integer;
     function ParentSurfaceColor: TAlphaColor;
@@ -83,9 +83,9 @@ implementation
 
 uses
   System.Math,
-  MaxxRural.Components.DesignSystem.ColorTokens;
+  DAC.Components.DesignSystem.ColorTokens;
 
-constructor TMaxxRuralGridContainer.Create(AOwner: TComponent);
+constructor TDACGridContainer.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csAcceptsControls, csOpaque];
@@ -96,14 +96,14 @@ begin
   StyleElements := [];
 
   FAutoLayout := True;
-  FBackgroundColor := TMaxxRuralComponentColors.White;
-  FBorderColor := TMaxxRuralComponentColors.ControlBorder;
+  FBackgroundColor := TDACComponentColors.White;
+  FBorderColor := TDACComponentColors.ControlBorder;
   FColumns := 12;
   FCornerRadius := 8;
   FGutter := 16;
   FContentPadding := 24;
   FRowHeight := 64;
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
+  FRenderer := TDACSkiaRenderer.Create;
 
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
@@ -112,14 +112,14 @@ begin
   FPaintBox.OnDraw := PaintBoxDraw;
 end;
 
-destructor TMaxxRuralGridContainer.Destroy;
+destructor TDACGridContainer.Destroy;
 begin
   FPaintBox.Free;
   FRenderer.Free;
   inherited;
 end;
 
-procedure TMaxxRuralGridContainer.AdjustClientRect(var Rect: TRect);
+procedure TDACGridContainer.AdjustClientRect(var Rect: TRect);
 var
   LPadding: Integer;
 begin
@@ -132,7 +132,7 @@ begin
     Rect.Bottom := Rect.Top;
 end;
 
-procedure TMaxxRuralGridContainer.ArrangeChildren;
+procedure TDACGridContainer.ArrangeChildren;
 var
   I: Integer;
   LChild: TControl;
@@ -193,14 +193,14 @@ begin
   end;
 end;
 
-procedure TMaxxRuralGridContainer.ChangeScale(M, D: Integer);
+procedure TDACGridContainer.ChangeScale(M, D: Integer);
 begin
   inherited;
   ArrangeChildren;
   Redraw;
 end;
 
-function TMaxxRuralGridContainer.ChildColumnSpan(const AControl: TControl): Integer;
+function TDACGridContainer.ChildColumnSpan(const AControl: TControl): Integer;
 begin
   Result := 1;
   if AControl <> nil then
@@ -210,7 +210,7 @@ begin
   Result := Max(1, Min(Result, FColumns));
 end;
 
-function TMaxxRuralGridContainer.LayoutRect: TRect;
+function TDACGridContainer.LayoutRect: TRect;
 begin
   if HandleAllocated then
     Result := ClientRect
@@ -219,7 +219,7 @@ begin
   AdjustClientRect(Result);
 end;
 
-procedure TMaxxRuralGridContainer.CMControlListChange(
+procedure TDACGridContainer.CMControlListChange(
   var AMessage: TCMControlListChange);
 begin
   inherited;
@@ -227,7 +227,7 @@ begin
     ArrangeChildren;
 end;
 
-procedure TMaxxRuralGridContainer.CreateWnd;
+procedure TDACGridContainer.CreateWnd;
 begin
   inherited;
   UpdateChromeBounds;
@@ -235,7 +235,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralGridContainer.Loaded;
+procedure TDACGridContainer.Loaded;
 begin
   inherited;
   UpdateChromeBounds;
@@ -243,7 +243,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralGridContainer.PaintBoxDraw(Sender: TObject;
+procedure TDACGridContainer.PaintBoxDraw(Sender: TObject;
   const ACanvas: ISkCanvas; const ADest: TRectF; const AOpacity: Single);
 var
   LBackground: TAlphaColor;
@@ -252,27 +252,27 @@ begin
   if FBackgroundColor = TAlphaColor($00000000) then
     LBackground := ParentSurfaceColor
   else
-    LBackground := TMaxxRuralComponentColors.Normalize(FBackgroundColor);
+    LBackground := TDACComponentColors.Normalize(FBackgroundColor);
 
   LRect := TRectF.Create(0, 0, ADest.Width, ADest.Height);
   LRect := FRenderer.SnapRect(LRect, ScaleFactor);
   LRect.Inflate(-0.5, -0.5);
   FRenderer.FillRoundRect(ACanvas, LRect, LBackground, ScaleMetric(FCornerRadius), 255);
   FRenderer.StrokeRoundRect(ACanvas, LRect,
-    TMaxxRuralComponentColors.Normalize(FBorderColor), ScaleMetric(FCornerRadius), 1, 255);
+    TDACComponentColors.Normalize(FBorderColor), ScaleMetric(FCornerRadius), 1, 255);
 end;
 
-function TMaxxRuralGridContainer.ParentSurfaceColor: TAlphaColor;
+function TDACGridContainer.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TMaxxRuralComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
-procedure TMaxxRuralGridContainer.Redraw;
+procedure TDACGridContainer.Redraw;
 begin
   RedrawChrome;
 end;
 
-procedure TMaxxRuralGridContainer.RedrawChrome;
+procedure TDACGridContainer.RedrawChrome;
 begin
   if (FPaintBox <> nil) and not (csDestroying in ComponentState) and
     ((Parent <> nil) or not (csDesigning in ComponentState)) then
@@ -280,7 +280,7 @@ begin
   Invalidate;
 end;
 
-procedure TMaxxRuralGridContainer.Resize;
+procedure TDACGridContainer.Resize;
 begin
   inherited;
   UpdateChromeBounds;
@@ -288,7 +288,7 @@ begin
   Redraw;
 end;
 
-function TMaxxRuralGridContainer.ScaleFactor: Single;
+function TDACGridContainer.ScaleFactor: Single;
 begin
   Result := 1;
   if FPaintBox <> nil then
@@ -297,14 +297,14 @@ begin
     Result := 1;
 end;
 
-function TMaxxRuralGridContainer.ScaleMetric(const AValue: Integer): Integer;
+function TDACGridContainer.ScaleMetric(const AValue: Integer): Integer;
 begin
   Result := Round(AValue * ScaleFactor);
   if (AValue > 0) and (Result < 1) then
     Result := 1;
 end;
 
-procedure TMaxxRuralGridContainer.SetAutoLayout(const AValue: Boolean);
+procedure TDACGridContainer.SetAutoLayout(const AValue: Boolean);
 begin
   if FAutoLayout = AValue then
     Exit;
@@ -312,7 +312,7 @@ begin
   ArrangeChildren;
 end;
 
-procedure TMaxxRuralGridContainer.SetBackgroundColor(const AValue: TAlphaColor);
+procedure TDACGridContainer.SetBackgroundColor(const AValue: TAlphaColor);
 begin
   if FBackgroundColor = AValue then
     Exit;
@@ -320,7 +320,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralGridContainer.SetBorderColor(const AValue: TAlphaColor);
+procedure TDACGridContainer.SetBorderColor(const AValue: TAlphaColor);
 begin
   if FBorderColor = AValue then
     Exit;
@@ -328,7 +328,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralGridContainer.SetColumns(const AValue: Integer);
+procedure TDACGridContainer.SetColumns(const AValue: Integer);
 begin
   if FColumns = AValue then
     Exit;
@@ -337,7 +337,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralGridContainer.SetCornerRadius(const AValue: Integer);
+procedure TDACGridContainer.SetCornerRadius(const AValue: Integer);
 begin
   if FCornerRadius = AValue then
     Exit;
@@ -345,7 +345,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralGridContainer.SetGutter(const AValue: Integer);
+procedure TDACGridContainer.SetGutter(const AValue: Integer);
 begin
   if FGutter = AValue then
     Exit;
@@ -354,7 +354,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralGridContainer.SetContentPadding(const AValue: Integer);
+procedure TDACGridContainer.SetContentPadding(const AValue: Integer);
 begin
   if FContentPadding = AValue then
     Exit;
@@ -363,7 +363,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralGridContainer.SetRowHeight(const AValue: Integer);
+procedure TDACGridContainer.SetRowHeight(const AValue: Integer);
 begin
   if FRowHeight = AValue then
     Exit;
@@ -372,7 +372,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralGridContainer.UpdateChromeBounds;
+procedure TDACGridContainer.UpdateChromeBounds;
 begin
   if FPaintBox = nil then
     Exit;
@@ -383,9 +383,10 @@ begin
   FPaintBox.SendToBack;
 end;
 
-procedure TMaxxRuralGridContainer.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACGridContainer.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
 end.
+

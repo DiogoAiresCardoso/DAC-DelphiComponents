@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Skia.Renderer;
+unit DAC.Components.Skia.Renderer;
 
 interface
 
@@ -9,7 +9,7 @@ uses
   System.UITypes;
 
 type
-  TMaxxRuralSkiaRenderer = class
+  TDACSkiaRenderer = class
   private
     FFillPaintCache: TDictionary<string, ISkPaint>;
     FFontCache: TDictionary<string, ISkFont>;
@@ -49,9 +49,9 @@ implementation
 uses
   System.Math,
   System.SysUtils,
-  MaxxRural.Components.DesignSystem.Fonts;
+  DAC.Components.DesignSystem.Fonts;
 
-constructor TMaxxRuralSkiaRenderer.Create;
+constructor TDACSkiaRenderer.Create;
 begin
   inherited Create;
   FFillPaintCache := TDictionary<string, ISkPaint>.Create;
@@ -59,7 +59,7 @@ begin
   FStrokePaintCache := TDictionary<string, ISkPaint>.Create;
 end;
 
-destructor TMaxxRuralSkiaRenderer.Destroy;
+destructor TDACSkiaRenderer.Destroy;
 begin
   FStrokePaintCache.Free;
   FFontCache.Free;
@@ -67,25 +67,25 @@ begin
   inherited;
 end;
 
-function TMaxxRuralSkiaRenderer.BuildFillPaintKey(const AColor: TAlphaColor;
+function TDACSkiaRenderer.BuildFillPaintKey(const AColor: TAlphaColor;
   const AAlpha: Byte): string;
 begin
   Result := Format('fill|%s|%d', [IntToHex(AColor, 8), AAlpha]);
 end;
 
-function TMaxxRuralSkiaRenderer.BuildFontKey(const AFamily: string;
+function TDACSkiaRenderer.BuildFontKey(const AFamily: string;
   const ASize: Single; const ABold: Boolean): string;
 begin
   Result := Format('font|%s|%s|%s', [AFamily, FloatToStr(ASize), BoolToStr(ABold, True)]);
 end;
 
-function TMaxxRuralSkiaRenderer.BuildStrokePaintKey(const AColor: TAlphaColor;
+function TDACSkiaRenderer.BuildStrokePaintKey(const AColor: TAlphaColor;
   const AWidth: Single; const AAlpha: Byte): string;
 begin
   Result := Format('stroke|%s|%s|%d', [IntToHex(AColor, 8), FloatToStr(AWidth), AAlpha]);
 end;
 
-function TMaxxRuralSkiaRenderer.FitTextWithEllipsis(const AText: string;
+function TDACSkiaRenderer.FitTextWithEllipsis(const AText: string;
   const AFont: ISkFont; const AMaxWidth: Single): string;
 var
   LBest: Integer;
@@ -120,7 +120,7 @@ begin
   Result := Copy(LSource, 1, LBest) + '...';
 end;
 
-procedure TMaxxRuralSkiaRenderer.FillRoundRect(const ACanvas: ISkCanvas;
+procedure TDACSkiaRenderer.FillRoundRect(const ACanvas: ISkCanvas;
   const ARect: TRectF; const AColor: TAlphaColor; const ARadius: Single;
   const AAlpha: Byte);
 begin
@@ -132,7 +132,7 @@ begin
     ACanvas.DrawRect(ARect, GetFillPaint(AColor, AAlpha));
 end;
 
-function TMaxxRuralSkiaRenderer.GetFillPaint(const AColor: TAlphaColor;
+function TDACSkiaRenderer.GetFillPaint(const AColor: TAlphaColor;
   const AAlpha: Byte): ISkPaint;
 var
   LKey: string;
@@ -148,7 +148,7 @@ begin
   end;
 end;
 
-function TMaxxRuralSkiaRenderer.GetFont(const AFamily: string;
+function TDACSkiaRenderer.GetFont(const AFamily: string;
   const ASize: Single; const ABold: Boolean): ISkFont;
 var
   LKey: string;
@@ -163,8 +163,8 @@ begin
     else
       LStyle := TSkFontStyle.Normal;
     LTypeface := nil;
-    if SameText(AFamily, MaxxRuralComponentFontFamily) then
-      LTypeface := TMaxxRuralComponentFontInstaller.InterTypeface;
+    if SameText(AFamily, DACComponentFontFamily) then
+      LTypeface := TDACComponentFontInstaller.InterTypeface;
     if LTypeface = nil then
       LTypeface := TSkTypeface.MakeFromName(AFamily, LStyle);
     Result := TSkFont.Create(LTypeface, ASize, 1, 0);
@@ -173,7 +173,7 @@ begin
   end;
 end;
 
-function TMaxxRuralSkiaRenderer.GetStrokePaint(const AColor: TAlphaColor;
+function TDACSkiaRenderer.GetStrokePaint(const AColor: TAlphaColor;
   const AWidth: Single; const AAlpha: Byte): ISkPaint;
 var
   LKey: string;
@@ -190,7 +190,7 @@ begin
   end;
 end;
 
-function TMaxxRuralSkiaRenderer.MeasureText(const AText, AFamily: string;
+function TDACSkiaRenderer.MeasureText(const AText, AFamily: string;
   const ASize: Single; const ABold: Boolean): Single;
 var
   LFont: ISkFont;
@@ -204,7 +204,7 @@ begin
     Result := LFont.MeasureText(AText);
 end;
 
-function TMaxxRuralSkiaRenderer.SnapRect(const ARect: TRectF;
+function TDACSkiaRenderer.SnapRect(const ARect: TRectF;
   const AScale: Single): TRectF;
 var
   LScale: Single;
@@ -219,7 +219,7 @@ begin
     Round(ARect.Bottom * LScale) / LScale);
 end;
 
-procedure TMaxxRuralSkiaRenderer.StrokeRoundRect(const ACanvas: ISkCanvas;
+procedure TDACSkiaRenderer.StrokeRoundRect(const ACanvas: ISkCanvas;
   const ARect: TRectF; const AColor: TAlphaColor; const ARadius,
   AStrokeWidth: Single; const AAlpha: Byte);
 begin
@@ -231,7 +231,7 @@ begin
     ACanvas.DrawRect(ARect, GetStrokePaint(AColor, AStrokeWidth, AAlpha));
 end;
 
-procedure TMaxxRuralSkiaRenderer.Svg(const ACanvas: ISkCanvas;
+procedure TDACSkiaRenderer.Svg(const ACanvas: ISkCanvas;
   const AIcon: ISkSVGDOM; const ARect: TRectF);
 begin
   if (ACanvas = nil) or (AIcon = nil) then
@@ -247,7 +247,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralSkiaRenderer.Text(const ACanvas: ISkCanvas; const AText,
+procedure TDACSkiaRenderer.Text(const ACanvas: ISkCanvas; const AText,
   AFamily: string; const AX, AY, ASize: Single; const AColor: TAlphaColor;
   const ABold: Boolean; const AMaxWidth: Single);
 var
@@ -264,7 +264,7 @@ begin
   ACanvas.DrawSimpleText(LText, AX, AY, LFont, LPaint);
 end;
 
-procedure TMaxxRuralSkiaRenderer.TextCentered(const ACanvas: ISkCanvas;
+procedure TDACSkiaRenderer.TextCentered(const ACanvas: ISkCanvas;
   const AText, AFamily: string; const ARect: TRectF; const ASize: Single;
   const AColor: TAlphaColor; const ABold: Boolean; const AMaxWidth: Single);
 var
@@ -290,3 +290,4 @@ begin
 end;
 
 end.
+

@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.ButtonEdit;
+unit DAC.Components.Controls.ButtonEdit;
 
 interface
 
@@ -10,30 +10,30 @@ uses
   Vcl.Graphics,
   Vcl.Mask,
   Vcl.StdCtrls,
-  MaxxRural.Components.Controls.Button,
-  MaxxRural.Components.Controls.Edit,
-  MaxxRural.Components.DesignSystem.IconAssets;
+  DAC.Components.Controls.Button,
+  DAC.Components.Controls.Edit,
+  DAC.Components.DesignSystem.IconAssets;
 
 type
-  TMaxxRuralButtonEdit = class(TCustomControl)
+  TDACButtonEdit = class(TCustomControl)
   private
-    FButton: TMaxxRuralButton;
+    FButton: TDACButton;
     FButtonCaption: string;
     FButtonWidth: Integer;
-    FEdit: TMaxxRuralEdit;
+    FEdit: TDACEdit;
     FOnButtonClick: TNotifyEvent;
     FOnChange: TNotifyEvent;
     function ChromeTop: Integer;
-    function GetButtonIconKind: TMaxxRuralIconKind;
-    function GetButtonKind: TMaxxRuralButtonKind;
+    function GetButtonIconKind: TDACIconKind;
+    function GetButtonKind: TDACButtonKind;
     function GetCharCase: TEditCharCase;
     function GetCornerRadius: Integer;
     function GetCounterText: string;
     function GetEditControl: TMaskEdit;
-    function GetEditKind: TMaxxRuralEditKind;
+    function GetEditKind: TDACEditKind;
     function GetEditMask: string;
     function GetHelperText: string;
-    function GetInputSize: TMaxxRuralInputSize;
+    function GetInputSize: TDACInputSize;
     function GetLabelText: string;
     function GetMaxLength: Integer;
     function GetPasswordChar: Char;
@@ -41,25 +41,25 @@ type
     function GetReadOnly: Boolean;
     function GetRequired: Boolean;
     function GetShowButtonIcon: Boolean;
-    function GetStatus: TMaxxRuralEditStatus;
+    function GetStatus: TDACEditStatus;
     function GetText: string;
-    function GetVariant: TMaxxRuralInputVariant;
+    function GetVariant: TDACInputVariant;
     procedure ButtonClick(Sender: TObject);
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure DoEditChange(Sender: TObject);
     procedure DoEditEnter(Sender: TObject);
     procedure DoEditExit(Sender: TObject);
     procedure SetButtonCaption(const AValue: string);
-    procedure SetButtonIconKind(const AValue: TMaxxRuralIconKind);
-    procedure SetButtonKind(const AValue: TMaxxRuralButtonKind);
+    procedure SetButtonIconKind(const AValue: TDACIconKind);
+    procedure SetButtonKind(const AValue: TDACButtonKind);
     procedure SetButtonWidth(const AValue: Integer);
     procedure SetCharCase(const AValue: TEditCharCase);
     procedure SetCornerRadius(const AValue: Integer);
     procedure SetCounterText(const AValue: string);
-    procedure SetEditKind(const AValue: TMaxxRuralEditKind);
+    procedure SetEditKind(const AValue: TDACEditKind);
     procedure SetEditMask(const AValue: string);
     procedure SetHelperText(const AValue: string);
-    procedure SetInputSize(const AValue: TMaxxRuralInputSize);
+    procedure SetInputSize(const AValue: TDACInputSize);
     procedure SetLabelText(const AValue: string);
     procedure SetMaxLength(const AValue: Integer);
     procedure SetPasswordChar(const AValue: Char);
@@ -67,9 +67,9 @@ type
     procedure SetReadOnly(const AValue: Boolean);
     procedure SetRequired(const AValue: Boolean);
     procedure SetShowButtonIcon(const AValue: Boolean);
-    procedure SetStatus(const AValue: TMaxxRuralEditStatus);
+    procedure SetStatus(const AValue: TDACEditStatus);
     procedure SetText(const AValue: string);
-    procedure SetVariant(const AValue: TMaxxRuralInputVariant);
+    procedure SetVariant(const AValue: TDACInputVariant);
     procedure UpdateChildBounds;
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
   protected
@@ -80,25 +80,25 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     procedure SetFocus; reintroduce;
-    property ButtonControl: TMaxxRuralButton read FButton;
+    property ButtonControl: TDACButton read FButton;
     property EditControl: TMaskEdit read GetEditControl;
   published
     property Align;
     property Anchors;
     property ButtonCaption: string read FButtonCaption write SetButtonCaption;
-    property ButtonIconKind: TMaxxRuralIconKind read GetButtonIconKind write SetButtonIconKind default mikSearch;
-    property ButtonKind: TMaxxRuralButtonKind read GetButtonKind write SetButtonKind default mbkInputAction;
+    property ButtonIconKind: TDACIconKind read GetButtonIconKind write SetButtonIconKind default mikSearch;
+    property ButtonKind: TDACButtonKind read GetButtonKind write SetButtonKind default mbkInputAction;
     property ButtonWidth: Integer read FButtonWidth write SetButtonWidth default 48;
     property CharCase: TEditCharCase read GetCharCase write SetCharCase default ecNormal;
     property Constraints;
     property CornerRadius: Integer read GetCornerRadius write SetCornerRadius default 8;
     property CounterText: string read GetCounterText write SetCounterText;
-    property EditKind: TMaxxRuralEditKind read GetEditKind write SetEditKind default mekText;
+    property EditKind: TDACEditKind read GetEditKind write SetEditKind default mekText;
     property EditMask: string read GetEditMask write SetEditMask;
     property Enabled;
     property Font;
     property HelperText: string read GetHelperText write SetHelperText;
-    property InputSize: TMaxxRuralInputSize read GetInputSize write SetInputSize default misMedium;
+    property InputSize: TDACInputSize read GetInputSize write SetInputSize default misMedium;
     property LabelText: string read GetLabelText write SetLabelText;
     property MaxLength: Integer read GetMaxLength write SetMaxLength default 0;
     property ParentFont;
@@ -110,11 +110,11 @@ type
     property Required: Boolean read GetRequired write SetRequired default False;
     property ShowButtonIcon: Boolean read GetShowButtonIcon write SetShowButtonIcon default True;
     property ShowHint;
-    property Status: TMaxxRuralEditStatus read GetStatus write SetStatus default mesNormal;
+    property Status: TDACEditStatus read GetStatus write SetStatus default mesNormal;
     property TabOrder;
     property TabStop default True;
     property Text: string read GetText write SetText;
-    property Variant: TMaxxRuralInputVariant read GetVariant write SetVariant default mivOutlined;
+    property Variant: TDACInputVariant read GetVariant write SetVariant default mivOutlined;
     property Visible;
     property OnButtonClick: TNotifyEvent read FOnButtonClick write FOnButtonClick;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
@@ -137,7 +137,7 @@ implementation
 uses
   System.Math;
 
-constructor TMaxxRuralButtonEdit.Create(AOwner: TComponent);
+constructor TDACButtonEdit.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csAcceptsControls, csClickEvents];
@@ -149,7 +149,7 @@ begin
 
   FButtonWidth := 48;
 
-  FEdit := TMaxxRuralEdit.Create(Self);
+  FEdit := TDACEdit.Create(Self);
   FEdit.Parent := Self;
   FEdit.SetSubComponent(True);
   FEdit.TabStop := True;
@@ -157,7 +157,7 @@ begin
   FEdit.OnEnter := DoEditEnter;
   FEdit.OnExit := DoEditExit;
 
-  FButton := TMaxxRuralButton.Create(Self);
+  FButton := TDACButton.Create(Self);
   FButton.Parent := Self;
   FButton.SetSubComponent(True);
   FButton.Cursor := crHandPoint;
@@ -173,171 +173,171 @@ begin
   UpdateChildBounds;
 end;
 
-procedure TMaxxRuralButtonEdit.ButtonClick(Sender: TObject);
+procedure TDACButtonEdit.ButtonClick(Sender: TObject);
 begin
   if Assigned(FOnButtonClick) then
     FOnButtonClick(Self);
 end;
 
-procedure TMaxxRuralButtonEdit.ChangeScale(M, D: Integer);
+procedure TDACButtonEdit.ChangeScale(M, D: Integer);
 begin
   inherited;
   UpdateChildBounds;
 end;
 
-function TMaxxRuralButtonEdit.ChromeTop: Integer;
+function TDACButtonEdit.ChromeTop: Integer;
 begin
   Result := 0;
   if GetLabelText.Trim <> '' then
     Result := 24;
 end;
 
-procedure TMaxxRuralButtonEdit.CMEnabledChanged(var AMessage: TMessage);
+procedure TDACButtonEdit.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
   FEdit.Enabled := Enabled;
   FButton.Enabled := Enabled and not FEdit.ReadOnly;
 end;
 
-procedure TMaxxRuralButtonEdit.CreateWnd;
+procedure TDACButtonEdit.CreateWnd;
 begin
   inherited;
   UpdateChildBounds;
 end;
 
-procedure TMaxxRuralButtonEdit.DoEditChange(Sender: TObject);
+procedure TDACButtonEdit.DoEditChange(Sender: TObject);
 begin
   if Assigned(FOnChange) then
     FOnChange(Self);
 end;
 
-procedure TMaxxRuralButtonEdit.DoEditEnter(Sender: TObject);
+procedure TDACButtonEdit.DoEditEnter(Sender: TObject);
 begin
   if Assigned(OnEnter) then
     OnEnter(Self);
 end;
 
-procedure TMaxxRuralButtonEdit.DoEditExit(Sender: TObject);
+procedure TDACButtonEdit.DoEditExit(Sender: TObject);
 begin
   if Assigned(OnExit) then
     OnExit(Self);
 end;
 
-function TMaxxRuralButtonEdit.GetCharCase: TEditCharCase;
+function TDACButtonEdit.GetCharCase: TEditCharCase;
 begin
   Result := FEdit.CharCase;
 end;
 
-function TMaxxRuralButtonEdit.GetButtonIconKind: TMaxxRuralIconKind;
+function TDACButtonEdit.GetButtonIconKind: TDACIconKind;
 begin
   Result := FButton.IconKind;
 end;
 
-function TMaxxRuralButtonEdit.GetButtonKind: TMaxxRuralButtonKind;
+function TDACButtonEdit.GetButtonKind: TDACButtonKind;
 begin
   Result := FButton.Kind;
 end;
 
-function TMaxxRuralButtonEdit.GetCornerRadius: Integer;
+function TDACButtonEdit.GetCornerRadius: Integer;
 begin
   Result := FEdit.CornerRadius;
 end;
 
-function TMaxxRuralButtonEdit.GetCounterText: string;
+function TDACButtonEdit.GetCounterText: string;
 begin
   Result := FEdit.CounterText;
 end;
 
-function TMaxxRuralButtonEdit.GetEditControl: TMaskEdit;
+function TDACButtonEdit.GetEditControl: TMaskEdit;
 begin
   Result := nil;
   if FEdit <> nil then
     Result := FEdit.EditControl;
 end;
 
-function TMaxxRuralButtonEdit.GetEditKind: TMaxxRuralEditKind;
+function TDACButtonEdit.GetEditKind: TDACEditKind;
 begin
   Result := FEdit.EditKind;
 end;
 
-function TMaxxRuralButtonEdit.GetEditMask: string;
+function TDACButtonEdit.GetEditMask: string;
 begin
   Result := FEdit.EditMask;
 end;
 
-function TMaxxRuralButtonEdit.GetHelperText: string;
+function TDACButtonEdit.GetHelperText: string;
 begin
   Result := FEdit.HelperText;
 end;
 
-function TMaxxRuralButtonEdit.GetInputSize: TMaxxRuralInputSize;
+function TDACButtonEdit.GetInputSize: TDACInputSize;
 begin
   Result := FEdit.InputSize;
 end;
 
-function TMaxxRuralButtonEdit.GetLabelText: string;
+function TDACButtonEdit.GetLabelText: string;
 begin
   Result := FEdit.LabelText;
 end;
 
-function TMaxxRuralButtonEdit.GetMaxLength: Integer;
+function TDACButtonEdit.GetMaxLength: Integer;
 begin
   Result := FEdit.MaxLength;
 end;
 
-function TMaxxRuralButtonEdit.GetPasswordChar: Char;
+function TDACButtonEdit.GetPasswordChar: Char;
 begin
   Result := FEdit.PasswordChar;
 end;
 
-function TMaxxRuralButtonEdit.GetPlaceholder: string;
+function TDACButtonEdit.GetPlaceholder: string;
 begin
   Result := FEdit.Placeholder;
 end;
 
-function TMaxxRuralButtonEdit.GetReadOnly: Boolean;
+function TDACButtonEdit.GetReadOnly: Boolean;
 begin
   Result := FEdit.ReadOnly;
 end;
 
-function TMaxxRuralButtonEdit.GetRequired: Boolean;
+function TDACButtonEdit.GetRequired: Boolean;
 begin
   Result := FEdit.Required;
 end;
 
-function TMaxxRuralButtonEdit.GetShowButtonIcon: Boolean;
+function TDACButtonEdit.GetShowButtonIcon: Boolean;
 begin
   Result := FButton.ShowIcon;
 end;
 
-function TMaxxRuralButtonEdit.GetStatus: TMaxxRuralEditStatus;
+function TDACButtonEdit.GetStatus: TDACEditStatus;
 begin
   Result := FEdit.Status;
 end;
 
-function TMaxxRuralButtonEdit.GetText: string;
+function TDACButtonEdit.GetText: string;
 begin
   Result := FEdit.Text;
 end;
 
-function TMaxxRuralButtonEdit.GetVariant: TMaxxRuralInputVariant;
+function TDACButtonEdit.GetVariant: TDACInputVariant;
 begin
   Result := FEdit.Variant;
 end;
 
-procedure TMaxxRuralButtonEdit.Loaded;
+procedure TDACButtonEdit.Loaded;
 begin
   inherited;
   UpdateChildBounds;
 end;
 
-procedure TMaxxRuralButtonEdit.Resize;
+procedure TDACButtonEdit.Resize;
 begin
   inherited;
   UpdateChildBounds;
 end;
 
-procedure TMaxxRuralButtonEdit.SetButtonCaption(const AValue: string);
+procedure TDACButtonEdit.SetButtonCaption(const AValue: string);
 begin
   if FButtonCaption = AValue then
     Exit;
@@ -347,17 +347,17 @@ begin
   UpdateChildBounds;
 end;
 
-procedure TMaxxRuralButtonEdit.SetButtonIconKind(const AValue: TMaxxRuralIconKind);
+procedure TDACButtonEdit.SetButtonIconKind(const AValue: TDACIconKind);
 begin
   FButton.IconKind := AValue;
 end;
 
-procedure TMaxxRuralButtonEdit.SetButtonKind(const AValue: TMaxxRuralButtonKind);
+procedure TDACButtonEdit.SetButtonKind(const AValue: TDACButtonKind);
 begin
   FButton.Kind := AValue;
 end;
 
-procedure TMaxxRuralButtonEdit.SetButtonWidth(const AValue: Integer);
+procedure TDACButtonEdit.SetButtonWidth(const AValue: Integer);
 begin
   if FButtonWidth = AValue then
     Exit;
@@ -365,46 +365,46 @@ begin
   UpdateChildBounds;
 end;
 
-procedure TMaxxRuralButtonEdit.SetCharCase(const AValue: TEditCharCase);
+procedure TDACButtonEdit.SetCharCase(const AValue: TEditCharCase);
 begin
   FEdit.CharCase := AValue;
 end;
 
-procedure TMaxxRuralButtonEdit.SetCornerRadius(const AValue: Integer);
+procedure TDACButtonEdit.SetCornerRadius(const AValue: Integer);
 begin
   FEdit.CornerRadius := AValue;
   FButton.CornerRadius := 0;
 end;
 
-procedure TMaxxRuralButtonEdit.SetCounterText(const AValue: string);
+procedure TDACButtonEdit.SetCounterText(const AValue: string);
 begin
   FEdit.CounterText := AValue;
   UpdateChildBounds;
 end;
 
-procedure TMaxxRuralButtonEdit.SetEditKind(const AValue: TMaxxRuralEditKind);
+procedure TDACButtonEdit.SetEditKind(const AValue: TDACEditKind);
 begin
   FEdit.EditKind := AValue;
 end;
 
-procedure TMaxxRuralButtonEdit.SetEditMask(const AValue: string);
+procedure TDACButtonEdit.SetEditMask(const AValue: string);
 begin
   FEdit.EditMask := AValue;
 end;
 
-procedure TMaxxRuralButtonEdit.SetHelperText(const AValue: string);
+procedure TDACButtonEdit.SetHelperText(const AValue: string);
 begin
   FEdit.HelperText := AValue;
   UpdateChildBounds;
 end;
 
-procedure TMaxxRuralButtonEdit.SetInputSize(const AValue: TMaxxRuralInputSize);
+procedure TDACButtonEdit.SetInputSize(const AValue: TDACInputSize);
 begin
   FEdit.InputSize := AValue;
   UpdateChildBounds;
 end;
 
-procedure TMaxxRuralButtonEdit.SetFocus;
+procedure TDACButtonEdit.SetFocus;
 begin
   if FEdit <> nil then
     FEdit.SetFocus
@@ -412,7 +412,7 @@ begin
     inherited;
 end;
 
-procedure TMaxxRuralButtonEdit.SetLabelText(const AValue: string);
+procedure TDACButtonEdit.SetLabelText(const AValue: string);
 begin
   FEdit.LabelText := AValue;
   if (AValue.Trim <> '') and (Height <= 38) then
@@ -420,54 +420,54 @@ begin
   UpdateChildBounds;
 end;
 
-procedure TMaxxRuralButtonEdit.SetMaxLength(const AValue: Integer);
+procedure TDACButtonEdit.SetMaxLength(const AValue: Integer);
 begin
   FEdit.MaxLength := AValue;
 end;
 
-procedure TMaxxRuralButtonEdit.SetPasswordChar(const AValue: Char);
+procedure TDACButtonEdit.SetPasswordChar(const AValue: Char);
 begin
   FEdit.PasswordChar := AValue;
 end;
 
-procedure TMaxxRuralButtonEdit.SetPlaceholder(const AValue: string);
+procedure TDACButtonEdit.SetPlaceholder(const AValue: string);
 begin
   FEdit.Placeholder := AValue;
 end;
 
-procedure TMaxxRuralButtonEdit.SetReadOnly(const AValue: Boolean);
+procedure TDACButtonEdit.SetReadOnly(const AValue: Boolean);
 begin
   FEdit.ReadOnly := AValue;
   FButton.Enabled := Enabled and not AValue;
 end;
 
-procedure TMaxxRuralButtonEdit.SetRequired(const AValue: Boolean);
+procedure TDACButtonEdit.SetRequired(const AValue: Boolean);
 begin
   FEdit.Required := AValue;
 end;
 
-procedure TMaxxRuralButtonEdit.SetShowButtonIcon(const AValue: Boolean);
+procedure TDACButtonEdit.SetShowButtonIcon(const AValue: Boolean);
 begin
   FButton.ShowIcon := AValue;
 end;
 
-procedure TMaxxRuralButtonEdit.SetStatus(const AValue: TMaxxRuralEditStatus);
+procedure TDACButtonEdit.SetStatus(const AValue: TDACEditStatus);
 begin
   FEdit.Status := AValue;
 end;
 
-procedure TMaxxRuralButtonEdit.SetText(const AValue: string);
+procedure TDACButtonEdit.SetText(const AValue: string);
 begin
   FEdit.Text := AValue;
 end;
 
-procedure TMaxxRuralButtonEdit.SetVariant(const AValue: TMaxxRuralInputVariant);
+procedure TDACButtonEdit.SetVariant(const AValue: TDACInputVariant);
 begin
   FEdit.Variant := AValue;
   UpdateChildBounds;
 end;
 
-procedure TMaxxRuralButtonEdit.UpdateChildBounds;
+procedure TDACButtonEdit.UpdateChildBounds;
 var
   LAvailableControlHeight: Integer;
   LButtonTop: Integer;
@@ -506,9 +506,10 @@ begin
   FButton.Redraw;
 end;
 
-procedure TMaxxRuralButtonEdit.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACButtonEdit.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
 end.
+

@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.Edit;
+unit DAC.Components.Controls.Edit;
 
 interface
 
@@ -15,22 +15,22 @@ uses
   Vcl.Mask,
   Vcl.Skia,
   Vcl.StdCtrls,
-  MaxxRural.Components.DesignSystem.Fonts,
-  MaxxRural.Components.DesignSystem.IconAssets,
-  MaxxRural.Components.Skia.BackgroundPainter,
-  MaxxRural.Components.Skia.BorderPainter,
-  MaxxRural.Components.Skia.IconPainter,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.DesignSystem.Fonts,
+  DAC.Components.DesignSystem.IconAssets,
+  DAC.Components.Skia.BackgroundPainter,
+  DAC.Components.Skia.BorderPainter,
+  DAC.Components.Skia.IconPainter,
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralEditStatus = (
+  TDACEditStatus = (
     mesNormal,
     mesSuccess,
     mesWarning,
     mesDanger
   );
 
-  TMaxxRuralEditKind = (
+  TDACEditKind = (
     mekText,
     mekMasked,
     mekPassword,
@@ -40,39 +40,39 @@ type
     mekTime
   );
 
-  TMaxxRuralInputSize = (
+  TDACInputSize = (
     misSmall,
     misMedium,
     misLarge
   );
 
-  TMaxxRuralInputVariant = (
+  TDACInputVariant = (
     mivOutlined,
     mivUnderlined,
     mivCompact
   );
 
-  TMaxxRuralEdit = class(TCustomControl)
+  TDACEdit = class(TCustomControl)
   private
-    FBackgroundPainter: TMaxxRuralSkiaBackgroundPainter;
-    FBorderPainter: TMaxxRuralSkiaBorderPainter;
+    FBackgroundPainter: TDACSkiaBackgroundPainter;
+    FBorderPainter: TDACSkiaBorderPainter;
     FCornerRadius: Integer;
     FEdit: TMaskEdit;
-    FEditKind: TMaxxRuralEditKind;
+    FEditKind: TDACEditKind;
     FEditMask: string;
     FCounterText: string;
     FHelperText: string;
-    FIconPainter: TMaxxRuralSkiaIconPainter;
-    FInputSize: TMaxxRuralInputSize;
+    FIconPainter: TDACSkiaIconPainter;
+    FInputSize: TDACInputSize;
     FLabelText: string;
     FMouseInside: Boolean;
     FOnChange: TNotifyEvent;
     FPaintBox: TSkPaintBox;
     FPlaceholder: string;
-    FRenderer: TMaxxRuralSkiaRenderer;
+    FRenderer: TDACSkiaRenderer;
     FRequired: Boolean;
-    FStatus: TMaxxRuralEditStatus;
-    FVariant: TMaxxRuralInputVariant;
+    FStatus: TDACEditStatus;
+    FVariant: TDACInputVariant;
     function BorderAlpha: Byte;
     function BorderColor: TAlphaColor;
     function ControlHeight: Integer;
@@ -90,7 +90,7 @@ type
     function GetReadOnly: Boolean;
     function GetText: string;
     function EffectiveEditMask: string;
-    function RightIconKind: TMaxxRuralIconKind;
+    function RightIconKind: TDACIconKind;
     function HasRightIcon: Boolean;
     function HasLabel: Boolean;
     function HasSupportText: Boolean;
@@ -106,19 +106,19 @@ type
     procedure SetCharCase(const AValue: TEditCharCase);
     procedure SetCornerRadius(const AValue: Integer);
     procedure SetCounterText(const AValue: string);
-    procedure SetEditKind(const AValue: TMaxxRuralEditKind);
+    procedure SetEditKind(const AValue: TDACEditKind);
     procedure SetEditMask(const AValue: string);
     procedure SetHelperText(const AValue: string);
-    procedure SetInputSize(const AValue: TMaxxRuralInputSize);
+    procedure SetInputSize(const AValue: TDACInputSize);
     procedure SetLabelText(const AValue: string);
     procedure SetMaxLength(const AValue: Integer);
     procedure SetPasswordChar(const AValue: Char);
     procedure SetPlaceholder(const AValue: string);
     procedure SetReadOnly(const AValue: Boolean);
     procedure SetRequired(const AValue: Boolean);
-    procedure SetStatus(const AValue: TMaxxRuralEditStatus);
+    procedure SetStatus(const AValue: TDACEditStatus);
     procedure SetText(const AValue: string);
-    procedure SetVariant(const AValue: TMaxxRuralInputVariant);
+    procedure SetVariant(const AValue: TDACInputVariant);
     procedure UpdateChildBounds;
     procedure UpdateEditStyle;
     procedure UpdatePaintBoxBounds;
@@ -143,12 +143,12 @@ type
     property Constraints;
     property CornerRadius: Integer read FCornerRadius write SetCornerRadius default 8;
     property CounterText: string read FCounterText write SetCounterText;
-    property EditKind: TMaxxRuralEditKind read FEditKind write SetEditKind default mekText;
+    property EditKind: TDACEditKind read FEditKind write SetEditKind default mekText;
     property EditMask: string read FEditMask write SetEditMask;
     property Enabled;
     property Font;
     property HelperText: string read FHelperText write SetHelperText;
-    property InputSize: TMaxxRuralInputSize read FInputSize write SetInputSize default misMedium;
+    property InputSize: TDACInputSize read FInputSize write SetInputSize default misMedium;
     property LabelText: string read FLabelText write SetLabelText;
     property MaxLength: Integer read GetMaxLength write SetMaxLength default 0;
     property ParentFont;
@@ -159,11 +159,11 @@ type
     property ReadOnly: Boolean read GetReadOnly write SetReadOnly default False;
     property Required: Boolean read FRequired write SetRequired default False;
     property ShowHint;
-    property Status: TMaxxRuralEditStatus read FStatus write SetStatus default mesNormal;
+    property Status: TDACEditStatus read FStatus write SetStatus default mesNormal;
     property TabOrder;
     property TabStop default True;
     property Text: string read GetText write SetText;
-    property Variant: TMaxxRuralInputVariant read FVariant write SetVariant default mivOutlined;
+    property Variant: TDACInputVariant read FVariant write SetVariant default mivOutlined;
     property Visible;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
     property OnClick;
@@ -183,11 +183,11 @@ type
 implementation
 
 uses
-  MaxxRural.Components.DesignSystem.ColorTokens,
+  DAC.Components.DesignSystem.ColorTokens,
   System.Math,
   Winapi.Windows;
 
-constructor TMaxxRuralEdit.Create(AOwner: TComponent);
+constructor TDACEdit.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque, csClickEvents, csCaptureMouse];
@@ -204,10 +204,10 @@ begin
   FStatus := mesNormal;
   FVariant := mivOutlined;
 
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
-  FBackgroundPainter := TMaxxRuralSkiaBackgroundPainter.Create(FRenderer);
-  FBorderPainter := TMaxxRuralSkiaBorderPainter.Create(FRenderer);
-  FIconPainter := TMaxxRuralSkiaIconPainter.Create(FRenderer);
+  FRenderer := TDACSkiaRenderer.Create;
+  FBackgroundPainter := TDACSkiaBackgroundPainter.Create(FRenderer);
+  FBorderPainter := TDACSkiaBorderPainter.Create(FRenderer);
+  FIconPainter := TDACSkiaIconPainter.Create(FRenderer);
 
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
@@ -234,7 +234,7 @@ begin
   Resize;
 end;
 
-destructor TMaxxRuralEdit.Destroy;
+destructor TDACEdit.Destroy;
 begin
   FEdit.Free;
   FPaintBox.Free;
@@ -245,7 +245,7 @@ begin
   inherited;
 end;
 
-function TMaxxRuralEdit.BorderAlpha: Byte;
+function TDACEdit.BorderAlpha: Byte;
 begin
   if FVariant = mivUnderlined then
   begin
@@ -268,29 +268,29 @@ begin
     Result := 185;
 end;
 
-function TMaxxRuralEdit.BorderColor: TAlphaColor;
+function TDACEdit.BorderColor: TAlphaColor;
 var
   LSurface: TAlphaColor;
 begin
   LSurface := ParentSurfaceColor;
   case FStatus of
     mesSuccess:
-      Result := TMaxxRuralComponentColors.PrimaryDark;
+      Result := TDACComponentColors.PrimaryDark;
     mesWarning:
-      Result := TMaxxRuralComponentColors.Warning;
+      Result := TDACComponentColors.Warning;
     mesDanger:
-      Result := TMaxxRuralComponentColors.Danger;
+      Result := TDACComponentColors.Danger;
   else
     if FEdit.Focused then
-      Result := TMaxxRuralComponentColors.Primary
+      Result := TDACComponentColors.Primary
     else if FMouseInside then
-      Result := TMaxxRuralComponentColors.ControlBorderHoverForSurface(LSurface)
+      Result := TDACComponentColors.ControlBorderHoverForSurface(LSurface)
     else
-      Result := TMaxxRuralComponentColors.ControlBorderForSurface(LSurface);
+      Result := TDACComponentColors.ControlBorderForSurface(LSurface);
   end;
 end;
 
-function TMaxxRuralEdit.ControlHeight: Integer;
+function TDACEdit.ControlHeight: Integer;
 begin
   case FInputSize of
     misSmall:
@@ -305,28 +305,28 @@ begin
     Result := ScaleMetric(32);
 end;
 
-procedure TMaxxRuralEdit.ChangeScale(M, D: Integer);
+procedure TDACEdit.ChangeScale(M, D: Integer);
 begin
   inherited;
   UpdateChildBounds;
   Redraw;
 end;
 
-procedure TMaxxRuralEdit.CMEnabledChanged(var AMessage: TMessage);
+procedure TDACEdit.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
   UpdateEditStyle;
   Redraw;
 end;
 
-procedure TMaxxRuralEdit.CMParentColorChanged(var AMessage: TMessage);
+procedure TDACEdit.CMParentColorChanged(var AMessage: TMessage);
 begin
   inherited;
   UpdateEditStyle;
   Redraw;
 end;
 
-procedure TMaxxRuralEdit.CreateWnd;
+procedure TDACEdit.CreateWnd;
 begin
   inherited;
   UpdateZOrder;
@@ -335,27 +335,27 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralEdit.DoEditChange(Sender: TObject);
+procedure TDACEdit.DoEditChange(Sender: TObject);
 begin
   if Assigned(OnChange) then
     OnChange(Self);
 end;
 
-procedure TMaxxRuralEdit.DoEditEnter(Sender: TObject);
+procedure TDACEdit.DoEditEnter(Sender: TObject);
 begin
   Redraw;
   if Assigned(OnEnter) then
     OnEnter(Self);
 end;
 
-procedure TMaxxRuralEdit.DoEditExit(Sender: TObject);
+procedure TDACEdit.DoEditExit(Sender: TObject);
 begin
   Redraw;
   if Assigned(OnExit) then
     OnExit(Self);
 end;
 
-procedure TMaxxRuralEdit.DoMouseEnter(Sender: TObject);
+procedure TDACEdit.DoMouseEnter(Sender: TObject);
 begin
   if FMouseInside then
     Exit;
@@ -365,7 +365,7 @@ begin
     OnMouseEnter(Self);
 end;
 
-procedure TMaxxRuralEdit.DoMouseLeave(Sender: TObject);
+procedure TDACEdit.DoMouseLeave(Sender: TObject);
 var
   LPoint: TPoint;
 begin
@@ -383,7 +383,7 @@ begin
     OnMouseLeave(Self);
 end;
 
-procedure TMaxxRuralEdit.Loaded;
+procedure TDACEdit.Loaded;
 begin
   inherited;
   UpdatePaintBoxBounds;
@@ -393,12 +393,12 @@ begin
   Redraw;
 end;
 
-function TMaxxRuralEdit.GetCharCase: TEditCharCase;
+function TDACEdit.GetCharCase: TEditCharCase;
 begin
   Result := FEdit.CharCase;
 end;
 
-function TMaxxRuralEdit.GetEffectivePasswordChar: Char;
+function TDACEdit.GetEffectivePasswordChar: Char;
 begin
   Result := #0;
   if FEditKind = mekPassword then
@@ -409,7 +409,7 @@ begin
   end;
 end;
 
-function TMaxxRuralEdit.EffectiveEditMask: string;
+function TDACEdit.EffectiveEditMask: string;
 begin
   Result := FEditMask;
   if Result <> '' then
@@ -425,32 +425,32 @@ begin
   end;
 end;
 
-function TMaxxRuralEdit.GetMaxLength: Integer;
+function TDACEdit.GetMaxLength: Integer;
 begin
   Result := FEdit.MaxLength;
 end;
 
-function TMaxxRuralEdit.GetPasswordChar: Char;
+function TDACEdit.GetPasswordChar: Char;
 begin
   Result := FEdit.PasswordChar;
 end;
 
-function TMaxxRuralEdit.GetReadOnly: Boolean;
+function TDACEdit.GetReadOnly: Boolean;
 begin
   Result := FEdit.ReadOnly;
 end;
 
-function TMaxxRuralEdit.GetText: string;
+function TDACEdit.GetText: string;
 begin
   Result := FEdit.Text;
 end;
 
-function TMaxxRuralEdit.HasRightIcon: Boolean;
+function TDACEdit.HasRightIcon: Boolean;
 begin
   Result := RightIconKind <> mikNone;
 end;
 
-function TMaxxRuralEdit.RightIconKind: TMaxxRuralIconKind;
+function TDACEdit.RightIconKind: TDACIconKind;
 begin
   case FEditKind of
     mekPassword:
@@ -466,14 +466,14 @@ begin
   end;
 end;
 
-procedure TMaxxRuralEdit.InvalidateChrome;
+procedure TDACEdit.InvalidateChrome;
 begin
   UpdateChildBounds;
   Redraw;
   Invalidate;
 end;
 
-procedure TMaxxRuralEdit.MouseDown(Button: TMouseButton; Shift: TShiftState;
+procedure TDACEdit.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 begin
   inherited;
@@ -481,13 +481,13 @@ begin
     FEdit.SetFocus;
 end;
 
-procedure TMaxxRuralEdit.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
+procedure TDACEdit.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
   const ADest: TRectF; const AOpacity: Single);
 var
-  LBackground: TMaxxRuralBackgroundStyle;
-  LBorder: TMaxxRuralBorderStyle;
+  LBackground: TDACBackgroundStyle;
+  LBorder: TDACBorderStyle;
   LIconRect: TRectF;
-  LIconStyle: TMaxxRuralIconStyle;
+  LIconStyle: TDACIconStyle;
   LCounterWidth: Single;
   LLabelColor: TAlphaColor;
   LScale: Single;
@@ -514,11 +514,11 @@ begin
 
   if HasLabel then
   begin
-    LLabelColor := TMaxxRuralComponentColors.ControlTextForSurface(LSurface);
+    LLabelColor := TDACComponentColors.ControlTextForSurface(LSurface);
     if FRequired then
-      LLabelColor := TMaxxRuralComponentColors.PrimaryDark;
+      LLabelColor := TDACComponentColors.PrimaryDark;
     FRenderer.Text(ACanvas, FLabelText,
-      TMaxxRuralComponentFontInstaller.FontFamily, 0,
+      TDACComponentFontInstaller.FontFamily, 0,
       ScaleMetric(15), 12, LLabelColor, FRequired, ADest.Width);
   end;
 
@@ -536,9 +536,9 @@ begin
   end
   else
   begin
-    LBackground.Color := TMaxxRuralComponentColors.ControlBackgroundForSurface(LSurface);
+    LBackground.Color := TDACComponentColors.ControlBackgroundForSurface(LSurface);
     if not Enabled then
-      LBackground.Color := TMaxxRuralComponentColors.ControlBackgroundDisabledForSurface(LSurface);
+      LBackground.Color := TDACComponentColors.ControlBackgroundDisabledForSurface(LSurface);
     LBackground.Radius := FCornerRadius;
     LBackground.Alpha := 255;
     FBackgroundPainter.Draw(ACanvas, LRect, LBackground);
@@ -551,10 +551,10 @@ begin
       LRect.Top + (LRect.Height - ScaleMetric(16)) / 2,
       ADest.Width - ScaleMetric(14),
       LRect.Top + (LRect.Height + ScaleMetric(16)) / 2);
-    LIconStyle.Color := TMaxxRuralComponentColors.ControlBorderHoverForSurface(LSurface);
+    LIconStyle.Color := TDACComponentColors.ControlBorderHoverForSurface(LSurface);
     LIconStyle.Alpha := 255;
     if not Enabled then
-      LIconStyle.Color := TMaxxRuralComponentColors.ControlTextDisabledForSurface(LSurface);
+      LIconStyle.Color := TDACComponentColors.ControlTextDisabledForSurface(LSurface);
 
     FIconPainter.Draw(ACanvas, LIconRect, RightIconKind, LIconStyle);
   end;
@@ -564,34 +564,34 @@ begin
     LSupportColor := SupportTextColor(LSurface);
     if FHelperText.Trim <> '' then
       FRenderer.Text(ACanvas, FHelperText,
-        TMaxxRuralComponentFontInstaller.FontFamily, 0,
+        TDACComponentFontInstaller.FontFamily, 0,
         LBorderRect.Bottom + ScaleMetric(18), 11, LSupportColor, False,
         ADest.Width);
     if FCounterText.Trim <> '' then
     begin
       LCounterWidth := FRenderer.MeasureText(FCounterText,
-        TMaxxRuralComponentFontInstaller.FontFamily, 11);
+        TDACComponentFontInstaller.FontFamily, 11);
       FRenderer.Text(ACanvas, FCounterText,
-        TMaxxRuralComponentFontInstaller.FontFamily,
+        TDACComponentFontInstaller.FontFamily,
         Max(0, ADest.Width - LCounterWidth),
         LBorderRect.Bottom + ScaleMetric(18), 11,
-        TMaxxRuralComponentColors.ControlTextDisabledForSurface(LSurface),
+        TDACComponentColors.ControlTextDisabledForSurface(LSurface),
         False, LCounterWidth);
     end;
   end;
 end;
 
-function TMaxxRuralEdit.HasLabel: Boolean;
+function TDACEdit.HasLabel: Boolean;
 begin
   Result := FLabelText.Trim <> '';
 end;
 
-function TMaxxRuralEdit.HasSupportText: Boolean;
+function TDACEdit.HasSupportText: Boolean;
 begin
   Result := (FHelperText.Trim <> '') or (FCounterText.Trim <> '');
 end;
 
-function TMaxxRuralEdit.InputFontSize: Integer;
+function TDACEdit.InputFontSize: Integer;
 begin
   case FInputSize of
     misSmall:
@@ -603,26 +603,26 @@ begin
   end;
 end;
 
-function TMaxxRuralEdit.ChromeTop: Integer;
+function TDACEdit.ChromeTop: Integer;
 begin
   Result := 0;
   if HasLabel then
     Result := ScaleMetric(24);
 end;
 
-function TMaxxRuralEdit.ParentSurfaceColor: TAlphaColor;
+function TDACEdit.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TMaxxRuralComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
-procedure TMaxxRuralEdit.Redraw;
+procedure TDACEdit.Redraw;
 begin
   UpdatePaintBoxBounds;
   if (FPaintBox <> nil) and HandleAllocated then
     FPaintBox.Redraw;
 end;
 
-procedure TMaxxRuralEdit.Resize;
+procedure TDACEdit.Resize;
 begin
   inherited;
   UpdatePaintBoxBounds;
@@ -631,7 +631,7 @@ begin
   Redraw;
 end;
 
-function TMaxxRuralEdit.ScaleFactor: Single;
+function TDACEdit.ScaleFactor: Single;
 begin
   Result := 1;
   if FPaintBox <> nil then
@@ -640,19 +640,19 @@ begin
     Result := 1;
 end;
 
-function TMaxxRuralEdit.ScaleMetric(const AValue: Integer): Integer;
+function TDACEdit.ScaleMetric(const AValue: Integer): Integer;
 begin
   Result := Round(AValue * ScaleFactor);
   if (AValue > 0) and (Result < 1) then
     Result := 1;
 end;
 
-procedure TMaxxRuralEdit.SetCharCase(const AValue: TEditCharCase);
+procedure TDACEdit.SetCharCase(const AValue: TEditCharCase);
 begin
   FEdit.CharCase := AValue;
 end;
 
-procedure TMaxxRuralEdit.SetCornerRadius(const AValue: Integer);
+procedure TDACEdit.SetCornerRadius(const AValue: Integer);
 begin
   if FCornerRadius = AValue then
     Exit;
@@ -660,7 +660,7 @@ begin
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralEdit.SetCounterText(const AValue: string);
+procedure TDACEdit.SetCounterText(const AValue: string);
 var
   LHadSupport: Boolean;
 begin
@@ -674,7 +674,7 @@ begin
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralEdit.SetEditKind(const AValue: TMaxxRuralEditKind);
+procedure TDACEdit.SetEditKind(const AValue: TDACEditKind);
 begin
   if FEditKind = AValue then
     Exit;
@@ -683,7 +683,7 @@ begin
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralEdit.SetEditMask(const AValue: string);
+procedure TDACEdit.SetEditMask(const AValue: string);
 begin
   if FEditMask = AValue then
     Exit;
@@ -691,7 +691,7 @@ begin
   UpdateEditStyle;
 end;
 
-procedure TMaxxRuralEdit.SetHelperText(const AValue: string);
+procedure TDACEdit.SetHelperText(const AValue: string);
 var
   LHadSupport: Boolean;
 begin
@@ -705,7 +705,7 @@ begin
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralEdit.SetInputSize(const AValue: TMaxxRuralInputSize);
+procedure TDACEdit.SetInputSize(const AValue: TDACInputSize);
 begin
   if FInputSize = AValue then
     Exit;
@@ -719,7 +719,7 @@ begin
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralEdit.SetLabelText(const AValue: string);
+procedure TDACEdit.SetLabelText(const AValue: string);
 var
   LHadLabel: Boolean;
 begin
@@ -733,7 +733,7 @@ begin
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralEdit.SetFocus;
+procedure TDACEdit.SetFocus;
 begin
   if (FEdit <> nil) and FEdit.CanFocus then
     FEdit.SetFocus
@@ -741,17 +741,17 @@ begin
     inherited;
 end;
 
-procedure TMaxxRuralEdit.SetMaxLength(const AValue: Integer);
+procedure TDACEdit.SetMaxLength(const AValue: Integer);
 begin
   FEdit.MaxLength := Max(0, AValue);
 end;
 
-procedure TMaxxRuralEdit.SetPasswordChar(const AValue: Char);
+procedure TDACEdit.SetPasswordChar(const AValue: Char);
 begin
   FEdit.PasswordChar := AValue;
 end;
 
-procedure TMaxxRuralEdit.SetPlaceholder(const AValue: string);
+procedure TDACEdit.SetPlaceholder(const AValue: string);
 begin
   if FPlaceholder = AValue then
     Exit;
@@ -759,7 +759,7 @@ begin
   FEdit.TextHint := FPlaceholder;
 end;
 
-procedure TMaxxRuralEdit.SetReadOnly(const AValue: Boolean);
+procedure TDACEdit.SetReadOnly(const AValue: Boolean);
 begin
   if FEdit.ReadOnly = AValue then
     Exit;
@@ -767,7 +767,7 @@ begin
   UpdateEditStyle;
 end;
 
-procedure TMaxxRuralEdit.SetRequired(const AValue: Boolean);
+procedure TDACEdit.SetRequired(const AValue: Boolean);
 begin
   if FRequired = AValue then
     Exit;
@@ -775,7 +775,7 @@ begin
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralEdit.SetStatus(const AValue: TMaxxRuralEditStatus);
+procedure TDACEdit.SetStatus(const AValue: TDACEditStatus);
 begin
   if FStatus = AValue then
     Exit;
@@ -783,12 +783,12 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralEdit.SetText(const AValue: string);
+procedure TDACEdit.SetText(const AValue: string);
 begin
   FEdit.Text := AValue;
 end;
 
-procedure TMaxxRuralEdit.SetVariant(const AValue: TMaxxRuralInputVariant);
+procedure TDACEdit.SetVariant(const AValue: TDACInputVariant);
 begin
   if FVariant = AValue then
     Exit;
@@ -798,21 +798,21 @@ begin
   InvalidateChrome;
 end;
 
-function TMaxxRuralEdit.SupportTextColor(const ASurface: TAlphaColor): TAlphaColor;
+function TDACEdit.SupportTextColor(const ASurface: TAlphaColor): TAlphaColor;
 begin
   case FStatus of
     mesSuccess:
-      Result := TMaxxRuralComponentColors.PrimaryDark;
+      Result := TDACComponentColors.PrimaryDark;
     mesWarning:
-      Result := TMaxxRuralComponentColors.WarningDark;
+      Result := TDACComponentColors.WarningDark;
     mesDanger:
-      Result := TMaxxRuralComponentColors.Danger;
+      Result := TDACComponentColors.Danger;
   else
-    Result := TMaxxRuralComponentColors.ControlTextDisabledForSurface(ASurface);
+    Result := TDACComponentColors.ControlTextDisabledForSurface(ASurface);
   end;
 end;
 
-procedure TMaxxRuralEdit.UpdateChildBounds;
+procedure TDACEdit.UpdateChildBounds;
 var
   LHorizontalPadding: Integer;
   LInputHeight: Integer;
@@ -834,7 +834,7 @@ begin
     Max(0, Width - LHorizontalPadding - LRightPadding), LTextHeight);
 end;
 
-procedure TMaxxRuralEdit.UpdatePaintBoxBounds;
+procedure TDACEdit.UpdatePaintBoxBounds;
 var
   LWidth: Integer;
   LHeight: Integer;
@@ -856,7 +856,7 @@ begin
 
 end;
 
-procedure TMaxxRuralEdit.UpdateZOrder;
+procedure TDACEdit.UpdateZOrder;
 begin
   if (csLoading in ComponentState) or (csDestroying in ComponentState) then
     Exit;
@@ -873,7 +873,7 @@ begin
     FEdit.BringToFront;
 end;
 
-procedure TMaxxRuralEdit.UpdateEditStyle;
+procedure TDACEdit.UpdateEditStyle;
 var
   LSurface: TAlphaColor;
   LTextColor: TColor;
@@ -884,21 +884,21 @@ begin
   LSurface := ParentSurfaceColor;
   FEdit.Enabled := Enabled;
   if FVariant = mivUnderlined then
-    FEdit.Color := TMaxxRuralComponentColors.ToVclColor(LSurface)
+    FEdit.Color := TDACComponentColors.ToVclColor(LSurface)
   else
-    FEdit.Color := TMaxxRuralComponentColors.ToVclColor(
-      TMaxxRuralComponentColors.ControlBackgroundForSurface(LSurface));
+    FEdit.Color := TDACComponentColors.ToVclColor(
+      TDACComponentColors.ControlBackgroundForSurface(LSurface));
   if not Enabled then
-    FEdit.Color := TMaxxRuralComponentColors.ToVclColor(
-      TMaxxRuralComponentColors.ControlBackgroundDisabledForSurface(LSurface));
-  FEdit.Font.Name := TMaxxRuralComponentFontInstaller.FontFamily;
+    FEdit.Color := TDACComponentColors.ToVclColor(
+      TDACComponentColors.ControlBackgroundDisabledForSurface(LSurface));
+  FEdit.Font.Name := TDACComponentFontInstaller.FontFamily;
   FEdit.Font.Size := InputFontSize;
   FEdit.Font.Style := [];
-  LTextColor := TMaxxRuralComponentColors.ToVclColor(
-    TMaxxRuralComponentColors.ControlTextForSurface(LSurface));
+  LTextColor := TDACComponentColors.ToVclColor(
+    TDACComponentColors.ControlTextForSurface(LSurface));
   if not Enabled then
-    LTextColor := TMaxxRuralComponentColors.ToVclColor(
-      TMaxxRuralComponentColors.ControlTextDisabledForSurface(LSurface));
+    LTextColor := TDACComponentColors.ToVclColor(
+      TDACComponentColors.ControlTextDisabledForSurface(LSurface));
   FEdit.Font.Color := LTextColor;
   FEdit.TextHint := FPlaceholder;
   if FEditKind in [mekMasked, mekNumeric, mekDate, mekTime] then
@@ -917,9 +917,10 @@ begin
   end;
 end;
 
-procedure TMaxxRuralEdit.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACEdit.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
 end.
+

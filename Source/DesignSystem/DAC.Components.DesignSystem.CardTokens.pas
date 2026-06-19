@@ -1,4 +1,4 @@
-unit MaxxRural.Components.DesignSystem.CardTokens;
+unit DAC.Components.DesignSystem.CardTokens;
 
 interface
 
@@ -6,7 +6,7 @@ uses
   System.UITypes;
 
 type
-  TMaxxRuralCardTokens = record
+  TDACCardTokens = record
     DefaultOpacity: Byte;
     HoveredOpacity: Byte;
     PressedOpacity: Byte;
@@ -16,12 +16,12 @@ type
     HoverColor: TAlphaColor;
     PressedColor: TAlphaColor;
     FocusColor: TAlphaColor;
-    class function Default: TMaxxRuralCardTokens; static;
+    class function Default: TDACCardTokens; static;
   end;
 
 implementation
 
-class function TMaxxRuralCardTokens.Default: TMaxxRuralCardTokens;
+class function TDACCardTokens.Default: TDACCardTokens;
 begin
   Result.DefaultOpacity := 176;
   Result.HoveredOpacity := 196;
@@ -35,3 +35,4 @@ begin
 end;
 
 end.
+

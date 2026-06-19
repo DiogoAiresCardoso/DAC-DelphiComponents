@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.ComboBox;
+unit DAC.Components.Controls.ComboBox;
 
 interface
 
@@ -14,19 +14,19 @@ uses
   Vcl.Graphics,
   Vcl.Skia,
   Vcl.StdCtrls,
-  MaxxRural.Components.Controls.Edit,
-  MaxxRural.Components.DesignSystem.Fonts,
-  MaxxRural.Components.DesignSystem.IconAssets,
-  MaxxRural.Components.Skia.IconPainter,
-  MaxxRural.Components.Skia.BackgroundPainter,
-  MaxxRural.Components.Skia.BorderPainter,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.Controls.Edit,
+  DAC.Components.DesignSystem.Fonts,
+  DAC.Components.DesignSystem.IconAssets,
+  DAC.Components.Skia.IconPainter,
+  DAC.Components.Skia.BackgroundPainter,
+  DAC.Components.Skia.BorderPainter,
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralComboBox = class(TCustomControl)
+  TDACComboBox = class(TCustomControl)
   private
-    FBackgroundPainter: TMaxxRuralSkiaBackgroundPainter;
-    FBorderPainter: TMaxxRuralSkiaBorderPainter;
+    FBackgroundPainter: TDACSkiaBackgroundPainter;
+    FBorderPainter: TDACSkiaBorderPainter;
     FCombo: TComboBox;
     FCornerRadius: Integer;
     FCounterText: string;
@@ -34,16 +34,16 @@ type
     FDropDownHotIndex: Integer;
     FDropDownPaintBox: TSkPaintBox;
     FHelperText: string;
-    FIconPainter: TMaxxRuralSkiaIconPainter;
-    FInputSize: TMaxxRuralInputSize;
+    FIconPainter: TDACSkiaIconPainter;
+    FInputSize: TDACInputSize;
     FLabelText: string;
     FMouseInside: Boolean;
     FOnChange: TNotifyEvent;
     FPaintBox: TSkPaintBox;
-    FRenderer: TMaxxRuralSkiaRenderer;
+    FRenderer: TDACSkiaRenderer;
     FRequired: Boolean;
-    FStatus: TMaxxRuralEditStatus;
-    FVariant: TMaxxRuralInputVariant;
+    FStatus: TDACEditStatus;
+    FVariant: TDACInputVariant;
     function BorderAlpha: Byte;
     function BorderColor: TAlphaColor;
     function ControlHeight: Integer;
@@ -87,15 +87,15 @@ type
     procedure SetCounterText(const AValue: string);
     procedure SetDropDownCount(const AValue: Integer);
     procedure SetHelperText(const AValue: string);
-    procedure SetInputSize(const AValue: TMaxxRuralInputSize);
+    procedure SetInputSize(const AValue: TDACInputSize);
     procedure SetItemIndex(const AValue: Integer);
     procedure SetItems(const AValue: TStrings);
     procedure SetLabelText(const AValue: string);
     procedure SetRequired(const AValue: Boolean);
-    procedure SetStatus(const AValue: TMaxxRuralEditStatus);
+    procedure SetStatus(const AValue: TDACEditStatus);
     procedure SetStyle(const AValue: TComboBoxStyle);
     procedure SetText(const AValue: string);
-    procedure SetVariant(const AValue: TMaxxRuralInputVariant);
+    procedure SetVariant(const AValue: TDACInputVariant);
     procedure ShowDropDown;
     function SupportTextColor(const ASurface: TAlphaColor): TAlphaColor;
     procedure UpdateChildBounds;
@@ -125,7 +125,7 @@ type
     property Enabled;
     property Font;
     property HelperText: string read FHelperText write SetHelperText;
-    property InputSize: TMaxxRuralInputSize read FInputSize write SetInputSize default misMedium;
+    property InputSize: TDACInputSize read FInputSize write SetInputSize default misMedium;
     property ItemIndex: Integer read GetItemIndex write SetItemIndex default -1;
     property Items: TStrings read GetItems write SetItems;
     property LabelText: string read FLabelText write SetLabelText;
@@ -134,12 +134,12 @@ type
     property PopupMenu;
     property Required: Boolean read FRequired write SetRequired default False;
     property ShowHint;
-    property Status: TMaxxRuralEditStatus read FStatus write SetStatus default mesNormal;
+    property Status: TDACEditStatus read FStatus write SetStatus default mesNormal;
     property Style: TComboBoxStyle read GetStyle write SetStyle default csDropDownList;
     property TabOrder;
     property TabStop default True;
     property Text: string read GetText write SetText;
-    property Variant: TMaxxRuralInputVariant read FVariant write SetVariant default mivOutlined;
+    property Variant: TDACInputVariant read FVariant write SetVariant default mivOutlined;
     property Visible;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
     property OnClick;
@@ -159,11 +159,11 @@ type
 implementation
 
 uses
-  MaxxRural.Components.DesignSystem.ColorTokens,
+  DAC.Components.DesignSystem.ColorTokens,
   System.Math,
   Winapi.Windows;
 
-constructor TMaxxRuralComboBox.Create(AOwner: TComponent);
+constructor TDACComboBox.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque, csClickEvents, csCaptureMouse];
@@ -179,10 +179,10 @@ begin
   FStatus := mesNormal;
   FVariant := mivOutlined;
 
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
-  FBackgroundPainter := TMaxxRuralSkiaBackgroundPainter.Create(FRenderer);
-  FBorderPainter := TMaxxRuralSkiaBorderPainter.Create(FRenderer);
-  FIconPainter := TMaxxRuralSkiaIconPainter.Create(FRenderer);
+  FRenderer := TDACSkiaRenderer.Create;
+  FBackgroundPainter := TDACSkiaBackgroundPainter.Create(FRenderer);
+  FBorderPainter := TDACSkiaBorderPainter.Create(FRenderer);
+  FIconPainter := TDACSkiaIconPainter.Create(FRenderer);
 
   FCombo := TComboBox.Create(Self);
   FCombo.Parent := Self;
@@ -211,7 +211,7 @@ begin
   Resize;
 end;
 
-destructor TMaxxRuralComboBox.Destroy;
+destructor TDACComboBox.Destroy;
 begin
   FDropDownForm.Free;
   FCombo.Free;
@@ -223,7 +223,7 @@ begin
   inherited;
 end;
 
-function TMaxxRuralComboBox.BorderAlpha: Byte;
+function TDACComboBox.BorderAlpha: Byte;
 begin
   if FVariant = mivUnderlined then
   begin
@@ -246,29 +246,29 @@ begin
     Result := 185;
 end;
 
-function TMaxxRuralComboBox.BorderColor: TAlphaColor;
+function TDACComboBox.BorderColor: TAlphaColor;
 var
   LSurface: TAlphaColor;
 begin
   LSurface := ParentSurfaceColor;
   case FStatus of
     mesSuccess:
-      Result := TMaxxRuralComponentColors.PrimaryDark;
+      Result := TDACComponentColors.PrimaryDark;
     mesWarning:
-      Result := TMaxxRuralComponentColors.Warning;
+      Result := TDACComponentColors.Warning;
     mesDanger:
-      Result := TMaxxRuralComponentColors.Danger;
+      Result := TDACComponentColors.Danger;
   else
     if Focused or DropDownVisible then
-      Result := TMaxxRuralComponentColors.Primary
+      Result := TDACComponentColors.Primary
     else if FMouseInside then
-      Result := TMaxxRuralComponentColors.ControlBorderHoverForSurface(LSurface)
+      Result := TDACComponentColors.ControlBorderHoverForSurface(LSurface)
     else
-      Result := TMaxxRuralComponentColors.ControlBorderForSurface(LSurface);
+      Result := TDACComponentColors.ControlBorderForSurface(LSurface);
   end;
 end;
 
-function TMaxxRuralComboBox.ControlHeight: Integer;
+function TDACComboBox.ControlHeight: Integer;
 begin
   case FInputSize of
     misSmall:
@@ -283,7 +283,7 @@ begin
     Result := ScaleMetric(32);
 end;
 
-procedure TMaxxRuralComboBox.CloseDropDown;
+procedure TDACComboBox.CloseDropDown;
 begin
   if FDropDownForm <> nil then
     FDropDownForm.Hide;
@@ -291,35 +291,35 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralComboBox.ChangeScale(M, D: Integer);
+procedure TDACComboBox.ChangeScale(M, D: Integer);
 begin
   inherited;
   UpdateChildBounds;
   Redraw;
 end;
 
-function TMaxxRuralComboBox.ChromeTop: Integer;
+function TDACComboBox.ChromeTop: Integer;
 begin
   Result := 0;
   if HasLabel then
     Result := ScaleMetric(24);
 end;
 
-procedure TMaxxRuralComboBox.CMEnabledChanged(var AMessage: TMessage);
+procedure TDACComboBox.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
   UpdateComboStyle;
   Redraw;
 end;
 
-procedure TMaxxRuralComboBox.CMParentColorChanged(var AMessage: TMessage);
+procedure TDACComboBox.CMParentColorChanged(var AMessage: TMessage);
 begin
   inherited;
   UpdateComboStyle;
   Redraw;
 end;
 
-procedure TMaxxRuralComboBox.CreateWnd;
+procedure TDACComboBox.CreateWnd;
 begin
   inherited;
   UpdateZOrder;
@@ -328,51 +328,51 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralComboBox.DoComboChange(Sender: TObject);
+procedure TDACComboBox.DoComboChange(Sender: TObject);
 begin
   Redraw;
   if Assigned(FOnChange) then
     FOnChange(Self);
 end;
 
-procedure TMaxxRuralComboBox.DoComboEnter(Sender: TObject);
+procedure TDACComboBox.DoComboEnter(Sender: TObject);
 begin
   Redraw;
   if Assigned(OnEnter) then
     OnEnter(Self);
 end;
 
-procedure TMaxxRuralComboBox.DoComboExit(Sender: TObject);
+procedure TDACComboBox.DoComboExit(Sender: TObject);
 begin
   Redraw;
   if Assigned(OnExit) then
     OnExit(Self);
 end;
 
-procedure TMaxxRuralComboBox.DropDownDeactivate(Sender: TObject);
+procedure TDACComboBox.DropDownDeactivate(Sender: TObject);
 begin
   CloseDropDown;
 end;
 
-function TMaxxRuralComboBox.DropDownItemAt(const AY: Integer): Integer;
+function TDACComboBox.DropDownItemAt(const AY: Integer): Integer;
 begin
   Result := AY div DropDownItemHeight;
   if (Result < 0) or (Result >= FCombo.Items.Count) then
     Result := -1;
 end;
 
-function TMaxxRuralComboBox.DropDownItemHeight: Integer;
+function TDACComboBox.DropDownItemHeight: Integer;
 begin
   Result := Max(ScaleMetric(36), ControlHeight);
 end;
 
-procedure TMaxxRuralComboBox.DropDownPaintBoxDraw(Sender: TObject;
+procedure TDACComboBox.DropDownPaintBoxDraw(Sender: TObject;
   const ACanvas: ISkCanvas; const ADest: TRectF; const AOpacity: Single);
 var
   LBackground: TAlphaColor;
   LBorder: TAlphaColor;
   LCheckRect: TRectF;
-  LIconStyle: TMaxxRuralIconStyle;
+  LIconStyle: TDACIconStyle;
   LIndex: Integer;
   LItemHeight: Integer;
   LRect: TRectF;
@@ -386,14 +386,14 @@ begin
 
   LScale := ScaleFactor;
   LSurface := ParentSurfaceColor;
-  LBackground := TMaxxRuralComponentColors.ControlBackgroundForSurface(LSurface);
-  LBorder := TMaxxRuralComponentColors.ControlBorderForSurface(LSurface);
+  LBackground := TDACComponentColors.ControlBackgroundForSurface(LSurface);
+  LBorder := TDACComponentColors.ControlBorderForSurface(LSurface);
 
-  ACanvas.Clear(TMaxxRuralComponentColors.Transparent);
+  ACanvas.Clear(TDACComponentColors.Transparent);
   LRect := FRenderer.SnapRect(TRectF.Create(0, 0, ADest.Width, ADest.Height), LScale);
   LRect.Inflate(-0.5 / LScale, -0.5 / LScale);
   FRenderer.FillRoundRect(ACanvas, LRect, LBackground, FCornerRadius, 255);
-  FRenderer.StrokeRoundRect(ACanvas, LRect, TMaxxRuralComponentColors.Primary,
+  FRenderer.StrokeRoundRect(ACanvas, LRect, TDACComponentColors.Primary,
     FCornerRadius, 1, 255);
 
   LItemHeight := DropDownItemHeight;
@@ -405,18 +405,18 @@ begin
       Break;
 
     if LIndex = FCombo.ItemIndex then
-      FRenderer.FillRoundRect(ACanvas, LRow, TMaxxRuralComponentColors.PrimaryLight,
+      FRenderer.FillRoundRect(ACanvas, LRow, TDACComponentColors.PrimaryLight,
         0, 80)
     else if LIndex = FDropDownHotIndex then
-      FRenderer.FillRoundRect(ACanvas, LRow, TMaxxRuralComponentColors.PrimaryLight,
+      FRenderer.FillRoundRect(ACanvas, LRow, TDACComponentColors.PrimaryLight,
         0, 42);
 
-    LTextColor := TMaxxRuralComponentColors.ControlTextForSurface(LSurface);
+    LTextColor := TDACComponentColors.ControlTextForSurface(LSurface);
     if LIndex = FCombo.ItemIndex then
-      LTextColor := TMaxxRuralComponentColors.PrimaryDark;
+      LTextColor := TDACComponentColors.PrimaryDark;
 
     FRenderer.Text(ACanvas, FCombo.Items[LIndex],
-      TMaxxRuralComponentFontInstaller.FontFamily, LRow.Left + ScaleMetric(14),
+      TDACComponentFontInstaller.FontFamily, LRow.Left + ScaleMetric(14),
       LRow.Top + (LRow.Height / 2) + ScaleMetric(5), 13, LTextColor,
       False, LRow.Width - ScaleMetric(44));
 
@@ -426,7 +426,7 @@ begin
         LRow.Top + (LRow.Height - ScaleMetric(16)) / 2,
         LRow.Right - ScaleMetric(12),
         LRow.Top + (LRow.Height + ScaleMetric(16)) / 2);
-      LIconStyle.Color := TMaxxRuralComponentColors.PrimaryDark;
+      LIconStyle.Color := TDACComponentColors.PrimaryDark;
       LIconStyle.Alpha := 255;
       FIconPainter.Draw(ACanvas, LCheckRect, mikCheck, LIconStyle);
     end;
@@ -438,7 +438,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralComboBox.DropDownPaintBoxMouseLeave(Sender: TObject);
+procedure TDACComboBox.DropDownPaintBoxMouseLeave(Sender: TObject);
 begin
   if FDropDownHotIndex = -1 then
     Exit;
@@ -447,7 +447,7 @@ begin
     FDropDownPaintBox.Redraw;
 end;
 
-procedure TMaxxRuralComboBox.DropDownPaintBoxMouseMove(Sender: TObject;
+procedure TDACComboBox.DropDownPaintBoxMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 var
   LIndex: Integer;
@@ -460,7 +460,7 @@ begin
     FDropDownPaintBox.Redraw;
 end;
 
-procedure TMaxxRuralComboBox.DropDownPaintBoxMouseUp(Sender: TObject;
+procedure TDACComboBox.DropDownPaintBoxMouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
   LIndex: Integer;
@@ -480,12 +480,12 @@ begin
     CloseDropDown;
 end;
 
-function TMaxxRuralComboBox.DropDownVisible: Boolean;
+function TDACComboBox.DropDownVisible: Boolean;
 begin
   Result := (FDropDownForm <> nil) and FDropDownForm.Visible;
 end;
 
-procedure TMaxxRuralComboBox.EnsureDropDown;
+procedure TDACComboBox.EnsureDropDown;
 begin
   if FDropDownForm <> nil then
     Exit;
@@ -507,7 +507,7 @@ begin
   FDropDownPaintBox.OnMouseUp := DropDownPaintBoxMouseUp;
 end;
 
-procedure TMaxxRuralComboBox.DoMouseEnter(Sender: TObject);
+procedure TDACComboBox.DoMouseEnter(Sender: TObject);
 begin
   if FMouseInside then
     Exit;
@@ -517,7 +517,7 @@ begin
     OnMouseEnter(Self);
 end;
 
-procedure TMaxxRuralComboBox.DoMouseLeave(Sender: TObject);
+procedure TDACComboBox.DoMouseLeave(Sender: TObject);
 var
   LPoint: TPoint;
 begin
@@ -535,42 +535,42 @@ begin
     OnMouseLeave(Self);
 end;
 
-function TMaxxRuralComboBox.GetDropDownCount: Integer;
+function TDACComboBox.GetDropDownCount: Integer;
 begin
   Result := FCombo.DropDownCount;
 end;
 
-function TMaxxRuralComboBox.GetItemIndex: Integer;
+function TDACComboBox.GetItemIndex: Integer;
 begin
   Result := FCombo.ItemIndex;
 end;
 
-function TMaxxRuralComboBox.GetItems: TStrings;
+function TDACComboBox.GetItems: TStrings;
 begin
   Result := FCombo.Items;
 end;
 
-function TMaxxRuralComboBox.GetStyle: TComboBoxStyle;
+function TDACComboBox.GetStyle: TComboBoxStyle;
 begin
   Result := FCombo.Style;
 end;
 
-function TMaxxRuralComboBox.GetText: string;
+function TDACComboBox.GetText: string;
 begin
   Result := FCombo.Text;
 end;
 
-function TMaxxRuralComboBox.HasLabel: Boolean;
+function TDACComboBox.HasLabel: Boolean;
 begin
   Result := FLabelText.Trim <> '';
 end;
 
-function TMaxxRuralComboBox.HasSupportText: Boolean;
+function TDACComboBox.HasSupportText: Boolean;
 begin
   Result := (FHelperText.Trim <> '') or (FCounterText.Trim <> '');
 end;
 
-function TMaxxRuralComboBox.InputFontSize: Integer;
+function TDACComboBox.InputFontSize: Integer;
 begin
   case FInputSize of
     misSmall:
@@ -582,7 +582,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralComboBox.Loaded;
+procedure TDACComboBox.Loaded;
 begin
   inherited;
   UpdatePaintBoxBounds;
@@ -591,7 +591,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralComboBox.MouseDown(Button: TMouseButton; Shift: TShiftState;
+procedure TDACComboBox.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 begin
   inherited;
@@ -599,16 +599,16 @@ begin
     inherited SetFocus;
 end;
 
-procedure TMaxxRuralComboBox.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
+procedure TDACComboBox.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
   const ADest: TRectF; const AOpacity: Single);
 var
   LArrowRect: TRectF;
-  LBackground: TMaxxRuralBackgroundStyle;
-  LBorder: TMaxxRuralBorderStyle;
+  LBackground: TDACBackgroundStyle;
+  LBorder: TDACBorderStyle;
   LBorderRect: TRectF;
   LControlBottom: Single;
   LCounterWidth: Single;
-  LIconStyle: TMaxxRuralIconStyle;
+  LIconStyle: TDACIconStyle;
   LLabelColor: TAlphaColor;
   LRect: TRectF;
   LScale: Single;
@@ -634,11 +634,11 @@ begin
 
   if HasLabel then
   begin
-    LLabelColor := TMaxxRuralComponentColors.ControlTextForSurface(LSurface);
+    LLabelColor := TDACComponentColors.ControlTextForSurface(LSurface);
     if FRequired then
-      LLabelColor := TMaxxRuralComponentColors.PrimaryDark;
+      LLabelColor := TDACComponentColors.PrimaryDark;
     FRenderer.Text(ACanvas, FLabelText,
-      TMaxxRuralComponentFontInstaller.FontFamily, 0,
+      TDACComponentFontInstaller.FontFamily, 0,
       ScaleMetric(15), 12, LLabelColor, FRequired, ADest.Width);
   end;
 
@@ -656,23 +656,23 @@ begin
   end
   else
   begin
-    LBackground.Color := TMaxxRuralComponentColors.ControlBackgroundForSurface(LSurface);
+    LBackground.Color := TDACComponentColors.ControlBackgroundForSurface(LSurface);
     if not Enabled then
-      LBackground.Color := TMaxxRuralComponentColors.ControlBackgroundDisabledForSurface(LSurface);
+      LBackground.Color := TDACComponentColors.ControlBackgroundDisabledForSurface(LSurface);
     LBackground.Radius := FCornerRadius;
     LBackground.Alpha := 255;
     FBackgroundPainter.Draw(ACanvas, LRect, LBackground);
     FBorderPainter.Draw(ACanvas, LBorderRect, LBorder);
   end;
 
-  LTextColor := TMaxxRuralComponentColors.ControlTextForSurface(LSurface);
+  LTextColor := TDACComponentColors.ControlTextForSurface(LSurface);
   if not Enabled then
-    LTextColor := TMaxxRuralComponentColors.ControlTextDisabledForSurface(LSurface);
+    LTextColor := TDACComponentColors.ControlTextDisabledForSurface(LSurface);
 
   LTextRect := TRectF.Create(LRect.Left + ScaleMetric(14), LRect.Top,
     LRect.Right - ScaleMetric(38), LRect.Bottom);
   FRenderer.Text(ACanvas, FCombo.Text,
-    TMaxxRuralComponentFontInstaller.FontFamily, LTextRect.Left,
+    TDACComponentFontInstaller.FontFamily, LTextRect.Left,
     LTextRect.Top + (LTextRect.Height / 2) + ScaleMetric(5),
     InputFontSize, LTextColor, False, LTextRect.Width);
 
@@ -680,9 +680,9 @@ begin
     LRect.Top + (LRect.Height - ScaleMetric(16)) / 2,
     LRect.Right - ScaleMetric(12),
     LRect.Top + (LRect.Height + ScaleMetric(16)) / 2);
-  LIconStyle.Color := TMaxxRuralComponentColors.ControlBorderHoverForSurface(LSurface);
+  LIconStyle.Color := TDACComponentColors.ControlBorderHoverForSurface(LSurface);
   if not Enabled then
-    LIconStyle.Color := TMaxxRuralComponentColors.ControlTextDisabledForSurface(LSurface);
+    LIconStyle.Color := TDACComponentColors.ControlTextDisabledForSurface(LSurface);
   LIconStyle.Alpha := 255;
   FIconPainter.Draw(ACanvas, LArrowRect, mikChevronDown, LIconStyle);
 
@@ -691,24 +691,24 @@ begin
     LSupportColor := SupportTextColor(LSurface);
     if FHelperText.Trim <> '' then
       FRenderer.Text(ACanvas, FHelperText,
-        TMaxxRuralComponentFontInstaller.FontFamily, 0,
+        TDACComponentFontInstaller.FontFamily, 0,
         LBorderRect.Bottom + ScaleMetric(18), 11, LSupportColor, False,
         ADest.Width);
     if FCounterText.Trim <> '' then
     begin
       LCounterWidth := FRenderer.MeasureText(FCounterText,
-        TMaxxRuralComponentFontInstaller.FontFamily, 11);
+        TDACComponentFontInstaller.FontFamily, 11);
       FRenderer.Text(ACanvas, FCounterText,
-        TMaxxRuralComponentFontInstaller.FontFamily,
+        TDACComponentFontInstaller.FontFamily,
         Max(0, ADest.Width - LCounterWidth),
         LBorderRect.Bottom + ScaleMetric(18), 11,
-        TMaxxRuralComponentColors.ControlTextDisabledForSurface(LSurface),
+        TDACComponentColors.ControlTextDisabledForSurface(LSurface),
         False, LCounterWidth);
     end;
   end;
 end;
 
-procedure TMaxxRuralComboBox.PaintBoxMouseDown(Sender: TObject;
+procedure TDACComboBox.PaintBoxMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   MouseDown(Button, Shift, X, Y);
@@ -716,19 +716,19 @@ begin
     ShowDropDown;
 end;
 
-function TMaxxRuralComboBox.ParentSurfaceColor: TAlphaColor;
+function TDACComboBox.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TMaxxRuralComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
-procedure TMaxxRuralComboBox.Redraw;
+procedure TDACComboBox.Redraw;
 begin
   UpdatePaintBoxBounds;
   if (FPaintBox <> nil) and HandleAllocated then
     FPaintBox.Redraw;
 end;
 
-procedure TMaxxRuralComboBox.Resize;
+procedure TDACComboBox.Resize;
 begin
   inherited;
   UpdatePaintBoxBounds;
@@ -737,7 +737,7 @@ begin
   Redraw;
 end;
 
-function TMaxxRuralComboBox.ScaleFactor: Single;
+function TDACComboBox.ScaleFactor: Single;
 begin
   Result := 1;
   if FPaintBox <> nil then
@@ -746,14 +746,14 @@ begin
     Result := 1;
 end;
 
-function TMaxxRuralComboBox.ScaleMetric(const AValue: Integer): Integer;
+function TDACComboBox.ScaleMetric(const AValue: Integer): Integer;
 begin
   Result := Round(AValue * ScaleFactor);
   if (AValue > 0) and (Result < 1) then
     Result := 1;
 end;
 
-procedure TMaxxRuralComboBox.SetCornerRadius(const AValue: Integer);
+procedure TDACComboBox.SetCornerRadius(const AValue: Integer);
 begin
   if FCornerRadius = AValue then
     Exit;
@@ -761,7 +761,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralComboBox.SetCounterText(const AValue: string);
+procedure TDACComboBox.SetCounterText(const AValue: string);
 var
   LHadSupport: Boolean;
 begin
@@ -775,14 +775,14 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralComboBox.SetDropDownCount(const AValue: Integer);
+procedure TDACComboBox.SetDropDownCount(const AValue: Integer);
 begin
   FCombo.DropDownCount := Max(1, AValue);
   if DropDownVisible and (FDropDownPaintBox <> nil) then
     ShowDropDown;
 end;
 
-procedure TMaxxRuralComboBox.SetHelperText(const AValue: string);
+procedure TDACComboBox.SetHelperText(const AValue: string);
 var
   LHadSupport: Boolean;
 begin
@@ -796,7 +796,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralComboBox.SetInputSize(const AValue: TMaxxRuralInputSize);
+procedure TDACComboBox.SetInputSize(const AValue: TDACInputSize);
 begin
   if FInputSize = AValue then
     Exit;
@@ -810,25 +810,25 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralComboBox.SetFocus;
+procedure TDACComboBox.SetFocus;
 begin
   if CanFocus then
     inherited;
 end;
 
-procedure TMaxxRuralComboBox.SetItemIndex(const AValue: Integer);
+procedure TDACComboBox.SetItemIndex(const AValue: Integer);
 begin
   FCombo.ItemIndex := AValue;
   Redraw;
 end;
 
-procedure TMaxxRuralComboBox.SetItems(const AValue: TStrings);
+procedure TDACComboBox.SetItems(const AValue: TStrings);
 begin
   FCombo.Items.Assign(AValue);
   Redraw;
 end;
 
-procedure TMaxxRuralComboBox.SetLabelText(const AValue: string);
+procedure TDACComboBox.SetLabelText(const AValue: string);
 var
   LHadLabel: Boolean;
 begin
@@ -843,7 +843,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralComboBox.SetRequired(const AValue: Boolean);
+procedure TDACComboBox.SetRequired(const AValue: Boolean);
 begin
   if FRequired = AValue then
     Exit;
@@ -851,7 +851,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralComboBox.SetStatus(const AValue: TMaxxRuralEditStatus);
+procedure TDACComboBox.SetStatus(const AValue: TDACEditStatus);
 begin
   if FStatus = AValue then
     Exit;
@@ -859,7 +859,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralComboBox.SetStyle(const AValue: TComboBoxStyle);
+procedure TDACComboBox.SetStyle(const AValue: TComboBoxStyle);
 begin
   if FCombo.Style = AValue then
     Exit;
@@ -867,13 +867,13 @@ begin
   UpdateChildBounds;
 end;
 
-procedure TMaxxRuralComboBox.SetText(const AValue: string);
+procedure TDACComboBox.SetText(const AValue: string);
 begin
   FCombo.Text := AValue;
   Redraw;
 end;
 
-procedure TMaxxRuralComboBox.SetVariant(const AValue: TMaxxRuralInputVariant);
+procedure TDACComboBox.SetVariant(const AValue: TDACInputVariant);
 begin
   if FVariant = AValue then
     Exit;
@@ -883,7 +883,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralComboBox.ShowDropDown;
+procedure TDACComboBox.ShowDropDown;
 var
   LHeight: Integer;
   LItemCount: Integer;
@@ -905,8 +905,8 @@ begin
   LHeight := LItemCount * DropDownItemHeight;
   LPoint := ClientToScreen(Point(0, ChromeTop + ControlHeight + ScaleMetric(2)));
   FDropDownHotIndex := FCombo.ItemIndex;
-  FDropDownForm.Color := TMaxxRuralComponentColors.ToVclColor(
-    TMaxxRuralComponentColors.ControlBackgroundForSurface(ParentSurfaceColor));
+  FDropDownForm.Color := TDACComponentColors.ToVclColor(
+    TDACComponentColors.ControlBackgroundForSurface(ParentSurfaceColor));
   FDropDownForm.SetBounds(LPoint.X, LPoint.Y, Width, LHeight);
   FDropDownForm.Show;
   FDropDownForm.BringToFront;
@@ -915,21 +915,21 @@ begin
   Redraw;
 end;
 
-function TMaxxRuralComboBox.SupportTextColor(const ASurface: TAlphaColor): TAlphaColor;
+function TDACComboBox.SupportTextColor(const ASurface: TAlphaColor): TAlphaColor;
 begin
   case FStatus of
     mesSuccess:
-      Result := TMaxxRuralComponentColors.PrimaryDark;
+      Result := TDACComponentColors.PrimaryDark;
     mesWarning:
-      Result := TMaxxRuralComponentColors.WarningDark;
+      Result := TDACComponentColors.WarningDark;
     mesDanger:
-      Result := TMaxxRuralComponentColors.Danger;
+      Result := TDACComponentColors.Danger;
   else
-    Result := TMaxxRuralComponentColors.ControlTextDisabledForSurface(ASurface);
+    Result := TDACComponentColors.ControlTextDisabledForSurface(ASurface);
   end;
 end;
 
-procedure TMaxxRuralComboBox.UpdateChildBounds;
+procedure TDACComboBox.UpdateChildBounds;
 var
   LHorizontalPadding: Integer;
   LInputHeight: Integer;
@@ -944,7 +944,7 @@ begin
   FCombo.SetBounds(LHorizontalPadding, LTop, 0, 0);
 end;
 
-procedure TMaxxRuralComboBox.UpdateComboStyle;
+procedure TDACComboBox.UpdateComboStyle;
 var
   LSurface: TAlphaColor;
   LTextColor: TColor;
@@ -957,30 +957,30 @@ begin
   FCombo.Visible := False;
   FCombo.TabStop := False;
   if FVariant = mivUnderlined then
-    FCombo.Color := TMaxxRuralComponentColors.ToVclColor(LSurface)
+    FCombo.Color := TDACComponentColors.ToVclColor(LSurface)
   else
-    FCombo.Color := TMaxxRuralComponentColors.ToVclColor(
-      TMaxxRuralComponentColors.ControlBackgroundForSurface(LSurface));
+    FCombo.Color := TDACComponentColors.ToVclColor(
+      TDACComponentColors.ControlBackgroundForSurface(LSurface));
   if not Enabled then
-    FCombo.Color := TMaxxRuralComponentColors.ToVclColor(
-      TMaxxRuralComponentColors.ControlBackgroundDisabledForSurface(LSurface));
-  FCombo.Font.Name := TMaxxRuralComponentFontInstaller.FontFamily;
+    FCombo.Color := TDACComponentColors.ToVclColor(
+      TDACComponentColors.ControlBackgroundDisabledForSurface(LSurface));
+  FCombo.Font.Name := TDACComponentFontInstaller.FontFamily;
   FCombo.Font.Size := InputFontSize;
   FCombo.Font.Style := [];
-  LTextColor := TMaxxRuralComponentColors.ToVclColor(
-    TMaxxRuralComponentColors.ControlTextForSurface(LSurface));
+  LTextColor := TDACComponentColors.ToVclColor(
+    TDACComponentColors.ControlTextForSurface(LSurface));
   if not Enabled then
-    LTextColor := TMaxxRuralComponentColors.ToVclColor(
-      TMaxxRuralComponentColors.ControlTextDisabledForSurface(LSurface));
+    LTextColor := TDACComponentColors.ToVclColor(
+      TDACComponentColors.ControlTextDisabledForSurface(LSurface));
   FCombo.Font.Color := LTextColor;
   if not Enabled then
     Cursor := crDefault;
   if FDropDownForm <> nil then
-    FDropDownForm.Color := TMaxxRuralComponentColors.ToVclColor(
-      TMaxxRuralComponentColors.ControlBackgroundForSurface(LSurface));
+    FDropDownForm.Color := TDACComponentColors.ToVclColor(
+      TDACComponentColors.ControlBackgroundForSurface(LSurface));
 end;
 
-procedure TMaxxRuralComboBox.UpdatePaintBoxBounds;
+procedure TDACComboBox.UpdatePaintBoxBounds;
 var
   LWidth: Integer;
   LHeight: Integer;
@@ -1001,7 +1001,7 @@ begin
     FPaintBox.SetBounds(0, 0, LWidth, LHeight);
 end;
 
-procedure TMaxxRuralComboBox.UpdateZOrder;
+procedure TDACComboBox.UpdateZOrder;
 begin
   if (csLoading in ComponentState) or (csDestroying in ComponentState) then
     Exit;
@@ -1016,9 +1016,10 @@ begin
     FPaintBox.BringToFront;
 end;
 
-procedure TMaxxRuralComboBox.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACComboBox.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
 end.
+

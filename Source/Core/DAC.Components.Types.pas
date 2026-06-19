@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Types;
+unit DAC.Components.Types;
 
 interface
 
@@ -8,7 +8,7 @@ uses
   Vcl.Controls;
 
 type
-  TMaxxRuralVisualState = (
+  TDACVisualState = (
     mvsNormal,
     mvsHovered,
     mvsPressed,
@@ -18,16 +18,16 @@ type
     mvsDisabled
   );
 
-  TMaxxRuralVisualStates = set of TMaxxRuralVisualState;
+  TDACVisualStates = set of TDACVisualState;
 
-  TMaxxRuralPointerButton = (
+  TDACPointerButton = (
     mpbNone,
     mpbLeft,
     mpbRight,
     mpbMiddle
   );
 
-  TMaxxRuralSkiaLayer = (
+  TDACSkiaLayer = (
     mslBackground,
     mslContent,
     mslChrome,
@@ -35,7 +35,7 @@ type
     mslAdorner
   );
 
-  TMaxxRuralAccessibleRole = (
+  TDACAccessibleRole = (
     marNone,
     marButton,
     marInput,
@@ -50,27 +50,27 @@ type
     marDocument
   );
 
-  TMaxxRuralPointerEvent = record
+  TDACPointerEvent = record
     Position: TPointF;
-    Button: TMaxxRuralPointerButton;
+    Button: TDACPointerButton;
     Shift: TShiftState;
     WheelDelta: Integer;
     class function Create(const APosition: TPointF;
-      const AButton: TMaxxRuralPointerButton = mpbNone;
-      const AShift: TShiftState = []; const AWheelDelta: Integer = 0): TMaxxRuralPointerEvent; static;
+      const AButton: TDACPointerButton = mpbNone;
+      const AShift: TShiftState = []; const AWheelDelta: Integer = 0): TDACPointerEvent; static;
   end;
 
-  TMaxxRuralHitTestResult = record
+  TDACHitTestResult = record
     ComponentId: string;
     ElementId: string;
     Cursor: TCursor;
     Handled: Boolean;
-    class function Empty: TMaxxRuralHitTestResult; static;
+    class function Empty: TDACHitTestResult; static;
     class function Hit(const AComponentId, AElementId: string;
-      const ACursor: TCursor = crDefault): TMaxxRuralHitTestResult; static;
+      const ACursor: TCursor = crDefault): TDACHitTestResult; static;
   end;
 
-  TMaxxRuralInteractionState = record
+  TDACInteractionState = record
     HoveredComponentId: string;
     HoveredElementId: string;
     PressedComponentId: string;
@@ -86,9 +86,9 @@ type
 
 implementation
 
-class function TMaxxRuralPointerEvent.Create(const APosition: TPointF;
-  const AButton: TMaxxRuralPointerButton; const AShift: TShiftState;
-  const AWheelDelta: Integer): TMaxxRuralPointerEvent;
+class function TDACPointerEvent.Create(const APosition: TPointF;
+  const AButton: TDACPointerButton; const AShift: TShiftState;
+  const AWheelDelta: Integer): TDACPointerEvent;
 begin
   Result.Position := APosition;
   Result.Button := AButton;
@@ -96,7 +96,7 @@ begin
   Result.WheelDelta := AWheelDelta;
 end;
 
-class function TMaxxRuralHitTestResult.Empty: TMaxxRuralHitTestResult;
+class function TDACHitTestResult.Empty: TDACHitTestResult;
 begin
   Result.ComponentId := '';
   Result.ElementId := '';
@@ -104,8 +104,8 @@ begin
   Result.Handled := False;
 end;
 
-class function TMaxxRuralHitTestResult.Hit(const AComponentId,
-  AElementId: string; const ACursor: TCursor): TMaxxRuralHitTestResult;
+class function TDACHitTestResult.Hit(const AComponentId,
+  AElementId: string; const ACursor: TCursor): TDACHitTestResult;
 begin
   Result.ComponentId := AComponentId;
   Result.ElementId := AElementId;
@@ -113,19 +113,19 @@ begin
   Result.Handled := True;
 end;
 
-procedure TMaxxRuralInteractionState.Clear;
+procedure TDACInteractionState.Clear;
 begin
   ClearPointer;
   ClearFocus;
 end;
 
-procedure TMaxxRuralInteractionState.ClearFocus;
+procedure TDACInteractionState.ClearFocus;
 begin
   FocusedComponentId := '';
   FocusedElementId := '';
 end;
 
-procedure TMaxxRuralInteractionState.ClearPointer;
+procedure TDACInteractionState.ClearPointer;
 begin
   HoveredComponentId := '';
   HoveredElementId := '';
@@ -136,3 +136,4 @@ begin
 end;
 
 end.
+

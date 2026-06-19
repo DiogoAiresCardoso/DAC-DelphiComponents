@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.SystemText;
+unit DAC.Components.Controls.SystemText;
 
 interface
 
@@ -9,39 +9,39 @@ uses
   Vcl.Graphics;
 
 type
-  TMaxxRuralSystemTextHorzAlign = (
+  TDACSystemTextHorzAlign = (
     mthaLeft,
     mthaCenter,
     mthaRight
   );
 
-  TMaxxRuralSystemTextVertAlign = (
+  TDACSystemTextVertAlign = (
     mtvaTop,
     mtvaCenter,
     mtvaBottom
   );
 
-  TMaxxRuralSystemText = class(TGraphicControl)
+  TDACSystemText = class(TGraphicControl)
   private
     FBold: Boolean;
     FFontFamily: string;
     FFontSize: Integer;
-    FHorzAlign: TMaxxRuralSystemTextHorzAlign;
+    FHorzAlign: TDACSystemTextHorzAlign;
     FInvalidatePending: Boolean;
     FMaxLines: Integer;
     FText: string;
     FTextColor: TAlphaColor;
     FUpdateLock: Integer;
-    FVertAlign: TMaxxRuralSystemTextVertAlign;
+    FVertAlign: TDACSystemTextVertAlign;
     procedure RequestInvalidate;
     procedure SetBold(const AValue: Boolean);
     procedure SetFontFamily(const AValue: string);
     procedure SetFontSize(const AValue: Integer);
-    procedure SetHorzAlign(const AValue: TMaxxRuralSystemTextHorzAlign);
+    procedure SetHorzAlign(const AValue: TDACSystemTextHorzAlign);
     procedure SetMaxLines(const AValue: Integer);
     procedure SetText(const AValue: string);
     procedure SetTextColor(const AValue: TAlphaColor);
-    procedure SetVertAlign(const AValue: TMaxxRuralSystemTextVertAlign);
+    procedure SetVertAlign(const AValue: TDACSystemTextVertAlign);
   protected
     procedure Paint; override;
   public
@@ -51,11 +51,11 @@ type
     property Bold: Boolean read FBold write SetBold;
     property FontFamily: string read FFontFamily write SetFontFamily;
     property FontSize: Integer read FFontSize write SetFontSize;
-    property HorzAlign: TMaxxRuralSystemTextHorzAlign read FHorzAlign write SetHorzAlign;
+    property HorzAlign: TDACSystemTextHorzAlign read FHorzAlign write SetHorzAlign;
     property MaxLines: Integer read FMaxLines write SetMaxLines;
     property Text: string read FText write SetText;
     property TextColor: TAlphaColor read FTextColor write SetTextColor;
-    property VertAlign: TMaxxRuralSystemTextVertAlign read FVertAlign write SetVertAlign;
+    property VertAlign: TDACSystemTextVertAlign read FVertAlign write SetVertAlign;
     property OnClick;
     property OnDblClick;
     property OnMouseDown;
@@ -70,30 +70,30 @@ implementation
 uses
   System.Math,
   Winapi.Windows,
-  MaxxRural.Components.DesignSystem.ColorTokens,
-  MaxxRural.Components.DesignSystem.Fonts;
+  DAC.Components.DesignSystem.ColorTokens,
+  DAC.Components.DesignSystem.Fonts;
 
-constructor TMaxxRuralSystemText.Create(AOwner: TComponent);
+constructor TDACSystemText.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FBold := False;
-  FFontFamily := TMaxxRuralComponentFontInstaller.FontFamily;
+  FFontFamily := TDACComponentFontInstaller.FontFamily;
   FFontSize := 10;
   FHorzAlign := mthaLeft;
   FInvalidatePending := False;
   FMaxLines := 1;
   FText := '';
-  FTextColor := TMaxxRuralComponentColors.ControlText;
+  FTextColor := TDACComponentColors.ControlText;
   FUpdateLock := 0;
   FVertAlign := mtvaTop;
 end;
 
-procedure TMaxxRuralSystemText.BeginUpdate;
+procedure TDACSystemText.BeginUpdate;
 begin
   Inc(FUpdateLock);
 end;
 
-procedure TMaxxRuralSystemText.EndUpdate;
+procedure TDACSystemText.EndUpdate;
 begin
   if FUpdateLock > 0 then
     Dec(FUpdateLock);
@@ -105,7 +105,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralSystemText.Paint;
+procedure TDACSystemText.Paint;
 var
   LFlags: Cardinal;
   LRect: TRect;
@@ -115,7 +115,7 @@ begin
   Canvas.Brush.Style := bsClear;
   Canvas.Font.Name := FFontFamily;
   Canvas.Font.Size := FFontSize;
-  Canvas.Font.Color := TMaxxRuralComponentColors.ToVclColor(FTextColor);
+  Canvas.Font.Color := TDACComponentColors.ToVclColor(FTextColor);
   if FBold then
     Canvas.Font.Style := [fsBold]
   else
@@ -149,7 +149,7 @@ begin
   DrawText(Canvas.Handle, PChar(FText), -1, LRect, LFlags);
 end;
 
-procedure TMaxxRuralSystemText.RequestInvalidate;
+procedure TDACSystemText.RequestInvalidate;
 begin
   if FUpdateLock > 0 then
   begin
@@ -160,7 +160,7 @@ begin
   Invalidate;
 end;
 
-procedure TMaxxRuralSystemText.SetBold(const AValue: Boolean);
+procedure TDACSystemText.SetBold(const AValue: Boolean);
 begin
   if FBold = AValue then
     Exit;
@@ -168,7 +168,7 @@ begin
   RequestInvalidate;
 end;
 
-procedure TMaxxRuralSystemText.SetFontFamily(const AValue: string);
+procedure TDACSystemText.SetFontFamily(const AValue: string);
 begin
   if FFontFamily = AValue then
     Exit;
@@ -176,7 +176,7 @@ begin
   RequestInvalidate;
 end;
 
-procedure TMaxxRuralSystemText.SetFontSize(const AValue: Integer);
+procedure TDACSystemText.SetFontSize(const AValue: Integer);
 var
   LValue: Integer;
 begin
@@ -187,8 +187,8 @@ begin
   RequestInvalidate;
 end;
 
-procedure TMaxxRuralSystemText.SetHorzAlign(
-  const AValue: TMaxxRuralSystemTextHorzAlign);
+procedure TDACSystemText.SetHorzAlign(
+  const AValue: TDACSystemTextHorzAlign);
 begin
   if FHorzAlign = AValue then
     Exit;
@@ -196,7 +196,7 @@ begin
   RequestInvalidate;
 end;
 
-procedure TMaxxRuralSystemText.SetMaxLines(const AValue: Integer);
+procedure TDACSystemText.SetMaxLines(const AValue: Integer);
 var
   LValue: Integer;
 begin
@@ -207,7 +207,7 @@ begin
   RequestInvalidate;
 end;
 
-procedure TMaxxRuralSystemText.SetText(const AValue: string);
+procedure TDACSystemText.SetText(const AValue: string);
 begin
   if FText = AValue then
     Exit;
@@ -215,19 +215,19 @@ begin
   RequestInvalidate;
 end;
 
-procedure TMaxxRuralSystemText.SetTextColor(const AValue: TAlphaColor);
+procedure TDACSystemText.SetTextColor(const AValue: TAlphaColor);
 var
   LValue: TAlphaColor;
 begin
-  LValue := TMaxxRuralComponentColors.Normalize(AValue);
+  LValue := TDACComponentColors.Normalize(AValue);
   if FTextColor = LValue then
     Exit;
   FTextColor := LValue;
   RequestInvalidate;
 end;
 
-procedure TMaxxRuralSystemText.SetVertAlign(
-  const AValue: TMaxxRuralSystemTextVertAlign);
+procedure TDACSystemText.SetVertAlign(
+  const AValue: TDACSystemTextVertAlign);
 begin
   if FVertAlign = AValue then
     Exit;
@@ -236,3 +236,4 @@ begin
 end;
 
 end.
+

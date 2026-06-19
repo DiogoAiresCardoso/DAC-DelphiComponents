@@ -1,21 +1,21 @@
-unit MaxxRural.Components.DesignSystem.Metrics;
+unit DAC.Components.DesignSystem.Metrics;
 
 interface
 
 type
-  TMaxxRuralComponentMetrics = record
+  TDACComponentMetrics = record
     MinTouchTarget: Single;
     BorderWidth: Single;
     FocusStrokeWidth: Single;
     DefaultControlHeight: Single;
     DefaultCardWidth: Single;
     DefaultCardHeight: Single;
-    class function Default: TMaxxRuralComponentMetrics; static;
+    class function Default: TDACComponentMetrics; static;
   end;
 
 implementation
 
-class function TMaxxRuralComponentMetrics.Default: TMaxxRuralComponentMetrics;
+class function TDACComponentMetrics.Default: TDACComponentMetrics;
 begin
   Result.MinTouchTarget := 32;
   Result.BorderWidth := 1;
@@ -26,3 +26,4 @@ begin
 end;
 
 end.
+

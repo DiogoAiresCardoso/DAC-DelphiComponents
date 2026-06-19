@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.DateTimePicker;
+unit DAC.Components.Controls.DateTimePicker;
 
 interface
 
@@ -13,28 +13,28 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
-  MaxxRural.Components.Controls.Edit,
-  MaxxRural.Components.DesignSystem.IconAssets,
-  MaxxRural.Components.Skia.BackgroundPainter,
-  MaxxRural.Components.Skia.BorderPainter,
-  MaxxRural.Components.Skia.IconPainter,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.Controls.Edit,
+  DAC.Components.DesignSystem.IconAssets,
+  DAC.Components.Skia.BackgroundPainter,
+  DAC.Components.Skia.BorderPainter,
+  DAC.Components.Skia.IconPainter,
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralDateTimePicker = class(TCustomControl)
+  TDACDateTimePicker = class(TCustomControl)
   private
-    FBackgroundPainter: TMaxxRuralSkiaBackgroundPainter;
-    FBorderPainter: TMaxxRuralSkiaBorderPainter;
+    FBackgroundPainter: TDACSkiaBackgroundPainter;
+    FBorderPainter: TDACSkiaBorderPainter;
     FCornerRadius: Integer;
-    FIconPainter: TMaxxRuralSkiaIconPainter;
+    FIconPainter: TDACSkiaIconPainter;
     FLabelText: string;
     FMouseInside: Boolean;
     FOnChange: TNotifyEvent;
     FPaintBox: TSkPaintBox;
     FPicker: TDateTimePicker;
-    FRenderer: TMaxxRuralSkiaRenderer;
+    FRenderer: TDACSkiaRenderer;
     FRequired: Boolean;
-    FStatus: TMaxxRuralEditStatus;
+    FStatus: TDACEditStatus;
     function BorderAlpha: Byte;
     function BorderColor: TAlphaColor;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
@@ -60,7 +60,7 @@ type
     procedure SetLabelText(const AValue: string);
     procedure SetPickerKind(const AValue: TDateTimeKind);
     procedure SetRequired(const AValue: Boolean);
-    procedure SetStatus(const AValue: TMaxxRuralEditStatus);
+    procedure SetStatus(const AValue: TDACEditStatus);
     procedure UpdateChildBounds;
     procedure UpdatePaintBoxBounds;
     procedure UpdatePickerStyle;
@@ -94,7 +94,7 @@ type
     property PopupMenu;
     property Required: Boolean read FRequired write SetRequired default False;
     property ShowHint;
-    property Status: TMaxxRuralEditStatus read FStatus write SetStatus default mesNormal;
+    property Status: TDACEditStatus read FStatus write SetStatus default mesNormal;
     property TabOrder;
     property TabStop default True;
     property Visible;
@@ -118,10 +118,10 @@ implementation
 uses
   System.Math,
   Winapi.Windows,
-  MaxxRural.Components.DesignSystem.ColorTokens,
-  MaxxRural.Components.DesignSystem.Fonts;
+  DAC.Components.DesignSystem.ColorTokens,
+  DAC.Components.DesignSystem.Fonts;
 
-constructor TMaxxRuralDateTimePicker.Create(AOwner: TComponent);
+constructor TDACDateTimePicker.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque, csClickEvents, csCaptureMouse];
@@ -135,10 +135,10 @@ begin
   FCornerRadius := 8;
   FStatus := mesNormal;
 
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
-  FBackgroundPainter := TMaxxRuralSkiaBackgroundPainter.Create(FRenderer);
-  FBorderPainter := TMaxxRuralSkiaBorderPainter.Create(FRenderer);
-  FIconPainter := TMaxxRuralSkiaIconPainter.Create(FRenderer);
+  FRenderer := TDACSkiaRenderer.Create;
+  FBackgroundPainter := TDACSkiaBackgroundPainter.Create(FRenderer);
+  FBorderPainter := TDACSkiaBorderPainter.Create(FRenderer);
+  FIconPainter := TDACSkiaIconPainter.Create(FRenderer);
 
   FPicker := TDateTimePicker.Create(Self);
   FPicker.Parent := Self;
@@ -165,7 +165,7 @@ begin
   UpdatePickerStyle;
 end;
 
-destructor TMaxxRuralDateTimePicker.Destroy;
+destructor TDACDateTimePicker.Destroy;
 begin
   FPaintBox.Free;
   FPicker.Free;
@@ -176,7 +176,7 @@ begin
   inherited;
 end;
 
-function TMaxxRuralDateTimePicker.BorderAlpha: Byte;
+function TDACDateTimePicker.BorderAlpha: Byte;
 begin
   Result := 180;
   if FPicker.Focused or FMouseInside then
@@ -185,29 +185,29 @@ begin
     Result := 100;
 end;
 
-function TMaxxRuralDateTimePicker.BorderColor: TAlphaColor;
+function TDACDateTimePicker.BorderColor: TAlphaColor;
 var
   LSurface: TAlphaColor;
 begin
   LSurface := ParentSurfaceColor;
   case FStatus of
     mesSuccess:
-      Result := TMaxxRuralComponentColors.PrimaryDark;
+      Result := TDACComponentColors.PrimaryDark;
     mesWarning:
-      Result := TMaxxRuralComponentColors.Warning;
+      Result := TDACComponentColors.Warning;
     mesDanger:
-      Result := TMaxxRuralComponentColors.Danger;
+      Result := TDACComponentColors.Danger;
   else
     if FPicker.Focused then
-      Result := TMaxxRuralComponentColors.Primary
+      Result := TDACComponentColors.Primary
     else if FMouseInside then
-      Result := TMaxxRuralComponentColors.ControlBorderHoverForSurface(LSurface)
+      Result := TDACComponentColors.ControlBorderHoverForSurface(LSurface)
     else
-      Result := TMaxxRuralComponentColors.ControlBorderForSurface(LSurface);
+      Result := TDACComponentColors.ControlBorderForSurface(LSurface);
   end;
 end;
 
-procedure TMaxxRuralDateTimePicker.ChangeScale(M, D: Integer);
+procedure TDACDateTimePicker.ChangeScale(M, D: Integer);
 begin
   inherited;
   UpdatePaintBoxBounds;
@@ -215,28 +215,28 @@ begin
   Redraw;
 end;
 
-function TMaxxRuralDateTimePicker.ChromeTop: Integer;
+function TDACDateTimePicker.ChromeTop: Integer;
 begin
   Result := 0;
   if HasLabel then
     Result := ScaleMetric(22);
 end;
 
-procedure TMaxxRuralDateTimePicker.CMEnabledChanged(var AMessage: TMessage);
+procedure TDACDateTimePicker.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
   UpdatePickerStyle;
   Redraw;
 end;
 
-procedure TMaxxRuralDateTimePicker.CMParentColorChanged(var AMessage: TMessage);
+procedure TDACDateTimePicker.CMParentColorChanged(var AMessage: TMessage);
 begin
   inherited;
   UpdatePickerStyle;
   Redraw;
 end;
 
-procedure TMaxxRuralDateTimePicker.CreateWnd;
+procedure TDACDateTimePicker.CreateWnd;
 begin
   inherited;
   UpdateZOrder;
@@ -246,7 +246,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralDateTimePicker.DoMouseEnter(Sender: TObject);
+procedure TDACDateTimePicker.DoMouseEnter(Sender: TObject);
 begin
   if FMouseInside then
     Exit;
@@ -256,7 +256,7 @@ begin
     OnMouseEnter(Self);
 end;
 
-procedure TMaxxRuralDateTimePicker.DoMouseLeave(Sender: TObject);
+procedure TDACDateTimePicker.DoMouseLeave(Sender: TObject);
 var
   LPoint: TPoint;
 begin
@@ -274,47 +274,47 @@ begin
     OnMouseLeave(Self);
 end;
 
-procedure TMaxxRuralDateTimePicker.DoPickerChange(Sender: TObject);
+procedure TDACDateTimePicker.DoPickerChange(Sender: TObject);
 begin
   if Assigned(FOnChange) then
     FOnChange(Self);
 end;
 
-procedure TMaxxRuralDateTimePicker.DoPickerEnter(Sender: TObject);
+procedure TDACDateTimePicker.DoPickerEnter(Sender: TObject);
 begin
   Redraw;
   if Assigned(OnEnter) then
     OnEnter(Self);
 end;
 
-procedure TMaxxRuralDateTimePicker.DoPickerExit(Sender: TObject);
+procedure TDACDateTimePicker.DoPickerExit(Sender: TObject);
 begin
   Redraw;
   if Assigned(OnExit) then
     OnExit(Self);
 end;
 
-function TMaxxRuralDateTimePicker.GetDateTime: TDateTime;
+function TDACDateTimePicker.GetDateTime: TDateTime;
 begin
   Result := FPicker.DateTime;
 end;
 
-function TMaxxRuralDateTimePicker.GetFormatString: string;
+function TDACDateTimePicker.GetFormatString: string;
 begin
   Result := FPicker.Format;
 end;
 
-function TMaxxRuralDateTimePicker.GetPickerKind: TDateTimeKind;
+function TDACDateTimePicker.GetPickerKind: TDateTimeKind;
 begin
   Result := FPicker.Kind;
 end;
 
-function TMaxxRuralDateTimePicker.HasLabel: Boolean;
+function TDACDateTimePicker.HasLabel: Boolean;
 begin
   Result := FLabelText.Trim <> '';
 end;
 
-procedure TMaxxRuralDateTimePicker.Loaded;
+procedure TDACDateTimePicker.Loaded;
 begin
   inherited;
   UpdatePaintBoxBounds;
@@ -324,7 +324,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralDateTimePicker.MouseDown(Button: TMouseButton; Shift: TShiftState;
+procedure TDACDateTimePicker.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 begin
   inherited;
@@ -332,14 +332,14 @@ begin
     FPicker.SetFocus;
 end;
 
-procedure TMaxxRuralDateTimePicker.PaintBoxDraw(Sender: TObject;
+procedure TDACDateTimePicker.PaintBoxDraw(Sender: TObject;
   const ACanvas: ISkCanvas; const ADest: TRectF; const AOpacity: Single);
 var
-  LBackground: TMaxxRuralBackgroundStyle;
-  LBorder: TMaxxRuralBorderStyle;
+  LBackground: TDACBackgroundStyle;
+  LBorder: TDACBorderStyle;
   LBorderRect: TRectF;
   LIconRect: TRectF;
-  LIconStyle: TMaxxRuralIconStyle;
+  LIconStyle: TDACIconStyle;
   LLabelColor: TAlphaColor;
   LRect: TRectF;
   LScale: Single;
@@ -361,17 +361,17 @@ begin
 
   if HasLabel then
   begin
-    LLabelColor := TMaxxRuralComponentColors.ControlTextForSurface(LSurface);
+    LLabelColor := TDACComponentColors.ControlTextForSurface(LSurface);
     if FRequired then
-      LLabelColor := TMaxxRuralComponentColors.PrimaryDark;
+      LLabelColor := TDACComponentColors.PrimaryDark;
     FRenderer.Text(ACanvas, FLabelText,
-      TMaxxRuralComponentFontInstaller.FontFamily, 0,
+      TDACComponentFontInstaller.FontFamily, 0,
       ScaleMetric(14), 11, LLabelColor, FRequired, ADest.Width);
   end;
 
-  LBackground.Color := TMaxxRuralComponentColors.ControlBackgroundForSurface(LSurface);
+  LBackground.Color := TDACComponentColors.ControlBackgroundForSurface(LSurface);
   if not Enabled then
-    LBackground.Color := TMaxxRuralComponentColors.ControlBackgroundDisabledForSurface(LSurface);
+    LBackground.Color := TDACComponentColors.ControlBackgroundDisabledForSurface(LSurface);
   LBackground.Radius := FCornerRadius;
   LBackground.Alpha := 255;
   FBackgroundPainter.Draw(ACanvas, LRect, LBackground);
@@ -388,29 +388,29 @@ begin
     LRect.Top + (LRect.Height - ScaleMetric(16)) / 2,
     ADest.Width - ScaleMetric(14),
     LRect.Top + (LRect.Height + ScaleMetric(16)) / 2);
-  LIconStyle.Color := TMaxxRuralComponentColors.ControlBorderHoverForSurface(LSurface);
+  LIconStyle.Color := TDACComponentColors.ControlBorderHoverForSurface(LSurface);
   LIconStyle.Alpha := 255;
   if not Enabled then
-    LIconStyle.Color := TMaxxRuralComponentColors.ControlTextDisabledForSurface(LSurface);
+    LIconStyle.Color := TDACComponentColors.ControlTextDisabledForSurface(LSurface);
   if FPicker.Kind = dtkTime then
     FIconPainter.Draw(ACanvas, LIconRect, mikClock, LIconStyle)
   else
     FIconPainter.Draw(ACanvas, LIconRect, mikCalendar, LIconStyle);
 end;
 
-function TMaxxRuralDateTimePicker.ParentSurfaceColor: TAlphaColor;
+function TDACDateTimePicker.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TMaxxRuralComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
-procedure TMaxxRuralDateTimePicker.Redraw;
+procedure TDACDateTimePicker.Redraw;
 begin
   UpdatePaintBoxBounds;
   if (FPaintBox <> nil) and HandleAllocated then
     FPaintBox.Redraw;
 end;
 
-procedure TMaxxRuralDateTimePicker.Resize;
+procedure TDACDateTimePicker.Resize;
 begin
   inherited;
   UpdatePaintBoxBounds;
@@ -419,7 +419,7 @@ begin
   Redraw;
 end;
 
-function TMaxxRuralDateTimePicker.ScaleFactor: Single;
+function TDACDateTimePicker.ScaleFactor: Single;
 begin
   Result := 1;
   if FPaintBox <> nil then
@@ -428,14 +428,14 @@ begin
     Result := 1;
 end;
 
-function TMaxxRuralDateTimePicker.ScaleMetric(const AValue: Integer): Integer;
+function TDACDateTimePicker.ScaleMetric(const AValue: Integer): Integer;
 begin
   Result := Round(AValue * ScaleFactor);
   if (AValue > 0) and (Result < 1) then
     Result := 1;
 end;
 
-procedure TMaxxRuralDateTimePicker.SetCornerRadius(const AValue: Integer);
+procedure TDACDateTimePicker.SetCornerRadius(const AValue: Integer);
 begin
   if FCornerRadius = AValue then
     Exit;
@@ -443,14 +443,14 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralDateTimePicker.SetDateTime(const AValue: TDateTime);
+procedure TDACDateTimePicker.SetDateTime(const AValue: TDateTime);
 begin
   if SameValue(FPicker.DateTime, AValue) then
     Exit;
   FPicker.DateTime := AValue;
 end;
 
-procedure TMaxxRuralDateTimePicker.SetFocus;
+procedure TDACDateTimePicker.SetFocus;
 begin
   if (FPicker <> nil) and FPicker.CanFocus then
     FPicker.SetFocus
@@ -458,7 +458,7 @@ begin
     inherited;
 end;
 
-procedure TMaxxRuralDateTimePicker.SetFormatString(const AValue: string);
+procedure TDACDateTimePicker.SetFormatString(const AValue: string);
 begin
   if FPicker.Format = AValue then
     Exit;
@@ -466,7 +466,7 @@ begin
   UpdatePickerStyle;
 end;
 
-procedure TMaxxRuralDateTimePicker.SetLabelText(const AValue: string);
+procedure TDACDateTimePicker.SetLabelText(const AValue: string);
 var
   LHadLabel: Boolean;
 begin
@@ -480,7 +480,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralDateTimePicker.SetPickerKind(const AValue: TDateTimeKind);
+procedure TDACDateTimePicker.SetPickerKind(const AValue: TDateTimeKind);
 begin
   if FPicker.Kind = AValue then
     Exit;
@@ -489,7 +489,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralDateTimePicker.SetRequired(const AValue: Boolean);
+procedure TDACDateTimePicker.SetRequired(const AValue: Boolean);
 begin
   if FRequired = AValue then
     Exit;
@@ -497,7 +497,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralDateTimePicker.SetStatus(const AValue: TMaxxRuralEditStatus);
+procedure TDACDateTimePicker.SetStatus(const AValue: TDACEditStatus);
 begin
   if FStatus = AValue then
     Exit;
@@ -505,7 +505,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralDateTimePicker.UpdateChildBounds;
+procedure TDACDateTimePicker.UpdateChildBounds;
 var
   LHorizontalPadding: Integer;
   LRightPadding: Integer;
@@ -521,7 +521,7 @@ begin
     Max(0, Width - LHorizontalPadding - LRightPadding), ScaleMetric(22));
 end;
 
-procedure TMaxxRuralDateTimePicker.UpdatePaintBoxBounds;
+procedure TDACDateTimePicker.UpdatePaintBoxBounds;
 var
   LHeight: Integer;
   LWidth: Integer;
@@ -542,7 +542,7 @@ begin
     FPaintBox.SetBounds(0, 0, LWidth, LHeight);
 end;
 
-procedure TMaxxRuralDateTimePicker.UpdatePickerStyle;
+procedure TDACDateTimePicker.UpdatePickerStyle;
 var
   LSurface: TAlphaColor;
   LTextColor: TColor;
@@ -552,26 +552,26 @@ begin
 
   LSurface := ParentSurfaceColor;
   FPicker.Enabled := Enabled;
-  FPicker.Color := TMaxxRuralComponentColors.ToVclColor(
-    TMaxxRuralComponentColors.ControlBackgroundForSurface(LSurface));
+  FPicker.Color := TDACComponentColors.ToVclColor(
+    TDACComponentColors.ControlBackgroundForSurface(LSurface));
   if not Enabled then
-    FPicker.Color := TMaxxRuralComponentColors.ToVclColor(
-      TMaxxRuralComponentColors.ControlBackgroundDisabledForSurface(LSurface));
-  FPicker.Font.Name := TMaxxRuralComponentFontInstaller.FontFamily;
+    FPicker.Color := TDACComponentColors.ToVclColor(
+      TDACComponentColors.ControlBackgroundDisabledForSurface(LSurface));
+  FPicker.Font.Name := TDACComponentFontInstaller.FontFamily;
   FPicker.Font.Size := 10;
   FPicker.Font.Style := [];
-  LTextColor := TMaxxRuralComponentColors.ToVclColor(
-    TMaxxRuralComponentColors.ControlTextForSurface(LSurface));
+  LTextColor := TDACComponentColors.ToVclColor(
+    TDACComponentColors.ControlTextForSurface(LSurface));
   if not Enabled then
-    LTextColor := TMaxxRuralComponentColors.ToVclColor(
-      TMaxxRuralComponentColors.ControlTextDisabledForSurface(LSurface));
+    LTextColor := TDACComponentColors.ToVclColor(
+      TDACComponentColors.ControlTextDisabledForSurface(LSurface));
   FPicker.Font.Color := LTextColor;
   Cursor := crDefault;
   FPaintBox.Cursor := crDefault;
   FPicker.Cursor := crDefault;
 end;
 
-procedure TMaxxRuralDateTimePicker.UpdateZOrder;
+procedure TDACDateTimePicker.UpdateZOrder;
 begin
   if (csLoading in ComponentState) or (csDestroying in ComponentState) then
     Exit;
@@ -588,9 +588,10 @@ begin
     FPicker.BringToFront;
 end;
 
-procedure TMaxxRuralDateTimePicker.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACDateTimePicker.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
 end.
+

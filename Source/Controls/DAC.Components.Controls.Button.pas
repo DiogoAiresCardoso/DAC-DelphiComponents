@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.Button;
+unit DAC.Components.Controls.Button;
 
 interface
 
@@ -11,16 +11,16 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
-  MaxxRural.Components.Controls.SystemText,
-  MaxxRural.Components.DesignSystem.Fonts,
-  MaxxRural.Components.DesignSystem.IconAssets,
-  MaxxRural.Components.Skia.BackgroundPainter,
-  MaxxRural.Components.Skia.BorderPainter,
-  MaxxRural.Components.Skia.IconPainter,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.Controls.SystemText,
+  DAC.Components.DesignSystem.Fonts,
+  DAC.Components.DesignSystem.IconAssets,
+  DAC.Components.Skia.BackgroundPainter,
+  DAC.Components.Skia.BorderPainter,
+  DAC.Components.Skia.IconPainter,
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralButtonKind = (
+  TDACButtonKind = (
     mbkPrimary,
     mbkSecondary,
     mbkGhost,
@@ -30,35 +30,35 @@ type
     mbkInputAction
   );
 
-  TMaxxRuralButtonSize = (
+  TDACButtonSize = (
     mbsSmall,
     mbsMedium,
     mbsLarge
   );
 
-  TMaxxRuralButtonIconPosition = (
+  TDACButtonIconPosition = (
     mipLeft,
     mipRight
   );
 
-  TMaxxRuralButton = class(TCustomControl)
+  TDACButton = class(TCustomControl)
   private
-    FBackgroundPainter: TMaxxRuralSkiaBackgroundPainter;
-    FBorderPainter: TMaxxRuralSkiaBorderPainter;
+    FBackgroundPainter: TDACSkiaBackgroundPainter;
+    FBorderPainter: TDACSkiaBorderPainter;
     FCornerRadius: Integer;
-    FIconKind: TMaxxRuralIconKind;
-    FIconPainter: TMaxxRuralSkiaIconPainter;
-    FIconPosition: TMaxxRuralButtonIconPosition;
+    FIconKind: TDACIconKind;
+    FIconPainter: TDACSkiaIconPainter;
+    FIconPosition: TDACButtonIconPosition;
     FIconSize: Integer;
-    FKind: TMaxxRuralButtonKind;
+    FKind: TDACButtonKind;
     FLoading: Boolean;
     FMouseInside: Boolean;
     FPaintBox: TSkPaintBox;
     FPressed: Boolean;
-    FRenderer: TMaxxRuralSkiaRenderer;
+    FRenderer: TDACSkiaRenderer;
     FShowIcon: Boolean;
-    FSize: TMaxxRuralButtonSize;
-    FTextLabel: TMaxxRuralSystemText;
+    FSize: TDACButtonSize;
+    FTextLabel: TDACSystemText;
     function ButtonFontSize: Single;
     procedure CalculateContentLayout(const ADest: TRectF;
       out AIconRect, ATextRect: TRectF);
@@ -89,13 +89,13 @@ type
     function ScaleFactor: Single;
     function ScaleMetric(const AValue: Integer): Integer;
     procedure SetCornerRadius(const AValue: Integer);
-    procedure SetIconKind(const AValue: TMaxxRuralIconKind);
-    procedure SetIconPosition(const AValue: TMaxxRuralButtonIconPosition);
+    procedure SetIconKind(const AValue: TDACIconKind);
+    procedure SetIconPosition(const AValue: TDACButtonIconPosition);
     procedure SetIconSize(const AValue: Integer);
-    procedure SetKind(const AValue: TMaxxRuralButtonKind);
+    procedure SetKind(const AValue: TDACButtonKind);
     procedure SetLoading(const AValue: Boolean);
     procedure SetShowIcon(const AValue: Boolean);
-    procedure SetSize(const AValue: TMaxxRuralButtonSize);
+    procedure SetSize(const AValue: TDACButtonSize);
     procedure UpdateCursor;
     procedure UpdateLabel;
     procedure UpdatePaintBoxBounds;
@@ -125,17 +125,17 @@ type
     property Enabled;
     property Font;
     property Hint;
-    property IconKind: TMaxxRuralIconKind read FIconKind write SetIconKind default mikCheck;
-    property IconPosition: TMaxxRuralButtonIconPosition read FIconPosition write SetIconPosition default mipLeft;
+    property IconKind: TDACIconKind read FIconKind write SetIconKind default mikCheck;
+    property IconPosition: TDACButtonIconPosition read FIconPosition write SetIconPosition default mipLeft;
     property IconSize: Integer read FIconSize write SetIconSize default 0;
-    property Kind: TMaxxRuralButtonKind read FKind write SetKind default mbkPrimary;
+    property Kind: TDACButtonKind read FKind write SetKind default mbkPrimary;
     property Loading: Boolean read FLoading write SetLoading default False;
     property ParentFont;
     property ParentShowHint;
     property PopupMenu;
     property ShowHint;
     property ShowIcon: Boolean read FShowIcon write SetShowIcon default False;
-    property Size: TMaxxRuralButtonSize read FSize write SetSize default mbsMedium;
+    property Size: TDACButtonSize read FSize write SetSize default mbsMedium;
     property TabOrder;
     property TabStop default True;
     property Visible;
@@ -155,7 +155,7 @@ type
 implementation
 
 uses
-  MaxxRural.Components.DesignSystem.ColorTokens,
+  DAC.Components.DesignSystem.ColorTokens,
   System.Math,
   System.SysUtils,
   Winapi.Windows;
@@ -170,7 +170,7 @@ type
     Alpha: Byte;
   end;
 
-function ButtonPalette(const AKind: TMaxxRuralButtonKind;
+function ButtonPalette(const AKind: TDACButtonKind;
   const AEnabled, AHot, APressed, AFocused: Boolean): TButtonPalette;
 var
   LActive: Boolean;
@@ -181,49 +181,49 @@ begin
   case AKind of
     mbkSecondary:
       begin
-        Result.Background := TMaxxRuralComponentColors.White;
-        Result.Border := TMaxxRuralComponentColors.ControlBorder;
+        Result.Background := TDACComponentColors.White;
+        Result.Border := TDACComponentColors.ControlBorder;
         Result.BorderAlpha := 255;
-        Result.Text := TMaxxRuralComponentColors.ControlText;
+        Result.Text := TDACComponentColors.ControlText;
       end;
     mbkInputAction:
       begin
-        Result.Background := TMaxxRuralComponentColors.Transparent;
-        Result.Border := TMaxxRuralComponentColors.Transparent;
+        Result.Background := TDACComponentColors.Transparent;
+        Result.Border := TDACComponentColors.Transparent;
         Result.BorderAlpha := 0;
-        Result.Text := TMaxxRuralComponentColors.PrimaryDark;
+        Result.Text := TDACComponentColors.PrimaryDark;
       end;
     mbkTransparent:
       begin
-        Result.Background := TMaxxRuralComponentColors.Transparent;
-        Result.Border := TMaxxRuralComponentColors.Transparent;
+        Result.Background := TDACComponentColors.Transparent;
+        Result.Border := TDACComponentColors.Transparent;
         Result.BorderAlpha := 0;
-        Result.Text := TMaxxRuralComponentColors.PrimaryDark;
+        Result.Text := TDACComponentColors.PrimaryDark;
       end;
     mbkGhost:
       begin
-        Result.Background := TMaxxRuralComponentColors.Transparent;
-        Result.Border := TMaxxRuralComponentColors.PrimaryDark;
+        Result.Background := TDACComponentColors.Transparent;
+        Result.Border := TDACComponentColors.PrimaryDark;
         Result.BorderAlpha := 140;
-        Result.Text := TMaxxRuralComponentColors.PrimaryDark;
+        Result.Text := TDACComponentColors.PrimaryDark;
       end;
     mbkDanger:
       begin
-        Result.Background := TMaxxRuralComponentColors.Danger;
-        Result.Border := TMaxxRuralComponentColors.Transparent;
-        Result.Text := TMaxxRuralComponentColors.White;
+        Result.Background := TDACComponentColors.Danger;
+        Result.Border := TDACComponentColors.Transparent;
+        Result.Text := TDACComponentColors.White;
       end;
     mbkWarning:
       begin
-        Result.Background := TMaxxRuralComponentColors.Warning;
-        Result.Border := TMaxxRuralComponentColors.Transparent;
-        Result.Text := TMaxxRuralComponentColors.ControlText;
+        Result.Background := TDACComponentColors.Warning;
+        Result.Border := TDACComponentColors.Transparent;
+        Result.Text := TDACComponentColors.ControlText;
       end;
   else
     begin
-      Result.Background := TMaxxRuralComponentColors.Primary;
-      Result.Border := TMaxxRuralComponentColors.Transparent;
-      Result.Text := TMaxxRuralComponentColors.White;
+      Result.Background := TDACComponentColors.Primary;
+      Result.Border := TDACComponentColors.Transparent;
+      Result.Text := TDACComponentColors.White;
     end;
   end;
 
@@ -232,38 +232,38 @@ begin
     case AKind of
       mbkPrimary:
         begin
-          Result.Background := TMaxxRuralComponentColors.PrimaryFocus;
+          Result.Background := TDACComponentColors.PrimaryFocus;
           if AHot then
-            Result.Background := TMaxxRuralComponentColors.PrimaryLight;
+            Result.Background := TDACComponentColors.PrimaryLight;
         end;
       mbkSecondary:
         begin
-          Result.Background := TMaxxRuralComponentColors.ControlBackgroundDisabled;
-          Result.Border := TMaxxRuralComponentColors.ControlBorderHover;
+          Result.Background := TDACComponentColors.ControlBackgroundDisabled;
+          Result.Border := TDACComponentColors.ControlBorderHover;
         end;
       mbkInputAction:
         begin
-          Result.Background := TMaxxRuralComponentColors.Transparent;
-          Result.Border := TMaxxRuralComponentColors.Transparent;
+          Result.Background := TDACComponentColors.Transparent;
+          Result.Border := TDACComponentColors.Transparent;
           Result.BorderAlpha := 0;
         end;
       mbkTransparent:
         begin
-          Result.Background := TMaxxRuralComponentColors.Transparent;
-          Result.Border := TMaxxRuralComponentColors.Transparent;
+          Result.Background := TDACComponentColors.Transparent;
+          Result.Border := TDACComponentColors.Transparent;
           Result.BorderAlpha := 0;
-          Result.Text := TMaxxRuralComponentColors.Primary;
+          Result.Text := TDACComponentColors.Primary;
         end;
       mbkGhost:
         begin
-          Result.Background := TMaxxRuralComponentColors.Alpha(31, 59, 35, $14);
-          Result.Border := TMaxxRuralComponentColors.PrimaryLight;
+          Result.Background := TDACComponentColors.Alpha(31, 59, 35, $14);
+          Result.Border := TDACComponentColors.PrimaryLight;
           Result.BorderAlpha := 190;
         end;
       mbkDanger:
-        Result.Background := TMaxxRuralComponentColors.DangerLight;
+        Result.Background := TDACComponentColors.DangerLight;
       mbkWarning:
-        Result.Background := TMaxxRuralComponentColors.WarningLight;
+        Result.Background := TDACComponentColors.WarningLight;
     end;
   end;
 
@@ -271,35 +271,35 @@ begin
   begin
     case AKind of
       mbkPrimary:
-        Result.Background := TMaxxRuralComponentColors.PrimaryDark;
+        Result.Background := TDACComponentColors.PrimaryDark;
       mbkSecondary:
         begin
-          Result.Background := TMaxxRuralComponentColors.ControlBorder;
-          Result.Border := TMaxxRuralComponentColors.ControlBorderHover;
+          Result.Background := TDACComponentColors.ControlBorder;
+          Result.Border := TDACComponentColors.ControlBorderHover;
         end;
       mbkInputAction:
         begin
-          Result.Background := TMaxxRuralComponentColors.Transparent;
-          Result.Border := TMaxxRuralComponentColors.Transparent;
+          Result.Background := TDACComponentColors.Transparent;
+          Result.Border := TDACComponentColors.Transparent;
           Result.BorderAlpha := 0;
         end;
       mbkTransparent:
         begin
-          Result.Background := TMaxxRuralComponentColors.Transparent;
-          Result.Border := TMaxxRuralComponentColors.Transparent;
+          Result.Background := TDACComponentColors.Transparent;
+          Result.Border := TDACComponentColors.Transparent;
           Result.BorderAlpha := 0;
-          Result.Text := TMaxxRuralComponentColors.PrimaryDark;
+          Result.Text := TDACComponentColors.PrimaryDark;
         end;
       mbkGhost:
         begin
-          Result.Background := TMaxxRuralComponentColors.Alpha(47, 158, 34, $1F);
-          Result.Border := TMaxxRuralComponentColors.Alpha(61, 184, 42, $66);
+          Result.Background := TDACComponentColors.Alpha(47, 158, 34, $1F);
+          Result.Border := TDACComponentColors.Alpha(61, 184, 42, $66);
           Result.BorderAlpha := 255;
         end;
       mbkDanger:
-        Result.Background := TMaxxRuralComponentColors.DangerDark;
+        Result.Background := TDACComponentColors.DangerDark;
       mbkWarning:
-        Result.Background := TMaxxRuralComponentColors.WarningDark;
+        Result.Background := TDACComponentColors.WarningDark;
     end;
   end;
 
@@ -308,13 +308,13 @@ begin
     Result.Alpha := 110;
     if Result.BorderAlpha > 0 then
       Result.BorderAlpha := Result.Alpha;
-    Result.Text := TMaxxRuralComponentColors.TextSecondary;
+    Result.Text := TDACComponentColors.TextSecondary;
   end;
 
   Result.Icon := Result.Text;
 end;
 
-function TMaxxRuralButton.ButtonFontSize: Single;
+function TDACButton.ButtonFontSize: Single;
 begin
   case FSize of
     mbsSmall:
@@ -326,7 +326,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralButton.CalculateContentLayout(const ADest: TRectF;
+procedure TDACButton.CalculateContentLayout(const ADest: TRectF;
   out AIconRect, ATextRect: TRectF);
 var
   LAvailableWidth: Single;
@@ -364,7 +364,7 @@ begin
   end
   else
     LTextWidth := Ceil(FRenderer.MeasureText(Caption,
-      TMaxxRuralComponentFontInstaller.FontFamily, LFontSize, False)) + 2;
+      TDACComponentFontInstaller.FontFamily, LFontSize, False)) + 2;
   LAvailableWidth := Max(0, ADest.Width - (ContentPadding * 2));
 
   if FShowIcon then
@@ -404,7 +404,7 @@ begin
       ADest.Height);
 end;
 
-constructor TMaxxRuralButton.Create(AOwner: TComponent);
+constructor TDACButton.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque, csClickEvents, csCaptureMouse];
@@ -423,10 +423,10 @@ begin
   FSize := mbsMedium;
   Caption := 'Botao';
 
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
-  FBackgroundPainter := TMaxxRuralSkiaBackgroundPainter.Create(FRenderer);
-  FBorderPainter := TMaxxRuralSkiaBorderPainter.Create(FRenderer);
-  FIconPainter := TMaxxRuralSkiaIconPainter.Create(FRenderer);
+  FRenderer := TDACSkiaRenderer.Create;
+  FBackgroundPainter := TDACSkiaBackgroundPainter.Create(FRenderer);
+  FBorderPainter := TDACSkiaBorderPainter.Create(FRenderer);
+  FIconPainter := TDACSkiaIconPainter.Create(FRenderer);
 
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
@@ -440,7 +440,7 @@ begin
   FPaintBox.OnMouseMove := PaintBoxMouseMove;
   FPaintBox.OnMouseUp := PaintBoxMouseUp;
 
-  FTextLabel := TMaxxRuralSystemText.Create(Self);
+  FTextLabel := TDACSystemText.Create(Self);
   FTextLabel.Parent := Self;
   FTextLabel.SetSubComponent(True);
   FTextLabel.Cursor := crHandPoint;
@@ -453,7 +453,7 @@ begin
   Resize;
 end;
 
-destructor TMaxxRuralButton.Destroy;
+destructor TDACButton.Destroy;
 begin
   FTextLabel.Free;
   FPaintBox.Free;
@@ -464,7 +464,7 @@ begin
   inherited;
 end;
 
-procedure TMaxxRuralButton.ChangeScale(M, D: Integer);
+procedure TDACButton.ChangeScale(M, D: Integer);
 begin
   inherited;
   UpdateCursor;
@@ -472,33 +472,33 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralButton.Click;
+procedure TDACButton.Click;
 begin
   if FLoading then
     Exit;
   inherited;
 end;
 
-procedure TMaxxRuralButton.CMEnabledChanged(var AMessage: TMessage);
+procedure TDACButton.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
   UpdateLabel;
   Redraw;
 end;
 
-procedure TMaxxRuralButton.CMFocusChanged(var AMessage: TMessage);
+procedure TDACButton.CMFocusChanged(var AMessage: TMessage);
 begin
   inherited;
   Redraw;
 end;
 
-procedure TMaxxRuralButton.CMTextChanged(var AMessage: TMessage);
+procedure TDACButton.CMTextChanged(var AMessage: TMessage);
 begin
   inherited;
   UpdateLabel;
 end;
 
-function TMaxxRuralButton.ContentPadding: Integer;
+function TDACButton.ContentPadding: Integer;
 begin
   case FSize of
     mbsSmall:
@@ -510,7 +510,7 @@ begin
   end;
 end;
 
-function TMaxxRuralButton.CursorInside: Boolean;
+function TDACButton.CursorInside: Boolean;
 var
   LPoint: TPoint;
 begin
@@ -524,7 +524,7 @@ begin
   Result := PtInRect(ClientRect, LPoint);
 end;
 
-procedure TMaxxRuralButton.CreateWnd;
+procedure TDACButton.CreateWnd;
 begin
   inherited;
   UpdateZOrder;
@@ -532,7 +532,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralButton.KeyDown(var Key: Word; Shift: TShiftState);
+procedure TDACButton.KeyDown(var Key: Word; Shift: TShiftState);
 begin
   inherited;
   if (Key in [VK_RETURN, VK_SPACE]) and Enabled and not FLoading then
@@ -542,7 +542,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralButton.KeyUp(var Key: Word; Shift: TShiftState);
+procedure TDACButton.KeyUp(var Key: Word; Shift: TShiftState);
 begin
   inherited;
   if (Key in [VK_RETURN, VK_SPACE]) and FPressed then
@@ -554,7 +554,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralButton.Loaded;
+procedure TDACButton.Loaded;
 begin
   inherited;
   UpdatePaintBoxBounds;
@@ -563,7 +563,7 @@ begin
   Redraw;
 end;
 
-function TMaxxRuralButton.EffectiveIconSize: Integer;
+function TDACButton.EffectiveIconSize: Integer;
 begin
   if FIconSize > 0 then
     Exit(FIconSize);
@@ -578,42 +578,42 @@ begin
   end;
 end;
 
-procedure TMaxxRuralButton.InvalidateButton;
+procedure TDACButton.InvalidateButton;
 begin
   UpdateLabel;
   Redraw;
   Invalidate;
 end;
 
-procedure TMaxxRuralButton.LabelMouseDown(Sender: TObject; Button: TMouseButton;
+procedure TDACButton.LabelMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   MouseDown(Button, Shift, X + FTextLabel.Left, Y + FTextLabel.Top);
 end;
 
-procedure TMaxxRuralButton.LabelMouseEnter(Sender: TObject);
+procedure TDACButton.LabelMouseEnter(Sender: TObject);
 begin
   PaintBoxMouseEnter(Sender);
 end;
 
-procedure TMaxxRuralButton.LabelMouseLeave(Sender: TObject);
+procedure TDACButton.LabelMouseLeave(Sender: TObject);
 begin
   PaintBoxMouseLeave(Sender);
 end;
 
-procedure TMaxxRuralButton.LabelMouseMove(Sender: TObject; Shift: TShiftState;
+procedure TDACButton.LabelMouseMove(Sender: TObject; Shift: TShiftState;
   X, Y: Integer);
 begin
   MouseMove(Shift, X + FTextLabel.Left, Y + FTextLabel.Top);
 end;
 
-procedure TMaxxRuralButton.LabelMouseUp(Sender: TObject; Button: TMouseButton;
+procedure TDACButton.LabelMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   MouseUp(Button, Shift, X + FTextLabel.Left, Y + FTextLabel.Top);
 end;
 
-procedure TMaxxRuralButton.MouseDown(Button: TMouseButton; Shift: TShiftState;
+procedure TDACButton.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 begin
   inherited;
@@ -629,7 +629,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralButton.MouseMove(Shift: TShiftState; X, Y: Integer);
+procedure TDACButton.MouseMove(Shift: TShiftState; X, Y: Integer);
 begin
   inherited;
   if not FMouseInside then
@@ -639,7 +639,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralButton.MouseUp(Button: TMouseButton; Shift: TShiftState;
+procedure TDACButton.MouseUp(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 var
   LWasPressed: Boolean;
@@ -655,17 +655,17 @@ begin
     Click;
 end;
 
-procedure TMaxxRuralButton.PaintBoxDraw(Sender: TObject;
+procedure TDACButton.PaintBoxDraw(Sender: TObject;
   const ACanvas: ISkCanvas; const ADest: TRectF; const AOpacity: Single);
 var
-  LBackground: TMaxxRuralBackgroundStyle;
+  LBackground: TDACBackgroundStyle;
   LBackgroundRect: TRectF;
-  LBorder: TMaxxRuralBorderStyle;
+  LBorder: TDACBorderStyle;
   LBorderRect: TRectF;
   LIconRect: TRectF;
   LPalette: TButtonPalette;
   LScale: Single;
-  LStyle: TMaxxRuralIconStyle;
+  LStyle: TDACIconStyle;
   LTextRect: TRectF;
 begin
   if (ACanvas = nil) or (ADest.Width <= 0) or (ADest.Height <= 0) then
@@ -680,11 +680,11 @@ begin
   LBackgroundRect.Inflate(-0.5 / LScale, -0.5 / LScale);
 
   if FKind = mbkInputAction then
-    ACanvas.Clear(TMaxxRuralComponentColors.ControlBackgroundForSurface(ParentSurfaceColor))
+    ACanvas.Clear(TDACComponentColors.ControlBackgroundForSurface(ParentSurfaceColor))
   else
     ACanvas.Clear(ParentSurfaceColor);
 
-  if LPalette.Background <> TMaxxRuralComponentColors.Transparent then
+  if LPalette.Background <> TDACComponentColors.Transparent then
   begin
     LBackground.Color := LPalette.Background;
     LBackground.Radius := FCornerRadius;
@@ -704,11 +704,11 @@ begin
   if FKind = mbkInputAction then
     FRenderer.FillRoundRect(ACanvas,
       TRectF.Create(0, 1 / LScale, 1 / LScale, ADest.Height - (1 / LScale)),
-      TMaxxRuralComponentColors.ControlBorder, 0, 255);
+      TDACComponentColors.ControlBorder, 0, 255);
 
   if (FKind = mbkInputAction) and (not FShowIcon) and (Trim(Caption) <> '') then
     FRenderer.TextCentered(ACanvas, Caption,
-      TMaxxRuralComponentFontInstaller.FontFamily, ADest, 11,
+      TDACComponentFontInstaller.FontFamily, ADest, 11,
       LPalette.Text, True, ADest.Width - 8);
 
   if FShowIcon then
@@ -720,19 +720,19 @@ begin
   end;
 end;
 
-procedure TMaxxRuralButton.PaintBoxMouseDown(Sender: TObject;
+procedure TDACButton.PaintBoxMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   MouseDown(Button, Shift, X, Y);
 end;
 
-procedure TMaxxRuralButton.PaintBoxMouseEnter(Sender: TObject);
+procedure TDACButton.PaintBoxMouseEnter(Sender: TObject);
 begin
   FMouseInside := True;
   Redraw;
 end;
 
-procedure TMaxxRuralButton.PaintBoxMouseLeave(Sender: TObject);
+procedure TDACButton.PaintBoxMouseLeave(Sender: TObject);
 begin
   if not MouseCapture and not CursorInside then
   begin
@@ -742,24 +742,24 @@ begin
   end;
 end;
 
-procedure TMaxxRuralButton.PaintBoxMouseMove(Sender: TObject;
+procedure TDACButton.PaintBoxMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 begin
   MouseMove(Shift, X, Y);
 end;
 
-procedure TMaxxRuralButton.PaintBoxMouseUp(Sender: TObject; Button: TMouseButton;
+procedure TDACButton.PaintBoxMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   MouseUp(Button, Shift, X, Y);
 end;
 
-function TMaxxRuralButton.ParentSurfaceColor: TAlphaColor;
+function TDACButton.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TMaxxRuralComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
-procedure TMaxxRuralButton.Redraw;
+procedure TDACButton.Redraw;
 begin
   UpdatePaintBoxBounds;
   UpdateLabel;
@@ -767,7 +767,7 @@ begin
     FPaintBox.Redraw;
 end;
 
-procedure TMaxxRuralButton.Resize;
+procedure TDACButton.Resize;
 begin
   inherited;
   UpdatePaintBoxBounds;
@@ -776,7 +776,7 @@ begin
   Redraw;
 end;
 
-function TMaxxRuralButton.ScaleFactor: Single;
+function TDACButton.ScaleFactor: Single;
 begin
   Result := 1;
   if FPaintBox <> nil then
@@ -785,14 +785,14 @@ begin
     Result := 1;
 end;
 
-function TMaxxRuralButton.ScaleMetric(const AValue: Integer): Integer;
+function TDACButton.ScaleMetric(const AValue: Integer): Integer;
 begin
   Result := Round(AValue * ScaleFactor);
   if (AValue > 0) and (Result < 1) then
     Result := 1;
 end;
 
-procedure TMaxxRuralButton.SetCornerRadius(const AValue: Integer);
+procedure TDACButton.SetCornerRadius(const AValue: Integer);
 begin
   if FCornerRadius = AValue then
     Exit;
@@ -800,7 +800,7 @@ begin
   InvalidateButton;
 end;
 
-procedure TMaxxRuralButton.SetIconKind(const AValue: TMaxxRuralIconKind);
+procedure TDACButton.SetIconKind(const AValue: TDACIconKind);
 begin
   if FIconKind = AValue then
     Exit;
@@ -808,8 +808,8 @@ begin
   InvalidateButton;
 end;
 
-procedure TMaxxRuralButton.SetIconPosition(
-  const AValue: TMaxxRuralButtonIconPosition);
+procedure TDACButton.SetIconPosition(
+  const AValue: TDACButtonIconPosition);
 begin
   if FIconPosition = AValue then
     Exit;
@@ -817,7 +817,7 @@ begin
   InvalidateButton;
 end;
 
-procedure TMaxxRuralButton.SetIconSize(const AValue: Integer);
+procedure TDACButton.SetIconSize(const AValue: Integer);
 var
   LValue: Integer;
 begin
@@ -828,7 +828,7 @@ begin
   InvalidateButton;
 end;
 
-procedure TMaxxRuralButton.SetKind(const AValue: TMaxxRuralButtonKind);
+procedure TDACButton.SetKind(const AValue: TDACButtonKind);
 begin
   if FKind = AValue then
     Exit;
@@ -836,7 +836,7 @@ begin
   InvalidateButton;
 end;
 
-procedure TMaxxRuralButton.SetLoading(const AValue: Boolean);
+procedure TDACButton.SetLoading(const AValue: Boolean);
 begin
   if FLoading = AValue then
     Exit;
@@ -846,7 +846,7 @@ begin
   InvalidateButton;
 end;
 
-procedure TMaxxRuralButton.SetShowIcon(const AValue: Boolean);
+procedure TDACButton.SetShowIcon(const AValue: Boolean);
 begin
   if FShowIcon = AValue then
     Exit;
@@ -854,7 +854,7 @@ begin
   InvalidateButton;
 end;
 
-procedure TMaxxRuralButton.SetSize(const AValue: TMaxxRuralButtonSize);
+procedure TDACButton.SetSize(const AValue: TDACButtonSize);
 begin
   if FSize = AValue then
     Exit;
@@ -870,7 +870,7 @@ begin
   InvalidateButton;
 end;
 
-procedure TMaxxRuralButton.UpdateCursor;
+procedure TDACButton.UpdateCursor;
 var
   LCursor: TCursor;
 begin
@@ -886,7 +886,7 @@ begin
     FTextLabel.Cursor := LCursor;
 end;
 
-procedure TMaxxRuralButton.UpdateLabel;
+procedure TDACButton.UpdateLabel;
 var
   LPalette: TButtonPalette;
   LIconRect: TRectF;
@@ -910,7 +910,7 @@ begin
   FTextLabel.SetBounds(Round(LTextRect.Left * ScaleFactor), 0,
     Max(0, Round(LTextRect.Width * ScaleFactor)), Height);
   FTextLabel.Text := Caption;
-  FTextLabel.FontFamily := TMaxxRuralComponentFontInstaller.FontFamily;
+  FTextLabel.FontFamily := TDACComponentFontInstaller.FontFamily;
   FTextLabel.FontSize := Round(ButtonFontSize);
   FTextLabel.Bold := True;
   FTextLabel.TextColor := LPalette.Text;
@@ -919,7 +919,7 @@ begin
   FTextLabel.MaxLines := 1;
 end;
 
-procedure TMaxxRuralButton.UpdatePaintBoxBounds;
+procedure TDACButton.UpdatePaintBoxBounds;
 var
   LWidth: Integer;
   LHeight: Integer;
@@ -941,7 +941,7 @@ begin
 
 end;
 
-procedure TMaxxRuralButton.UpdateZOrder;
+procedure TDACButton.UpdateZOrder;
 begin
   if (csLoading in ComponentState) or (csDestroying in ComponentState) then
     Exit;
@@ -958,9 +958,10 @@ begin
     FTextLabel.BringToFront;
 end;
 
-procedure TMaxxRuralButton.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACButton.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
 end.
+

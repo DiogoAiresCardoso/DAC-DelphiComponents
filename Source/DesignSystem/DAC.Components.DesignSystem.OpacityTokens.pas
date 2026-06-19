@@ -1,9 +1,9 @@
-unit MaxxRural.Components.DesignSystem.OpacityTokens;
+unit DAC.Components.DesignSystem.OpacityTokens;
 
 interface
 
 type
-  TMaxxRuralOpacityTokens = record
+  TDACOpacityTokens = record
     Panel: Byte;
     Chrome: Byte;
     Border: Byte;
@@ -11,12 +11,12 @@ type
     WindowShadow: Byte;
     BackgroundDarkOverlay: Byte;
     BackgroundGreenOverlay: Byte;
-    class function Default: TMaxxRuralOpacityTokens; static;
+    class function Default: TDACOpacityTokens; static;
   end;
 
 implementation
 
-class function TMaxxRuralOpacityTokens.Default: TMaxxRuralOpacityTokens;
+class function TDACOpacityTokens.Default: TDACOpacityTokens;
 begin
   Result.Panel := 240;
   Result.Chrome := 150;
@@ -28,3 +28,4 @@ begin
 end;
 
 end.
+

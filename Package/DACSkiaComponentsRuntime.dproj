@@ -1,7 +1,7 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{8D37F877-48D6-4C8A-8C87-2D5E3D4B31E1}</ProjectGuid>
-        <MainSource>MaxxRuralSkiaComponentsRuntime.dpk</MainSource>
+        <MainSource>DACSkiaComponentsRuntime.dpk</MainSource>
         <ProjectVersion>18.3</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
@@ -33,7 +33,7 @@
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
         <DCC_UsePackage>rtl;vcl;vclimg;Skia.Package.RTL;Skia.Package.VCL;$(DCC_UsePackage)</DCC_UsePackage>
         <GenPackage>true</GenPackage>
-        <SanitizedProjectName>MaxxRuralSkiaComponentsRuntime</SanitizedProjectName>
+        <SanitizedProjectName>DACSkiaComponentsRuntime</SanitizedProjectName>
         <GenDll>true</GenDll>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
@@ -59,48 +59,48 @@
         <DCCReference Include="vclimg.dcp"/>
         <DCCReference Include="Skia.Package.RTL.dcp"/>
         <DCCReference Include="Skia.Package.VCL.dcp"/>
-        <DCCReference Include="..\Source\Core\MaxxRural.Components.Types.pas"/>
-        <DCCReference Include="..\Source\Core\MaxxRural.Components.Dpi.pas"/>
-        <DCCReference Include="..\Source\Core\MaxxRural.Components.Geometry.pas"/>
-        <DCCReference Include="..\Source\DesignSystem\MaxxRural.Components.DesignSystem.ColorTokens.pas"/>
-        <DCCReference Include="..\Source\DesignSystem\MaxxRural.Components.DesignSystem.OpacityTokens.pas"/>
-        <DCCReference Include="..\Source\DesignSystem\MaxxRural.Components.DesignSystem.Fonts.pas"/>
-        <DCCReference Include="..\Source\DesignSystem\MaxxRural.Components.DesignSystem.TypographyTokens.pas"/>
-        <DCCReference Include="..\Source\DesignSystem\MaxxRural.Components.DesignSystem.SpacingTokens.pas"/>
-        <DCCReference Include="..\Source\DesignSystem\MaxxRural.Components.DesignSystem.RadiusTokens.pas"/>
-        <DCCReference Include="..\Source\DesignSystem\MaxxRural.Components.DesignSystem.InteractionTokens.pas"/>
-        <DCCReference Include="..\Source\DesignSystem\MaxxRural.Components.DesignSystem.CardTokens.pas"/>
-        <DCCReference Include="..\Source\DesignSystem\MaxxRural.Components.DesignSystem.Tokens.pas"/>
-        <DCCReference Include="..\Source\DesignSystem\MaxxRural.Components.DesignSystem.ChartPalette.pas"/>
-        <DCCReference Include="..\Source\DesignSystem\MaxxRural.Components.DesignSystem.Metrics.pas"/>
-        <DCCReference Include="..\Source\DesignSystem\MaxxRural.Components.DesignSystem.Theme.pas"/>
-        <DCCReference Include="..\Source\DesignSystem\MaxxRural.Components.DesignSystem.DefaultTheme.pas"/>
-        <DCCReference Include="..\Source\DesignSystem\MaxxRural.Components.DesignSystem.AssetResolver.pas"/>
-        <DCCReference Include="..\Source\DesignSystem\MaxxRural.Components.DesignSystem.IconAssets.pas"/>
-        <DCCReference Include="..\Source\Skia\MaxxRural.Components.Skia.Renderer.pas"/>
-        <DCCReference Include="..\Source\Skia\MaxxRural.Components.Skia.BackgroundPainter.pas"/>
-        <DCCReference Include="..\Source\Skia\MaxxRural.Components.Skia.BorderPainter.pas"/>
-        <DCCReference Include="..\Source\Skia\MaxxRural.Components.Skia.IconPainter.pas"/>
-        <DCCReference Include="..\Source\Skia\MaxxRural.Components.Skia.VisualElement.pas"/>
-        <DCCReference Include="..\Source\Skia\MaxxRural.Components.Skia.Container.pas"/>
-        <DCCReference Include="..\Source\Controls\MaxxRural.Components.Controls.SkiaControl.pas"/>
-        <DCCReference Include="..\Source\Controls\MaxxRural.Components.Controls.SystemText.pas"/>
-        <DCCReference Include="..\Source\Controls\MaxxRural.Components.Controls.Container.pas"/>
-        <DCCReference Include="..\Source\Controls\MaxxRural.Components.Controls.Button.pas"/>
-        <DCCReference Include="..\Source\Controls\MaxxRural.Components.Controls.Edit.pas"/>
-        <DCCReference Include="..\Source\Controls\MaxxRural.Components.Controls.ButtonEdit.pas"/>
-        <DCCReference Include="..\Source\Controls\MaxxRural.Components.Controls.DateTimePicker.pas"/>
-        <DCCReference Include="..\Source\Controls\MaxxRural.Components.Controls.ComboBox.pas"/>
-        <DCCReference Include="..\Source\Controls\MaxxRural.Components.Controls.Memo.pas"/>
-        <DCCReference Include="..\Source\Controls\MaxxRural.Components.Controls.Selectors.pas"/>
-        <DCCReference Include="..\Source\Controls\MaxxRural.Components.Controls.Tabs.pas"/>
-        <DCCReference Include="..\Source\Controls\MaxxRural.Components.Controls.SummaryCard.pas"/>
-        <DCCReference Include="..\Source\Controls\MaxxRural.Components.Controls.Badges.pas"/>
-        <DCCReference Include="..\Source\Controls\MaxxRural.Components.Controls.Progress.pas"/>
-        <DCCReference Include="..\Source\Controls\MaxxRural.Components.Controls.Pagination.pas"/>
-        <DCCReference Include="..\Source\Controls\MaxxRural.Components.Controls.Loading.pas"/>
-        <DCCReference Include="..\Source\Controls\MaxxRural.Components.Controls.DataGrid.pas"/>
-        <DCCReference Include="..\Source\Hooks\MaxxRural.Components.Hooks.Register.pas"/>
+        <DCCReference Include="..\Source\Core\DAC.Components.Types.pas"/>
+        <DCCReference Include="..\Source\Core\DAC.Components.Dpi.pas"/>
+        <DCCReference Include="..\Source\Core\DAC.Components.Geometry.pas"/>
+        <DCCReference Include="..\Source\DesignSystem\DAC.Components.DesignSystem.ColorTokens.pas"/>
+        <DCCReference Include="..\Source\DesignSystem\DAC.Components.DesignSystem.OpacityTokens.pas"/>
+        <DCCReference Include="..\Source\DesignSystem\DAC.Components.DesignSystem.Fonts.pas"/>
+        <DCCReference Include="..\Source\DesignSystem\DAC.Components.DesignSystem.TypographyTokens.pas"/>
+        <DCCReference Include="..\Source\DesignSystem\DAC.Components.DesignSystem.SpacingTokens.pas"/>
+        <DCCReference Include="..\Source\DesignSystem\DAC.Components.DesignSystem.RadiusTokens.pas"/>
+        <DCCReference Include="..\Source\DesignSystem\DAC.Components.DesignSystem.InteractionTokens.pas"/>
+        <DCCReference Include="..\Source\DesignSystem\DAC.Components.DesignSystem.CardTokens.pas"/>
+        <DCCReference Include="..\Source\DesignSystem\DAC.Components.DesignSystem.Tokens.pas"/>
+        <DCCReference Include="..\Source\DesignSystem\DAC.Components.DesignSystem.ChartPalette.pas"/>
+        <DCCReference Include="..\Source\DesignSystem\DAC.Components.DesignSystem.Metrics.pas"/>
+        <DCCReference Include="..\Source\DesignSystem\DAC.Components.DesignSystem.Theme.pas"/>
+        <DCCReference Include="..\Source\DesignSystem\DAC.Components.DesignSystem.DefaultTheme.pas"/>
+        <DCCReference Include="..\Source\DesignSystem\DAC.Components.DesignSystem.AssetResolver.pas"/>
+        <DCCReference Include="..\Source\DesignSystem\DAC.Components.DesignSystem.IconAssets.pas"/>
+        <DCCReference Include="..\Source\Skia\DAC.Components.Skia.Renderer.pas"/>
+        <DCCReference Include="..\Source\Skia\DAC.Components.Skia.BackgroundPainter.pas"/>
+        <DCCReference Include="..\Source\Skia\DAC.Components.Skia.BorderPainter.pas"/>
+        <DCCReference Include="..\Source\Skia\DAC.Components.Skia.IconPainter.pas"/>
+        <DCCReference Include="..\Source\Skia\DAC.Components.Skia.VisualElement.pas"/>
+        <DCCReference Include="..\Source\Skia\DAC.Components.Skia.Container.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.SkiaControl.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.SystemText.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.Container.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.Button.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.Edit.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.ButtonEdit.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DateTimePicker.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.ComboBox.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.Memo.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.Selectors.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.Tabs.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.SummaryCard.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.Badges.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.Progress.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.Pagination.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.Loading.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DataGrid.pas"/>
+        <DCCReference Include="..\Source\Hooks\DAC.Components.Hooks.Register.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -119,7 +119,7 @@
         <BorlandProject>
             <Delphi.Personality>
                 <Source>
-                    <Source Name="MainSource">MaxxRuralSkiaComponentsRuntime.dpk</Source>
+                    <Source Name="MainSource">DACSkiaComponentsRuntime.dpk</Source>
                 </Source>
             </Delphi.Personality>
             <Platforms>
@@ -132,3 +132,4 @@
     <Import Project="$(APPDATA)\Embarcadero\$(BDSAppDataBaseDir)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAppDataBaseDir)\UserTools.proj')"/>
     <Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')"/>
 </Project>
+

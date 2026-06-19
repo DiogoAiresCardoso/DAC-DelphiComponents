@@ -1,10 +1,10 @@
-unit MaxxRural.Components.Dpi;
+unit DAC.Components.Dpi;
 
 interface
 
-function MaxxRuralScale(const AValue, ACurrentPPI: Integer): Integer;
-function MaxxRuralScaleF(const AValue, ACurrentPPI: Single): Single;
-function MaxxRuralNormalizePPI(const APPI: Integer): Integer;
+function DACScale(const AValue, ACurrentPPI: Integer): Integer;
+function DACScaleF(const AValue, ACurrentPPI: Single): Single;
+function DACNormalizePPI(const APPI: Integer): Integer;
 
 implementation
 
@@ -12,23 +12,24 @@ uses
   System.Math;
 
 const
-  MaxxRuralDefaultPPI = 96;
+  DACDefaultPPI = 96;
 
-function MaxxRuralNormalizePPI(const APPI: Integer): Integer;
+function DACNormalizePPI(const APPI: Integer): Integer;
 begin
   Result := APPI;
   if Result <= 0 then
-    Result := MaxxRuralDefaultPPI;
+    Result := DACDefaultPPI;
 end;
 
-function MaxxRuralScale(const AValue, ACurrentPPI: Integer): Integer;
+function DACScale(const AValue, ACurrentPPI: Integer): Integer;
 begin
-  Result := Round(AValue * MaxxRuralNormalizePPI(ACurrentPPI) / MaxxRuralDefaultPPI);
+  Result := Round(AValue * DACNormalizePPI(ACurrentPPI) / DACDefaultPPI);
 end;
 
-function MaxxRuralScaleF(const AValue, ACurrentPPI: Single): Single;
+function DACScaleF(const AValue, ACurrentPPI: Single): Single;
 begin
-  Result := AValue * Max(ACurrentPPI, MaxxRuralDefaultPPI) / MaxxRuralDefaultPPI;
+  Result := AValue * Max(ACurrentPPI, DACDefaultPPI) / DACDefaultPPI;
 end;
 
 end.
+

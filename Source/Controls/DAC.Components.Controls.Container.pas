@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.Container;
+unit DAC.Components.Controls.Container;
 
 interface
 
@@ -11,41 +11,41 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
-  MaxxRural.Components.Controls.SystemText,
-  MaxxRural.Components.DesignSystem.ColorTokens,
-  MaxxRural.Components.DesignSystem.Fonts,
-  MaxxRural.Components.Skia.BackgroundPainter,
-  MaxxRural.Components.Skia.BorderPainter,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.Controls.SystemText,
+  DAC.Components.DesignSystem.ColorTokens,
+  DAC.Components.DesignSystem.Fonts,
+  DAC.Components.Skia.BackgroundPainter,
+  DAC.Components.Skia.BorderPainter,
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralContainerAppearance = (
+  TDACContainerAppearance = (
     mcaSuiteSection,
     mcaDarkPanel,
     mcaTransparent
   );
 
-  TMaxxRuralContainer = class(TCustomControl)
+  TDACContainer = class(TCustomControl)
   private
-    FAppearance: TMaxxRuralContainerAppearance;
+    FAppearance: TDACContainerAppearance;
     FBackgroundColor: TAlphaColor;
-    FBackgroundPainter: TMaxxRuralSkiaBackgroundPainter;
+    FBackgroundPainter: TDACSkiaBackgroundPainter;
     FBorderColor: TAlphaColor;
-    FBorderPainter: TMaxxRuralSkiaBorderPainter;
+    FBorderPainter: TDACSkiaBorderPainter;
     FBorderRadius: Integer;
     FBorderWidth: Integer;
     FContentPadding: Integer;
     FCornerRadius: Integer;
     FHeaderHeight: Integer;
     FPaintBox: TSkPaintBox;
-    FRenderer: TMaxxRuralSkiaRenderer;
+    FRenderer: TDACSkiaRenderer;
     FSectionNumber: Integer;
     FShowHeader: Boolean;
     FSubtitle: string;
-    FSubtitleLabel: TMaxxRuralSystemText;
+    FSubtitleLabel: TDACSystemText;
     FSubtitleColor: TAlphaColor;
     FTitle: string;
-    FTitleLabel: TMaxxRuralSystemText;
+    FTitleLabel: TDACSystemText;
     FTitleColor: TAlphaColor;
     procedure CMParentColorChanged(var AMessage: TMessage); message CM_PARENTCOLORCHANGED;
     function HeaderText: string;
@@ -56,7 +56,7 @@ type
     function ParentSurfaceColor: TAlphaColor;
     function ScaleFactor: Single;
     function ScaleMetric(const AValue: Integer): Integer;
-    procedure SetAppearance(const AValue: TMaxxRuralContainerAppearance);
+    procedure SetAppearance(const AValue: TDACContainerAppearance);
     procedure SetBackgroundColor(const AValue: TAlphaColor);
     procedure SetBorderColor(const AValue: TAlphaColor);
     procedure SetBorderRadius(const AValue: Integer);
@@ -87,7 +87,7 @@ type
   published
     property Align;
     property Anchors;
-    property Appearance: TMaxxRuralContainerAppearance read FAppearance write SetAppearance default mcaSuiteSection;
+    property Appearance: TDACContainerAppearance read FAppearance write SetAppearance default mcaSuiteSection;
     property BackgroundColor: TAlphaColor read FBackgroundColor write SetBackgroundColor;
     property BorderColor: TAlphaColor read FBorderColor write SetBorderColor;
     property BorderRadius: Integer read FBorderRadius write SetBorderRadius default 10;
@@ -118,7 +118,7 @@ implementation
 uses
   System.SysUtils;
 
-constructor TMaxxRuralContainer.Create(AOwner: TComponent);
+constructor TDACContainer.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csAcceptsControls, csOpaque];
@@ -129,21 +129,21 @@ begin
   StyleElements := [];
 
   FAppearance := mcaSuiteSection;
-  FBackgroundColor := TMaxxRuralComponentColors.SuiteSectionBackground;
-  FBorderColor := TMaxxRuralComponentColors.ControlBorder;
-  FTitleColor := TMaxxRuralComponentColors.ControlText;
-  FSubtitleColor := TMaxxRuralComponentColors.SuiteSectionSubtitle;
+  FBackgroundColor := TDACComponentColors.SuiteSectionBackground;
+  FBorderColor := TDACComponentColors.ControlBorder;
+  FTitleColor := TDACComponentColors.ControlText;
+  FSubtitleColor := TDACComponentColors.SuiteSectionSubtitle;
   FBorderRadius := 10;
   FBorderWidth := 1;
   FContentPadding := 16;
   FCornerRadius := 10;
   FHeaderHeight := 42;
   FShowHeader := True;
-  Color := TMaxxRuralComponentColors.ToVclColor(FBackgroundColor);
+  Color := TDACComponentColors.ToVclColor(FBackgroundColor);
 
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
-  FBackgroundPainter := TMaxxRuralSkiaBackgroundPainter.Create(FRenderer);
-  FBorderPainter := TMaxxRuralSkiaBorderPainter.Create(FRenderer);
+  FRenderer := TDACSkiaRenderer.Create;
+  FBackgroundPainter := TDACSkiaBackgroundPainter.Create(FRenderer);
+  FBorderPainter := TDACSkiaBorderPainter.Create(FRenderer);
 
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
@@ -151,16 +151,16 @@ begin
   FPaintBox.StyleElements := [];
   FPaintBox.OnDraw := PaintBoxDraw;
 
-  FTitleLabel := TMaxxRuralSystemText.Create(Self);
+  FTitleLabel := TDACSystemText.Create(Self);
   FTitleLabel.Parent := Self;
   FTitleLabel.SetSubComponent(True);
 
-  FSubtitleLabel := TMaxxRuralSystemText.Create(Self);
+  FSubtitleLabel := TDACSystemText.Create(Self);
   FSubtitleLabel.Parent := Self;
   FSubtitleLabel.SetSubComponent(True);
 end;
 
-destructor TMaxxRuralContainer.Destroy;
+destructor TDACContainer.Destroy;
 begin
   FSubtitleLabel.Free;
   FTitleLabel.Free;
@@ -171,13 +171,13 @@ begin
   inherited;
 end;
 
-procedure TMaxxRuralContainer.CMParentColorChanged(var AMessage: TMessage);
+procedure TDACContainer.CMParentColorChanged(var AMessage: TMessage);
 begin
   inherited;
   Redraw;
 end;
 
-procedure TMaxxRuralContainer.AdjustClientRect(var Rect: TRect);
+procedure TDACContainer.AdjustClientRect(var Rect: TRect);
 var
   LHeaderOffset: Integer;
   LPadding: Integer;
@@ -199,26 +199,26 @@ begin
     Rect.Bottom := Rect.Top;
 end;
 
-procedure TMaxxRuralContainer.ChangeScale(M, D: Integer);
+procedure TDACContainer.ChangeScale(M, D: Integer);
 begin
   inherited;
   UpdateHeaderLabels;
   Redraw;
 end;
 
-procedure TMaxxRuralContainer.CreateWnd;
+procedure TDACContainer.CreateWnd;
 begin
   inherited;
   UpdateHeaderLabels;
   Redraw;
 end;
 
-function TMaxxRuralContainer.ContentRect: TRect;
+function TDACContainer.ContentRect: TRect;
 begin
   Result := LayoutRect;
 end;
 
-function TMaxxRuralContainer.HeaderText: string;
+function TDACContainer.HeaderText: string;
 begin
   Result := FTitle.Trim;
   if FSectionNumber > 0 then
@@ -230,7 +230,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralContainer.InvalidateChrome;
+procedure TDACContainer.InvalidateChrome;
 begin
   Realign;
   UpdateHeaderLabels;
@@ -238,7 +238,7 @@ begin
   Invalidate;
 end;
 
-procedure TMaxxRuralContainer.Loaded;
+procedure TDACContainer.Loaded;
 begin
   inherited;
   UpdatePaintBoxBounds;
@@ -246,7 +246,7 @@ begin
   Redraw;
 end;
 
-function TMaxxRuralContainer.LayoutRect: TRect;
+function TDACContainer.LayoutRect: TRect;
 begin
   if HandleAllocated then
     Result := ClientRect
@@ -255,13 +255,13 @@ begin
   AdjustClientRect(Result);
 end;
 
-procedure TMaxxRuralContainer.PaintBoxDraw(Sender: TObject;
+procedure TDACContainer.PaintBoxDraw(Sender: TObject;
   const ACanvas: ISkCanvas; const ADest: TRectF; const AOpacity: Single);
 var
-  LBackgroundStyle: TMaxxRuralBackgroundStyle;
+  LBackgroundStyle: TDACBackgroundStyle;
   LBackgroundRect: TRectF;
   LBorderRect: TRectF;
-  LBorderStyle: TMaxxRuralBorderStyle;
+  LBorderStyle: TDACBorderStyle;
   LInset: Single;
   LScale: Single;
 begin
@@ -296,19 +296,19 @@ begin
   FBorderPainter.Draw(ACanvas, LBorderRect, LBorderStyle);
 end;
 
-function TMaxxRuralContainer.ParentSurfaceColor: TAlphaColor;
+function TDACContainer.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TMaxxRuralComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
-procedure TMaxxRuralContainer.Redraw;
+procedure TDACContainer.Redraw;
 begin
   UpdatePaintBoxBounds;
   if (FPaintBox <> nil) and HandleAllocated then
     FPaintBox.Redraw;
 end;
 
-procedure TMaxxRuralContainer.Resize;
+procedure TDACContainer.Resize;
 begin
   inherited;
   UpdatePaintBoxBounds;
@@ -316,7 +316,7 @@ begin
   Redraw;
 end;
 
-function TMaxxRuralContainer.ScaleFactor: Single;
+function TDACContainer.ScaleFactor: Single;
 begin
   Result := 1;
   if FPaintBox <> nil then
@@ -325,15 +325,15 @@ begin
     Result := 1;
 end;
 
-function TMaxxRuralContainer.ScaleMetric(const AValue: Integer): Integer;
+function TDACContainer.ScaleMetric(const AValue: Integer): Integer;
 begin
   Result := Round(AValue * ScaleFactor);
   if (AValue > 0) and (Result < 1) then
     Result := 1;
 end;
 
-procedure TMaxxRuralContainer.SetAppearance(
-  const AValue: TMaxxRuralContainerAppearance);
+procedure TDACContainer.SetAppearance(
+  const AValue: TDACContainerAppearance);
 begin
   if FAppearance = AValue then
     Exit;
@@ -342,61 +342,61 @@ begin
   case FAppearance of
     mcaSuiteSection:
       begin
-        FBackgroundColor := TMaxxRuralComponentColors.SuiteSectionBackground;
-        FBorderColor := TMaxxRuralComponentColors.SuiteSectionBorder;
-        FTitleColor := TMaxxRuralComponentColors.SuiteSectionTitle;
-        FSubtitleColor := TMaxxRuralComponentColors.SuiteSectionSubtitle;
+        FBackgroundColor := TDACComponentColors.SuiteSectionBackground;
+        FBorderColor := TDACComponentColors.SuiteSectionBorder;
+        FTitleColor := TDACComponentColors.SuiteSectionTitle;
+        FSubtitleColor := TDACComponentColors.SuiteSectionSubtitle;
       end;
     mcaDarkPanel:
       begin
-        FBackgroundColor := TMaxxRuralComponentColors.DarkPanelBackground;
-        FBorderColor := TMaxxRuralComponentColors.DarkPanelBorder;
-        FTitleColor := TMaxxRuralComponentColors.Text;
-        FSubtitleColor := TMaxxRuralComponentColors.TextSecondary;
+        FBackgroundColor := TDACComponentColors.DarkPanelBackground;
+        FBorderColor := TDACComponentColors.DarkPanelBorder;
+        FTitleColor := TDACComponentColors.Text;
+        FSubtitleColor := TDACComponentColors.TextSecondary;
       end;
     mcaTransparent:
       begin
-        FBackgroundColor := TMaxxRuralComponentColors.Transparent;
-        FBorderColor := TMaxxRuralComponentColors.Transparent;
-        FTitleColor := TMaxxRuralComponentColors.SuiteSectionTitle;
-        FSubtitleColor := TMaxxRuralComponentColors.SuiteSectionSubtitle;
+        FBackgroundColor := TDACComponentColors.Transparent;
+        FBorderColor := TDACComponentColors.Transparent;
+        FTitleColor := TDACComponentColors.SuiteSectionTitle;
+        FSubtitleColor := TDACComponentColors.SuiteSectionSubtitle;
       end;
   end;
   if FAppearance = mcaTransparent then
     Color := clNone
   else
-    Color := TMaxxRuralComponentColors.ToVclColor(FBackgroundColor);
+    Color := TDACComponentColors.ToVclColor(FBackgroundColor);
   UpdateHeaderLabels;
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralContainer.SetBackgroundColor(const AValue: TAlphaColor);
+procedure TDACContainer.SetBackgroundColor(const AValue: TAlphaColor);
 var
   LValue: TAlphaColor;
 begin
-  LValue := TMaxxRuralComponentColors.Normalize(AValue);
+  LValue := TDACComponentColors.Normalize(AValue);
   if FBackgroundColor = LValue then
     Exit;
   FBackgroundColor := LValue;
   if FAppearance = mcaTransparent then
     Color := clNone
   else
-    Color := TMaxxRuralComponentColors.ToVclColor(FBackgroundColor);
+    Color := TDACComponentColors.ToVclColor(FBackgroundColor);
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralContainer.SetBorderColor(const AValue: TAlphaColor);
+procedure TDACContainer.SetBorderColor(const AValue: TAlphaColor);
 var
   LValue: TAlphaColor;
 begin
-  LValue := TMaxxRuralComponentColors.Normalize(AValue);
+  LValue := TDACComponentColors.Normalize(AValue);
   if FBorderColor = LValue then
     Exit;
   FBorderColor := LValue;
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralContainer.SetBorderRadius(const AValue: Integer);
+procedure TDACContainer.SetBorderRadius(const AValue: Integer);
 begin
   if FBorderRadius = AValue then
     Exit;
@@ -406,7 +406,7 @@ begin
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralContainer.SetBorderWidth(const AValue: Integer);
+procedure TDACContainer.SetBorderWidth(const AValue: Integer);
 begin
   if FBorderWidth = AValue then
     Exit;
@@ -416,7 +416,7 @@ begin
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralContainer.SetContentPadding(const AValue: Integer);
+procedure TDACContainer.SetContentPadding(const AValue: Integer);
 begin
   if FContentPadding = AValue then
     Exit;
@@ -426,7 +426,7 @@ begin
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralContainer.SetCornerRadius(const AValue: Integer);
+procedure TDACContainer.SetCornerRadius(const AValue: Integer);
 var
   LPreviousRadius: Integer;
 begin
@@ -441,7 +441,7 @@ begin
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralContainer.SetHeaderHeight(const AValue: Integer);
+procedure TDACContainer.SetHeaderHeight(const AValue: Integer);
 begin
   if FHeaderHeight = AValue then
     Exit;
@@ -451,7 +451,7 @@ begin
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralContainer.SetSectionNumber(const AValue: Integer);
+procedure TDACContainer.SetSectionNumber(const AValue: Integer);
 begin
   if FSectionNumber = AValue then
     Exit;
@@ -461,7 +461,7 @@ begin
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralContainer.SetShowHeader(const AValue: Boolean);
+procedure TDACContainer.SetShowHeader(const AValue: Boolean);
 begin
   if FShowHeader = AValue then
     Exit;
@@ -469,7 +469,7 @@ begin
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralContainer.SetSubtitle(const AValue: string);
+procedure TDACContainer.SetSubtitle(const AValue: string);
 begin
   if FSubtitle = AValue then
     Exit;
@@ -477,11 +477,11 @@ begin
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralContainer.SetSubtitleColor(const AValue: TAlphaColor);
+procedure TDACContainer.SetSubtitleColor(const AValue: TAlphaColor);
 var
   LValue: TAlphaColor;
 begin
-  LValue := TMaxxRuralComponentColors.Normalize(AValue);
+  LValue := TDACComponentColors.Normalize(AValue);
   if FSubtitleColor = LValue then
     Exit;
   FSubtitleColor := LValue;
@@ -489,7 +489,7 @@ begin
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralContainer.SetTitle(const AValue: string);
+procedure TDACContainer.SetTitle(const AValue: string);
 begin
   if FTitle = AValue then
     Exit;
@@ -498,11 +498,11 @@ begin
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralContainer.SetTitleColor(const AValue: TAlphaColor);
+procedure TDACContainer.SetTitleColor(const AValue: TAlphaColor);
 var
   LValue: TAlphaColor;
 begin
-  LValue := TMaxxRuralComponentColors.Normalize(AValue);
+  LValue := TDACComponentColors.Normalize(AValue);
   if FTitleColor = LValue then
     Exit;
   FTitleColor := LValue;
@@ -510,7 +510,7 @@ begin
   InvalidateChrome;
 end;
 
-procedure TMaxxRuralContainer.UpdateHeaderLabels;
+procedure TDACContainer.UpdateHeaderLabels;
 var
   LContentWidth: Integer;
   LPadding: Integer;
@@ -531,7 +531,7 @@ begin
   FTitleLabel.Visible := FShowHeader and (LText <> '');
   FTitleLabel.SetBounds(LPadding, LPadding + ScaleMetric(5), LContentWidth, ScaleMetric(20));
   FTitleLabel.Text := LText;
-  FTitleLabel.FontFamily := TMaxxRuralComponentFontInstaller.FontFamily;
+  FTitleLabel.FontFamily := TDACComponentFontInstaller.FontFamily;
   FTitleLabel.FontSize := 10;
   FTitleLabel.Bold := True;
   FTitleLabel.TextColor := FTitleColor;
@@ -542,7 +542,7 @@ begin
   FSubtitleLabel.Visible := FShowHeader and (FSubtitle.Trim <> '');
   FSubtitleLabel.SetBounds(LPadding, LPadding + ScaleMetric(29), LContentWidth, ScaleMetric(17));
   FSubtitleLabel.Text := FSubtitle;
-  FSubtitleLabel.FontFamily := TMaxxRuralComponentFontInstaller.FontFamily;
+  FSubtitleLabel.FontFamily := TDACComponentFontInstaller.FontFamily;
   FSubtitleLabel.FontSize := 8;
   FSubtitleLabel.Bold := False;
   FSubtitleLabel.TextColor := FSubtitleColor;
@@ -552,7 +552,7 @@ begin
 
 end;
 
-procedure TMaxxRuralContainer.UpdatePaintBoxBounds;
+procedure TDACContainer.UpdatePaintBoxBounds;
 var
   LHeight: Integer;
   LWidth: Integer;
@@ -577,9 +577,10 @@ begin
 
 end;
 
-procedure TMaxxRuralContainer.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACContainer.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
 end.
+

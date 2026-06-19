@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.SkiaControl;
+unit DAC.Components.Controls.SkiaControl;
 
 interface
 
@@ -8,25 +8,25 @@ uses
   System.Types,
   Vcl.Controls,
   Vcl.Skia,
-  MaxxRural.Components.DesignSystem.DefaultTheme,
-  MaxxRural.Components.DesignSystem.Theme,
-  MaxxRural.Components.Skia.BackgroundPainter,
-  MaxxRural.Components.Skia.BorderPainter,
-  MaxxRural.Components.Skia.Container,
-  MaxxRural.Components.Skia.IconPainter,
-  MaxxRural.Components.Skia.Renderer,
-  MaxxRural.Components.Types;
+  DAC.Components.DesignSystem.DefaultTheme,
+  DAC.Components.DesignSystem.Theme,
+  DAC.Components.Skia.BackgroundPainter,
+  DAC.Components.Skia.BorderPainter,
+  DAC.Components.Skia.Container,
+  DAC.Components.Skia.IconPainter,
+  DAC.Components.Skia.Renderer,
+  DAC.Components.Types;
 
 type
-  TMaxxRuralSkiaControl = class(TCustomControl)
+  TDACSkiaControl = class(TCustomControl)
   private
-    FBackgroundPainter: TMaxxRuralSkiaBackgroundPainter;
-    FBorderPainter: TMaxxRuralSkiaBorderPainter;
-    FContainer: TMaxxRuralSkiaElementContainer;
-    FIconPainter: TMaxxRuralSkiaIconPainter;
+    FBackgroundPainter: TDACSkiaBackgroundPainter;
+    FBorderPainter: TDACSkiaBorderPainter;
+    FContainer: TDACSkiaElementContainer;
+    FIconPainter: TDACSkiaIconPainter;
     FPaintBox: TSkPaintBox;
-    FRenderer: TMaxxRuralSkiaRenderer;
-    FTheme: IMaxxRuralComponentsTheme;
+    FRenderer: TDACSkiaRenderer;
+    FTheme: IDACComponentsTheme;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
     procedure PaintBoxMouseDown(Sender: TObject; Button: TMouseButton;
@@ -34,23 +34,23 @@ type
     procedure PaintBoxMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure PaintBoxMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure SetTheme(const ATheme: IMaxxRuralComponentsTheme);
+    procedure SetTheme(const ATheme: IDACComponentsTheme);
     function CanUsePaintBox: Boolean;
   protected
-    function MouseButtonToPointerButton(const AButton: TMouseButton): TMaxxRuralPointerButton;
+    function MouseButtonToPointerButton(const AButton: TMouseButton): TDACPointerButton;
     procedure DrawContent(const ACanvas: ISkCanvas; const ADest: TRectF); virtual;
     procedure Resize; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure Redraw;
-    property BackgroundPainter: TMaxxRuralSkiaBackgroundPainter read FBackgroundPainter;
-    property BorderPainter: TMaxxRuralSkiaBorderPainter read FBorderPainter;
-    property Container: TMaxxRuralSkiaElementContainer read FContainer;
-    property IconPainter: TMaxxRuralSkiaIconPainter read FIconPainter;
+    property BackgroundPainter: TDACSkiaBackgroundPainter read FBackgroundPainter;
+    property BorderPainter: TDACSkiaBorderPainter read FBorderPainter;
+    property Container: TDACSkiaElementContainer read FContainer;
+    property IconPainter: TDACSkiaIconPainter read FIconPainter;
     property PaintBox: TSkPaintBox read FPaintBox;
-    property Renderer: TMaxxRuralSkiaRenderer read FRenderer;
-    property Theme: IMaxxRuralComponentsTheme read FTheme write SetTheme;
+    property Renderer: TDACSkiaRenderer read FRenderer;
+    property Theme: IDACComponentsTheme read FTheme write SetTheme;
   published
     property Align;
     property Anchors;
@@ -66,19 +66,19 @@ type
 
 implementation
 
-constructor TMaxxRuralSkiaControl.Create(AOwner: TComponent);
+constructor TDACSkiaControl.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque];
   Width := 280;
   Height := 160;
   TabStop := True;
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
-  FBackgroundPainter := TMaxxRuralSkiaBackgroundPainter.Create(FRenderer);
-  FBorderPainter := TMaxxRuralSkiaBorderPainter.Create(FRenderer);
-  FIconPainter := TMaxxRuralSkiaIconPainter.Create(FRenderer);
-  FTheme := TMaxxRuralDefaultComponentsTheme.New;
-  FContainer := TMaxxRuralSkiaElementContainer.Create;
+  FRenderer := TDACSkiaRenderer.Create;
+  FBackgroundPainter := TDACSkiaBackgroundPainter.Create(FRenderer);
+  FBorderPainter := TDACSkiaBorderPainter.Create(FRenderer);
+  FIconPainter := TDACSkiaIconPainter.Create(FRenderer);
+  FTheme := TDACDefaultComponentsTheme.New;
+  FContainer := TDACSkiaElementContainer.Create;
   FContainer.Theme := FTheme;
 
   FPaintBox := TSkPaintBox.Create(Self);
@@ -90,7 +90,7 @@ begin
   FPaintBox.OnMouseUp := PaintBoxMouseUp;
 end;
 
-destructor TMaxxRuralSkiaControl.Destroy;
+destructor TDACSkiaControl.Destroy;
 begin
   FPaintBox.Free;
   FContainer.Free;
@@ -101,7 +101,7 @@ begin
   inherited;
 end;
 
-procedure TMaxxRuralSkiaControl.DrawContent(const ACanvas: ISkCanvas;
+procedure TDACSkiaControl.DrawContent(const ACanvas: ISkCanvas;
   const ADest: TRectF);
 begin
   FBackgroundPainter.DrawPanel(ACanvas, ADest, FTheme);
@@ -109,7 +109,7 @@ begin
   FContainer.Draw(ACanvas);
 end;
 
-function TMaxxRuralSkiaControl.CanUsePaintBox: Boolean;
+function TDACSkiaControl.CanUsePaintBox: Boolean;
 begin
   Result := (FPaintBox <> nil) and not (csDestroying in ComponentState);
   if not Result then
@@ -128,8 +128,8 @@ begin
   end;
 end;
 
-function TMaxxRuralSkiaControl.MouseButtonToPointerButton(
-  const AButton: TMouseButton): TMaxxRuralPointerButton;
+function TDACSkiaControl.MouseButtonToPointerButton(
+  const AButton: TMouseButton): TDACPointerButton;
 begin
   case AButton of
     mbLeft: Result := mpbLeft;
@@ -140,13 +140,13 @@ begin
   end;
 end;
 
-procedure TMaxxRuralSkiaControl.PaintBoxDraw(Sender: TObject;
+procedure TDACSkiaControl.PaintBoxDraw(Sender: TObject;
   const ACanvas: ISkCanvas; const ADest: TRectF; const AOpacity: Single);
 begin
   DrawContent(ACanvas, ADest);
 end;
 
-procedure TMaxxRuralSkiaControl.PaintBoxMouseDown(Sender: TObject;
+procedure TDACSkiaControl.PaintBoxMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   if (Parent <> nil) and HandleAllocated and CanFocus then
@@ -155,7 +155,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralSkiaControl.PaintBoxMouseMove(Sender: TObject;
+procedure TDACSkiaControl.PaintBoxMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 begin
   FContainer.MouseMove(TPointF.Create(X, Y), Shift);
@@ -165,29 +165,29 @@ begin
     Redraw;
 end;
 
-procedure TMaxxRuralSkiaControl.PaintBoxMouseUp(Sender: TObject;
+procedure TDACSkiaControl.PaintBoxMouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   FContainer.MouseUp(TPointF.Create(X, Y), MouseButtonToPointerButton(Button), Shift);
   Redraw;
 end;
 
-procedure TMaxxRuralSkiaControl.Redraw;
+procedure TDACSkiaControl.Redraw;
 begin
   if CanUsePaintBox then
     FPaintBox.Redraw;
 end;
 
-procedure TMaxxRuralSkiaControl.Resize;
+procedure TDACSkiaControl.Resize;
 begin
   inherited;
   Redraw;
 end;
 
-procedure TMaxxRuralSkiaControl.SetTheme(const ATheme: IMaxxRuralComponentsTheme);
+procedure TDACSkiaControl.SetTheme(const ATheme: IDACComponentsTheme);
 begin
   if ATheme = nil then
-    FTheme := TMaxxRuralDefaultComponentsTheme.New
+    FTheme := TDACDefaultComponentsTheme.New
   else
     FTheme := ATheme;
   FContainer.Theme := FTheme;
@@ -195,3 +195,4 @@ begin
 end;
 
 end.
+

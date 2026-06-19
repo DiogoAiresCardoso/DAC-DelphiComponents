@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.Memo;
+unit DAC.Components.Controls.Memo;
 
 interface
 
@@ -14,26 +14,26 @@ uses
   Vcl.Graphics,
   Vcl.Skia,
   Vcl.StdCtrls,
-  MaxxRural.Components.Controls.Edit,
-  MaxxRural.Components.DesignSystem.Fonts,
-  MaxxRural.Components.Skia.BackgroundPainter,
-  MaxxRural.Components.Skia.BorderPainter,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.Controls.Edit,
+  DAC.Components.DesignSystem.Fonts,
+  DAC.Components.Skia.BackgroundPainter,
+  DAC.Components.Skia.BorderPainter,
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralMemo = class(TCustomControl)
+  TDACMemo = class(TCustomControl)
   private
-    FBackgroundPainter: TMaxxRuralSkiaBackgroundPainter;
-    FBorderPainter: TMaxxRuralSkiaBorderPainter;
+    FBackgroundPainter: TDACSkiaBackgroundPainter;
+    FBorderPainter: TDACSkiaBorderPainter;
     FCornerRadius: Integer;
     FLabelText: string;
     FMemo: TMemo;
     FMouseInside: Boolean;
     FOnChange: TNotifyEvent;
     FPaintBox: TSkPaintBox;
-    FRenderer: TMaxxRuralSkiaRenderer;
+    FRenderer: TDACSkiaRenderer;
     FRequired: Boolean;
-    FStatus: TMaxxRuralEditStatus;
+    FStatus: TDACEditStatus;
     function BorderAlpha: Byte;
     function BorderColor: TAlphaColor;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
@@ -61,7 +61,7 @@ type
     procedure SetReadOnly(const AValue: Boolean);
     procedure SetScrollBars(const AValue: System.UITypes.TScrollStyle);
     procedure SetRequired(const AValue: Boolean);
-    procedure SetStatus(const AValue: TMaxxRuralEditStatus);
+    procedure SetStatus(const AValue: TDACEditStatus);
     procedure SetText(const AValue: string);
     procedure SetWordWrap(const AValue: Boolean);
     procedure UpdateChildBounds;
@@ -97,7 +97,7 @@ type
     property Required: Boolean read FRequired write SetRequired default False;
     property ScrollBars: System.UITypes.TScrollStyle read GetScrollBars write SetScrollBars default ssNone;
     property ShowHint;
-    property Status: TMaxxRuralEditStatus read FStatus write SetStatus default mesNormal;
+    property Status: TDACEditStatus read FStatus write SetStatus default mesNormal;
     property TabOrder;
     property TabStop default True;
     property Text: string read GetText write SetText;
@@ -119,11 +119,11 @@ type
 implementation
 
 uses
-  MaxxRural.Components.DesignSystem.ColorTokens,
+  DAC.Components.DesignSystem.ColorTokens,
   System.Math,
   Winapi.Windows;
 
-constructor TMaxxRuralMemo.Create(AOwner: TComponent);
+constructor TDACMemo.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque, csClickEvents, csCaptureMouse];
@@ -137,9 +137,9 @@ begin
   FCornerRadius := 8;
   FStatus := mesNormal;
 
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
-  FBackgroundPainter := TMaxxRuralSkiaBackgroundPainter.Create(FRenderer);
-  FBorderPainter := TMaxxRuralSkiaBorderPainter.Create(FRenderer);
+  FRenderer := TDACSkiaRenderer.Create;
+  FBackgroundPainter := TDACSkiaBackgroundPainter.Create(FRenderer);
+  FBorderPainter := TDACSkiaBorderPainter.Create(FRenderer);
 
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
@@ -167,7 +167,7 @@ begin
   Resize;
 end;
 
-destructor TMaxxRuralMemo.Destroy;
+destructor TDACMemo.Destroy;
 begin
   FMemo.Free;
   FPaintBox.Free;
@@ -177,7 +177,7 @@ begin
   inherited;
 end;
 
-function TMaxxRuralMemo.BorderAlpha: Byte;
+function TDACMemo.BorderAlpha: Byte;
 begin
   if not Enabled then
     Result := 130
@@ -191,50 +191,50 @@ begin
     Result := 185;
 end;
 
-function TMaxxRuralMemo.BorderColor: TAlphaColor;
+function TDACMemo.BorderColor: TAlphaColor;
 var
   LSurface: TAlphaColor;
 begin
   LSurface := ParentSurfaceColor;
   case FStatus of
     mesSuccess:
-      Result := TMaxxRuralComponentColors.PrimaryDark;
+      Result := TDACComponentColors.PrimaryDark;
     mesWarning:
-      Result := TMaxxRuralComponentColors.Warning;
+      Result := TDACComponentColors.Warning;
     mesDanger:
-      Result := TMaxxRuralComponentColors.Danger;
+      Result := TDACComponentColors.Danger;
   else
     if FMemo.Focused then
-      Result := TMaxxRuralComponentColors.Primary
+      Result := TDACComponentColors.Primary
     else if FMouseInside then
-      Result := TMaxxRuralComponentColors.ControlBorderHoverForSurface(LSurface)
+      Result := TDACComponentColors.ControlBorderHoverForSurface(LSurface)
     else
-      Result := TMaxxRuralComponentColors.ControlBorderForSurface(LSurface);
+      Result := TDACComponentColors.ControlBorderForSurface(LSurface);
   end;
 end;
 
-procedure TMaxxRuralMemo.ChangeScale(M, D: Integer);
+procedure TDACMemo.ChangeScale(M, D: Integer);
 begin
   inherited;
   UpdateChildBounds;
   Redraw;
 end;
 
-procedure TMaxxRuralMemo.CMEnabledChanged(var AMessage: TMessage);
+procedure TDACMemo.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
   UpdateMemoStyle;
   Redraw;
 end;
 
-procedure TMaxxRuralMemo.CMParentColorChanged(var AMessage: TMessage);
+procedure TDACMemo.CMParentColorChanged(var AMessage: TMessage);
 begin
   inherited;
   UpdateMemoStyle;
   Redraw;
 end;
 
-procedure TMaxxRuralMemo.CreateWnd;
+procedure TDACMemo.CreateWnd;
 begin
   inherited;
   UpdateZOrder;
@@ -243,27 +243,27 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralMemo.DoMemoChange(Sender: TObject);
+procedure TDACMemo.DoMemoChange(Sender: TObject);
 begin
   if Assigned(FOnChange) then
     FOnChange(Self);
 end;
 
-procedure TMaxxRuralMemo.DoMemoEnter(Sender: TObject);
+procedure TDACMemo.DoMemoEnter(Sender: TObject);
 begin
   Redraw;
   if Assigned(OnEnter) then
     OnEnter(Self);
 end;
 
-procedure TMaxxRuralMemo.DoMemoExit(Sender: TObject);
+procedure TDACMemo.DoMemoExit(Sender: TObject);
 begin
   Redraw;
   if Assigned(OnExit) then
     OnExit(Self);
 end;
 
-procedure TMaxxRuralMemo.DoMouseEnter(Sender: TObject);
+procedure TDACMemo.DoMouseEnter(Sender: TObject);
 begin
   if FMouseInside then
     Exit;
@@ -273,7 +273,7 @@ begin
     OnMouseEnter(Self);
 end;
 
-procedure TMaxxRuralMemo.DoMouseLeave(Sender: TObject);
+procedure TDACMemo.DoMouseLeave(Sender: TObject);
 var
   LPoint: TPoint;
 begin
@@ -291,7 +291,7 @@ begin
     OnMouseLeave(Self);
 end;
 
-procedure TMaxxRuralMemo.Loaded;
+procedure TDACMemo.Loaded;
 begin
   inherited;
   UpdatePaintBoxBounds;
@@ -301,44 +301,44 @@ begin
   Redraw;
 end;
 
-function TMaxxRuralMemo.GetLines: TStrings;
+function TDACMemo.GetLines: TStrings;
 begin
   Result := FMemo.Lines;
 end;
 
-function TMaxxRuralMemo.GetReadOnly: Boolean;
+function TDACMemo.GetReadOnly: Boolean;
 begin
   Result := FMemo.ReadOnly;
 end;
 
-function TMaxxRuralMemo.GetScrollBars: System.UITypes.TScrollStyle;
+function TDACMemo.GetScrollBars: System.UITypes.TScrollStyle;
 begin
   Result := FMemo.ScrollBars;
 end;
 
-function TMaxxRuralMemo.GetText: string;
+function TDACMemo.GetText: string;
 begin
   Result := FMemo.Text;
 end;
 
-function TMaxxRuralMemo.GetWordWrap: Boolean;
+function TDACMemo.GetWordWrap: Boolean;
 begin
   Result := FMemo.WordWrap;
 end;
 
-function TMaxxRuralMemo.HasLabel: Boolean;
+function TDACMemo.HasLabel: Boolean;
 begin
   Result := FLabelText.Trim <> '';
 end;
 
-function TMaxxRuralMemo.ChromeTop: Integer;
+function TDACMemo.ChromeTop: Integer;
 begin
   Result := 0;
   if HasLabel then
     Result := ScaleMetric(24);
 end;
 
-procedure TMaxxRuralMemo.MouseDown(Button: TMouseButton; Shift: TShiftState;
+procedure TDACMemo.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 begin
   inherited;
@@ -346,11 +346,11 @@ begin
     FMemo.SetFocus;
 end;
 
-procedure TMaxxRuralMemo.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
+procedure TDACMemo.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
   const ADest: TRectF; const AOpacity: Single);
 var
-  LBackground: TMaxxRuralBackgroundStyle;
-  LBorder: TMaxxRuralBorderStyle;
+  LBackground: TDACBackgroundStyle;
+  LBorder: TDACBorderStyle;
   LBorderRect: TRectF;
   LLabelColor: TAlphaColor;
   LRect: TRectF;
@@ -373,17 +373,17 @@ begin
 
   if HasLabel then
   begin
-    LLabelColor := TMaxxRuralComponentColors.ControlTextForSurface(LSurface);
+    LLabelColor := TDACComponentColors.ControlTextForSurface(LSurface);
     if FRequired then
-      LLabelColor := TMaxxRuralComponentColors.PrimaryDark;
+      LLabelColor := TDACComponentColors.PrimaryDark;
     FRenderer.Text(ACanvas, FLabelText,
-      TMaxxRuralComponentFontInstaller.FontFamily, 0,
+      TDACComponentFontInstaller.FontFamily, 0,
       ScaleMetric(15), 12, LLabelColor, FRequired, ADest.Width);
   end;
 
-  LBackground.Color := TMaxxRuralComponentColors.ControlBackgroundForSurface(LSurface);
+  LBackground.Color := TDACComponentColors.ControlBackgroundForSurface(LSurface);
   if not Enabled then
-    LBackground.Color := TMaxxRuralComponentColors.ControlBackgroundDisabledForSurface(LSurface);
+    LBackground.Color := TDACComponentColors.ControlBackgroundDisabledForSurface(LSurface);
   LBackground.Radius := FCornerRadius;
   LBackground.Alpha := 255;
   FBackgroundPainter.Draw(ACanvas, LRect, LBackground);
@@ -397,19 +397,19 @@ begin
   FBorderPainter.Draw(ACanvas, LBorderRect, LBorder);
 end;
 
-function TMaxxRuralMemo.ParentSurfaceColor: TAlphaColor;
+function TDACMemo.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TMaxxRuralComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
-procedure TMaxxRuralMemo.Redraw;
+procedure TDACMemo.Redraw;
 begin
   UpdatePaintBoxBounds;
   if (FPaintBox <> nil) and HandleAllocated then
     FPaintBox.Redraw;
 end;
 
-procedure TMaxxRuralMemo.Resize;
+procedure TDACMemo.Resize;
 begin
   inherited;
   UpdatePaintBoxBounds;
@@ -418,7 +418,7 @@ begin
   Redraw;
 end;
 
-function TMaxxRuralMemo.ScaleFactor: Single;
+function TDACMemo.ScaleFactor: Single;
 begin
   Result := 1;
   if FPaintBox <> nil then
@@ -427,14 +427,14 @@ begin
     Result := 1;
 end;
 
-function TMaxxRuralMemo.ScaleMetric(const AValue: Integer): Integer;
+function TDACMemo.ScaleMetric(const AValue: Integer): Integer;
 begin
   Result := Round(AValue * ScaleFactor);
   if (AValue > 0) and (Result < 1) then
     Result := 1;
 end;
 
-procedure TMaxxRuralMemo.SetCornerRadius(const AValue: Integer);
+procedure TDACMemo.SetCornerRadius(const AValue: Integer);
 begin
   if FCornerRadius = AValue then
     Exit;
@@ -442,7 +442,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralMemo.SetFocus;
+procedure TDACMemo.SetFocus;
 begin
   if (FMemo <> nil) and FMemo.CanFocus then
     FMemo.SetFocus
@@ -450,7 +450,7 @@ begin
     inherited;
 end;
 
-procedure TMaxxRuralMemo.SetLabelText(const AValue: string);
+procedure TDACMemo.SetLabelText(const AValue: string);
 var
   LHadLabel: Boolean;
 begin
@@ -465,12 +465,12 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralMemo.SetLines(const AValue: TStrings);
+procedure TDACMemo.SetLines(const AValue: TStrings);
 begin
   FMemo.Lines.Assign(AValue);
 end;
 
-procedure TMaxxRuralMemo.SetReadOnly(const AValue: Boolean);
+procedure TDACMemo.SetReadOnly(const AValue: Boolean);
 begin
   if FMemo.ReadOnly = AValue then
     Exit;
@@ -478,12 +478,12 @@ begin
   UpdateMemoStyle;
 end;
 
-procedure TMaxxRuralMemo.SetScrollBars(const AValue: System.UITypes.TScrollStyle);
+procedure TDACMemo.SetScrollBars(const AValue: System.UITypes.TScrollStyle);
 begin
   FMemo.ScrollBars := AValue;
 end;
 
-procedure TMaxxRuralMemo.SetRequired(const AValue: Boolean);
+procedure TDACMemo.SetRequired(const AValue: Boolean);
 begin
   if FRequired = AValue then
     Exit;
@@ -491,7 +491,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralMemo.SetStatus(const AValue: TMaxxRuralEditStatus);
+procedure TDACMemo.SetStatus(const AValue: TDACEditStatus);
 begin
   if FStatus = AValue then
     Exit;
@@ -499,17 +499,17 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralMemo.SetText(const AValue: string);
+procedure TDACMemo.SetText(const AValue: string);
 begin
   FMemo.Text := AValue;
 end;
 
-procedure TMaxxRuralMemo.SetWordWrap(const AValue: Boolean);
+procedure TDACMemo.SetWordWrap(const AValue: Boolean);
 begin
   FMemo.WordWrap := AValue;
 end;
 
-procedure TMaxxRuralMemo.UpdateChildBounds;
+procedure TDACMemo.UpdateChildBounds;
 var
   LPadding: Integer;
   LTop: Integer;
@@ -523,7 +523,7 @@ begin
     Max(0, Width - (LPadding * 2)), Max(0, Height - LTop - LPadding));
 end;
 
-procedure TMaxxRuralMemo.UpdatePaintBoxBounds;
+procedure TDACMemo.UpdatePaintBoxBounds;
 var
   LWidth: Integer;
   LHeight: Integer;
@@ -545,7 +545,7 @@ begin
 
 end;
 
-procedure TMaxxRuralMemo.UpdateZOrder;
+procedure TDACMemo.UpdateZOrder;
 begin
   if (csLoading in ComponentState) or (csDestroying in ComponentState) then
     Exit;
@@ -562,7 +562,7 @@ begin
     FMemo.BringToFront;
 end;
 
-procedure TMaxxRuralMemo.UpdateMemoStyle;
+procedure TDACMemo.UpdateMemoStyle;
 var
   LSurface: TAlphaColor;
   LTextColor: TColor;
@@ -572,19 +572,19 @@ begin
 
   LSurface := ParentSurfaceColor;
   FMemo.Enabled := Enabled;
-  FMemo.Color := TMaxxRuralComponentColors.ToVclColor(
-    TMaxxRuralComponentColors.ControlBackgroundForSurface(LSurface));
+  FMemo.Color := TDACComponentColors.ToVclColor(
+    TDACComponentColors.ControlBackgroundForSurface(LSurface));
   if not Enabled then
-    FMemo.Color := TMaxxRuralComponentColors.ToVclColor(
-      TMaxxRuralComponentColors.ControlBackgroundDisabledForSurface(LSurface));
-  FMemo.Font.Name := TMaxxRuralComponentFontInstaller.FontFamily;
+    FMemo.Color := TDACComponentColors.ToVclColor(
+      TDACComponentColors.ControlBackgroundDisabledForSurface(LSurface));
+  FMemo.Font.Name := TDACComponentFontInstaller.FontFamily;
   FMemo.Font.Size := 10;
   FMemo.Font.Style := [];
-  LTextColor := TMaxxRuralComponentColors.ToVclColor(
-    TMaxxRuralComponentColors.ControlTextForSurface(LSurface));
+  LTextColor := TDACComponentColors.ToVclColor(
+    TDACComponentColors.ControlTextForSurface(LSurface));
   if not Enabled then
-    LTextColor := TMaxxRuralComponentColors.ToVclColor(
-      TMaxxRuralComponentColors.ControlTextDisabledForSurface(LSurface));
+    LTextColor := TDACComponentColors.ToVclColor(
+      TDACComponentColors.ControlTextDisabledForSurface(LSurface));
   FMemo.Font.Color := LTextColor;
   Cursor := crIBeam;
   FPaintBox.Cursor := crIBeam;
@@ -597,9 +597,10 @@ begin
   end;
 end;
 
-procedure TMaxxRuralMemo.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACMemo.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
 end.
+

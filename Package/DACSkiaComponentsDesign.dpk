@@ -1,13 +1,14 @@
-package MaxxRuralSkiaComponentsDesign;
+package DACSkiaComponentsDesign;
 
 {$IMPLICITBUILD ON}
 
 requires
   rtl,
   designide,
-  MaxxRuralSkiaComponentsRuntime;
+  DACSkiaComponentsRuntime;
 
 contains
-  MaxxRural.Components.Design.Register in '..\Source\DesignTime\MaxxRural.Components.Design.Register.pas';
+  DAC.Components.Design.Register in '..\Source\DesignTime\DAC.Components.Design.Register.pas';
 
 end.
+

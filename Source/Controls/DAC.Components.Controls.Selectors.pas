@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.Selectors;
+unit DAC.Components.Controls.Selectors;
 
 interface
 
@@ -11,28 +11,28 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
-  MaxxRural.Components.DesignSystem.Fonts,
-  MaxxRural.Components.DesignSystem.IconAssets,
-  MaxxRural.Components.Skia.IconPainter,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.DesignSystem.Fonts,
+  DAC.Components.DesignSystem.IconAssets,
+  DAC.Components.Skia.IconPainter,
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralSelectorKind = (
+  TDACSelectorKind = (
     mskCheckBox,
     mskRadioButton,
     mskToggleSwitch
   );
 
-  TMaxxRuralSelector = class(TCustomControl)
+  TDACSelector = class(TCustomControl)
   private
     FChecked: Boolean;
-    FIconPainter: TMaxxRuralSkiaIconPainter;
-    FKind: TMaxxRuralSelectorKind;
+    FIconPainter: TDACSkiaIconPainter;
+    FKind: TDACSelectorKind;
     FMouseInside: Boolean;
     FOnChange: TNotifyEvent;
     FPaintBox: TSkPaintBox;
     FPressed: Boolean;
-    FRenderer: TMaxxRuralSkiaRenderer;
+    FRenderer: TDACSkiaRenderer;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure CMTextChanged(var AMessage: TMessage); message CM_TEXTCHANGED;
     procedure DrawCircle(const ACanvas: ISkCanvas; const ACenter: TPointF;
@@ -51,7 +51,7 @@ type
     function ScaleFactor: Single;
     function ScaleMetric(const AValue: Integer): Integer;
     procedure SetChecked(const AValue: Boolean);
-    procedure SetKind(const AValue: TMaxxRuralSelectorKind);
+    procedure SetKind(const AValue: TDACSelectorKind);
     procedure Toggle;
     procedure UpdatePaintBoxBounds;
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
@@ -67,7 +67,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure Click; override;
-    property Kind: TMaxxRuralSelectorKind read FKind write SetKind default mskCheckBox;
+    property Kind: TDACSelectorKind read FKind write SetKind default mskCheckBox;
   published
     property Align;
     property Anchors;
@@ -97,28 +97,28 @@ type
     property OnMouseUp;
   end;
 
-  TMaxxRuralCheckBox = class(TMaxxRuralSelector)
+  TDACCheckBox = class(TDACSelector)
   public
     constructor Create(AOwner: TComponent); override;
   published
     property Kind default mskCheckBox;
   end;
 
-  TMaxxRuralRadioButton = class(TMaxxRuralSelector)
+  TDACRadioButton = class(TDACSelector)
   public
     constructor Create(AOwner: TComponent); override;
   published
     property Kind default mskRadioButton;
   end;
 
-  TMaxxRuralToggleSwitch = class(TMaxxRuralSelector)
+  TDACToggleSwitch = class(TDACSelector)
   public
     constructor Create(AOwner: TComponent); override;
   published
     property Kind default mskToggleSwitch;
   end;
 
-  TMaxxRuralSlider = class(TCustomControl)
+  TDACSlider = class(TCustomControl)
   private
     FDragging: Boolean;
     FMaximum: Integer;
@@ -126,7 +126,7 @@ type
     FMouseInside: Boolean;
     FOnChange: TNotifyEvent;
     FPaintBox: TSkPaintBox;
-    FRenderer: TMaxxRuralSkiaRenderer;
+    FRenderer: TDACSkiaRenderer;
     FShowValue: Boolean;
     FValue: Integer;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
@@ -200,12 +200,12 @@ type
 implementation
 
 uses
-  MaxxRural.Components.DesignSystem.ColorTokens,
+  DAC.Components.DesignSystem.ColorTokens,
   System.Math,
   System.SysUtils,
   Winapi.Windows;
 
-constructor TMaxxRuralSelector.Create(AOwner: TComponent);
+constructor TDACSelector.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque, csClickEvents, csCaptureMouse];
@@ -218,8 +218,8 @@ begin
   Caption := 'Opcao';
   FKind := mskCheckBox;
 
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
-  FIconPainter := TMaxxRuralSkiaIconPainter.Create(FRenderer);
+  FRenderer := TDACSkiaRenderer.Create;
+  FIconPainter := TDACSkiaIconPainter.Create(FRenderer);
 
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
@@ -234,7 +234,7 @@ begin
   UpdatePaintBoxBounds;
 end;
 
-destructor TMaxxRuralSelector.Destroy;
+destructor TDACSelector.Destroy;
 begin
   FPaintBox.Free;
   FIconPainter.Free;
@@ -242,20 +242,20 @@ begin
   inherited;
 end;
 
-procedure TMaxxRuralSelector.ChangeScale(M, D: Integer);
+procedure TDACSelector.ChangeScale(M, D: Integer);
 begin
   inherited;
   UpdatePaintBoxBounds;
   InvalidateSelector;
 end;
 
-procedure TMaxxRuralSelector.Click;
+procedure TDACSelector.Click;
 begin
   Toggle;
   inherited Click;
 end;
 
-procedure TMaxxRuralSelector.CMEnabledChanged(var AMessage: TMessage);
+procedure TDACSelector.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
   Cursor := crHandPoint;
@@ -264,20 +264,20 @@ begin
   InvalidateSelector;
 end;
 
-procedure TMaxxRuralSelector.CMTextChanged(var AMessage: TMessage);
+procedure TDACSelector.CMTextChanged(var AMessage: TMessage);
 begin
   inherited;
   InvalidateSelector;
 end;
 
-procedure TMaxxRuralSelector.CreateWnd;
+procedure TDACSelector.CreateWnd;
 begin
   inherited;
   UpdatePaintBoxBounds;
   InvalidateSelector;
 end;
 
-procedure TMaxxRuralSelector.DrawCircle(const ACanvas: ISkCanvas;
+procedure TDACSelector.DrawCircle(const ACanvas: ISkCanvas;
   const ACenter: TPointF; const ARadius: Single; const AColor: TAlphaColor;
   const AStroke: Boolean; const AStrokeWidth: Single; const AAlpha: Byte);
 var
@@ -294,14 +294,14 @@ begin
   ACanvas.DrawCircle(ACenter.X, ACenter.Y, ARadius, LPaint);
 end;
 
-procedure TMaxxRuralSelector.InvalidateSelector;
+procedure TDACSelector.InvalidateSelector;
 begin
   UpdatePaintBoxBounds;
   if (FPaintBox <> nil) and HandleAllocated then
     FPaintBox.Redraw;
 end;
 
-procedure TMaxxRuralSelector.KeyDown(var Key: Word; Shift: TShiftState);
+procedure TDACSelector.KeyDown(var Key: Word; Shift: TShiftState);
 begin
   inherited;
   if (Key = VK_SPACE) and Enabled then
@@ -311,14 +311,14 @@ begin
   end;
 end;
 
-procedure TMaxxRuralSelector.Loaded;
+procedure TDACSelector.Loaded;
 begin
   inherited;
   UpdatePaintBoxBounds;
   InvalidateSelector;
 end;
 
-procedure TMaxxRuralSelector.MouseDown(Button: TMouseButton; Shift: TShiftState;
+procedure TDACSelector.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 begin
   inherited;
@@ -331,7 +331,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralSelector.MouseUp(Button: TMouseButton; Shift: TShiftState;
+procedure TDACSelector.MouseUp(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 var
   LPoint: TPoint;
@@ -347,13 +347,13 @@ begin
     InvalidateSelector;
 end;
 
-procedure TMaxxRuralSelector.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
+procedure TDACSelector.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
   const ADest: TRectF; const AOpacity: Single);
 var
   LBoxRect: TRectF;
   LFill: TAlphaColor;
   LIconRect: TRectF;
-  LIconStyle: TMaxxRuralIconStyle;
+  LIconStyle: TDACIconStyle;
   LKnobCenter: TPointF;
   LScale: Single;
   LSurface: TAlphaColor;
@@ -368,9 +368,9 @@ begin
   LSurface := ParentSurfaceColor;
   ACanvas.Clear(LSurface);
 
-  LTextColor := TMaxxRuralComponentColors.ControlTextForSurface(LSurface);
+  LTextColor := TDACComponentColors.ControlTextForSurface(LSurface);
   if not Enabled then
-    LTextColor := TMaxxRuralComponentColors.ControlTextDisabledForSurface(LSurface);
+    LTextColor := TDACComponentColors.ControlTextDisabledForSurface(LSurface);
 
   case FKind of
     mskToggleSwitch:
@@ -378,34 +378,34 @@ begin
         LTrackRect := FRenderer.SnapRect(TRectF.Create(0,
           (ADest.Height - ScaleMetric(24)) / 2, ScaleMetric(44),
           (ADest.Height + ScaleMetric(24)) / 2), LScale);
-        LFill := TMaxxRuralComponentColors.ControlBorderForSurface(LSurface);
+        LFill := TDACComponentColors.ControlBorderForSurface(LSurface);
         if FChecked then
-          LFill := TMaxxRuralComponentColors.Primary;
+          LFill := TDACComponentColors.Primary;
         if FMouseInside and Enabled and not FChecked then
-          LFill := TMaxxRuralComponentColors.ControlBorderHoverForSurface(LSurface);
+          LFill := TDACComponentColors.ControlBorderHoverForSurface(LSurface);
         FRenderer.FillRoundRect(ACanvas, LTrackRect, LFill, LTrackRect.Height / 2,
           IfThen(Enabled, 255, 120));
         LKnobCenter := TPointF.Create(LTrackRect.Left + ScaleMetric(12),
           LTrackRect.Top + (LTrackRect.Height / 2));
         if FChecked then
           LKnobCenter.X := LTrackRect.Right - ScaleMetric(12);
-        DrawCircle(ACanvas, LKnobCenter, ScaleMetric(9), TMaxxRuralComponentColors.White, False);
+        DrawCircle(ACanvas, LKnobCenter, ScaleMetric(9), TDACComponentColors.White, False);
         LTextLeft := LTrackRect.Right + ScaleMetric(12);
       end;
     mskRadioButton:
       begin
         LKnobCenter := TPointF.Create(ScaleMetric(10), ADest.Height / 2);
         DrawCircle(ACanvas, LKnobCenter, ScaleMetric(8),
-          TMaxxRuralComponentColors.ControlBorderForSurface(LSurface), True, ScaleMetric(1));
+          TDACComponentColors.ControlBorderForSurface(LSurface), True, ScaleMetric(1));
         if FMouseInside and Enabled then
           DrawCircle(ACanvas, LKnobCenter, ScaleMetric(8),
-            TMaxxRuralComponentColors.Primary, True, ScaleMetric(1), 180);
+            TDACComponentColors.Primary, True, ScaleMetric(1), 180);
         if FChecked then
         begin
           DrawCircle(ACanvas, LKnobCenter, ScaleMetric(8),
-            TMaxxRuralComponentColors.Primary, True, 1.5 * ScaleFactor);
+            TDACComponentColors.Primary, True, 1.5 * ScaleFactor);
           DrawCircle(ACanvas, LKnobCenter, ScaleMetric(4),
-            TMaxxRuralComponentColors.Primary, False);
+            TDACComponentColors.Primary, False);
         end;
         LTextLeft := ScaleMetric(28);
       end;
@@ -414,18 +414,18 @@ begin
       LBoxRect := FRenderer.SnapRect(TRectF.Create(0,
         (ADest.Height - ScaleMetric(18)) / 2, ScaleMetric(18),
         (ADest.Height + ScaleMetric(18)) / 2), LScale);
-      LFill := TMaxxRuralComponentColors.ControlBackgroundForSurface(LSurface);
+      LFill := TDACComponentColors.ControlBackgroundForSurface(LSurface);
       if FChecked then
-        LFill := TMaxxRuralComponentColors.Primary;
+        LFill := TDACComponentColors.Primary;
       FRenderer.FillRoundRect(ACanvas, LBoxRect, LFill, ScaleMetric(4), IfThen(Enabled, 255, 120));
       FRenderer.StrokeRoundRect(ACanvas, LBoxRect,
-        TMaxxRuralComponentColors.ControlBorderForSurface(LSurface), ScaleMetric(4),
+        TDACComponentColors.ControlBorderForSurface(LSurface), ScaleMetric(4),
         ScaleMetric(1), IfThen(FMouseInside and Enabled, 255, 180));
       if FChecked then
       begin
         LIconRect := TRectF.Create(LBoxRect.Left + ScaleMetric(2), LBoxRect.Top + ScaleMetric(2),
           LBoxRect.Right - ScaleMetric(2), LBoxRect.Bottom - ScaleMetric(2));
-        LIconStyle.Color := TMaxxRuralComponentColors.White;
+        LIconStyle.Color := TDACComponentColors.White;
         LIconStyle.Alpha := 255;
         FIconPainter.Draw(ACanvas, LIconRect, mikCheck, LIconStyle);
       end;
@@ -435,49 +435,49 @@ begin
 
   if Caption <> '' then
     FRenderer.Text(ACanvas, Caption,
-      TMaxxRuralComponentFontInstaller.FontFamily, LTextLeft,
+      TDACComponentFontInstaller.FontFamily, LTextLeft,
       (ADest.Height / 2) + ScaleMetric(4), 10.5, LTextColor, False,
       ADest.Width - LTextLeft);
 end;
 
-procedure TMaxxRuralSelector.PaintBoxMouseDown(Sender: TObject;
+procedure TDACSelector.PaintBoxMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   MouseDown(Button, Shift, X, Y);
 end;
 
-procedure TMaxxRuralSelector.PaintBoxMouseEnter(Sender: TObject);
+procedure TDACSelector.PaintBoxMouseEnter(Sender: TObject);
 begin
   FMouseInside := True;
   InvalidateSelector;
 end;
 
-procedure TMaxxRuralSelector.PaintBoxMouseLeave(Sender: TObject);
+procedure TDACSelector.PaintBoxMouseLeave(Sender: TObject);
 begin
   FMouseInside := False;
   FPressed := False;
   InvalidateSelector;
 end;
 
-procedure TMaxxRuralSelector.PaintBoxMouseUp(Sender: TObject; Button: TMouseButton;
+procedure TDACSelector.PaintBoxMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   MouseUp(Button, Shift, X, Y);
 end;
 
-function TMaxxRuralSelector.ParentSurfaceColor: TAlphaColor;
+function TDACSelector.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TMaxxRuralComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
-procedure TMaxxRuralSelector.Resize;
+procedure TDACSelector.Resize;
 begin
   inherited;
   UpdatePaintBoxBounds;
   InvalidateSelector;
 end;
 
-function TMaxxRuralSelector.ScaleFactor: Single;
+function TDACSelector.ScaleFactor: Single;
 begin
   Result := 1;
   if FPaintBox <> nil then
@@ -486,14 +486,14 @@ begin
     Result := 1;
 end;
 
-function TMaxxRuralSelector.ScaleMetric(const AValue: Integer): Integer;
+function TDACSelector.ScaleMetric(const AValue: Integer): Integer;
 begin
   Result := Round(AValue * ScaleFactor);
   if (AValue > 0) and (Result < 1) then
     Result := 1;
 end;
 
-procedure TMaxxRuralSelector.SetChecked(const AValue: Boolean);
+procedure TDACSelector.SetChecked(const AValue: Boolean);
 begin
   if FChecked = AValue then
     Exit;
@@ -503,7 +503,7 @@ begin
     FOnChange(Self);
 end;
 
-procedure TMaxxRuralSelector.SetKind(const AValue: TMaxxRuralSelectorKind);
+procedure TDACSelector.SetKind(const AValue: TDACSelectorKind);
 begin
   if FKind = AValue then
     Exit;
@@ -511,7 +511,7 @@ begin
   InvalidateSelector;
 end;
 
-procedure TMaxxRuralSelector.Toggle;
+procedure TDACSelector.Toggle;
 begin
   if FKind = mskRadioButton then
     Checked := True
@@ -519,7 +519,7 @@ begin
     Checked := not Checked;
 end;
 
-procedure TMaxxRuralSelector.UpdatePaintBoxBounds;
+procedure TDACSelector.UpdatePaintBoxBounds;
 var
   LHeight: Integer;
   LWidth: Integer;
@@ -540,26 +540,26 @@ begin
     FPaintBox.SetBounds(0, 0, LWidth, LHeight);
 end;
 
-procedure TMaxxRuralSelector.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACSelector.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
-constructor TMaxxRuralCheckBox.Create(AOwner: TComponent);
+constructor TDACCheckBox.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   Kind := mskCheckBox;
   Caption := 'CheckBox';
 end;
 
-constructor TMaxxRuralRadioButton.Create(AOwner: TComponent);
+constructor TDACRadioButton.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   Kind := mskRadioButton;
   Caption := 'RadioButton';
 end;
 
-constructor TMaxxRuralToggleSwitch.Create(AOwner: TComponent);
+constructor TDACToggleSwitch.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   Kind := mskToggleSwitch;
@@ -568,7 +568,7 @@ begin
   Height := 30;
 end;
 
-constructor TMaxxRuralSlider.Create(AOwner: TComponent);
+constructor TDACSlider.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque, csClickEvents, csCaptureMouse];
@@ -582,7 +582,7 @@ begin
   FMaximum := 100;
   FValue := 0;
   FShowValue := True;
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
+  FRenderer := TDACSkiaRenderer.Create;
 
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
@@ -598,21 +598,21 @@ begin
   UpdatePaintBoxBounds;
 end;
 
-destructor TMaxxRuralSlider.Destroy;
+destructor TDACSlider.Destroy;
 begin
   FPaintBox.Free;
   FRenderer.Free;
   inherited;
 end;
 
-procedure TMaxxRuralSlider.ChangeScale(M, D: Integer);
+procedure TDACSlider.ChangeScale(M, D: Integer);
 begin
   inherited;
   UpdatePaintBoxBounds;
   InvalidateSlider;
 end;
 
-procedure TMaxxRuralSlider.CMEnabledChanged(var AMessage: TMessage);
+procedure TDACSlider.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
   Cursor := crHandPoint;
@@ -621,14 +621,14 @@ begin
   InvalidateSlider;
 end;
 
-procedure TMaxxRuralSlider.CreateWnd;
+procedure TDACSlider.CreateWnd;
 begin
   inherited;
   UpdatePaintBoxBounds;
   InvalidateSlider;
 end;
 
-procedure TMaxxRuralSlider.DrawCircle(const ACanvas: ISkCanvas;
+procedure TDACSlider.DrawCircle(const ACanvas: ISkCanvas;
   const ACenter: TPointF; const ARadius: Single; const AColor: TAlphaColor;
   const AStroke: Boolean; const AStrokeWidth: Single; const AAlpha: Byte);
 var
@@ -645,14 +645,14 @@ begin
   ACanvas.DrawCircle(ACenter.X, ACenter.Y, ARadius, LPaint);
 end;
 
-procedure TMaxxRuralSlider.InvalidateSlider;
+procedure TDACSlider.InvalidateSlider;
 begin
   UpdatePaintBoxBounds;
   if (FPaintBox <> nil) and HandleAllocated then
     FPaintBox.Redraw;
 end;
 
-procedure TMaxxRuralSlider.KeyDown(var Key: Word; Shift: TShiftState);
+procedure TDACSlider.KeyDown(var Key: Word; Shift: TShiftState);
 begin
   inherited;
   if not Enabled then
@@ -671,14 +671,14 @@ begin
   end;
 end;
 
-procedure TMaxxRuralSlider.Loaded;
+procedure TDACSlider.Loaded;
 begin
   inherited;
   UpdatePaintBoxBounds;
   InvalidateSlider;
 end;
 
-procedure TMaxxRuralSlider.MouseDown(Button: TMouseButton; Shift: TShiftState;
+procedure TDACSlider.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 begin
   inherited;
@@ -691,14 +691,14 @@ begin
   end;
 end;
 
-procedure TMaxxRuralSlider.MouseMove(Shift: TShiftState; X, Y: Integer);
+procedure TDACSlider.MouseMove(Shift: TShiftState; X, Y: Integer);
 begin
   inherited;
   if FDragging and Enabled then
     SetValueFromX(X);
 end;
 
-procedure TMaxxRuralSlider.MouseUp(Button: TMouseButton; Shift: TShiftState;
+procedure TDACSlider.MouseUp(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 begin
   inherited;
@@ -709,7 +709,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralSlider.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
+procedure TDACSlider.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
   const ADest: TRectF; const AOpacity: Single);
 var
   LActiveRect: TRectF;
@@ -733,67 +733,67 @@ begin
     LTrackRect.Right := ADest.Width - ScaleMetric(12);
 
   FRenderer.FillRoundRect(ACanvas, LTrackRect,
-    TMaxxRuralComponentColors.ControlBorderForSurface(LSurface), ScaleMetric(3),
+    TDACComponentColors.ControlBorderForSurface(LSurface), ScaleMetric(3),
     IfThen(Enabled, 150, 80));
   LPercent := Percent;
   LActiveRect := LTrackRect;
   LActiveRect.Right := LTrackRect.Left + (LTrackRect.Width * LPercent);
-  FRenderer.FillRoundRect(ACanvas, LActiveRect, TMaxxRuralComponentColors.Primary,
+  FRenderer.FillRoundRect(ACanvas, LActiveRect, TDACComponentColors.Primary,
     ScaleMetric(3), IfThen(Enabled, 255, 120));
 
   LKnobCenter := TPointF.Create(LActiveRect.Right, LCenterY);
-  DrawCircle(ACanvas, LKnobCenter, ScaleMetric(8), TMaxxRuralComponentColors.White, False);
-  DrawCircle(ACanvas, LKnobCenter, ScaleMetric(8), TMaxxRuralComponentColors.Primary,
+  DrawCircle(ACanvas, LKnobCenter, ScaleMetric(8), TDACComponentColors.White, False);
+  DrawCircle(ACanvas, LKnobCenter, ScaleMetric(8), TDACComponentColors.Primary,
     True, 1.5 * ScaleFactor, IfThen(FMouseInside or FDragging, 255, 220));
 
   if FShowValue then
   begin
     LValueText := IntToStr(FValue) + '%';
     FRenderer.Text(ACanvas, LValueText,
-      TMaxxRuralComponentFontInstaller.FontFamily, ADest.Width - ScaleMetric(40),
+      TDACComponentFontInstaller.FontFamily, ADest.Width - ScaleMetric(40),
       LCenterY + ScaleMetric(4), 10,
-      TMaxxRuralComponentColors.ControlTextForSurface(LSurface), False,
+      TDACComponentColors.ControlTextForSurface(LSurface), False,
       ScaleMetric(38));
   end;
 end;
 
-procedure TMaxxRuralSlider.PaintBoxMouseDown(Sender: TObject;
+procedure TDACSlider.PaintBoxMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   MouseDown(Button, Shift, X, Y);
 end;
 
-procedure TMaxxRuralSlider.PaintBoxMouseEnter(Sender: TObject);
+procedure TDACSlider.PaintBoxMouseEnter(Sender: TObject);
 begin
   FMouseInside := True;
   InvalidateSlider;
 end;
 
-procedure TMaxxRuralSlider.PaintBoxMouseLeave(Sender: TObject);
+procedure TDACSlider.PaintBoxMouseLeave(Sender: TObject);
 begin
   FMouseInside := False;
   if not FDragging then
     InvalidateSlider;
 end;
 
-procedure TMaxxRuralSlider.PaintBoxMouseMove(Sender: TObject; Shift: TShiftState;
+procedure TDACSlider.PaintBoxMouseMove(Sender: TObject; Shift: TShiftState;
   X, Y: Integer);
 begin
   MouseMove(Shift, X, Y);
 end;
 
-procedure TMaxxRuralSlider.PaintBoxMouseUp(Sender: TObject; Button: TMouseButton;
+procedure TDACSlider.PaintBoxMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   MouseUp(Button, Shift, X, Y);
 end;
 
-function TMaxxRuralSlider.ParentSurfaceColor: TAlphaColor;
+function TDACSlider.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TMaxxRuralComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
-function TMaxxRuralSlider.Percent: Single;
+function TDACSlider.Percent: Single;
 begin
   if FMaximum <= FMinimum then
     Exit(0);
@@ -801,19 +801,19 @@ begin
   Result := EnsureRange(Result, 0, 1);
 end;
 
-procedure TMaxxRuralSlider.Redraw;
+procedure TDACSlider.Redraw;
 begin
   InvalidateSlider;
 end;
 
-procedure TMaxxRuralSlider.Resize;
+procedure TDACSlider.Resize;
 begin
   inherited;
   UpdatePaintBoxBounds;
   InvalidateSlider;
 end;
 
-function TMaxxRuralSlider.ScaleFactor: Single;
+function TDACSlider.ScaleFactor: Single;
 begin
   Result := 1;
   if FPaintBox <> nil then
@@ -822,14 +822,14 @@ begin
     Result := 1;
 end;
 
-function TMaxxRuralSlider.ScaleMetric(const AValue: Integer): Integer;
+function TDACSlider.ScaleMetric(const AValue: Integer): Integer;
 begin
   Result := Round(AValue * ScaleFactor);
   if (AValue > 0) and (Result < 1) then
     Result := 1;
 end;
 
-procedure TMaxxRuralSlider.SetMaximum(const AValue: Integer);
+procedure TDACSlider.SetMaximum(const AValue: Integer);
 begin
   if FMaximum = AValue then
     Exit;
@@ -838,7 +838,7 @@ begin
   InvalidateSlider;
 end;
 
-procedure TMaxxRuralSlider.SetMinimum(const AValue: Integer);
+procedure TDACSlider.SetMinimum(const AValue: Integer);
 begin
   if FMinimum = AValue then
     Exit;
@@ -847,7 +847,7 @@ begin
   InvalidateSlider;
 end;
 
-procedure TMaxxRuralSlider.SetShowValue(const AValue: Boolean);
+procedure TDACSlider.SetShowValue(const AValue: Boolean);
 begin
   if FShowValue = AValue then
     Exit;
@@ -855,7 +855,7 @@ begin
   InvalidateSlider;
 end;
 
-procedure TMaxxRuralSlider.SetValue(const AValue: Integer);
+procedure TDACSlider.SetValue(const AValue: Integer);
 var
   LValue: Integer;
 begin
@@ -868,7 +868,7 @@ begin
     FOnChange(Self);
 end;
 
-procedure TMaxxRuralSlider.SetValueFromX(const AX: Integer);
+procedure TDACSlider.SetValueFromX(const AX: Integer);
 var
   LPercent: Single;
   LRightPadding: Integer;
@@ -884,7 +884,7 @@ begin
   Value := FMinimum + Round((FMaximum - FMinimum) * LPercent);
 end;
 
-procedure TMaxxRuralSlider.UpdatePaintBoxBounds;
+procedure TDACSlider.UpdatePaintBoxBounds;
 var
   LHeight: Integer;
   LWidth: Integer;
@@ -905,9 +905,10 @@ begin
     FPaintBox.SetBounds(0, 0, LWidth, LHeight);
 end;
 
-procedure TMaxxRuralSlider.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACSlider.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
 end.
+

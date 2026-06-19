@@ -1,61 +1,62 @@
-unit MaxxRural.Components.DesignSystem.DefaultTheme;
+unit DAC.Components.DesignSystem.DefaultTheme;
 
 interface
 
 uses
-  MaxxRural.Components.DesignSystem.ChartPalette,
-  MaxxRural.Components.DesignSystem.Metrics,
-  MaxxRural.Components.DesignSystem.Theme,
-  MaxxRural.Components.DesignSystem.Tokens;
+  DAC.Components.DesignSystem.ChartPalette,
+  DAC.Components.DesignSystem.Metrics,
+  DAC.Components.DesignSystem.Theme,
+  DAC.Components.DesignSystem.Tokens;
 
 type
-  TMaxxRuralDefaultComponentsTheme = class(TInterfacedObject, IMaxxRuralComponentsTheme)
+  TDACDefaultComponentsTheme = class(TInterfacedObject, IDACComponentsTheme)
   private
-    FChartPalette: TMaxxRuralChartPalette;
-    FMetrics: TMaxxRuralComponentMetrics;
-    FTokens: TMaxxRuralDesignTokens;
+    FChartPalette: TDACChartPalette;
+    FMetrics: TDACComponentMetrics;
+    FTokens: TDACDesignTokens;
   public
     constructor Create;
-    class function New: IMaxxRuralComponentsTheme; static;
+    class function New: IDACComponentsTheme; static;
     function DisplayName: string;
-    function Tokens: TMaxxRuralDesignTokens;
-    function Metrics: TMaxxRuralComponentMetrics;
-    function ChartPalette: TMaxxRuralChartPalette;
+    function Tokens: TDACDesignTokens;
+    function Metrics: TDACComponentMetrics;
+    function ChartPalette: TDACChartPalette;
   end;
 
 implementation
 
-constructor TMaxxRuralDefaultComponentsTheme.Create;
+constructor TDACDefaultComponentsTheme.Create;
 begin
   inherited Create;
-  FTokens := TMaxxRuralDesignTokens.Default;
-  FMetrics := TMaxxRuralComponentMetrics.Default;
-  FChartPalette := TMaxxRuralChartPalette.Default;
+  FTokens := TDACDesignTokens.Default;
+  FMetrics := TDACComponentMetrics.Default;
+  FChartPalette := TDACChartPalette.Default;
 end;
 
-function TMaxxRuralDefaultComponentsTheme.ChartPalette: TMaxxRuralChartPalette;
+function TDACDefaultComponentsTheme.ChartPalette: TDACChartPalette;
 begin
   Result := FChartPalette;
 end;
 
-function TMaxxRuralDefaultComponentsTheme.DisplayName: string;
+function TDACDefaultComponentsTheme.DisplayName: string;
 begin
-  Result := 'NovoMaxxRural Ancoragem';
+  Result := 'NovoDAC Ancoragem';
 end;
 
-function TMaxxRuralDefaultComponentsTheme.Metrics: TMaxxRuralComponentMetrics;
+function TDACDefaultComponentsTheme.Metrics: TDACComponentMetrics;
 begin
   Result := FMetrics;
 end;
 
-class function TMaxxRuralDefaultComponentsTheme.New: IMaxxRuralComponentsTheme;
+class function TDACDefaultComponentsTheme.New: IDACComponentsTheme;
 begin
-  Result := TMaxxRuralDefaultComponentsTheme.Create;
+  Result := TDACDefaultComponentsTheme.Create;
 end;
 
-function TMaxxRuralDefaultComponentsTheme.Tokens: TMaxxRuralDesignTokens;
+function TDACDefaultComponentsTheme.Tokens: TDACDesignTokens;
 begin
   Result := FTokens;
 end;
 
 end.
+

@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Skia.BorderPainter;
+unit DAC.Components.Skia.BorderPainter;
 
 interface
 
@@ -6,11 +6,11 @@ uses
   System.Skia,
   System.Types,
   System.UITypes,
-  MaxxRural.Components.DesignSystem.Theme,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.DesignSystem.Theme,
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralBorderKind = (
+  TDACBorderKind = (
     mbkPanel,
     mbkCard,
     mbkControl,
@@ -19,59 +19,59 @@ type
     mbkWarning
   );
 
-  TMaxxRuralBorderStyle = record
+  TDACBorderStyle = record
     Color: TAlphaColor;
     Radius: Single;
     Width: Single;
     Alpha: Byte;
-    class function FromTheme(const ATheme: IMaxxRuralComponentsTheme;
-      const AKind: TMaxxRuralBorderKind): TMaxxRuralBorderStyle; static;
+    class function FromTheme(const ATheme: IDACComponentsTheme;
+      const AKind: TDACBorderKind): TDACBorderStyle; static;
   end;
 
-  TMaxxRuralSkiaBorderPainter = class
+  TDACSkiaBorderPainter = class
   private
-    FRenderer: TMaxxRuralSkiaRenderer;
+    FRenderer: TDACSkiaRenderer;
     function InsetRect(const ARect: TRectF; const AInset: Single): TRectF;
   public
-    constructor Create(const ARenderer: TMaxxRuralSkiaRenderer);
+    constructor Create(const ARenderer: TDACSkiaRenderer);
     procedure Draw(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const AStyle: TMaxxRuralBorderStyle); overload;
+      const AStyle: TDACBorderStyle); overload;
     procedure Draw(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme;
-      const AKind: TMaxxRuralBorderKind); overload;
+      const ATheme: IDACComponentsTheme;
+      const AKind: TDACBorderKind); overload;
     procedure DrawPanelBorder(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme);
+      const ATheme: IDACComponentsTheme);
     procedure DrawCardBorder(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme);
+      const ATheme: IDACComponentsTheme);
     procedure DrawControlBorder(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme);
+      const ATheme: IDACComponentsTheme);
     procedure DrawFocusBorder(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme);
+      const ATheme: IDACComponentsTheme);
     procedure DrawDangerBorder(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme);
+      const ATheme: IDACComponentsTheme);
     procedure DrawWarningBorder(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme);
-    property Renderer: TMaxxRuralSkiaRenderer read FRenderer;
+      const ATheme: IDACComponentsTheme);
+    property Renderer: TDACSkiaRenderer read FRenderer;
   end;
 
 implementation
 
 uses
-  MaxxRural.Components.DesignSystem.DefaultTheme;
+  DAC.Components.DesignSystem.DefaultTheme;
 
-function ResolveTheme(const ATheme: IMaxxRuralComponentsTheme): IMaxxRuralComponentsTheme;
+function ResolveTheme(const ATheme: IDACComponentsTheme): IDACComponentsTheme;
 begin
   if ATheme = nil then
-    Result := TMaxxRuralDefaultComponentsTheme.New
+    Result := TDACDefaultComponentsTheme.New
   else
     Result := ATheme;
 end;
 
-class function TMaxxRuralBorderStyle.FromTheme(
-  const ATheme: IMaxxRuralComponentsTheme;
-  const AKind: TMaxxRuralBorderKind): TMaxxRuralBorderStyle;
+class function TDACBorderStyle.FromTheme(
+  const ATheme: IDACComponentsTheme;
+  const AKind: TDACBorderKind): TDACBorderStyle;
 var
-  LTheme: IMaxxRuralComponentsTheme;
+  LTheme: IDACComponentsTheme;
 begin
   LTheme := ResolveTheme(ATheme);
   Result.Color := LTheme.Tokens.Colors.Border;
@@ -108,22 +108,22 @@ begin
   end;
 end;
 
-constructor TMaxxRuralSkiaBorderPainter.Create(
-  const ARenderer: TMaxxRuralSkiaRenderer);
+constructor TDACSkiaBorderPainter.Create(
+  const ARenderer: TDACSkiaRenderer);
 begin
   inherited Create;
   FRenderer := ARenderer;
 end;
 
-function TMaxxRuralSkiaBorderPainter.InsetRect(const ARect: TRectF;
+function TDACSkiaBorderPainter.InsetRect(const ARect: TRectF;
   const AInset: Single): TRectF;
 begin
   Result := TRectF.Create(ARect.Left + AInset, ARect.Top + AInset,
     ARect.Right - AInset, ARect.Bottom - AInset);
 end;
 
-procedure TMaxxRuralSkiaBorderPainter.Draw(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const AStyle: TMaxxRuralBorderStyle);
+procedure TDACSkiaBorderPainter.Draw(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const AStyle: TDACBorderStyle);
 var
   LRect: TRectF;
 begin
@@ -136,51 +136,52 @@ begin
     AStyle.Width, AStyle.Alpha);
 end;
 
-procedure TMaxxRuralSkiaBorderPainter.Draw(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const ATheme: IMaxxRuralComponentsTheme;
-  const AKind: TMaxxRuralBorderKind);
+procedure TDACSkiaBorderPainter.Draw(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const ATheme: IDACComponentsTheme;
+  const AKind: TDACBorderKind);
 begin
-  Draw(ACanvas, ARect, TMaxxRuralBorderStyle.FromTheme(ATheme, AKind));
+  Draw(ACanvas, ARect, TDACBorderStyle.FromTheme(ATheme, AKind));
 end;
 
-procedure TMaxxRuralSkiaBorderPainter.DrawPanelBorder(
+procedure TDACSkiaBorderPainter.DrawPanelBorder(
   const ACanvas: ISkCanvas; const ARect: TRectF;
-  const ATheme: IMaxxRuralComponentsTheme);
+  const ATheme: IDACComponentsTheme);
 begin
   Draw(ACanvas, ARect, ATheme, mbkPanel);
 end;
 
-procedure TMaxxRuralSkiaBorderPainter.DrawCardBorder(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const ATheme: IMaxxRuralComponentsTheme);
+procedure TDACSkiaBorderPainter.DrawCardBorder(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const ATheme: IDACComponentsTheme);
 begin
   Draw(ACanvas, ARect, ATheme, mbkCard);
 end;
 
-procedure TMaxxRuralSkiaBorderPainter.DrawControlBorder(
+procedure TDACSkiaBorderPainter.DrawControlBorder(
   const ACanvas: ISkCanvas; const ARect: TRectF;
-  const ATheme: IMaxxRuralComponentsTheme);
+  const ATheme: IDACComponentsTheme);
 begin
   Draw(ACanvas, ARect, ATheme, mbkControl);
 end;
 
-procedure TMaxxRuralSkiaBorderPainter.DrawFocusBorder(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const ATheme: IMaxxRuralComponentsTheme);
+procedure TDACSkiaBorderPainter.DrawFocusBorder(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const ATheme: IDACComponentsTheme);
 begin
   Draw(ACanvas, ARect, ATheme, mbkFocused);
 end;
 
-procedure TMaxxRuralSkiaBorderPainter.DrawDangerBorder(
+procedure TDACSkiaBorderPainter.DrawDangerBorder(
   const ACanvas: ISkCanvas; const ARect: TRectF;
-  const ATheme: IMaxxRuralComponentsTheme);
+  const ATheme: IDACComponentsTheme);
 begin
   Draw(ACanvas, ARect, ATheme, mbkDanger);
 end;
 
-procedure TMaxxRuralSkiaBorderPainter.DrawWarningBorder(
+procedure TDACSkiaBorderPainter.DrawWarningBorder(
   const ACanvas: ISkCanvas; const ARect: TRectF;
-  const ATheme: IMaxxRuralComponentsTheme);
+  const ATheme: IDACComponentsTheme);
 begin
   Draw(ACanvas, ARect, ATheme, mbkWarning);
 end;
 
 end.
+

@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.ReportViewer;
+unit DAC.Components.Controls.ReportViewer;
 
 interface
 
@@ -10,15 +10,15 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralReportViewer = class(TCustomControl)
+  TDACReportViewer = class(TCustomControl)
   private
     FPageCount: Integer;
     FPageIndex: Integer;
     FPaintBox: TSkPaintBox;
-    FRenderer: TMaxxRuralSkiaRenderer;
+    FRenderer: TDACSkiaRenderer;
     FZoomPercent: Integer;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
@@ -56,10 +56,10 @@ implementation
 uses
   System.Math,
   System.SysUtils,
-  MaxxRural.Components.DesignSystem.ColorTokens,
-  MaxxRural.Components.DesignSystem.Fonts;
+  DAC.Components.DesignSystem.ColorTokens,
+  DAC.Components.DesignSystem.Fonts;
 
-constructor TMaxxRuralReportViewer.Create(AOwner: TComponent);
+constructor TDACReportViewer.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque];
@@ -71,7 +71,7 @@ begin
   FPageCount := 1;
   FPageIndex := 1;
   FZoomPercent := 100;
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
+  FRenderer := TDACSkiaRenderer.Create;
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
   FPaintBox.SetSubComponent(True);
@@ -79,28 +79,28 @@ begin
   FPaintBox.OnDraw := PaintBoxDraw;
 end;
 
-destructor TMaxxRuralReportViewer.Destroy;
+destructor TDACReportViewer.Destroy;
 begin
   FPaintBox.Free;
   FRenderer.Free;
   inherited;
 end;
 
-procedure TMaxxRuralReportViewer.CreateWnd;
+procedure TDACReportViewer.CreateWnd;
 begin
   inherited;
   UpdatePaintBoxBounds;
   Redraw;
 end;
 
-procedure TMaxxRuralReportViewer.Loaded;
+procedure TDACReportViewer.Loaded;
 begin
   inherited;
   UpdatePaintBoxBounds;
   Redraw;
 end;
 
-procedure TMaxxRuralReportViewer.PaintBoxDraw(Sender: TObject;
+procedure TDACReportViewer.PaintBoxDraw(Sender: TObject;
   const ACanvas: ISkCanvas; const ADest: TRectF; const AOpacity: Single);
 var
   LPage: TRectF;
@@ -108,43 +108,43 @@ var
   LTop: Single;
 begin
   FRenderer.FillRoundRect(ACanvas, TRectF.Create(0, 0, ADest.Width, ADest.Height),
-    TMaxxRuralComponentColors.White, 8, 255);
+    TDACComponentColors.White, 8, 255);
   FRenderer.StrokeRoundRect(ACanvas, TRectF.Create(0.5, 0.5, ADest.Width - 0.5, ADest.Height - 0.5),
-    TMaxxRuralComponentColors.ControlBorder, 8, 1, 255);
+    TDACComponentColors.ControlBorder, 8, 1, 255);
 
   LToolbar := TRectF.Create(0.5, 0.5, ADest.Width - 0.5, 42);
-  FRenderer.FillRoundRect(ACanvas, LToolbar, TMaxxRuralComponentColors.Alpha(248, 250, 252), 8, 255);
+  FRenderer.FillRoundRect(ACanvas, LToolbar, TDACComponentColors.Alpha(248, 250, 252), 8, 255);
   FRenderer.Text(ACanvas, Format('%d / %d', [FPageIndex, FPageCount]),
-    TMaxxRuralComponentFontInstaller.FontFamily, 24, 26, 11,
-    TMaxxRuralComponentColors.ControlText, True, 80);
+    TDACComponentFontInstaller.FontFamily, 24, 26, 11,
+    TDACComponentColors.ControlText, True, 80);
   FRenderer.Text(ACanvas, Format('%d%%', [FZoomPercent]),
-    TMaxxRuralComponentFontInstaller.FontFamily, ADest.Width - 72, 26, 11,
-    TMaxxRuralComponentColors.TextSecondary, False, 56);
+    TDACComponentFontInstaller.FontFamily, ADest.Width - 72, 26, 11,
+    TDACComponentColors.TextSecondary, False, 56);
   ACanvas.ClipRect(TRectF.Create(0, 42, ADest.Width, ADest.Height));
   LPage := TRectF.Create((ADest.Width - 300) / 2, 62, (ADest.Width + 300) / 2,
     ADest.Height - 18);
-  FRenderer.FillRoundRect(ACanvas, LPage, TMaxxRuralComponentColors.White, 4, 255);
-  FRenderer.StrokeRoundRect(ACanvas, LPage, TMaxxRuralComponentColors.ControlBorder, 4, 1, 255);
+  FRenderer.FillRoundRect(ACanvas, LPage, TDACComponentColors.White, 4, 255);
+  FRenderer.StrokeRoundRect(ACanvas, LPage, TDACComponentColors.ControlBorder, 4, 1, 255);
   FRenderer.Text(ACanvas, 'Relatorio de Vendas',
-    TMaxxRuralComponentFontInstaller.FontFamily, LPage.Left + 24, LPage.Top + 34,
-    16, TMaxxRuralComponentColors.ControlText, True, LPage.Width - 48);
+    TDACComponentFontInstaller.FontFamily, LPage.Left + 24, LPage.Top + 34,
+    16, TDACComponentColors.ControlText, True, LPage.Width - 48);
   FRenderer.Text(ACanvas, 'Periodo: 01/05/2025 a 24/05/2025',
-    TMaxxRuralComponentFontInstaller.FontFamily, LPage.Left + 24, LPage.Top + 56,
-    9, TMaxxRuralComponentColors.TextSecondary, False, LPage.Width - 48);
+    TDACComponentFontInstaller.FontFamily, LPage.Left + 24, LPage.Top + 56,
+    9, TDACComponentColors.TextSecondary, False, LPage.Width - 48);
   LTop := LPage.Top + 86;
   FRenderer.FillRoundRect(ACanvas, TRectF.Create(LPage.Left + 24, LTop,
-    LPage.Right - 24, LTop + 24), TMaxxRuralComponentColors.Alpha(248, 250, 252), 0, 255);
-  FRenderer.Text(ACanvas, 'Produto', TMaxxRuralComponentFontInstaller.FontFamily,
-    LPage.Left + 34, LTop + 16, 9, TMaxxRuralComponentColors.ControlText, True, 80);
-  FRenderer.Text(ACanvas, 'Valor Total', TMaxxRuralComponentFontInstaller.FontFamily,
-    LPage.Right - 112, LTop + 16, 9, TMaxxRuralComponentColors.ControlText, True, 80);
-  FRenderer.Text(ACanvas, 'Notebook Dell', TMaxxRuralComponentFontInstaller.FontFamily,
-    LPage.Left + 34, LTop + 48, 9, TMaxxRuralComponentColors.ControlText, False, 120);
-  FRenderer.Text(ACanvas, 'R$ 48.750,00', TMaxxRuralComponentFontInstaller.FontFamily,
-    LPage.Right - 112, LTop + 48, 9, TMaxxRuralComponentColors.ControlText, False, 90);
+    LPage.Right - 24, LTop + 24), TDACComponentColors.Alpha(248, 250, 252), 0, 255);
+  FRenderer.Text(ACanvas, 'Produto', TDACComponentFontInstaller.FontFamily,
+    LPage.Left + 34, LTop + 16, 9, TDACComponentColors.ControlText, True, 80);
+  FRenderer.Text(ACanvas, 'Valor Total', TDACComponentFontInstaller.FontFamily,
+    LPage.Right - 112, LTop + 16, 9, TDACComponentColors.ControlText, True, 80);
+  FRenderer.Text(ACanvas, 'Notebook Dell', TDACComponentFontInstaller.FontFamily,
+    LPage.Left + 34, LTop + 48, 9, TDACComponentColors.ControlText, False, 120);
+  FRenderer.Text(ACanvas, 'R$ 48.750,00', TDACComponentFontInstaller.FontFamily,
+    LPage.Right - 112, LTop + 48, 9, TDACComponentColors.ControlText, False, 90);
 end;
 
-procedure TMaxxRuralReportViewer.Redraw;
+procedure TDACReportViewer.Redraw;
 begin
   if (FPaintBox <> nil) and not (csDestroying in ComponentState) and
     ((Parent <> nil) or not (csDesigning in ComponentState)) then
@@ -152,14 +152,14 @@ begin
   Invalidate;
 end;
 
-procedure TMaxxRuralReportViewer.Resize;
+procedure TDACReportViewer.Resize;
 begin
   inherited;
   UpdatePaintBoxBounds;
   Redraw;
 end;
 
-procedure TMaxxRuralReportViewer.SetPageCount(const AValue: Integer);
+procedure TDACReportViewer.SetPageCount(const AValue: Integer);
 begin
   FPageCount := Max(1, AValue);
   if FPageIndex > FPageCount then
@@ -167,27 +167,28 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralReportViewer.SetPageIndex(const AValue: Integer);
+procedure TDACReportViewer.SetPageIndex(const AValue: Integer);
 begin
   FPageIndex := Max(1, Min(AValue, FPageCount));
   Redraw;
 end;
 
-procedure TMaxxRuralReportViewer.SetZoomPercent(const AValue: Integer);
+procedure TDACReportViewer.SetZoomPercent(const AValue: Integer);
 begin
   FZoomPercent := Max(10, Min(AValue, 400));
   Redraw;
 end;
 
-procedure TMaxxRuralReportViewer.UpdatePaintBoxBounds;
+procedure TDACReportViewer.UpdatePaintBoxBounds;
 begin
   if FPaintBox <> nil then
     FPaintBox.SetBounds(0, 0, Width, Height);
 end;
 
-procedure TMaxxRuralReportViewer.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACReportViewer.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
 end.
+

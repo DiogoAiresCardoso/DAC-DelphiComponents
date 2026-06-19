@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Skia.BackgroundPainter;
+unit DAC.Components.Skia.BackgroundPainter;
 
 interface
 
@@ -6,11 +6,11 @@ uses
   System.Skia,
   System.Types,
   System.UITypes,
-  MaxxRural.Components.DesignSystem.Theme,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.DesignSystem.Theme,
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralBackgroundKind = (
+  TDACBackgroundKind = (
     mbgApplication,
     mbgPanel,
     mbgCard,
@@ -19,55 +19,55 @@ type
     mbgTransparent
   );
 
-  TMaxxRuralBackgroundStyle = record
+  TDACBackgroundStyle = record
     Color: TAlphaColor;
     Radius: Single;
     Alpha: Byte;
-    class function FromTheme(const ATheme: IMaxxRuralComponentsTheme;
-      const AKind: TMaxxRuralBackgroundKind): TMaxxRuralBackgroundStyle; static;
+    class function FromTheme(const ATheme: IDACComponentsTheme;
+      const AKind: TDACBackgroundKind): TDACBackgroundStyle; static;
   end;
 
-  TMaxxRuralSkiaBackgroundPainter = class
+  TDACSkiaBackgroundPainter = class
   private
-    FRenderer: TMaxxRuralSkiaRenderer;
+    FRenderer: TDACSkiaRenderer;
   public
-    constructor Create(const ARenderer: TMaxxRuralSkiaRenderer);
+    constructor Create(const ARenderer: TDACSkiaRenderer);
     procedure Draw(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const AStyle: TMaxxRuralBackgroundStyle); overload;
+      const AStyle: TDACBackgroundStyle); overload;
     procedure Draw(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme;
-      const AKind: TMaxxRuralBackgroundKind); overload;
+      const ATheme: IDACComponentsTheme;
+      const AKind: TDACBackgroundKind); overload;
     procedure DrawApplication(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme);
+      const ATheme: IDACComponentsTheme);
     procedure DrawPanel(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme);
+      const ATheme: IDACComponentsTheme);
     procedure DrawCard(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme);
+      const ATheme: IDACComponentsTheme);
     procedure DrawControl(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme);
+      const ATheme: IDACComponentsTheme);
     procedure DrawOverlay(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const ATheme: IMaxxRuralComponentsTheme);
-    property Renderer: TMaxxRuralSkiaRenderer read FRenderer;
+      const ATheme: IDACComponentsTheme);
+    property Renderer: TDACSkiaRenderer read FRenderer;
   end;
 
 implementation
 
 uses
-  MaxxRural.Components.DesignSystem.DefaultTheme;
+  DAC.Components.DesignSystem.DefaultTheme;
 
-function ResolveTheme(const ATheme: IMaxxRuralComponentsTheme): IMaxxRuralComponentsTheme;
+function ResolveTheme(const ATheme: IDACComponentsTheme): IDACComponentsTheme;
 begin
   if ATheme = nil then
-    Result := TMaxxRuralDefaultComponentsTheme.New
+    Result := TDACDefaultComponentsTheme.New
   else
     Result := ATheme;
 end;
 
-class function TMaxxRuralBackgroundStyle.FromTheme(
-  const ATheme: IMaxxRuralComponentsTheme;
-  const AKind: TMaxxRuralBackgroundKind): TMaxxRuralBackgroundStyle;
+class function TDACBackgroundStyle.FromTheme(
+  const ATheme: IDACComponentsTheme;
+  const AKind: TDACBackgroundKind): TDACBackgroundStyle;
 var
-  LTheme: IMaxxRuralComponentsTheme;
+  LTheme: IDACComponentsTheme;
 begin
   LTheme := ResolveTheme(ATheme);
   Result.Radius := 0;
@@ -110,15 +110,15 @@ begin
   end;
 end;
 
-constructor TMaxxRuralSkiaBackgroundPainter.Create(
-  const ARenderer: TMaxxRuralSkiaRenderer);
+constructor TDACSkiaBackgroundPainter.Create(
+  const ARenderer: TDACSkiaRenderer);
 begin
   inherited Create;
   FRenderer := ARenderer;
 end;
 
-procedure TMaxxRuralSkiaBackgroundPainter.Draw(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const AStyle: TMaxxRuralBackgroundStyle);
+procedure TDACSkiaBackgroundPainter.Draw(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const AStyle: TDACBackgroundStyle);
 begin
   if (FRenderer = nil) or (ACanvas = nil) or (AStyle.Alpha = 0) then
     Exit;
@@ -127,42 +127,43 @@ begin
     AStyle.Alpha);
 end;
 
-procedure TMaxxRuralSkiaBackgroundPainter.Draw(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const ATheme: IMaxxRuralComponentsTheme;
-  const AKind: TMaxxRuralBackgroundKind);
+procedure TDACSkiaBackgroundPainter.Draw(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const ATheme: IDACComponentsTheme;
+  const AKind: TDACBackgroundKind);
 begin
-  Draw(ACanvas, ARect, TMaxxRuralBackgroundStyle.FromTheme(ATheme, AKind));
+  Draw(ACanvas, ARect, TDACBackgroundStyle.FromTheme(ATheme, AKind));
 end;
 
-procedure TMaxxRuralSkiaBackgroundPainter.DrawApplication(
+procedure TDACSkiaBackgroundPainter.DrawApplication(
   const ACanvas: ISkCanvas; const ARect: TRectF;
-  const ATheme: IMaxxRuralComponentsTheme);
+  const ATheme: IDACComponentsTheme);
 begin
   Draw(ACanvas, ARect, ATheme, mbgApplication);
 end;
 
-procedure TMaxxRuralSkiaBackgroundPainter.DrawPanel(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const ATheme: IMaxxRuralComponentsTheme);
+procedure TDACSkiaBackgroundPainter.DrawPanel(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const ATheme: IDACComponentsTheme);
 begin
   Draw(ACanvas, ARect, ATheme, mbgPanel);
 end;
 
-procedure TMaxxRuralSkiaBackgroundPainter.DrawCard(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const ATheme: IMaxxRuralComponentsTheme);
+procedure TDACSkiaBackgroundPainter.DrawCard(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const ATheme: IDACComponentsTheme);
 begin
   Draw(ACanvas, ARect, ATheme, mbgCard);
 end;
 
-procedure TMaxxRuralSkiaBackgroundPainter.DrawControl(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const ATheme: IMaxxRuralComponentsTheme);
+procedure TDACSkiaBackgroundPainter.DrawControl(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const ATheme: IDACComponentsTheme);
 begin
   Draw(ACanvas, ARect, ATheme, mbgControl);
 end;
 
-procedure TMaxxRuralSkiaBackgroundPainter.DrawOverlay(const ACanvas: ISkCanvas;
-  const ARect: TRectF; const ATheme: IMaxxRuralComponentsTheme);
+procedure TDACSkiaBackgroundPainter.DrawOverlay(const ACanvas: ISkCanvas;
+  const ARect: TRectF; const ATheme: IDACComponentsTheme);
 begin
   Draw(ACanvas, ARect, ATheme, mbgOverlay);
 end;
 
 end.
+

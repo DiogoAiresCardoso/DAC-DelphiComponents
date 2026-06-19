@@ -1,23 +1,23 @@
-unit MaxxRural.Components.Hooks.Register;
+unit DAC.Components.Hooks.Register;
 
 interface
 
-procedure RegisterMaxxRuralComponentStyleHooks;
-procedure UnregisterMaxxRuralComponentStyleHooks;
+procedure RegisterDACComponentStyleHooks;
+procedure UnregisterDACComponentStyleHooks;
 
 implementation
 
 var
   GHooksRegistered: Boolean;
 
-procedure RegisterMaxxRuralComponentStyleHooks;
+procedure RegisterDACComponentStyleHooks;
 begin
   if GHooksRegistered then
     Exit;
   GHooksRegistered := True;
 end;
 
-procedure UnregisterMaxxRuralComponentStyleHooks;
+procedure UnregisterDACComponentStyleHooks;
 begin
   if not GHooksRegistered then
     Exit;
@@ -25,3 +25,4 @@ begin
 end;
 
 end.
+

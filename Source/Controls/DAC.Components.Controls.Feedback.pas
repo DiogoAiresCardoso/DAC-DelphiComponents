@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.Feedback;
+unit DAC.Components.Controls.Feedback;
 
 interface
 
@@ -11,23 +11,23 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
-  MaxxRural.Components.DesignSystem.SemanticColors,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.DesignSystem.SemanticColors,
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralFeedbackStatus = TMaxxRuralSemanticStatus;
+  TDACFeedbackStatus = TDACSemanticStatus;
 
-  TMaxxRuralToast = class(TCustomControl)
+  TDACToast = class(TCustomControl)
   private
     FMessageText: string;
     FPaintBox: TSkPaintBox;
-    FRenderer: TMaxxRuralSkiaRenderer;
-    FStatus: TMaxxRuralFeedbackStatus;
+    FRenderer: TDACSkiaRenderer;
+    FStatus: TDACFeedbackStatus;
     FTitleText: string;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
     procedure SetMessageText(const AValue: string);
-    procedure SetStatus(const AValue: TMaxxRuralFeedbackStatus);
+    procedure SetStatus(const AValue: TDACFeedbackStatus);
     procedure SetTitleText(const AValue: string);
     procedure UpdatePaintBoxBounds;
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
@@ -49,14 +49,14 @@ type
     property ParentShowHint;
     property PopupMenu;
     property ShowHint;
-    property Status: TMaxxRuralFeedbackStatus read FStatus write SetStatus default mssSuccess;
+    property Status: TDACFeedbackStatus read FStatus write SetStatus default mssSuccess;
     property TabOrder;
     property TabStop default False;
     property TitleText: string read FTitleText write SetTitleText;
     property Visible;
   end;
 
-  TMaxxRuralModalDialog = class(TMaxxRuralToast)
+  TDACModalDialog = class(TDACToast)
   public
     constructor Create(AOwner: TComponent); override;
   end;
@@ -64,10 +64,10 @@ type
 implementation
 
 uses
-  MaxxRural.Components.DesignSystem.ColorTokens,
-  MaxxRural.Components.DesignSystem.Fonts;
+  DAC.Components.DesignSystem.ColorTokens,
+  DAC.Components.DesignSystem.Fonts;
 
-constructor TMaxxRuralToast.Create(AOwner: TComponent);
+constructor TDACToast.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque];
@@ -79,7 +79,7 @@ begin
   FStatus := mssSuccess;
   FTitleText := 'Operacao realizada';
   FMessageText := 'Mensagem de feedback.';
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
+  FRenderer := TDACSkiaRenderer.Create;
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
   FPaintBox.SetSubComponent(True);
@@ -87,55 +87,55 @@ begin
   FPaintBox.OnDraw := PaintBoxDraw;
 end;
 
-destructor TMaxxRuralToast.Destroy;
+destructor TDACToast.Destroy;
 begin
   FPaintBox.Free;
   FRenderer.Free;
   inherited;
 end;
 
-procedure TMaxxRuralToast.ChangeScale(M, D: Integer);
+procedure TDACToast.ChangeScale(M, D: Integer);
 begin
   inherited;
   Redraw;
 end;
 
-procedure TMaxxRuralToast.CreateWnd;
-begin
-  inherited;
-  UpdatePaintBoxBounds;
-  Redraw;
-end;
-
-procedure TMaxxRuralToast.Loaded;
+procedure TDACToast.CreateWnd;
 begin
   inherited;
   UpdatePaintBoxBounds;
   Redraw;
 end;
 
-procedure TMaxxRuralToast.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
+procedure TDACToast.Loaded;
+begin
+  inherited;
+  UpdatePaintBoxBounds;
+  Redraw;
+end;
+
+procedure TDACToast.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
   const ADest: TRectF; const AOpacity: Single);
 var
-  LColors: TMaxxRuralSemanticColorSet;
+  LColors: TDACSemanticColorSet;
   LPaint: ISkPaint;
   LRect: TRectF;
 begin
-  LColors := TMaxxRuralSemanticColors.ColorsFor(FStatus);
+  LColors := TDACSemanticColors.ColorsFor(FStatus);
   LRect := TRectF.Create(0.5, 0.5, ADest.Width - 0.5, ADest.Height - 0.5);
   FRenderer.FillRoundRect(ACanvas, LRect, LColors.AccentDark, 8, 255);
   FRenderer.StrokeRoundRect(ACanvas, LRect, LColors.AccentLight, 8, 1, 150);
   LPaint := TSkPaint.Create(TSkPaintStyle.Fill);
   LPaint.AntiAlias := True;
-  LPaint.Color := TMaxxRuralComponentColors.White;
+  LPaint.Color := TDACComponentColors.White;
   ACanvas.DrawCircle(24, ADest.Height / 2, 9, LPaint);
-  FRenderer.Text(ACanvas, FTitleText, TMaxxRuralComponentFontInstaller.FontFamily,
-    46, 30, 12, TMaxxRuralComponentColors.White, True, ADest.Width - 58);
-  FRenderer.Text(ACanvas, FMessageText, TMaxxRuralComponentFontInstaller.FontFamily,
-    46, 50, 11, TMaxxRuralComponentColors.White, False, ADest.Width - 58);
+  FRenderer.Text(ACanvas, FTitleText, TDACComponentFontInstaller.FontFamily,
+    46, 30, 12, TDACComponentColors.White, True, ADest.Width - 58);
+  FRenderer.Text(ACanvas, FMessageText, TDACComponentFontInstaller.FontFamily,
+    46, 50, 11, TDACComponentColors.White, False, ADest.Width - 58);
 end;
 
-procedure TMaxxRuralToast.Redraw;
+procedure TDACToast.Redraw;
 begin
   if (FPaintBox <> nil) and not (csDestroying in ComponentState) and
     ((Parent <> nil) or not (csDesigning in ComponentState)) then
@@ -143,14 +143,14 @@ begin
   Invalidate;
 end;
 
-procedure TMaxxRuralToast.Resize;
+procedure TDACToast.Resize;
 begin
   inherited;
   UpdatePaintBoxBounds;
   Redraw;
 end;
 
-procedure TMaxxRuralToast.SetMessageText(const AValue: string);
+procedure TDACToast.SetMessageText(const AValue: string);
 begin
   if FMessageText = AValue then
     Exit;
@@ -158,7 +158,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralToast.SetStatus(const AValue: TMaxxRuralFeedbackStatus);
+procedure TDACToast.SetStatus(const AValue: TDACFeedbackStatus);
 begin
   if FStatus = AValue then
     Exit;
@@ -166,7 +166,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralToast.SetTitleText(const AValue: string);
+procedure TDACToast.SetTitleText(const AValue: string);
 begin
   if FTitleText = AValue then
     Exit;
@@ -174,18 +174,18 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralToast.UpdatePaintBoxBounds;
+procedure TDACToast.UpdatePaintBoxBounds;
 begin
   if FPaintBox <> nil then
     FPaintBox.SetBounds(0, 0, Width, Height);
 end;
 
-procedure TMaxxRuralToast.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACToast.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
-constructor TMaxxRuralModalDialog.Create(AOwner: TComponent);
+constructor TDACModalDialog.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   Width := 320;
@@ -195,3 +195,4 @@ begin
 end;
 
 end.
+

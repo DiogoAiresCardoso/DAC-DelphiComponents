@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.Pagination;
+unit DAC.Components.Controls.Pagination;
 
 interface
 
@@ -7,18 +7,18 @@ uses
   Winapi.Messages,
   Vcl.Controls,
   Vcl.Graphics,
-  MaxxRural.Components.Controls.Button,
-  MaxxRural.Components.Controls.ComboBox,
-  MaxxRural.Components.DesignSystem.IconAssets;
+  DAC.Components.Controls.Button,
+  DAC.Components.Controls.ComboBox,
+  DAC.Components.DesignSystem.IconAssets;
 
 type
-  TMaxxRuralPagination = class(TCustomControl)
+  TDACPagination = class(TCustomControl)
   private
-    FButtons: array[0..8] of TMaxxRuralButton;
+    FButtons: array[0..8] of TDACButton;
     FPageCount: Integer;
     FPageIndex: Integer;
     FPageSize: Integer;
-    FPageSizeCombo: TMaxxRuralComboBox;
+    FPageSizeCombo: TDACComboBox;
     FPageSizeItems: TStringList;
     FPageSizeText: string;
     FShowPageSize: Boolean;
@@ -27,7 +27,7 @@ type
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure CMShowingChanged(var AMessage: TMessage); message CM_SHOWINGCHANGED;
     procedure ComboChange(Sender: TObject);
-    function CreatePaginationButton(const AIndex: Integer): TMaxxRuralButton;
+    function CreatePaginationButton(const AIndex: Integer): TDACButton;
     function ExtractPageSize(const AText: string; const ADefault: Integer): Integer;
     function GetPageSizeItems: TStrings;
     function IsParentChainVisible: Boolean;
@@ -99,7 +99,7 @@ uses
 const
   CMaxPageButtons = 5;
 
-constructor TMaxxRuralPagination.Create(AOwner: TComponent);
+constructor TDACPagination.Create(AOwner: TComponent);
 var
   I: Integer;
 begin
@@ -127,7 +127,7 @@ begin
   for I := Low(FButtons) to High(FButtons) do
     FButtons[I] := CreatePaginationButton(I);
 
-  FPageSizeCombo := TMaxxRuralComboBox.Create(Self);
+  FPageSizeCombo := TDACComboBox.Create(Self);
   FPageSizeCombo.Parent := Self;
   FPageSizeCombo.SetSubComponent(True);
   FPageSizeCombo.StyleElements := [];
@@ -137,31 +137,31 @@ begin
   RefreshChildren(True);
 end;
 
-destructor TMaxxRuralPagination.Destroy;
+destructor TDACPagination.Destroy;
 begin
   FPageSizeItems.Free;
   inherited;
 end;
 
-procedure TMaxxRuralPagination.ButtonClick(Sender: TObject);
+procedure TDACPagination.ButtonClick(Sender: TObject);
 begin
-  if Sender is TMaxxRuralButton then
-    SelectButton(TMaxxRuralButton(Sender).Tag);
+  if Sender is TDACButton then
+    SelectButton(TDACButton(Sender).Tag);
 end;
 
-procedure TMaxxRuralPagination.ChangeScale(M, D: Integer);
+procedure TDACPagination.ChangeScale(M, D: Integer);
 begin
   inherited;
   Redraw;
 end;
 
-procedure TMaxxRuralPagination.CMEnabledChanged(var AMessage: TMessage);
+procedure TDACPagination.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
   UpdateButtonState;
 end;
 
-procedure TMaxxRuralPagination.CMShowingChanged(var AMessage: TMessage);
+procedure TDACPagination.CMShowingChanged(var AMessage: TMessage);
 begin
   inherited;
   if Showing then
@@ -170,7 +170,7 @@ begin
     RefreshChildren(False);
 end;
 
-procedure TMaxxRuralPagination.ComboChange(Sender: TObject);
+procedure TDACPagination.ComboChange(Sender: TObject);
 begin
   if FPageSizeCombo = nil then
     Exit;
@@ -178,10 +178,10 @@ begin
   SetPageSize(ExtractPageSize(FPageSizeCombo.Text, FPageSize));
 end;
 
-function TMaxxRuralPagination.CreatePaginationButton(
-  const AIndex: Integer): TMaxxRuralButton;
+function TDACPagination.CreatePaginationButton(
+  const AIndex: Integer): TDACButton;
 begin
-  Result := TMaxxRuralButton.Create(Self);
+  Result := TDACButton.Create(Self);
   Result.Parent := Self;
   Result.SetSubComponent(True);
   Result.Cursor := crHandPoint;
@@ -192,13 +192,13 @@ begin
   Result.OnClick := ButtonClick;
 end;
 
-procedure TMaxxRuralPagination.CreateWnd;
+procedure TDACPagination.CreateWnd;
 begin
   inherited;
   Redraw;
 end;
 
-function TMaxxRuralPagination.ExtractPageSize(const AText: string;
+function TDACPagination.ExtractPageSize(const AText: string;
   const ADefault: Integer): Integer;
 var
   I: Integer;
@@ -218,12 +218,12 @@ begin
   Result := Max(1, Result);
 end;
 
-function TMaxxRuralPagination.GetPageSizeItems: TStrings;
+function TDACPagination.GetPageSizeItems: TStrings;
 begin
   Result := FPageSizeItems;
 end;
 
-function TMaxxRuralPagination.IsParentChainVisible: Boolean;
+function TDACPagination.IsParentChainVisible: Boolean;
 var
   LParent: TWinControl;
 begin
@@ -236,18 +236,18 @@ begin
   end;
 end;
 
-procedure TMaxxRuralPagination.Loaded;
+procedure TDACPagination.Loaded;
 begin
   inherited;
   Redraw;
 end;
 
-function TMaxxRuralPagination.PageButtonCount: Integer;
+function TDACPagination.PageButtonCount: Integer;
 begin
   Result := Min(CMaxPageButtons, Max(0, FPageCount));
 end;
 
-function TMaxxRuralPagination.PageButtonStart: Integer;
+function TDACPagination.PageButtonStart: Integer;
 var
   LHalf: Integer;
 begin
@@ -260,12 +260,12 @@ begin
   Result := Min(Result, FPageCount - CMaxPageButtons + 1);
 end;
 
-function TMaxxRuralPagination.PageSizeDisplayText(const AValue: Integer): string;
+function TDACPagination.PageSizeDisplayText(const AValue: Integer): string;
 begin
   Result := Format('%d / pagina', [AValue]);
 end;
 
-procedure TMaxxRuralPagination.PageSizeItemsChanged(Sender: TObject);
+procedure TDACPagination.PageSizeItemsChanged(Sender: TObject);
 begin
   if csDestroying in ComponentState then
     Exit;
@@ -274,13 +274,13 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralPagination.Resize;
+procedure TDACPagination.Resize;
 begin
   inherited;
   Redraw;
 end;
 
-procedure TMaxxRuralPagination.Redraw;
+procedure TDACPagination.Redraw;
 var
   I: Integer;
 begin
@@ -293,7 +293,7 @@ begin
   Invalidate;
 end;
 
-procedure TMaxxRuralPagination.SelectButton(const AIndex: Integer);
+procedure TDACPagination.SelectButton(const AIndex: Integer);
 var
   LPage: Integer;
   LPageCount: Integer;
@@ -316,7 +316,7 @@ begin
   SetPageIndex(LPage);
 end;
 
-procedure TMaxxRuralPagination.RefreshChildren(const AUpdateCombo: Boolean);
+procedure TDACPagination.RefreshChildren(const AUpdateCombo: Boolean);
 begin
   if csDestroying in ComponentState then
     Exit;
@@ -328,7 +328,7 @@ begin
   UpdateChildZOrder;
 end;
 
-procedure TMaxxRuralPagination.SetPageCount(const AValue: Integer);
+procedure TDACPagination.SetPageCount(const AValue: Integer);
 var
   LValue: Integer;
 begin
@@ -342,7 +342,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralPagination.SetPageIndex(const AValue: Integer);
+procedure TDACPagination.SetPageIndex(const AValue: Integer);
 var
   LValue: Integer;
 begin
@@ -356,7 +356,7 @@ begin
     FOnChange(Self);
 end;
 
-procedure TMaxxRuralPagination.SetPageSize(const AValue: Integer);
+procedure TDACPagination.SetPageSize(const AValue: Integer);
 var
   LValue: Integer;
 begin
@@ -376,14 +376,14 @@ begin
     FOnChange(Self);
 end;
 
-procedure TMaxxRuralPagination.SetPageSizeItems(const AValue: TStrings);
+procedure TDACPagination.SetPageSizeItems(const AValue: TStrings);
 begin
   FPageSizeItems.Assign(AValue);
   RefreshChildren(True);
   Redraw;
 end;
 
-procedure TMaxxRuralPagination.SetPageSizeText(const AValue: string);
+procedure TDACPagination.SetPageSizeText(const AValue: string);
 begin
   if FPageSizeText = AValue then
     Exit;
@@ -394,7 +394,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralPagination.SetShowPageSize(const AValue: Boolean);
+procedure TDACPagination.SetShowPageSize(const AValue: Boolean);
 begin
   if FShowPageSize = AValue then
     Exit;
@@ -403,7 +403,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralPagination.UpdateButtonState;
+procedure TDACPagination.UpdateButtonState;
 var
   I: Integer;
   LEnabled: Boolean;
@@ -446,7 +446,7 @@ begin
     FPageSizeCombo.Enabled := Enabled and FShowPageSize;
 end;
 
-procedure TMaxxRuralPagination.UpdateChildZOrder;
+procedure TDACPagination.UpdateChildZOrder;
 var
   I: Integer;
 begin
@@ -467,7 +467,7 @@ begin
     FPageSizeCombo.BringToFront;
 end;
 
-procedure TMaxxRuralPagination.UpdateComboItems;
+procedure TDACPagination.UpdateComboItems;
 var
   LIndex: Integer;
   LText: string;
@@ -488,7 +488,7 @@ begin
   FPageSizeCombo.Text := LText;
 end;
 
-procedure TMaxxRuralPagination.UpdateLayout;
+procedure TDACPagination.UpdateLayout;
 var
   I: Integer;
   LButtonSize: Integer;
@@ -575,9 +575,10 @@ begin
   end;
 end;
 
-procedure TMaxxRuralPagination.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACPagination.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
 end.
+

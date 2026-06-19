@@ -1,9 +1,9 @@
-unit MaxxRural.Components.DesignSystem.TypographyTokens;
+unit DAC.Components.DesignSystem.TypographyTokens;
 
 interface
 
 type
-  TMaxxRuralTypographyTokens = record
+  TDACTypographyTokens = record
     FontFamily: string;
     Title1Size: Single;
     Title2Size: Single;
@@ -12,17 +12,17 @@ type
     TextSecondarySize: Single;
     CaptionSize: Single;
     MetricSize: Single;
-    class function Default: TMaxxRuralTypographyTokens; static;
+    class function Default: TDACTypographyTokens; static;
   end;
 
 implementation
 
 uses
-  MaxxRural.Components.DesignSystem.Fonts;
+  DAC.Components.DesignSystem.Fonts;
 
-class function TMaxxRuralTypographyTokens.Default: TMaxxRuralTypographyTokens;
+class function TDACTypographyTokens.Default: TDACTypographyTokens;
 begin
-  Result.FontFamily := TMaxxRuralComponentFontInstaller.FontFamily;
+  Result.FontFamily := TDACComponentFontInstaller.FontFamily;
   Result.Title1Size := 22;
   Result.Title2Size := 16;
   Result.Title3Size := 13;
@@ -33,3 +33,4 @@ begin
 end;
 
 end.
+

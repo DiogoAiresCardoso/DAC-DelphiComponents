@@ -1,4 +1,4 @@
-unit MaxxRural.Components.DesignSystem.ChartPalette;
+unit DAC.Components.DesignSystem.ChartPalette;
 
 interface
 
@@ -6,14 +6,14 @@ uses
   System.UITypes;
 
 type
-  TMaxxRuralChartSemanticRole = (
+  TDACChartSemanticRole = (
     csrPositive,
     csrNeutral,
     csrWarning,
     csrNegative
   );
 
-  TMaxxRuralChartPalette = record
+  TDACChartPalette = record
     VerdePrincipal: TAlphaColor;
     VerdeMedio: TAlphaColor;
     AmareloAgricola: TAlphaColor;
@@ -29,14 +29,14 @@ type
     TextoPrincipal: TAlphaColor;
     TextoSecundario: TAlphaColor;
     LinhaEixo: TAlphaColor;
-    class function Default: TMaxxRuralChartPalette; static;
+    class function Default: TDACChartPalette; static;
     function ColorByIndex(const AIndex: Integer): TAlphaColor;
-    function ColorByRole(const ARole: TMaxxRuralChartSemanticRole): TAlphaColor;
+    function ColorByRole(const ARole: TDACChartSemanticRole): TAlphaColor;
   end;
 
 implementation
 
-class function TMaxxRuralChartPalette.Default: TMaxxRuralChartPalette;
+class function TDACChartPalette.Default: TDACChartPalette;
 begin
   Result.VerdePrincipal := TAlphaColor($FF74D64A);
   Result.VerdeMedio := TAlphaColor($FF3DBB2A);
@@ -55,7 +55,7 @@ begin
   Result.LinhaEixo := TAlphaColor($FF355241);
 end;
 
-function TMaxxRuralChartPalette.ColorByIndex(const AIndex: Integer): TAlphaColor;
+function TDACChartPalette.ColorByIndex(const AIndex: Integer): TAlphaColor;
 begin
   case AIndex mod 8 of
     0: Result := VerdePrincipal;
@@ -70,8 +70,8 @@ begin
   end;
 end;
 
-function TMaxxRuralChartPalette.ColorByRole(
-  const ARole: TMaxxRuralChartSemanticRole): TAlphaColor;
+function TDACChartPalette.ColorByRole(
+  const ARole: TDACChartSemanticRole): TAlphaColor;
 begin
   case ARole of
     csrPositive: Result := VerdePrincipal;
@@ -83,3 +83,4 @@ begin
 end;
 
 end.
+

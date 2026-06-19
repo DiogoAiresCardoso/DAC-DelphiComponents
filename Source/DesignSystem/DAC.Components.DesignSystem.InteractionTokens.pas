@@ -1,4 +1,4 @@
-unit MaxxRural.Components.DesignSystem.InteractionTokens;
+unit DAC.Components.DesignSystem.InteractionTokens;
 
 interface
 
@@ -6,7 +6,7 @@ uses
   System.UITypes;
 
 type
-  TMaxxRuralInteractionTokens = record
+  TDACInteractionTokens = record
     HoverColor: TAlphaColor;
     PressedColor: TAlphaColor;
     FocusColor: TAlphaColor;
@@ -14,12 +14,12 @@ type
     HoverOpacity: Byte;
     PressedOpacity: Byte;
     FocusOpacity: Byte;
-    class function Default: TMaxxRuralInteractionTokens; static;
+    class function Default: TDACInteractionTokens; static;
   end;
 
 implementation
 
-class function TMaxxRuralInteractionTokens.Default: TMaxxRuralInteractionTokens;
+class function TDACInteractionTokens.Default: TDACInteractionTokens;
 begin
   Result.HoverColor := TAlphaColor($FF1F3B23);
   Result.PressedColor := TAlphaColor($FF3DB82A);
@@ -31,3 +31,4 @@ begin
 end;
 
 end.
+

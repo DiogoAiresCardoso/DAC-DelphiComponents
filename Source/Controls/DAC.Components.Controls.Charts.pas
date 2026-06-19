@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.Charts;
+unit DAC.Components.Controls.Charts;
 
 interface
 
@@ -11,22 +11,22 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralChartKind = (
+  TDACChartKind = (
     mckBar,
     mckLine,
     mckArea,
     mckDoughnut
   );
 
-  TMaxxRuralChart = class(TCustomControl)
+  TDACChart = class(TCustomControl)
   private
     FCategoriesText: string;
-    FKind: TMaxxRuralChartKind;
+    FKind: TDACChartKind;
     FPaintBox: TSkPaintBox;
-    FRenderer: TMaxxRuralSkiaRenderer;
+    FRenderer: TDACSkiaRenderer;
     FShowFrame: Boolean;
     FShowGrid: Boolean;
     FShowValue: Boolean;
@@ -48,7 +48,7 @@ type
     function ScaleFactor: Single;
     function ScaleMetric(const AValue: Integer): Integer;
     procedure SetCategoriesText(const AValue: string);
-    procedure SetKind(const AValue: TMaxxRuralChartKind);
+    procedure SetKind(const AValue: TDACChartKind);
     procedure SetShowFrame(const AValue: Boolean);
     procedure SetShowGrid(const AValue: Boolean);
     procedure SetShowValue(const AValue: Boolean);
@@ -71,7 +71,7 @@ type
     property Constraints;
     property Enabled;
     property Font;
-    property Kind: TMaxxRuralChartKind read FKind write SetKind default mckBar;
+    property Kind: TDACChartKind read FKind write SetKind default mckBar;
     property ParentFont;
     property ParentShowHint;
     property PopupMenu;
@@ -85,28 +85,28 @@ type
     property Visible;
   end;
 
-  TMaxxRuralBarChart = class(TMaxxRuralChart)
+  TDACBarChart = class(TDACChart)
   public
     constructor Create(AOwner: TComponent); override;
   published
     property Kind default mckBar;
   end;
 
-  TMaxxRuralLineChart = class(TMaxxRuralChart)
+  TDACLineChart = class(TDACChart)
   public
     constructor Create(AOwner: TComponent); override;
   published
     property Kind default mckLine;
   end;
 
-  TMaxxRuralAreaChart = class(TMaxxRuralChart)
+  TDACAreaChart = class(TDACChart)
   public
     constructor Create(AOwner: TComponent); override;
   published
     property Kind default mckArea;
   end;
 
-  TMaxxRuralDoughnutChart = class(TMaxxRuralChart)
+  TDACDoughnutChart = class(TDACChart)
   public
     constructor Create(AOwner: TComponent); override;
   published
@@ -118,9 +118,9 @@ implementation
 uses
   System.Math,
   System.SysUtils,
-  MaxxRural.Components.DesignSystem.ColorTokens;
+  DAC.Components.DesignSystem.ColorTokens;
 
-constructor TMaxxRuralChart.Create(AOwner: TComponent);
+constructor TDACChart.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque];
@@ -138,7 +138,7 @@ begin
   FShowValue := True;
   FCategoriesText := 'Jan;Fev;Mar;Abr;Mai;Jun';
   FValuesText := '52;68;74;82;94;60';
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
+  FRenderer := TDACSkiaRenderer.Create;
 
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
@@ -148,14 +148,14 @@ begin
   UpdatePaintBoxBounds;
 end;
 
-destructor TMaxxRuralChart.Destroy;
+destructor TDACChart.Destroy;
 begin
   FPaintBox.Free;
   FRenderer.Free;
   inherited;
 end;
 
-function TMaxxRuralChart.ChartRect: TRectF;
+function TDACChart.ChartRect: TRectF;
 begin
   Result := TRectF.Create(ScaleMetric(18), ScaleMetric(16),
     Width - ScaleMetric(16), Height - ScaleMetric(22));
@@ -165,20 +165,20 @@ begin
     Result.Bottom := Result.Top + 1;
 end;
 
-procedure TMaxxRuralChart.ChangeScale(M, D: Integer);
+procedure TDACChart.ChangeScale(M, D: Integer);
 begin
   inherited;
   Redraw;
 end;
 
-procedure TMaxxRuralChart.CreateWnd;
+procedure TDACChart.CreateWnd;
 begin
   inherited;
   UpdatePaintBoxBounds;
   Redraw;
 end;
 
-procedure TMaxxRuralChart.DrawAreaChart(const ACanvas: ISkCanvas;
+procedure TDACChart.DrawAreaChart(const ACanvas: ISkCanvas;
   const ARect: TRectF; const AValues: TArray<Single>);
 var
   I: Integer;
@@ -214,13 +214,13 @@ begin
 
   LFill := TSkPaint.Create(TSkPaintStyle.Fill);
   LFill.AntiAlias := True;
-  LFill.Color := TMaxxRuralComponentColors.Primary;
+  LFill.Color := TDACComponentColors.Primary;
   LFill.Alpha := 70;
   ACanvas.DrawPath(LPath, LFill);
 
   LLine := TSkPaint.Create(TSkPaintStyle.Stroke);
   LLine.AntiAlias := True;
-  LLine.Color := TMaxxRuralComponentColors.PrimaryDark;
+  LLine.Color := TDACComponentColors.PrimaryDark;
   LLine.StrokeWidth := ScaleMetric(2);
   LLine.StrokeCap := TSkStrokeCap.Round;
   LLine.StrokeJoin := TSkStrokeJoin.Round;
@@ -231,7 +231,7 @@ begin
       LLine);
 end;
 
-procedure TMaxxRuralChart.DrawBarChart(const ACanvas: ISkCanvas;
+procedure TDACChart.DrawBarChart(const ACanvas: ISkCanvas;
   const ARect: TRectF; const AValues: TArray<Single>);
 var
   I: Integer;
@@ -251,7 +251,7 @@ begin
     Max(1, Length(AValues)));
   LBarPaint := TSkPaint.Create(TSkPaintStyle.Fill);
   LBarPaint.AntiAlias := True;
-  LBarPaint.Color := TMaxxRuralComponentColors.Primary;
+  LBarPaint.Color := TDACComponentColors.Primary;
 
   for I := 0 to High(AValues) do
   begin
@@ -264,7 +264,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralChart.DrawDoughnutChart(const ACanvas: ISkCanvas;
+procedure TDACChart.DrawDoughnutChart(const ACanvas: ISkCanvas;
   const ARect: TRectF; const AValues: TArray<Single>);
 var
   I: Integer;
@@ -307,11 +307,11 @@ begin
   for I := 0 to High(AValues) do
   begin
     case I mod 4 of
-      0: LColor := TMaxxRuralComponentColors.Primary;
-      1: LColor := TMaxxRuralComponentColors.Alpha(37, 99, 235);
-      2: LColor := TMaxxRuralComponentColors.Warning;
+      0: LColor := TDACComponentColors.Primary;
+      1: LColor := TDACComponentColors.Alpha(37, 99, 235);
+      2: LColor := TDACComponentColors.Warning;
     else
-      LColor := TMaxxRuralComponentColors.TextSecondary;
+      LColor := TDACComponentColors.TextSecondary;
     end;
     LSweep := (Max(0, AValues[I]) / LSum * 360) - 2;
     LArcPaint.Color := LColor;
@@ -321,17 +321,17 @@ begin
   end;
 end;
 
-procedure TMaxxRuralChart.DrawFrame(const ACanvas: ISkCanvas; const ARect: TRectF);
+procedure TDACChart.DrawFrame(const ACanvas: ISkCanvas; const ARect: TRectF);
 var
   LRect: TRectF;
 begin
   LRect := TRectF.Create(0.5, 0.5, Width - 0.5, Height - 0.5);
-  FRenderer.FillRoundRect(ACanvas, LRect, TMaxxRuralComponentColors.White, ScaleMetric(8), 255);
-  FRenderer.StrokeRoundRect(ACanvas, LRect, TMaxxRuralComponentColors.ControlBorder,
+  FRenderer.FillRoundRect(ACanvas, LRect, TDACComponentColors.White, ScaleMetric(8), 255);
+  FRenderer.StrokeRoundRect(ACanvas, LRect, TDACComponentColors.ControlBorder,
     ScaleMetric(8), 1, 255);
 end;
 
-procedure TMaxxRuralChart.DrawGrid(const ACanvas: ISkCanvas; const ARect: TRectF);
+procedure TDACChart.DrawGrid(const ACanvas: ISkCanvas; const ARect: TRectF);
 var
   I: Integer;
   LPaint: ISkPaint;
@@ -339,7 +339,7 @@ var
 begin
   LPaint := TSkPaint.Create(TSkPaintStyle.Stroke);
   LPaint.AntiAlias := True;
-  LPaint.Color := TMaxxRuralComponentColors.ControlBorder;
+  LPaint.Color := TDACComponentColors.ControlBorder;
   LPaint.Alpha := 130;
   LPaint.StrokeWidth := 1;
   for I := 0 to 4 do
@@ -349,7 +349,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralChart.DrawLineChart(const ACanvas: ISkCanvas;
+procedure TDACChart.DrawLineChart(const ACanvas: ISkCanvas;
   const ARect: TRectF; const AValues: TArray<Single>);
 var
   I: Integer;
@@ -367,13 +367,13 @@ begin
 
   LLine := TSkPaint.Create(TSkPaintStyle.Stroke);
   LLine.AntiAlias := True;
-  LLine.Color := TMaxxRuralComponentColors.PrimaryDark;
+  LLine.Color := TDACComponentColors.PrimaryDark;
   LLine.StrokeWidth := ScaleMetric(2);
   LLine.StrokeCap := TSkStrokeCap.Round;
   LLine.StrokeJoin := TSkStrokeJoin.Round;
   LPoint := TSkPaint.Create(TSkPaintStyle.Fill);
   LPoint.AntiAlias := True;
-  LPoint.Color := TMaxxRuralComponentColors.Primary;
+  LPoint.Color := TDACComponentColors.Primary;
 
   for I := 1 to High(AValues) do
     ACanvas.DrawLine(
@@ -385,14 +385,14 @@ begin
       ARect.Bottom - (AValues[I] / LMax * ARect.Height), ScaleMetric(3), LPoint);
 end;
 
-procedure TMaxxRuralChart.Loaded;
+procedure TDACChart.Loaded;
 begin
   inherited;
   UpdatePaintBoxBounds;
   Redraw;
 end;
 
-procedure TMaxxRuralChart.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
+procedure TDACChart.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
   const ADest: TRectF; const AOpacity: Single);
 var
   LRect: TRectF;
@@ -417,7 +417,7 @@ begin
   end;
 end;
 
-function TMaxxRuralChart.ParseValues: TArray<Single>;
+function TDACChart.ParseValues: TArray<Single>;
 var
   I: Integer;
   LParts: TArray<string>;
@@ -440,7 +440,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralChart.Redraw;
+procedure TDACChart.Redraw;
 begin
   if (FPaintBox <> nil) and not (csDestroying in ComponentState) and
     ((Parent <> nil) or not (csDesigning in ComponentState)) then
@@ -448,14 +448,14 @@ begin
   Invalidate;
 end;
 
-procedure TMaxxRuralChart.Resize;
+procedure TDACChart.Resize;
 begin
   inherited;
   UpdatePaintBoxBounds;
   Redraw;
 end;
 
-function TMaxxRuralChart.ScaleFactor: Single;
+function TDACChart.ScaleFactor: Single;
 begin
   Result := 1;
   if FPaintBox <> nil then
@@ -464,14 +464,14 @@ begin
     Result := 1;
 end;
 
-function TMaxxRuralChart.ScaleMetric(const AValue: Integer): Integer;
+function TDACChart.ScaleMetric(const AValue: Integer): Integer;
 begin
   Result := Round(AValue * ScaleFactor);
   if (AValue > 0) and (Result < 1) then
     Result := 1;
 end;
 
-procedure TMaxxRuralChart.SetCategoriesText(const AValue: string);
+procedure TDACChart.SetCategoriesText(const AValue: string);
 begin
   if FCategoriesText = AValue then
     Exit;
@@ -479,7 +479,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralChart.SetKind(const AValue: TMaxxRuralChartKind);
+procedure TDACChart.SetKind(const AValue: TDACChartKind);
 begin
   if FKind = AValue then
     Exit;
@@ -487,7 +487,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralChart.SetShowFrame(const AValue: Boolean);
+procedure TDACChart.SetShowFrame(const AValue: Boolean);
 begin
   if FShowFrame = AValue then
     Exit;
@@ -495,7 +495,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralChart.SetShowGrid(const AValue: Boolean);
+procedure TDACChart.SetShowGrid(const AValue: Boolean);
 begin
   if FShowGrid = AValue then
     Exit;
@@ -503,7 +503,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralChart.SetShowValue(const AValue: Boolean);
+procedure TDACChart.SetShowValue(const AValue: Boolean);
 begin
   if FShowValue = AValue then
     Exit;
@@ -511,7 +511,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralChart.SetValuesText(const AValue: string);
+procedure TDACChart.SetValuesText(const AValue: string);
 begin
   if FValuesText = AValue then
     Exit;
@@ -519,40 +519,41 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralChart.UpdatePaintBoxBounds;
+procedure TDACChart.UpdatePaintBoxBounds;
 begin
   if FPaintBox = nil then
     Exit;
   FPaintBox.SetBounds(0, 0, Width, Height);
 end;
 
-procedure TMaxxRuralChart.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACChart.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
-constructor TMaxxRuralBarChart.Create(AOwner: TComponent);
+constructor TDACBarChart.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   Kind := mckBar;
 end;
 
-constructor TMaxxRuralLineChart.Create(AOwner: TComponent);
+constructor TDACLineChart.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   Kind := mckLine;
 end;
 
-constructor TMaxxRuralAreaChart.Create(AOwner: TComponent);
+constructor TDACAreaChart.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   Kind := mckArea;
 end;
 
-constructor TMaxxRuralDoughnutChart.Create(AOwner: TComponent);
+constructor TDACDoughnutChart.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   Kind := mckDoughnut;
 end;
 
 end.
+

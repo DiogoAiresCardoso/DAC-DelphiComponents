@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.Loading;
+unit DAC.Components.Controls.Loading;
 
 interface
 
@@ -12,22 +12,22 @@ uses
   Vcl.ExtCtrls,
   Vcl.Graphics,
   Vcl.Skia,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralLoadingKind = (
+  TDACLoadingKind = (
     mlkSpinner,
     mlkDots,
     mlkSkeleton
   );
 
-  TMaxxRuralLoading = class(TCustomControl)
+  TDACLoading = class(TCustomControl)
   private
     FActive: Boolean;
-    FKind: TMaxxRuralLoadingKind;
+    FKind: TDACLoadingKind;
     FPaintBox: TSkPaintBox;
     FPhase: Integer;
-    FRenderer: TMaxxRuralSkiaRenderer;
+    FRenderer: TDACSkiaRenderer;
     FTimer: TTimer;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure CMVisibleChanged(var AMessage: TMessage); message CM_VISIBLECHANGED;
@@ -41,7 +41,7 @@ type
     function ScaleFactor: Single;
     function ScaleMetric(const AValue: Integer): Integer;
     procedure SetActive(const AValue: Boolean);
-    procedure SetKind(const AValue: TMaxxRuralLoadingKind);
+    procedure SetKind(const AValue: TDACLoadingKind);
     procedure TimerTick(Sender: TObject);
     procedure UpdatePaintBoxBounds;
     procedure UpdateTimer;
@@ -62,7 +62,7 @@ type
     property Constraints;
     property Enabled;
     property Hint;
-    property Kind: TMaxxRuralLoadingKind read FKind write SetKind default mlkSpinner;
+    property Kind: TDACLoadingKind read FKind write SetKind default mlkSpinner;
     property ParentShowHint;
     property PopupMenu;
     property ShowHint;
@@ -82,9 +82,9 @@ implementation
 
 uses
   System.Math,
-  MaxxRural.Components.DesignSystem.ColorTokens;
+  DAC.Components.DesignSystem.ColorTokens;
 
-constructor TMaxxRuralLoading.Create(AOwner: TComponent);
+constructor TDACLoading.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque, csReplicatable];
@@ -97,7 +97,7 @@ begin
   FActive := True;
   FKind := mlkSpinner;
   FPhase := 0;
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
+  FRenderer := TDACSkiaRenderer.Create;
 
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
@@ -114,7 +114,7 @@ begin
   UpdateTimer;
 end;
 
-destructor TMaxxRuralLoading.Destroy;
+destructor TDACLoading.Destroy;
 begin
   FTimer.Free;
   FPaintBox.Free;
@@ -122,28 +122,28 @@ begin
   inherited;
 end;
 
-procedure TMaxxRuralLoading.ChangeScale(M, D: Integer);
+procedure TDACLoading.ChangeScale(M, D: Integer);
 begin
   inherited;
   UpdatePaintBoxBounds;
   InvalidateLoading;
 end;
 
-procedure TMaxxRuralLoading.CMEnabledChanged(var AMessage: TMessage);
+procedure TDACLoading.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
   UpdateTimer;
   InvalidateLoading;
 end;
 
-procedure TMaxxRuralLoading.CMVisibleChanged(var AMessage: TMessage);
+procedure TDACLoading.CMVisibleChanged(var AMessage: TMessage);
 begin
   inherited;
   UpdateTimer;
   InvalidateLoading;
 end;
 
-procedure TMaxxRuralLoading.CreateWnd;
+procedure TDACLoading.CreateWnd;
 begin
   inherited;
   UpdatePaintBoxBounds;
@@ -151,7 +151,7 @@ begin
   InvalidateLoading;
 end;
 
-procedure TMaxxRuralLoading.DrawDots(const ACanvas: ISkCanvas; const ADest: TRectF;
+procedure TDACLoading.DrawDots(const ACanvas: ISkCanvas; const ADest: TRectF;
   const AAlpha: Byte);
 var
   I: Integer;
@@ -166,7 +166,7 @@ begin
   LCenterX := (ADest.Width / 2) - LSpacing;
   LPaint := TSkPaint.Create(TSkPaintStyle.Fill);
   LPaint.AntiAlias := True;
-  LPaint.Color := TMaxxRuralComponentColors.PrimaryDark;
+  LPaint.Color := TDACComponentColors.PrimaryDark;
 
   for I := 0 to 2 do
   begin
@@ -178,7 +178,7 @@ begin
   end;
 end;
 
-procedure TMaxxRuralLoading.DrawSkeleton(const ACanvas: ISkCanvas; const ADest: TRectF;
+procedure TDACLoading.DrawSkeleton(const ACanvas: ISkCanvas; const ADest: TRectF;
   const AAlpha: Byte);
 var
   LBase: TAlphaColor;
@@ -186,12 +186,12 @@ var
   LOffset: Single;
   LRect: TRectF;
 begin
-  LBase := TMaxxRuralComponentColors.Alpha(229, 235, 229);
-  LHighlight := TMaxxRuralComponentColors.Alpha(246, 248, 246);
-  if TMaxxRuralComponentColors.IsDarkSurface(ParentSurfaceColor) then
+  LBase := TDACComponentColors.Alpha(229, 235, 229);
+  LHighlight := TDACComponentColors.Alpha(246, 248, 246);
+  if TDACComponentColors.IsDarkSurface(ParentSurfaceColor) then
   begin
-    LBase := TMaxxRuralComponentColors.Alpha(18, 36, 24);
-    LHighlight := TMaxxRuralComponentColors.Alpha(32, 54, 40);
+    LBase := TDACComponentColors.Alpha(18, 36, 24);
+    LHighlight := TDACComponentColors.Alpha(32, 54, 40);
   end;
 
   LRect := TRectF.Create(0, ScaleMetric(6), ScaleMetric(56), ScaleMetric(38));
@@ -208,7 +208,7 @@ begin
   FRenderer.FillRoundRect(ACanvas, LRect, LHighlight, ScaleMetric(4), 150);
 end;
 
-procedure TMaxxRuralLoading.DrawSpinner(const ACanvas: ISkCanvas; const ADest: TRectF;
+procedure TDACLoading.DrawSpinner(const ACanvas: ISkCanvas; const ADest: TRectF;
   const AAlpha: Byte);
 var
   LPaint: ISkPaint;
@@ -221,25 +221,25 @@ begin
 
   LPaint := TSkPaint.Create(TSkPaintStyle.Stroke);
   LPaint.AntiAlias := True;
-  LPaint.Color := TMaxxRuralComponentColors.ControlBorderForSurface(ParentSurfaceColor);
+  LPaint.Color := TDACComponentColors.ControlBorderForSurface(ParentSurfaceColor);
   LPaint.Alpha := 100;
   LPaint.StrokeCap := TSkStrokeCap.Round;
   LPaint.StrokeWidth := ScaleMetric(4);
   ACanvas.DrawArc(LRect, 0, 360, False, LPaint);
 
-  LPaint.Color := TMaxxRuralComponentColors.PrimaryDark;
+  LPaint.Color := TDACComponentColors.PrimaryDark;
   LPaint.Alpha := AAlpha;
   ACanvas.DrawArc(LRect, -90 + (FPhase * 32), 250, False, LPaint);
 end;
 
-procedure TMaxxRuralLoading.InvalidateLoading;
+procedure TDACLoading.InvalidateLoading;
 begin
   UpdatePaintBoxBounds;
   if (FPaintBox <> nil) and HandleAllocated then
     FPaintBox.Redraw;
 end;
 
-procedure TMaxxRuralLoading.Loaded;
+procedure TDACLoading.Loaded;
 begin
   inherited;
   UpdatePaintBoxBounds;
@@ -247,7 +247,7 @@ begin
   InvalidateLoading;
 end;
 
-procedure TMaxxRuralLoading.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
+procedure TDACLoading.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
   const ADest: TRectF; const AOpacity: Single);
 var
   LAlpha: Byte;
@@ -270,25 +270,25 @@ begin
   end;
 end;
 
-function TMaxxRuralLoading.ParentSurfaceColor: TAlphaColor;
+function TDACLoading.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TMaxxRuralComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
-procedure TMaxxRuralLoading.Redraw;
+procedure TDACLoading.Redraw;
 begin
   if (FPaintBox <> nil) and HandleAllocated then
     FPaintBox.Redraw;
 end;
 
-procedure TMaxxRuralLoading.Resize;
+procedure TDACLoading.Resize;
 begin
   inherited;
   UpdatePaintBoxBounds;
   Redraw;
 end;
 
-function TMaxxRuralLoading.ScaleFactor: Single;
+function TDACLoading.ScaleFactor: Single;
 begin
   Result := 1;
   if FPaintBox <> nil then
@@ -297,14 +297,14 @@ begin
     Result := 1;
 end;
 
-function TMaxxRuralLoading.ScaleMetric(const AValue: Integer): Integer;
+function TDACLoading.ScaleMetric(const AValue: Integer): Integer;
 begin
   Result := Round(AValue * ScaleFactor);
   if (AValue > 0) and (Result < 1) then
     Result := 1;
 end;
 
-procedure TMaxxRuralLoading.SetActive(const AValue: Boolean);
+procedure TDACLoading.SetActive(const AValue: Boolean);
 begin
   if FActive = AValue then
     Exit;
@@ -313,7 +313,7 @@ begin
   InvalidateLoading;
 end;
 
-procedure TMaxxRuralLoading.SetKind(const AValue: TMaxxRuralLoadingKind);
+procedure TDACLoading.SetKind(const AValue: TDACLoadingKind);
 begin
   if FKind = AValue then
     Exit;
@@ -321,13 +321,13 @@ begin
   InvalidateLoading;
 end;
 
-procedure TMaxxRuralLoading.TimerTick(Sender: TObject);
+procedure TDACLoading.TimerTick(Sender: TObject);
 begin
   Inc(FPhase);
   InvalidateLoading;
 end;
 
-procedure TMaxxRuralLoading.UpdatePaintBoxBounds;
+procedure TDACLoading.UpdatePaintBoxBounds;
 var
   LHeight: Integer;
   LWidth: Integer;
@@ -348,16 +348,17 @@ begin
     FPaintBox.SetBounds(0, 0, LWidth, LHeight);
 end;
 
-procedure TMaxxRuralLoading.UpdateTimer;
+procedure TDACLoading.UpdateTimer;
 begin
   if FTimer = nil then
     Exit;
   FTimer.Enabled := FActive and Enabled and Visible and not (csDesigning in ComponentState);
 end;
 
-procedure TMaxxRuralLoading.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACLoading.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
 end.
+

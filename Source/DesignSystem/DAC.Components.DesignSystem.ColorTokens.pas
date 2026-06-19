@@ -1,4 +1,4 @@
-unit MaxxRural.Components.DesignSystem.ColorTokens;
+unit DAC.Components.DesignSystem.ColorTokens;
 
 interface
 
@@ -9,7 +9,7 @@ uses
   Vcl.Graphics;
 
 type
-  TMaxxRuralColorTokens = record
+  TDACColorTokens = record
     Background: TAlphaColor;
     SurfaceDark: TAlphaColor;
     Panel: TAlphaColor;
@@ -26,10 +26,10 @@ type
     Danger: TAlphaColor;
     UserMenuHighlight: TAlphaColor;
     UserMenuDanger: TAlphaColor;
-    class function Default: TMaxxRuralColorTokens; static;
+    class function Default: TDACColorTokens; static;
   end;
 
-  TMaxxRuralComponentColors = class sealed
+  TDACComponentColors = class sealed
   public
     class function Alpha(const ARed, AGreen, ABlue: Byte;
       const AAlpha: Byte = 255): TAlphaColor; static;
@@ -99,74 +99,74 @@ begin
   Result := (AColor <> clNone) and (AColor <> clDefault);
 end;
 
-class function TMaxxRuralColorTokens.Default: TMaxxRuralColorTokens;
+class function TDACColorTokens.Default: TDACColorTokens;
 begin
-  Result.Background := TMaxxRuralComponentColors.Background;
-  Result.SurfaceDark := TMaxxRuralComponentColors.SurfaceDark;
-  Result.Panel := TMaxxRuralComponentColors.Panel;
-  Result.Border := TMaxxRuralComponentColors.Border;
-  Result.Text := TMaxxRuralComponentColors.Text;
-  Result.TextSecondary := TMaxxRuralComponentColors.TextSecondary;
-  Result.White := TMaxxRuralComponentColors.White;
-  Result.PrimaryDark := TMaxxRuralComponentColors.PrimaryDark;
-  Result.Primary := TMaxxRuralComponentColors.Primary;
-  Result.PrimaryLight := TMaxxRuralComponentColors.PrimaryLight;
-  Result.InteractionHover := TMaxxRuralComponentColors.InteractionHover;
-  Result.Warning := TMaxxRuralComponentColors.Warning;
-  Result.Orange := TMaxxRuralComponentColors.Alpha(217, 139, 40);
-  Result.Danger := TMaxxRuralComponentColors.Danger;
-  Result.UserMenuHighlight := TMaxxRuralComponentColors.Alpha(18, 63, 24);
-  Result.UserMenuDanger := TMaxxRuralComponentColors.Alpha(255, 138, 138);
+  Result.Background := TDACComponentColors.Background;
+  Result.SurfaceDark := TDACComponentColors.SurfaceDark;
+  Result.Panel := TDACComponentColors.Panel;
+  Result.Border := TDACComponentColors.Border;
+  Result.Text := TDACComponentColors.Text;
+  Result.TextSecondary := TDACComponentColors.TextSecondary;
+  Result.White := TDACComponentColors.White;
+  Result.PrimaryDark := TDACComponentColors.PrimaryDark;
+  Result.Primary := TDACComponentColors.Primary;
+  Result.PrimaryLight := TDACComponentColors.PrimaryLight;
+  Result.InteractionHover := TDACComponentColors.InteractionHover;
+  Result.Warning := TDACComponentColors.Warning;
+  Result.Orange := TDACComponentColors.Alpha(217, 139, 40);
+  Result.Danger := TDACComponentColors.Danger;
+  Result.UserMenuHighlight := TDACComponentColors.Alpha(18, 63, 24);
+  Result.UserMenuDanger := TDACComponentColors.Alpha(255, 138, 138);
 end;
 
-class function TMaxxRuralComponentColors.Alpha(const ARed, AGreen, ABlue: Byte;
+class function TDACComponentColors.Alpha(const ARed, AGreen, ABlue: Byte;
   const AAlpha: Byte): TAlphaColor;
 begin
   Result := TAlphaColor((Cardinal(AAlpha) shl 24) or
     (Cardinal(ARed) shl 16) or (Cardinal(AGreen) shl 8) or Cardinal(ABlue));
 end;
 
-class function TMaxxRuralComponentColors.Background: TAlphaColor;
+class function TDACComponentColors.Background: TAlphaColor;
 begin
   Result := TAlphaColor($FF07130C);
 end;
 
-class function TMaxxRuralComponentColors.Border: TAlphaColor;
+class function TDACComponentColors.Border: TAlphaColor;
 begin
   Result := TAlphaColor($FF2B3D31);
 end;
 
-class function TMaxxRuralComponentColors.ControlBackground: TAlphaColor;
+class function TDACComponentColors.ControlBackground: TAlphaColor;
 begin
   Result := White;
 end;
 
-class function TMaxxRuralComponentColors.ControlBackgroundDisabled: TAlphaColor;
+class function TDACComponentColors.ControlBackgroundDisabled: TAlphaColor;
 begin
   Result := Alpha(244, 247, 244);
 end;
 
-class function TMaxxRuralComponentColors.ControlBorder: TAlphaColor;
+class function TDACComponentColors.ControlBorder: TAlphaColor;
 begin
   Result := Alpha(213, 219, 230);
 end;
 
-class function TMaxxRuralComponentColors.ControlBorderHover: TAlphaColor;
+class function TDACComponentColors.ControlBorderHover: TAlphaColor;
 begin
   Result := TextSecondary;
 end;
 
-class function TMaxxRuralComponentColors.ControlText: TAlphaColor;
+class function TDACComponentColors.ControlText: TAlphaColor;
 begin
   Result := Alpha(17, 24, 39);
 end;
 
-class function TMaxxRuralComponentColors.ControlTextDisabled: TAlphaColor;
+class function TDACComponentColors.ControlTextDisabled: TAlphaColor;
 begin
   Result := Alpha(148, 163, 184);
 end;
 
-class function TMaxxRuralComponentColors.ControlBackgroundForSurface(
+class function TDACComponentColors.ControlBackgroundForSurface(
   const ASurface: TAlphaColor): TAlphaColor;
 begin
   if IsDarkSurface(ASurface) then
@@ -174,7 +174,7 @@ begin
   Result := ControlBackground;
 end;
 
-class function TMaxxRuralComponentColors.ControlBackgroundDisabledForSurface(
+class function TDACComponentColors.ControlBackgroundDisabledForSurface(
   const ASurface: TAlphaColor): TAlphaColor;
 begin
   if IsDarkSurface(ASurface) then
@@ -182,7 +182,7 @@ begin
   Result := ControlBackgroundDisabled;
 end;
 
-class function TMaxxRuralComponentColors.ControlBorderForSurface(
+class function TDACComponentColors.ControlBorderForSurface(
   const ASurface: TAlphaColor): TAlphaColor;
 begin
   if IsDarkSurface(ASurface) then
@@ -190,7 +190,7 @@ begin
   Result := ControlBorder;
 end;
 
-class function TMaxxRuralComponentColors.ControlBorderHoverForSurface(
+class function TDACComponentColors.ControlBorderHoverForSurface(
   const ASurface: TAlphaColor): TAlphaColor;
 begin
   if IsDarkSurface(ASurface) then
@@ -198,7 +198,7 @@ begin
   Result := ControlBorderHover;
 end;
 
-class function TMaxxRuralComponentColors.ControlTextDisabledForSurface(
+class function TDACComponentColors.ControlTextDisabledForSurface(
   const ASurface: TAlphaColor): TAlphaColor;
 begin
   if IsDarkSurface(ASurface) then
@@ -206,7 +206,7 @@ begin
   Result := ControlTextDisabled;
 end;
 
-class function TMaxxRuralComponentColors.ControlTextForSurface(
+class function TDACComponentColors.ControlTextForSurface(
   const ASurface: TAlphaColor): TAlphaColor;
 begin
   if IsDarkSurface(ASurface) then
@@ -214,32 +214,32 @@ begin
   Result := ControlText;
 end;
 
-class function TMaxxRuralComponentColors.Danger: TAlphaColor;
+class function TDACComponentColors.Danger: TAlphaColor;
 begin
   Result := TAlphaColor($FFD94A3A);
 end;
 
-class function TMaxxRuralComponentColors.DangerDark: TAlphaColor;
+class function TDACComponentColors.DangerDark: TAlphaColor;
 begin
   Result := TAlphaColor($FFB93428);
 end;
 
-class function TMaxxRuralComponentColors.DangerLight: TAlphaColor;
+class function TDACComponentColors.DangerLight: TAlphaColor;
 begin
   Result := TAlphaColor($FFE85C4A);
 end;
 
-class function TMaxxRuralComponentColors.DarkPanelBackground: TAlphaColor;
+class function TDACComponentColors.DarkPanelBackground: TAlphaColor;
 begin
   Result := Panel;
 end;
 
-class function TMaxxRuralComponentColors.DarkPanelBorder: TAlphaColor;
+class function TDACComponentColors.DarkPanelBorder: TAlphaColor;
 begin
   Result := Border;
 end;
 
-class function TMaxxRuralComponentColors.FromVclColor(
+class function TDACComponentColors.FromVclColor(
   const AColor: TColor): TAlphaColor;
 var
   LColorRef: TColorRef;
@@ -249,12 +249,12 @@ begin
     (LColorRef and $00FF00) or ((LColorRef and $FF0000) shr 16));
 end;
 
-class function TMaxxRuralComponentColors.InteractionHover: TAlphaColor;
+class function TDACComponentColors.InteractionHover: TAlphaColor;
 begin
   Result := TAlphaColor($FF1F3B23);
 end;
 
-class function TMaxxRuralComponentColors.IsDarkSurface(
+class function TDACComponentColors.IsDarkSurface(
   const AColor: TAlphaColor): Boolean;
 var
   LColor: Cardinal;
@@ -272,7 +272,7 @@ begin
   Result := LLuminance < 96;
 end;
 
-class function TMaxxRuralComponentColors.Normalize(
+class function TDACComponentColors.Normalize(
   const AColor: TAlphaColor): TAlphaColor;
 begin
   Result := AColor;
@@ -280,32 +280,32 @@ begin
     Result := TAlphaColor(Cardinal(Result) or $FF000000);
 end;
 
-class function TMaxxRuralComponentColors.Panel: TAlphaColor;
+class function TDACComponentColors.Panel: TAlphaColor;
 begin
   Result := TAlphaColor($FF102417);
 end;
 
-class function TMaxxRuralComponentColors.Primary: TAlphaColor;
+class function TDACComponentColors.Primary: TAlphaColor;
 begin
   Result := TAlphaColor($FF3DB82A);
 end;
 
-class function TMaxxRuralComponentColors.PrimaryDark: TAlphaColor;
+class function TDACComponentColors.PrimaryDark: TAlphaColor;
 begin
   Result := TAlphaColor($FF2F9E22);
 end;
 
-class function TMaxxRuralComponentColors.PrimaryFocus: TAlphaColor;
+class function TDACComponentColors.PrimaryFocus: TAlphaColor;
 begin
   Result := TAlphaColor($FF48C934);
 end;
 
-class function TMaxxRuralComponentColors.PrimaryLight: TAlphaColor;
+class function TDACComponentColors.PrimaryLight: TAlphaColor;
 begin
   Result := TAlphaColor($FF74D64A);
 end;
 
-class function TMaxxRuralComponentColors.ResolveParentSurface(
+class function TDACComponentColors.ResolveParentSurface(
   const AControl: TControl): TAlphaColor;
 var
   LControl: TControl;
@@ -327,42 +327,42 @@ begin
     Result := FromVclColor(LColor);
 end;
 
-class function TMaxxRuralComponentColors.SuiteSectionBackground: TAlphaColor;
+class function TDACComponentColors.SuiteSectionBackground: TAlphaColor;
 begin
   Result := White;
 end;
 
-class function TMaxxRuralComponentColors.SuiteSectionBorder: TAlphaColor;
+class function TDACComponentColors.SuiteSectionBorder: TAlphaColor;
 begin
   Result := ControlBorder;
 end;
 
-class function TMaxxRuralComponentColors.SuiteSectionSubtitle: TAlphaColor;
+class function TDACComponentColors.SuiteSectionSubtitle: TAlphaColor;
 begin
   Result := Alpha(71, 85, 105);
 end;
 
-class function TMaxxRuralComponentColors.SuiteSectionTitle: TAlphaColor;
+class function TDACComponentColors.SuiteSectionTitle: TAlphaColor;
 begin
   Result := Alpha(15, 23, 42);
 end;
 
-class function TMaxxRuralComponentColors.SurfaceDark: TAlphaColor;
+class function TDACComponentColors.SurfaceDark: TAlphaColor;
 begin
   Result := TAlphaColor($FF08140D);
 end;
 
-class function TMaxxRuralComponentColors.Text: TAlphaColor;
+class function TDACComponentColors.Text: TAlphaColor;
 begin
   Result := TAlphaColor($FFE8EEE8);
 end;
 
-class function TMaxxRuralComponentColors.TextSecondary: TAlphaColor;
+class function TDACComponentColors.TextSecondary: TAlphaColor;
 begin
   Result := TAlphaColor($FFB8C4B8);
 end;
 
-class function TMaxxRuralComponentColors.ToVclColor(
+class function TDACComponentColors.ToVclColor(
   const AColor: TAlphaColor): TColor;
 var
   LColor: Cardinal;
@@ -372,29 +372,30 @@ begin
     (LColor and $00FF00) or ((LColor and $FF0000) shr 16));
 end;
 
-class function TMaxxRuralComponentColors.Transparent: TAlphaColor;
+class function TDACComponentColors.Transparent: TAlphaColor;
 begin
   Result := TAlphaColorRec.Null;
 end;
 
-class function TMaxxRuralComponentColors.Warning: TAlphaColor;
+class function TDACComponentColors.Warning: TAlphaColor;
 begin
   Result := TAlphaColor($FFF5C842);
 end;
 
-class function TMaxxRuralComponentColors.WarningDark: TAlphaColor;
+class function TDACComponentColors.WarningDark: TAlphaColor;
 begin
   Result := Alpha(217, 139, 40);
 end;
 
-class function TMaxxRuralComponentColors.WarningLight: TAlphaColor;
+class function TDACComponentColors.WarningLight: TAlphaColor;
 begin
   Result := Alpha(255, 213, 79);
 end;
 
-class function TMaxxRuralComponentColors.White: TAlphaColor;
+class function TDACComponentColors.White: TAlphaColor;
 begin
   Result := TAlphaColor($FFFFFFFF);
 end;
 
 end.
+

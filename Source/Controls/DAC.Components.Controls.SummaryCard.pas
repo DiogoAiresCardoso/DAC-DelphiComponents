@@ -1,4 +1,4 @@
-unit MaxxRural.Components.Controls.SummaryCard;
+unit DAC.Components.Controls.SummaryCard;
 
 interface
 
@@ -11,28 +11,28 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
-  MaxxRural.Components.DesignSystem.IconAssets,
-  MaxxRural.Components.Skia.IconPainter,
-  MaxxRural.Components.Skia.Renderer;
+  DAC.Components.DesignSystem.IconAssets,
+  DAC.Components.Skia.IconPainter,
+  DAC.Components.Skia.Renderer;
 
 type
-  TMaxxRuralSummaryCardStatus = (
+  TDACSummaryCardStatus = (
     mcsNeutral,
     mcsSuccess,
     mcsWarning,
     mcsDanger
   );
 
-  TMaxxRuralSummaryCard = class(TCustomControl)
+  TDACSummaryCard = class(TCustomControl)
   private
     FAccentColor: TAlphaColor;
     FCornerRadius: Integer;
     FFooterText: string;
-    FIconKind: TMaxxRuralIconKind;
-    FIconPainter: TMaxxRuralSkiaIconPainter;
+    FIconKind: TDACIconKind;
+    FIconPainter: TDACSkiaIconPainter;
     FPaintBox: TSkPaintBox;
-    FRenderer: TMaxxRuralSkiaRenderer;
-    FStatus: TMaxxRuralSummaryCardStatus;
+    FRenderer: TDACSkiaRenderer;
+    FStatus: TDACSummaryCardStatus;
     FTitle: string;
     FValue: string;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
@@ -46,8 +46,8 @@ type
     procedure SetAccentColor(const AValue: TAlphaColor);
     procedure SetCornerRadius(const AValue: Integer);
     procedure SetFooterText(const AValue: string);
-    procedure SetIconKind(const AValue: TMaxxRuralIconKind);
-    procedure SetStatus(const AValue: TMaxxRuralSummaryCardStatus);
+    procedure SetIconKind(const AValue: TDACIconKind);
+    procedure SetStatus(const AValue: TDACSummaryCardStatus);
     procedure SetTitle(const AValue: string);
     procedure SetValue(const AValue: string);
     procedure UpdatePaintBoxBounds;
@@ -70,11 +70,11 @@ type
     property Enabled;
     property FooterText: string read FFooterText write SetFooterText;
     property Hint;
-    property IconKind: TMaxxRuralIconKind read FIconKind write SetIconKind default mikMoneyCircle;
+    property IconKind: TDACIconKind read FIconKind write SetIconKind default mikMoneyCircle;
     property ParentShowHint;
     property PopupMenu;
     property ShowHint;
-    property Status: TMaxxRuralSummaryCardStatus read FStatus write SetStatus default mcsSuccess;
+    property Status: TDACSummaryCardStatus read FStatus write SetStatus default mcsSuccess;
     property TabOrder;
     property TabStop default False;
     property Title: string read FTitle write SetTitle;
@@ -92,10 +92,10 @@ type
 implementation
 
 uses
-  MaxxRural.Components.DesignSystem.ColorTokens,
-  MaxxRural.Components.DesignSystem.Fonts;
+  DAC.Components.DesignSystem.ColorTokens,
+  DAC.Components.DesignSystem.Fonts;
 
-constructor TMaxxRuralSummaryCard.Create(AOwner: TComponent);
+constructor TDACSummaryCard.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque, csReplicatable];
@@ -103,7 +103,7 @@ begin
   Height := 116;
   TabStop := False;
 
-  FAccentColor := TMaxxRuralComponentColors.PrimaryDark;
+  FAccentColor := TDACComponentColors.PrimaryDark;
   FCornerRadius := 10;
   FFooterText := '+0,0% vs. mes anterior';
   FIconKind := mikMoneyCircle;
@@ -111,8 +111,8 @@ begin
   FTitle := 'Receita';
   FValue := 'R$ 0,00';
 
-  FRenderer := TMaxxRuralSkiaRenderer.Create;
-  FIconPainter := TMaxxRuralSkiaIconPainter.Create(FRenderer);
+  FRenderer := TDACSkiaRenderer.Create;
+  FIconPainter := TDACSkiaIconPainter.Create(FRenderer);
 
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
@@ -120,75 +120,75 @@ begin
   UpdatePaintBoxBounds;
 end;
 
-destructor TMaxxRuralSummaryCard.Destroy;
+destructor TDACSummaryCard.Destroy;
 begin
   FIconPainter.Free;
   FRenderer.Free;
   inherited;
 end;
 
-procedure TMaxxRuralSummaryCard.ChangeScale(M, D: Integer);
+procedure TDACSummaryCard.ChangeScale(M, D: Integer);
 begin
   inherited;
   UpdatePaintBoxBounds;
   Redraw;
 end;
 
-procedure TMaxxRuralSummaryCard.CMEnabledChanged(var AMessage: TMessage);
+procedure TDACSummaryCard.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
   Redraw;
 end;
 
-procedure TMaxxRuralSummaryCard.CreateWnd;
+procedure TDACSummaryCard.CreateWnd;
 begin
   inherited;
   UpdatePaintBoxBounds;
   Redraw;
 end;
 
-function TMaxxRuralSummaryCard.EffectiveAccentColor: TAlphaColor;
+function TDACSummaryCard.EffectiveAccentColor: TAlphaColor;
 begin
   case FStatus of
     mcsWarning:
-      Result := TMaxxRuralComponentColors.WarningDark;
+      Result := TDACComponentColors.WarningDark;
     mcsDanger:
-      Result := TMaxxRuralComponentColors.Danger;
+      Result := TDACComponentColors.Danger;
     mcsNeutral:
-      Result := TMaxxRuralComponentColors.TextSecondary;
+      Result := TDACComponentColors.TextSecondary;
   else
     Result := FAccentColor;
   end;
-  Result := TMaxxRuralComponentColors.Normalize(Result);
+  Result := TDACComponentColors.Normalize(Result);
 end;
 
-function TMaxxRuralSummaryCard.FooterColor: TAlphaColor;
+function TDACSummaryCard.FooterColor: TAlphaColor;
 begin
   case FStatus of
     mcsWarning:
-      Result := TMaxxRuralComponentColors.WarningDark;
+      Result := TDACComponentColors.WarningDark;
     mcsDanger:
-      Result := TMaxxRuralComponentColors.Danger;
+      Result := TDACComponentColors.Danger;
     mcsNeutral:
-      Result := TMaxxRuralComponentColors.SuiteSectionSubtitle;
+      Result := TDACComponentColors.SuiteSectionSubtitle;
   else
-    Result := TMaxxRuralComponentColors.PrimaryDark;
+    Result := TDACComponentColors.PrimaryDark;
   end;
 end;
 
-procedure TMaxxRuralSummaryCard.Loaded;
+procedure TDACSummaryCard.Loaded;
 begin
   inherited;
   UpdatePaintBoxBounds;
   Redraw;
 end;
 
-function TMaxxRuralSummaryCard.ParentSurfaceColor: TAlphaColor;
+function TDACSummaryCard.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TMaxxRuralComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
-procedure TMaxxRuralSummaryCard.PaintBoxDraw(Sender: TObject;
+procedure TDACSummaryCard.PaintBoxDraw(Sender: TObject;
   const ACanvas: ISkCanvas; const ADest: TRectF; const AOpacity: Single);
 var
   LAccent: TAlphaColor;
@@ -199,7 +199,7 @@ var
   LCardRect: TRectF;
   LFooterY: Single;
   LIconRect: TRectF;
-  LIconStyle: TMaxxRuralIconStyle;
+  LIconStyle: TDACIconStyle;
   LPadding: Single;
   LRadius: Single;
   LScale: Single;
@@ -218,8 +218,8 @@ begin
   LCardRect := FRenderer.SnapRect(TRectF.Create(0, 0, ADest.Width, ADest.Height), LScale);
   LCardRect.Inflate(-0.5 / LScale, -0.5 / LScale);
   LRadius := ScaleMetric(FCornerRadius);
-  LCardBackground := TMaxxRuralComponentColors.ControlBackgroundForSurface(LSurface);
-  LCardBorder := TMaxxRuralComponentColors.ControlBorderForSurface(LSurface);
+  LCardBackground := TDACComponentColors.ControlBackgroundForSurface(LSurface);
+  LCardBorder := TDACComponentColors.ControlBorderForSurface(LSurface);
   LAlpha := 255;
   if not Enabled then
     LAlpha := 130;
@@ -241,35 +241,35 @@ begin
   FIconPainter.Draw(ACanvas, LIconRect, FIconKind, LIconStyle);
 
   LTextLeft := LBadgeRect.Right + ScaleMetric(8);
-  LTitleColor := TMaxxRuralComponentColors.ControlTextDisabledForSurface(LSurface);
-  LTextColor := TMaxxRuralComponentColors.ControlTextForSurface(LSurface);
-  FRenderer.Text(ACanvas, FTitle, TMaxxRuralComponentFontInstaller.FontFamily,
+  LTitleColor := TDACComponentColors.ControlTextDisabledForSurface(LSurface);
+  LTextColor := TDACComponentColors.ControlTextForSurface(LSurface);
+  FRenderer.Text(ACanvas, FTitle, TDACComponentFontInstaller.FontFamily,
     LTextLeft, LCardRect.Top + ScaleMetric(25), 12, LTitleColor, False,
     LCardRect.Right - LTextLeft - ScaleMetric(8));
-  FRenderer.Text(ACanvas, FValue, TMaxxRuralComponentFontInstaller.FontFamily,
+  FRenderer.Text(ACanvas, FValue, TDACComponentFontInstaller.FontFamily,
     LTextLeft, LCardRect.Top + ScaleMetric(50), 16, LTextColor, True,
     LCardRect.Right - LTextLeft - ScaleMetric(8));
 
   LFooterY := LCardRect.Bottom - ScaleMetric(20);
-  FRenderer.Text(ACanvas, FFooterText, TMaxxRuralComponentFontInstaller.FontFamily,
+  FRenderer.Text(ACanvas, FFooterText, TDACComponentFontInstaller.FontFamily,
     LCardRect.Left + LPadding, LFooterY, 12, FooterColor, True,
     LCardRect.Width - (LPadding * 2));
 end;
 
-procedure TMaxxRuralSummaryCard.Redraw;
+procedure TDACSummaryCard.Redraw;
 begin
   if (FPaintBox <> nil) and HandleAllocated then
     FPaintBox.Redraw;
 end;
 
-procedure TMaxxRuralSummaryCard.Resize;
+procedure TDACSummaryCard.Resize;
 begin
   inherited;
   UpdatePaintBoxBounds;
   Redraw;
 end;
 
-function TMaxxRuralSummaryCard.ScaleFactor: Single;
+function TDACSummaryCard.ScaleFactor: Single;
 begin
   Result := 1;
   if FPaintBox <> nil then
@@ -278,18 +278,18 @@ begin
     Result := 1;
 end;
 
-function TMaxxRuralSummaryCard.ScaleMetric(const AValue: Integer): Integer;
+function TDACSummaryCard.ScaleMetric(const AValue: Integer): Integer;
 begin
   Result := Round(AValue * ScaleFactor);
   if (AValue > 0) and (Result < 1) then
     Result := 1;
 end;
 
-procedure TMaxxRuralSummaryCard.SetAccentColor(const AValue: TAlphaColor);
+procedure TDACSummaryCard.SetAccentColor(const AValue: TAlphaColor);
 var
   LValue: TAlphaColor;
 begin
-  LValue := TMaxxRuralComponentColors.Normalize(AValue);
+  LValue := TDACComponentColors.Normalize(AValue);
   if FAccentColor = LValue then
     Exit;
 
@@ -297,7 +297,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralSummaryCard.SetCornerRadius(const AValue: Integer);
+procedure TDACSummaryCard.SetCornerRadius(const AValue: Integer);
 begin
   if FCornerRadius = AValue then
     Exit;
@@ -308,7 +308,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralSummaryCard.SetFooterText(const AValue: string);
+procedure TDACSummaryCard.SetFooterText(const AValue: string);
 begin
   if FFooterText = AValue then
     Exit;
@@ -317,7 +317,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralSummaryCard.SetIconKind(const AValue: TMaxxRuralIconKind);
+procedure TDACSummaryCard.SetIconKind(const AValue: TDACIconKind);
 begin
   if FIconKind = AValue then
     Exit;
@@ -326,8 +326,8 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralSummaryCard.SetStatus(
-  const AValue: TMaxxRuralSummaryCardStatus);
+procedure TDACSummaryCard.SetStatus(
+  const AValue: TDACSummaryCardStatus);
 begin
   if FStatus = AValue then
     Exit;
@@ -336,7 +336,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralSummaryCard.SetTitle(const AValue: string);
+procedure TDACSummaryCard.SetTitle(const AValue: string);
 begin
   if FTitle = AValue then
     Exit;
@@ -345,7 +345,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralSummaryCard.SetValue(const AValue: string);
+procedure TDACSummaryCard.SetValue(const AValue: string);
 begin
   if FValue = AValue then
     Exit;
@@ -354,7 +354,7 @@ begin
   Redraw;
 end;
 
-procedure TMaxxRuralSummaryCard.UpdatePaintBoxBounds;
+procedure TDACSummaryCard.UpdatePaintBoxBounds;
 var
   LHeight: Integer;
   LWidth: Integer;
@@ -383,9 +383,10 @@ begin
     FPaintBox.SetBounds(0, 0, LWidth, LHeight);
 end;
 
-procedure TMaxxRuralSummaryCard.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+procedure TDACSummaryCard.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
   AMessage.Result := 1;
 end;
 
 end.
+

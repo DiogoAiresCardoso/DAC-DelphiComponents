@@ -1,39 +1,40 @@
-unit MaxxRural.Components.DesignSystem.Tokens;
+unit DAC.Components.DesignSystem.Tokens;
 
 interface
 
 uses
-  MaxxRural.Components.DesignSystem.CardTokens,
-  MaxxRural.Components.DesignSystem.ColorTokens,
-  MaxxRural.Components.DesignSystem.InteractionTokens,
-  MaxxRural.Components.DesignSystem.OpacityTokens,
-  MaxxRural.Components.DesignSystem.RadiusTokens,
-  MaxxRural.Components.DesignSystem.SpacingTokens,
-  MaxxRural.Components.DesignSystem.TypographyTokens;
+  DAC.Components.DesignSystem.CardTokens,
+  DAC.Components.DesignSystem.ColorTokens,
+  DAC.Components.DesignSystem.InteractionTokens,
+  DAC.Components.DesignSystem.OpacityTokens,
+  DAC.Components.DesignSystem.RadiusTokens,
+  DAC.Components.DesignSystem.SpacingTokens,
+  DAC.Components.DesignSystem.TypographyTokens;
 
 type
-  TMaxxRuralDesignTokens = record
-    Colors: TMaxxRuralColorTokens;
-    Opacities: TMaxxRuralOpacityTokens;
-    Typography: TMaxxRuralTypographyTokens;
-    Spacing: TMaxxRuralSpacingTokens;
-    Radius: TMaxxRuralRadiusTokens;
-    Interactions: TMaxxRuralInteractionTokens;
-    Card: TMaxxRuralCardTokens;
-    class function Default: TMaxxRuralDesignTokens; static;
+  TDACDesignTokens = record
+    Colors: TDACColorTokens;
+    Opacities: TDACOpacityTokens;
+    Typography: TDACTypographyTokens;
+    Spacing: TDACSpacingTokens;
+    Radius: TDACRadiusTokens;
+    Interactions: TDACInteractionTokens;
+    Card: TDACCardTokens;
+    class function Default: TDACDesignTokens; static;
   end;
 
 implementation
 
-class function TMaxxRuralDesignTokens.Default: TMaxxRuralDesignTokens;
+class function TDACDesignTokens.Default: TDACDesignTokens;
 begin
-  Result.Colors := TMaxxRuralColorTokens.Default;
-  Result.Opacities := TMaxxRuralOpacityTokens.Default;
-  Result.Typography := TMaxxRuralTypographyTokens.Default;
-  Result.Spacing := TMaxxRuralSpacingTokens.Default;
-  Result.Radius := TMaxxRuralRadiusTokens.Default;
-  Result.Interactions := TMaxxRuralInteractionTokens.Default;
-  Result.Card := TMaxxRuralCardTokens.Default;
+  Result.Colors := TDACColorTokens.Default;
+  Result.Opacities := TDACOpacityTokens.Default;
+  Result.Typography := TDACTypographyTokens.Default;
+  Result.Spacing := TDACSpacingTokens.Default;
+  Result.Radius := TDACRadiusTokens.Default;
+  Result.Interactions := TDACInteractionTokens.Default;
+  Result.Card := TDACCardTokens.Default;
 end;
 
 end.
+

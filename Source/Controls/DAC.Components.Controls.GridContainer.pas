@@ -224,11 +224,8 @@ procedure TDACGridContainer.CMControlListChange(
   var AMessage: TCMControlListChange);
 begin
   inherited;
-  if AMessage.Inserting or AMessage.Removing then
-  begin
-    ArrangeChildren;
-    Redraw;
-  end;
+  ArrangeChildren;
+  Redraw;
 end;
 
 procedure TDACGridContainer.WMSize(var AMessage: TWMSize);

@@ -92,6 +92,7 @@ type
     function FirstEnabledTabIndex: Integer;
     function HitTestTab(const X, Y: Integer): Integer;
     procedure InvalidateTabs;
+    function IsPageControl(const AControl: TControl): Boolean;
     procedure ItemsChanged;
     procedure LabelMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -111,6 +112,7 @@ type
       Shift: TShiftState; X, Y: Integer);
     function ParentSurfaceColor: TAlphaColor;
     procedure NormalizeContentChildren;
+    procedure UpdateActiveTabContent;
     procedure ResetToFirstTab;
     procedure SelectTab(const AIndex: Integer; const ANotify: Boolean = True);
     procedure SetActiveIndex(const AValue: Integer);
@@ -392,6 +394,7 @@ begin
   inherited;
   if AMessage.Inserting then
     ApplyContentSurfaceToChild(AMessage.Control);
+  UpdateActiveTabContent;
 end;
 
 procedure TDACTabs.CMMouseLeave(var AMessage: TMessage);
@@ -451,7 +454,26 @@ begin
   UpdateInternalBounds;
   UpdateLabels;
   UpdateInternalZOrder;
+  UpdateActiveTabContent;
   Redraw;
+end;
+
+function TDACTabs.IsPageControl(const AControl: TControl): Boolean;
+var
+  LLabel: TDACSystemText;
+begin
+  Result := False;
+  if (AControl = nil) or (AControl = FPaintBox) then
+    Exit;
+
+  if AControl is TDACSystemText then
+  begin
+    LLabel := TDACSystemText(AControl);
+    Result := (FLabels = nil) or (not FLabels.Contains(LLabel));
+    Exit;
+  end;
+
+  Result := True;
 end;
 
 procedure TDACTabs.DrawPillTab(const ACanvas: ISkCanvas;
@@ -609,6 +631,7 @@ begin
     FActiveIndex := FirstEnabledTabIndex;
 
   InvalidateTabs;
+  UpdateActiveTabContent;
   Realign;
 end;
 
@@ -702,6 +725,7 @@ begin
   UpdateInternalBounds;
   UpdateLabels;
   UpdateInternalZOrder;
+  UpdateActiveTabContent;
   Redraw;
 end;
 
@@ -913,9 +937,35 @@ begin
   FActiveIndex := AIndex;
   UpdateInternalBounds;
   UpdateLabels;
+  UpdateActiveTabContent;
   if ANotify and Assigned(FOnChange) then
     FOnChange(Self);
   Redraw;
+end;
+
+procedure TDACTabs.UpdateActiveTabContent;
+var
+  I: Integer;
+  LControl: TControl;
+  LPageControls: TList<TControl>;
+begin
+  if (csDestroying in ComponentState) or (FItems = nil) then
+    Exit;
+
+  LPageControls := TList<TControl>.Create;
+  try
+    for I := 0 to ControlCount - 1 do
+      if IsPageControl(Controls[I]) then
+        LPageControls.Add(Controls[I]);
+
+    if LPageControls.Count <> FItems.Count then
+      Exit;
+
+    for I := 0 to LPageControls.Count - 1 do
+      LPageControls[I].Visible := (I = FActiveIndex);
+  finally
+    LPageControls.Free;
+  end;
 end;
 
 procedure TDACTabs.SetActiveIndex(const AValue: Integer);

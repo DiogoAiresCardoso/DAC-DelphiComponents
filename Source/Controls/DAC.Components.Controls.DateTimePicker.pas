@@ -20,6 +20,9 @@ uses
   DAC.Components.Skia.IconPainter,
   DAC.Components.Skia.Renderer;
 
+const
+  CDtmDropdown = $1004;
+
 type
   TDACDateTimePicker = class(TCustomControl)
   private
@@ -120,6 +123,7 @@ implementation
 uses
   System.Math,
   Winapi.Windows,
+  Winapi.CommCtrl,
   DAC.Components.DesignSystem.ColorTokens,
   DAC.Components.DesignSystem.Fonts;
 
@@ -357,8 +361,17 @@ begin
     Exit;
   if FPicker.Kind = dtkTime then
     Exit;
+  if not FPicker.Visible then
+    Exit;
   FPicker.SetFocus;
-  FPicker.DropDown;
+  if not FPicker.HandleAllocated then
+    Exit;
+  try
+    PostMessage(FPicker.Handle, CDtmDropdown, 0, 0);
+  except
+    on Exception do
+      SendMessage(FPicker.Handle, CDtmDropdown, 0, 0);
+  end;
 end;
 
 procedure TDACDateTimePicker.PaintBoxDraw(Sender: TObject;

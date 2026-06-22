@@ -12,6 +12,25 @@ uses
   Vcl.Graphics;
 
 type
+  TDACTabs = class;
+
+  TDACTabHeaderControl = class(TCustomControl)
+  private
+    FTabs: TDACTabs;
+    FHotIndex: Integer;
+    function ScaleMetric(const AValue: Integer): Integer;
+    function TabRectByOrdinal(const AOrdinal: Integer): TRect;
+    function TabAt(const X, Y: Integer): Integer;
+  protected
+    procedure CMMouseLeave(var AMessage: TMessage); message CM_MOUSELEAVE;
+    procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X,
+      Y: Integer); override;
+    procedure MouseMove(Shift: TShiftState; X, Y: Integer); override;
+    procedure Paint; override;
+  public
+    constructor CreateForTabs(ATabs: TDACTabs);
+  end;
+
   TDACTabOrientation = (
     mtoHorizontal,
     mtoVertical
@@ -27,10 +46,12 @@ type
     FAppearance: TDACTabAppearance;
     FContentColor: TAlphaColor;
     FCornerRadius: Integer;
+    FHeader: TDACTabHeaderControl;
     FHotIndex: Integer;
     FShowContentBorder: Boolean;
     function GetActiveIndex: Integer;
     function GetOrientation: TDACTabOrientation;
+    function HeaderHeight: Integer;
     procedure SetActiveIndex(const AValue: Integer);
     procedure SetAppearance(const AValue: TDACTabAppearance);
     procedure SetContentColor(const AValue: TAlphaColor);
@@ -44,6 +65,7 @@ type
     function TabTextColor(const AActive, AHot, AEnabled: Boolean): TColor;
     procedure ApplyPageStyle;
     procedure InvalidateTabs;
+    procedure UpdateHeaderBounds;
   protected
     procedure Change; override;
     procedure ChangeScale(M, D: Integer; isDpiChange: Boolean); override;
@@ -54,6 +76,7 @@ type
     procedure Resize; override;
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
     procedure Redraw;
   published
     property ActiveIndex: Integer read GetActiveIndex write SetActiveIndex default -1;
@@ -72,6 +95,212 @@ uses
   Vcl.Forms,
   DAC.Components.DesignSystem.ColorTokens;
 
+constructor TDACTabHeaderControl.CreateForTabs(ATabs: TDACTabs);
+begin
+  inherited Create(ATabs);
+  FTabs := ATabs;
+  FHotIndex := -1;
+  ControlStyle := ControlStyle + [csOpaque];
+  ParentColor := False;
+  Color := clWhite;
+  SetSubComponent(True);
+end;
+
+procedure TDACTabHeaderControl.CMMouseLeave(var AMessage: TMessage);
+begin
+  inherited;
+  if FHotIndex <> -1 then
+  begin
+    FHotIndex := -1;
+    Invalidate;
+  end;
+end;
+
+procedure TDACTabHeaderControl.MouseDown(Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+var
+  LIndex: Integer;
+begin
+  inherited;
+  if (Button <> mbLeft) or (FTabs = nil) then
+    Exit;
+
+  LIndex := TabAt(X, Y);
+  if (LIndex >= 0) and (LIndex < FTabs.PageCount) and
+    FTabs.Pages[LIndex].Enabled then
+  begin
+    FTabs.ActivePage := FTabs.Pages[LIndex];
+    FTabs.SetFocus;
+    Invalidate;
+  end;
+end;
+
+procedure TDACTabHeaderControl.MouseMove(Shift: TShiftState; X, Y: Integer);
+var
+  LIndex: Integer;
+begin
+  inherited;
+  LIndex := TabAt(X, Y);
+  if LIndex <> FHotIndex then
+  begin
+    FHotIndex := LIndex;
+    Invalidate;
+  end;
+end;
+
+procedure TDACTabHeaderControl.Paint;
+var
+  I: Integer;
+  LActive: Boolean;
+  LBarRect: TRect;
+  LCaption: string;
+  LEnabled: Boolean;
+  LHot: Boolean;
+  LOrdinal: Integer;
+  LPage: TTabSheet;
+  LRect: TRect;
+  LTextFlags: Cardinal;
+  LUnderline: TRect;
+begin
+  inherited;
+  if FTabs = nil then
+    Exit;
+
+  Canvas.Brush.Style := bsSolid;
+  Canvas.Brush.Color := clWhite;
+  Canvas.FillRect(ClientRect);
+
+  LBarRect := ClientRect;
+  InflateRect(LBarRect, -ScaleMetric(1), -ScaleMetric(4));
+  Canvas.Pen.Color := TDACComponentColors.ToVclColor(TDACComponentColors.ControlBorder);
+  Canvas.Pen.Width := 1;
+  Canvas.Brush.Color := TDACComponentColors.ToVclColor(TDACComponentColors.White);
+  Canvas.RoundRect(LBarRect.Left, LBarRect.Top, LBarRect.Right,
+    LBarRect.Bottom, ScaleMetric(10), ScaleMetric(10));
+
+  LOrdinal := 0;
+  for I := 0 to FTabs.PageCount - 1 do
+  begin
+    LPage := FTabs.Pages[I];
+    if not LPage.TabVisible then
+      Continue;
+
+    LRect := TabRectByOrdinal(LOrdinal);
+    Inc(LOrdinal);
+    LActive := FTabs.ActivePage = LPage;
+    LHot := I = FHotIndex;
+    LEnabled := FTabs.Enabled and LPage.Enabled;
+
+    Canvas.Font.Assign(FTabs.Font);
+    Canvas.Font.Style := [];
+    if LActive then
+      Canvas.Font.Style := Canvas.Font.Style + [fsBold];
+
+    if not LEnabled then
+      Canvas.Font.Color := TDACComponentColors.ToVclColor(TDACComponentColors.ControlTextDisabled)
+    else if LActive then
+      Canvas.Font.Color := TDACComponentColors.ToVclColor(TDACComponentColors.PrimaryDark)
+    else if LHot then
+      Canvas.Font.Color := TDACComponentColors.ToVclColor(TDACComponentColors.Primary)
+    else
+      Canvas.Font.Color := TDACComponentColors.ToVclColor(TDACComponentColors.Alpha(70, 82, 78));
+
+    Canvas.Brush.Style := bsSolid;
+    Canvas.Pen.Style := psSolid;
+    if FTabs.Appearance = mtaPills then
+    begin
+      InflateRect(LRect, -ScaleMetric(5), -ScaleMetric(8));
+      if LActive then
+      begin
+        Canvas.Brush.Color := TDACComponentColors.ToVclColor(TDACComponentColors.Alpha(232, 247, 228));
+        Canvas.Pen.Color := TDACComponentColors.ToVclColor(TDACComponentColors.PrimaryLight);
+      end
+      else if LHot and LEnabled then
+      begin
+        Canvas.Brush.Color := TDACComponentColors.ToVclColor(TDACComponentColors.Alpha(244, 250, 244));
+        Canvas.Pen.Color := TDACComponentColors.ToVclColor(TDACComponentColors.Alpha(213, 230, 213));
+      end
+      else
+      begin
+        Canvas.Brush.Color := clWhite;
+        Canvas.Pen.Color := clWhite;
+      end;
+      if LActive or (LHot and LEnabled) then
+        Canvas.RoundRect(LRect.Left, LRect.Top, LRect.Right, LRect.Bottom,
+          ScaleMetric(20), ScaleMetric(20));
+    end
+    else
+    begin
+      InflateRect(LRect, -ScaleMetric(1), -ScaleMetric(5));
+      if LActive then
+        Canvas.Brush.Color := TDACComponentColors.ToVclColor(TDACComponentColors.Alpha(248, 252, 248))
+      else if LHot and LEnabled then
+        Canvas.Brush.Color := TDACComponentColors.ToVclColor(TDACComponentColors.Alpha(244, 250, 244))
+      else
+        Canvas.Brush.Color := clWhite;
+
+      Canvas.Pen.Color := Canvas.Brush.Color;
+      Canvas.RoundRect(LRect.Left, LRect.Top, LRect.Right, LRect.Bottom,
+        ScaleMetric(8), ScaleMetric(8));
+
+      if LEnabled and (LActive or LHot) then
+      begin
+        LUnderline := LRect;
+        LUnderline.Top := LUnderline.Bottom - ScaleMetric(3);
+        Canvas.Brush.Color := TDACComponentColors.ToVclColor(TDACComponentColors.PrimaryDark);
+        if not LActive then
+          Canvas.Brush.Color := TDACComponentColors.ToVclColor(TDACComponentColors.PrimaryLight);
+        Canvas.FillRect(LUnderline);
+      end;
+    end;
+
+    LCaption := LPage.Caption;
+    InflateRect(LRect, -ScaleMetric(10), 0);
+    Canvas.Brush.Style := bsClear;
+    LTextFlags := DT_CENTER or DT_VCENTER or DT_SINGLELINE or DT_END_ELLIPSIS;
+    DrawText(Canvas.Handle, PChar(LCaption), Length(LCaption), LRect,
+      LTextFlags);
+  end;
+end;
+
+function TDACTabHeaderControl.ScaleMetric(const AValue: Integer): Integer;
+begin
+  Result := MulDiv(AValue, Screen.PixelsPerInch, 96);
+  if (AValue > 0) and (Result < 1) then
+    Result := 1;
+end;
+
+function TDACTabHeaderControl.TabAt(const X, Y: Integer): Integer;
+var
+  I: Integer;
+  LOrdinal: Integer;
+begin
+  Result := -1;
+  if FTabs = nil then
+    Exit;
+
+  LOrdinal := 0;
+  for I := 0 to FTabs.PageCount - 1 do
+  begin
+    if not FTabs.Pages[I].TabVisible then
+      Continue;
+    if PtInRect(TabRectByOrdinal(LOrdinal), Point(X, Y)) then
+      Exit(I);
+    Inc(LOrdinal);
+  end;
+end;
+
+function TDACTabHeaderControl.TabRectByOrdinal(const AOrdinal: Integer): TRect;
+var
+  LCount: Integer;
+  LWidth: Integer;
+begin
+  LCount := Max(1, FTabs.PageCount);
+  LWidth := Max(ScaleMetric(76), (ClientWidth - ScaleMetric(2)) div LCount);
+  Result := Rect(ScaleMetric(1) + (AOrdinal * LWidth), ScaleMetric(4),
+    ScaleMetric(1) + ((AOrdinal + 1) * LWidth), Height - ScaleMetric(4));
+end;
+
 constructor TDACTabs.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
@@ -87,14 +316,27 @@ begin
   FHotIndex := -1;
   FShowContentBorder := True;
 
-  OwnerDraw := True;
+  OwnerDraw := False;
   Style := tsTabs;
-  TabHeight := 42;
-  TabWidth := 128;
+  TabHeight := 1;
+  TabWidth := 1;
+
+  FHeader := TDACTabHeaderControl.CreateForTabs(Self);
+  FHeader.Parent := Self;
+  UpdateHeaderBounds;
+end;
+
+destructor TDACTabs.Destroy;
+begin
+  FHeader.Free;
+  inherited;
 end;
 
 procedure TDACTabs.ApplyPageStyle;
 begin
+  TabHeight := 1;
+  TabWidth := 1;
+  UpdateHeaderBounds;
   InvalidateTabs;
 end;
 
@@ -229,8 +471,15 @@ begin
     Result := mtoHorizontal;
 end;
 
+function TDACTabs.HeaderHeight: Integer;
+begin
+  Result := ScaleMetric(52);
+end;
+
 procedure TDACTabs.InvalidateTabs;
 begin
+  if FHeader <> nil then
+    FHeader.Invalidate;
   if HandleAllocated then
     Invalidate;
 end;
@@ -249,6 +498,7 @@ end;
 procedure TDACTabs.Resize;
 begin
   inherited;
+  UpdateHeaderBounds;
   InvalidateTabs;
 end;
 
@@ -301,6 +551,23 @@ begin
   else
     TabPosition := tpTop;
   InvalidateTabs;
+end;
+
+procedure TDACTabs.UpdateHeaderBounds;
+var
+  I: Integer;
+  LPadding: Integer;
+begin
+  if FHeader <> nil then
+  begin
+    FHeader.SetBounds(0, 0, Width, HeaderHeight);
+    if (not (csLoading in ComponentState)) and HandleAllocated then
+      FHeader.BringToFront;
+  end;
+
+  LPadding := HeaderHeight + ScaleMetric(4);
+  for I := 0 to PageCount - 1 do
+    Pages[I].Padding.Top := LPadding;
 end;
 
 procedure TDACTabs.SetShowContentBorder(const AValue: Boolean);

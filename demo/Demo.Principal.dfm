@@ -22,9 +22,8 @@ object Form1: TForm1
     ActivePage = tsButtons
     Align = alClient
     TabOrder = 0
-    TabHeight = 42
-    TabWidth = 126
-    Appearance = mtaPills
+    TabHeight = 44
+    TabWidth = 132
     ActiveIndex = 0
     object tsButtons: TTabSheet
       Caption = 'Botoes'

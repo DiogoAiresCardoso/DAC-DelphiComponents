@@ -184,7 +184,7 @@ end;
 
 procedure TDACPageControlStyleHook.PaintBackground(Canvas: TCanvas);
 var
-  LClientRect: TRect;
+  LBarRect: TRect;
   LContentRect: TRect;
   LTabs: TDACTabs;
 begin
@@ -196,8 +196,21 @@ begin
     Exit;
 
   LTabs := TDACTabs(Control);
-  LClientRect := Control.ClientRect;
-  LContentRect := LTabs.DisplayRect;
+  LBarRect := TabBarBounds;
+  LContentRect := Control.ClientRect;
+  if not IsRectEmpty(LBarRect) then
+  begin
+    case LTabs.TabPosition of
+      tpBottom:
+        LContentRect.Bottom := LBarRect.Top;
+      tpLeft:
+        LContentRect.Left := LBarRect.Right;
+      tpRight:
+        LContentRect.Right := LBarRect.Left;
+    else
+      LContentRect.Top := LBarRect.Bottom;
+    end;
+  end;
   if IsRectEmpty(LContentRect) then
     Exit;
 

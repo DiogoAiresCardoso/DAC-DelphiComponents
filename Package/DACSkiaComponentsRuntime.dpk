@@ -61,6 +61,8 @@ contains
   DAC.Components.Controls.StatusBar in '..\Source\Controls\DAC.Components.Controls.StatusBar.pas',
   DAC.Components.Controls.ReportViewer in '..\Source\Controls\DAC.Components.Controls.ReportViewer.pas',
   DAC.Components.Controls.DataGrid in '..\Source\Controls\DAC.Components.Controls.DataGrid.pas',
+  DAC.Components.Hooks.SkiaControls in '..\Source\Hooks\DAC.Components.Hooks.SkiaControls.pas',
+  DAC.Components.Hooks.Tabs in '..\Source\Hooks\DAC.Components.Hooks.Tabs.pas',
   DAC.Components.Hooks.Register in '..\Source\Hooks\DAC.Components.Hooks.Register.pas';
 
 end.

@@ -1,1511 +1,616 @@
 object Form1: TForm1
   Left = 0
   Top = 0
-  Caption = 'Demo'
-  ClientHeight = 860
-  ClientWidth = 1280
-  Color = clBtnFace
+  Caption = 'DAC Componentes - Demo'
+  ClientHeight = 760
+  ClientWidth = 1200
+  Color = clWhite
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -12
   Font.Name = 'Segoe UI'
   Font.Style = []
   OldCreateOrder = False
+  Position = poScreenCenter
   PixelsPerInch = 96
-  TextHeight = 13
-  object DemoTabs: TDACTabs
+  TextHeight = 15
+  object GalleryTabs: TDACTabs
     Left = 0
     Top = 0
-    Width = 1280
-    Height = 860
-    ActiveIndex = 0
+    Width = 1200
+    Height = 760
+    ActivePage = tsButtons
     Align = alClient
-    Anchors = [akLeft, akTop, akRight, akBottom]
-    ShowContentBorder = False
-    Items = <
-      item
-        Caption = 'Botoes'
-      end
-      item
-        Caption = 'Inputs'
-      end
-      item
-        Caption = 'Seletores'
-      end
-      item
-        Caption = 'Containers'
-      end
-      item
-        Caption = 'Tabs'
-      end
-      item
-        Caption = 'Cards'
-      end
-      item
-        Caption = 'Grid'
-      end
-      item
-        Caption = 'Status'
-      end
-      item
-        Caption = 'Badges'
-      end
-      item
-        Caption = 'Progress'
-      end
-      item
-        Caption = 'Paginacao'
-      end
-      item
-        Caption = 'Loading'
-      end
-      item
-        Caption = 'Feedback'
-      end
-      item
-        Caption = 'Graficos'
-      end
-      item
-        Caption = 'Report'
-      end>
-    object TabBotoes: TDACScrollContainer
-      Left = 0
-      Top = 0
-      Width = 1280
-      Height = 860
-      Align = alClient
-      Anchors = [akLeft, akTop, akRight, akBottom]
-      AutoScroll = True
-      BackgroundColor = $00000000
-      BorderColor = $00000000
-      BorderStyle = bsNone
-      CornerRadius = 0
-      ScrollBarMode = msbmAuto
-      object GridBotoes: TDACGridContainer
+    TabOrder = 0
+    TabHeight = 42
+    TabWidth = 126
+    Appearance = mtaPills
+    ActiveIndex = 0
+    object tsButtons: TTabSheet
+      Caption = 'Botoes'
+      object scrButtons: TDACScrollContainer
         Left = 0
         Top = 0
-        Width = 1248
-        Height = 840
-        Align = alTop
-        Anchors = [akLeft, akTop, akRight]
-        AutoLayout = True
-        BackgroundColor = $00000000
-        BorderColor = $00000000
-        Columns = 12
-        ContentPadding = 16
+        Width = 1192
+        Height = 708
+        Align = alClient
+        AutoScroll = True
+        BorderStyle = bsNone
         CornerRadius = 0
-        Gutter = 16
-        RowHeight = 84
-        object LblButtonsHeader: TLabel
-          AutoSize = False
-          Caption = 'DEMO: TDACButton'
-          Tag = 12
-          Font.Size = 12
+        ScrollBarMode = msbmVertical
+        TabOrder = 0
+        object lblButtonsTitle: TLabel
+          Left = 24
+          Top = 22
+          Width = 193
+          Height = 25
+          Caption = 'Botoes DACComponentes'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = 985605
+          Font.Height = -19
+          Font.Name = 'Segoe UI Semibold'
           Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          WordWrap = True
+          ParentFont = False
         end
-        object LblButtonsSub: TLabel
-          AutoSize = False
-          Caption = 'Estados e configuracoes possiveis do botao da biblioteca.'
-          Tag = 12
-          Font.Style = [fsItalic]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          WordWrap = True
+        object lblButtonsSubtitle: TLabel
+          Left = 24
+          Top = 53
+          Width = 857
+          Height = 15
+          Caption = 'Cenarios declarativos como no designer: Kind, Size, IconKind, IconPosition, Loading, Enabled, TabStop, CornerRadius e variacoes de acao.'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = 5263440
+          Font.Height = -12
+          Font.Name = 'Segoe UI'
+          Font.Style = []
+          ParentFont = False
         end
-        object LblButtonsPrimary: TLabel
-          AutoSize = False
-          Caption = 'Kind: mbkPrimary'
-          Tag = 12
+        object lblButtonKinds: TLabel
+          Left = 24
+          Top = 92
+          Width = 150
+          Height = 17
+          Caption = '1. Variantes de Kind'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = 985605
+          Font.Height = -13
+          Font.Name = 'Segoe UI Semibold'
           Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          WordWrap = True
+          ParentFont = False
         end
-        object BtnPrimaryTextSmall: TDACButton
-          Caption = 'Texto so'
-          Kind = mbkPrimary
-          Size = mbsSmall
-          Tag = 4
+        object gcButtonKinds: TDACGridContainer
+          Left = 24
+          Top = 116
+          Width = 1128
+          Height = 148
+          Columns = 12
+          ContentPadding = 16
+          CornerRadius = 10
+          Gutter = 10
+          RowHeight = 44
+          TabOrder = 0
+          object btnKindPrimary: TDACButton
+            Left = 40
+            Top = 132
+            Width = 180
+            Height = 44
+            Caption = 'Primario'
+            ShowIcon = True
+            IconKind = mikCheck
+            Tag = 3
+            TabOrder = 0
+          end
+          object btnKindSecondary: TDACButton
+            Left = 230
+            Top = 132
+            Width = 180
+            Height = 44
+            Caption = 'Secundario'
+            Kind = mbkSecondary
+            ShowIcon = True
+            IconKind = mikEdit
+            Tag = 3
+            TabOrder = 1
+          end
+          object btnKindGhost: TDACButton
+            Left = 420
+            Top = 132
+            Width = 180
+            Height = 44
+            Caption = 'Ghost'
+            Kind = mbkGhost
+            ShowIcon = True
+            IconKind = mikInfoCircle
+            Tag = 3
+            TabOrder = 2
+          end
+          object btnKindWarning: TDACButton
+            Left = 610
+            Top = 132
+            Width = 180
+            Height = 44
+            Caption = 'Alerta'
+            Kind = mbkWarning
+            ShowIcon = True
+            IconKind = mikWarning
+            Tag = 3
+            TabOrder = 3
+          end
+          object btnKindDanger: TDACButton
+            Left = 40
+            Top = 186
+            Width = 180
+            Height = 44
+            Caption = 'Perigo'
+            Kind = mbkDanger
+            ShowIcon = True
+            IconKind = mikDanger
+            Tag = 3
+            TabOrder = 4
+          end
+          object btnKindTransparent: TDACButton
+            Left = 230
+            Top = 186
+            Width = 180
+            Height = 44
+            Caption = 'Transparente'
+            Kind = mbkTransparent
+            ShowIcon = True
+            IconKind = mikExternalLink
+            Tag = 3
+            TabOrder = 5
+          end
+          object btnKindInputAction: TDACButton
+            Left = 420
+            Top = 186
+            Width = 180
+            Height = 44
+            Caption = 'Acao de input'
+            Kind = mbkInputAction
+            ShowIcon = True
+            IconKind = mikSearch
+            Tag = 3
+            TabOrder = 6
+          end
         end
-        object BtnPrimaryIconLeft: TDACButton
-          Caption = 'Texto + icone esquerda'
-          Kind = mbkPrimary
-          Size = mbsSmall
-          ShowIcon = True
-          IconPosition = mipLeft
-          IconKind = mikCheck
-          Tag = 4
-        end
-        object BtnPrimaryIconRight: TDACButton
-          Caption = 'Texto + icone direita'
-          Kind = mbkPrimary
-          Size = mbsSmall
-          ShowIcon = True
-          IconPosition = mipRight
-          IconKind = mikArrowRight
-          Tag = 4
-        end
-        object BtnPrimaryIconOnly: TDACButton
-          Caption = 'Apenas icone'
-          Kind = mbkPrimary
-          Size = mbsSmall
-          ShowIcon = True
-          IconKind = mikInfoCircle
-          IconSize = 20
-          Tag = 4
-        end
-        object BtnPrimaryLoading: TDACButton
-          Caption = 'Loading'
-          Kind = mbkPrimary
-          Size = mbsMedium
-          Loading = True
-          ShowIcon = True
-          IconKind = mikSpinner
-          Tag = 4
-        end
-        object BtnPrimaryDisabled: TDACButton
-          Caption = 'Disabled'
-          Kind = mbkPrimary
-          Enabled = False
-          Tag = 4
-        end
-        object BtnPrimaryDisabledLoading: TDACButton
-          Caption = 'Disabled + Loading'
-          Kind = mbkPrimary
-          Enabled = False
-          Loading = True
-          ShowIcon = True
-          IconKind = mikSpinner
-          Tag = 4
-        end
-        object BtnPrimaryRadius0: TDACButton
-          Caption = 'Radius 0'
-          Kind = mbkPrimary
-          CornerRadius = 0
-          ShowIcon = True
-          IconKind = mikEdit
-          Tag = 4
-        end
-        object BtnPrimaryRadius24: TDACButton
-          Caption = 'Radius 24'
-          Kind = mbkPrimary
-          CornerRadius = 24
-          ShowIcon = True
-          IconKind = mikSearch
-          Tag = 4
-        end
-        object BtnPrimaryTabStopFalse: TDACButton
-          Caption = 'TabStop = False'
-          Kind = mbkPrimary
-          Size = mbsMedium
-          TabStop = False
-          ShowIcon = True
-          IconKind = mikUser
-          Tag = 12
-        end
-        object LblButtonsSecondary: TLabel
-          AutoSize = False
-          Caption = 'Kind: mbkSecondary'
-          Tag = 12
+        object lblButtonSizes: TLabel
+          Left = 24
+          Top = 288
+          Width = 230
+          Height = 17
+          Caption = '2. Tamanhos, raio e foco por teclado'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = 985605
+          Font.Height = -13
+          Font.Name = 'Segoe UI Semibold'
           Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          WordWrap = True
+          ParentFont = False
         end
-        object BtnSecondaryTextSmall: TDACButton
-          Caption = 'Texto so'
-          Kind = mbkSecondary
-          Size = mbsSmall
-          Tag = 4
+        object gcButtonSizes: TDACGridContainer
+          Left = 24
+          Top = 312
+          Width = 1128
+          Height = 148
+          Columns = 12
+          ContentPadding = 16
+          CornerRadius = 10
+          Gutter = 10
+          RowHeight = 46
+          TabOrder = 1
+          object btnSizeSmall: TDACButton
+            Left = 40
+            Top = 328
+            Width = 180
+            Height = 30
+            Caption = 'Pequeno'
+            Size = mbsSmall
+            ShowIcon = True
+            IconKind = mikMinus
+            Tag = 3
+            TabOrder = 0
+          end
+          object btnSizeMedium: TDACButton
+            Left = 230
+            Top = 328
+            Width = 180
+            Height = 36
+            Caption = 'Medio'
+            ShowIcon = True
+            IconKind = mikCheck
+            Tag = 3
+            TabOrder = 1
+          end
+          object btnSizeLarge: TDACButton
+            Left = 420
+            Top = 328
+            Width = 180
+            Height = 42
+            Caption = 'Grande'
+            Size = mbsLarge
+            ShowIcon = True
+            IconKind = mikExpand
+            Tag = 3
+            TabOrder = 2
+          end
+          object btnRadiusSoft: TDACButton
+            Left = 610
+            Top = 328
+            Width = 180
+            Height = 46
+            Caption = 'Raio 4'
+            Kind = mbkSecondary
+            CornerRadius = 4
+            Tag = 3
+            TabOrder = 3
+          end
+          object btnRadiusPill: TDACButton
+            Left = 40
+            Top = 384
+            Width = 180
+            Height = 46
+            Caption = 'Raio pill'
+            CornerRadius = 20
+            ShowIcon = True
+            IconKind = mikLeaf
+            Tag = 3
+            TabOrder = 4
+          end
+          object btnNoTabStop: TDACButton
+            Left = 230
+            Top = 384
+            Width = 180
+            Height = 46
+            Caption = 'TabStop False'
+            Kind = mbkGhost
+            TabStop = False
+            Tag = 3
+            TabOrder = 5
+          end
         end
-        object BtnSecondaryIconLeft: TDACButton
-          Caption = 'Texto + icone esquerda'
-          Kind = mbkSecondary
-          Size = mbsSmall
-          ShowIcon = True
-          IconPosition = mipLeft
-          IconKind = mikDownload
-          Tag = 4
-        end
-        object BtnSecondaryIconRight: TDACButton
-          Caption = 'Texto + icone direita'
-          Kind = mbkSecondary
-          Size = mbsSmall
-          ShowIcon = True
-          IconPosition = mipRight
-          IconKind = mikUpload
-          Tag = 4
-        end
-        object BtnSecondaryIconOnly: TDACButton
-          Caption = 'Apenas icone'
-          Kind = mbkSecondary
-          Size = mbsMedium
-          ShowIcon = True
-          IconKind = mikCopy
-          IconSize = 20
-          Tag = 4
-        end
-        object BtnSecondaryLoading: TDACButton
-          Caption = 'Loading'
-          Kind = mbkSecondary
-          Size = mbsLarge
-          Loading = True
-          ShowIcon = True
-          IconKind = mikSpinner
-          Tag = 4
-        end
-        object BtnSecondaryDisabled: TDACButton
-          Caption = 'Disabled'
-          Kind = mbkSecondary
-          Enabled = False
-          Tag = 4
-        end
-        object BtnSecondaryDisabledLoading: TDACButton
-          Caption = 'Disabled + Loading'
-          Kind = mbkSecondary
-          Enabled = False
-          Loading = True
-          ShowIcon = True
-          IconKind = mikSpinner
-          Tag = 4
-        end
-        object BtnSecondaryRadius0: TDACButton
-          Caption = 'Radius 0'
-          Kind = mbkSecondary
-          CornerRadius = 0
-          ShowIcon = True
-          IconKind = mikSave
-          Tag = 4
-        end
-        object BtnSecondaryRadius24: TDACButton
-          Caption = 'Radius 24'
-          Kind = mbkSecondary
-          CornerRadius = 24
-          ShowIcon = True
-          IconKind = mikTrash
-          Tag = 4
-        end
-        object BtnSecondaryTabStopFalse: TDACButton
-          Caption = 'TabStop = False'
-          Kind = mbkSecondary
-          Size = mbsMedium
-          TabStop = False
-          ShowIcon = True
-          IconKind = mikExternalLink
-          Tag = 12
-        end
-        object LblButtonsGhost: TLabel
-          AutoSize = False
-          Caption = 'Kind: mbkGhost'
-          Tag = 12
+        object lblButtonIcons: TLabel
+          Left = 24
+          Top = 484
+          Width = 218
+          Height = 17
+          Caption = '3. Icones, posicao e icon-only'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = 985605
+          Font.Height = -13
+          Font.Name = 'Segoe UI Semibold'
           Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          WordWrap = True
+          ParentFont = False
         end
-        object BtnGhostTextSmall: TDACButton
-          Caption = 'Texto so'
-          Kind = mbkGhost
-          Size = mbsSmall
-          Tag = 4
+        object gcButtonIcons: TDACGridContainer
+          Left = 24
+          Top = 508
+          Width = 1128
+          Height = 150
+          Columns = 12
+          ContentPadding = 16
+          CornerRadius = 10
+          Gutter = 10
+          RowHeight = 46
+          TabOrder = 2
+          object btnIconLeft: TDACButton
+            Left = 40
+            Top = 524
+            Width = 180
+            Height = 46
+            Caption = 'Icone esquerda'
+            ShowIcon = True
+            IconKind = mikSave
+            Tag = 3
+            TabOrder = 0
+          end
+          object btnIconRight: TDACButton
+            Left = 230
+            Top = 524
+            Width = 180
+            Height = 46
+            Caption = 'Icone direita'
+            Kind = mbkSecondary
+            ShowIcon = True
+            IconKind = mikChevronRight
+            IconPosition = mipRight
+            Tag = 3
+            TabOrder = 1
+          end
+          object btnIconOnlyAdd: TDACButton
+            Left = 420
+            Top = 524
+            Width = 84
+            Height = 46
+            Caption = ''
+            ShowIcon = True
+            IconKind = mikAdd
+            Tag = 1
+            TabOrder = 2
+          end
+          object btnIconOnlyMore: TDACButton
+            Left = 514
+            Top = 524
+            Width = 84
+            Height = 46
+            Caption = ''
+            Kind = mbkSecondary
+            ShowIcon = True
+            IconKind = mikMoreHorizontal
+            Tag = 1
+            TabOrder = 3
+          end
+          object btnIconCustomSize: TDACButton
+            Left = 608
+            Top = 524
+            Width = 180
+            Height = 46
+            Caption = 'Icone 22'
+            Kind = mbkGhost
+            ShowIcon = True
+            IconKind = mikTractor
+            IconSize = 22
+            Tag = 3
+            TabOrder = 4
+          end
+          object btnIconDanger: TDACButton
+            Left = 798
+            Top = 524
+            Width = 180
+            Height = 46
+            Caption = 'Excluir'
+            Kind = mbkDanger
+            ShowIcon = True
+            IconKind = mikTrash
+            Tag = 3
+            TabOrder = 5
+          end
         end
-        object BtnGhostIconLeft: TDACButton
-          Caption = 'Texto + icone esquerda'
-          Kind = mbkGhost
-          Size = mbsSmall
-          ShowIcon = True
-          IconPosition = mipLeft
-          IconKind = mikBell
-          Tag = 4
-        end
-        object BtnGhostIconRight: TDACButton
-          Caption = 'Texto + icone direita'
-          Kind = mbkGhost
-          Size = mbsSmall
-          ShowIcon = True
-          IconPosition = mipRight
-          IconKind = mikCode
-          Tag = 4
-        end
-        object BtnGhostIconOnly: TDACButton
-          Caption = 'Apenas icone'
-          Kind = mbkGhost
-          Size = mbsMedium
-          ShowIcon = True
-          IconKind = mikCalendar
-          IconSize = 20
-          Tag = 4
-        end
-        object BtnGhostLoading: TDACButton
-          Caption = 'Loading'
-          Kind = mbkGhost
-          Size = mbsLarge
-          Loading = True
-          ShowIcon = True
-          IconKind = mikSpinner
-          Tag = 4
-        end
-        object BtnGhostDisabled: TDACButton
-          Caption = 'Disabled'
-          Kind = mbkGhost
-          Enabled = False
-          Tag = 4
-        end
-        object BtnGhostDisabledLoading: TDACButton
-          Caption = 'Disabled + Loading'
-          Kind = mbkGhost
-          Enabled = False
-          Loading = True
-          ShowIcon = True
-          IconKind = mikSpinner
-          Tag = 4
-        end
-        object BtnGhostRadius0: TDACButton
-          Caption = 'Radius 0'
-          Kind = mbkGhost
-          CornerRadius = 0
-          ShowIcon = True
-          IconKind = mikEdit
-          Tag = 4
-        end
-        object BtnGhostRadius24: TDACButton
-          Caption = 'Radius 24'
-          Kind = mbkGhost
-          CornerRadius = 24
-          ShowIcon = True
-          IconKind = mikHelpCircle
-          Tag = 4
-        end
-        object BtnGhostTabStopFalse: TDACButton
-          Caption = 'TabStop = False'
-          Kind = mbkGhost
-          Size = mbsMedium
-          TabStop = False
-          ShowIcon = True
-          IconKind = mikInfoCircle
-          Tag = 12
-        end
-        object LblButtonsWarning: TLabel
-          AutoSize = False
-          Caption = 'Kind: mbkWarning'
-          Tag = 12
+        object lblButtonStates: TLabel
+          Left = 24
+          Top = 682
+          Width = 272
+          Height = 17
+          Caption = '4. Estados: normal, hover, foco, pressed, loading e disabled'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = 985605
+          Font.Height = -13
+          Font.Name = 'Segoe UI Semibold'
           Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          WordWrap = True
+          ParentFont = False
         end
-        object BtnWarningTextSmall: TDACButton
-          Caption = 'Texto so'
-          Kind = mbkWarning
-          Size = mbsSmall
-          Tag = 4
+        object gcButtonStates: TDACGridContainer
+          Left = 24
+          Top = 706
+          Width = 1128
+          Height = 150
+          Columns = 12
+          ContentPadding = 16
+          CornerRadius = 10
+          Gutter = 10
+          RowHeight = 46
+          TabOrder = 3
+          object btnStateNormal: TDACButton
+            Left = 40
+            Top = 722
+            Width = 180
+            Height = 46
+            Caption = 'Normal'
+            ShowIcon = True
+            IconKind = mikCheck
+            Tag = 3
+            TabOrder = 0
+          end
+          object btnStateHover: TDACButton
+            Left = 230
+            Top = 722
+            Width = 180
+            Height = 46
+            Caption = 'Passe o mouse'
+            Kind = mbkSecondary
+            ShowIcon = True
+            IconKind = mikEye
+            Tag = 3
+            TabOrder = 1
+          end
+          object btnStateFocus: TDACButton
+            Left = 420
+            Top = 722
+            Width = 180
+            Height = 46
+            Caption = 'Tab para foco'
+            Kind = mbkGhost
+            ShowIcon = True
+            IconKind = mikCode
+            Tag = 3
+            TabOrder = 2
+          end
+          object btnStatePressed: TDACButton
+            Left = 610
+            Top = 722
+            Width = 180
+            Height = 46
+            Caption = 'Pressione'
+            ShowIcon = True
+            IconKind = mikSettings
+            Tag = 3
+            TabOrder = 3
+          end
+          object btnStateLoading: TDACButton
+            Left = 40
+            Top = 778
+            Width = 180
+            Height = 46
+            Caption = 'Carregando'
+            Loading = True
+            ShowIcon = True
+            IconKind = mikSpinner
+            Tag = 3
+            TabOrder = 4
+          end
+          object btnStateDisabled: TDACButton
+            Left = 230
+            Top = 778
+            Width = 180
+            Height = 46
+            Caption = 'Desabilitado'
+            Enabled = False
+            Kind = mbkSecondary
+            ShowIcon = True
+            IconKind = mikLock
+            Tag = 3
+            TabOrder = 5
+          end
         end
-        object BtnWarningIconLeft: TDACButton
-          Caption = 'Texto + icone esquerda'
-          Kind = mbkWarning
-          Size = mbsSmall
-          ShowIcon = True
-          IconPosition = mipLeft
-          IconKind = mikWarning
-          Tag = 4
-        end
-        object BtnWarningIconRight: TDACButton
-          Caption = 'Texto + icone direita'
-          Kind = mbkWarning
-          Size = mbsSmall
-          ShowIcon = True
-          IconPosition = mipRight
-          IconKind = mikWarning
-          Tag = 4
-        end
-        object BtnWarningIconOnly: TDACButton
-          Caption = 'Apenas icone'
-          Kind = mbkWarning
-          Size = mbsMedium
-          ShowIcon = True
-          IconKind = mikWarning
-          IconSize = 20
-          Tag = 4
-        end
-        object BtnWarningLoading: TDACButton
-          Caption = 'Loading'
-          Kind = mbkWarning
-          Size = mbsLarge
-          Loading = True
-          ShowIcon = True
-          IconKind = mikSpinner
-          Tag = 4
-        end
-        object BtnWarningDisabled: TDACButton
-          Caption = 'Disabled'
-          Kind = mbkWarning
-          Enabled = False
-          Tag = 4
-        end
-        object BtnWarningDisabledLoading: TDACButton
-          Caption = 'Disabled + Loading'
-          Kind = mbkWarning
-          Enabled = False
-          Loading = True
-          ShowIcon = True
-          IconKind = mikSpinner
-          Tag = 4
-        end
-        object BtnWarningRadius0: TDACButton
-          Caption = 'Radius 0'
-          Kind = mbkWarning
-          CornerRadius = 0
-          ShowIcon = True
-          IconKind = mikWarning
-          Tag = 4
-        end
-        object BtnWarningRadius24: TDACButton
-          Caption = 'Radius 24'
-          Kind = mbkWarning
-          CornerRadius = 24
-          ShowIcon = True
-          IconKind = mikWarning
-          Tag = 4
-        end
-        object BtnWarningTabStopFalse: TDACButton
-          Caption = 'TabStop = False'
-          Kind = mbkWarning
-          Size = mbsMedium
-          TabStop = False
-          ShowIcon = True
-          IconKind = mikWarning
-          Tag = 12
-        end
-        object LblButtonsDanger: TLabel
-          AutoSize = False
-          Caption = 'Kind: mbkDanger'
-          Tag = 12
+        object lblButtonSpecials: TLabel
+          Left = 24
+          Top = 880
+          Width = 238
+          Height = 17
+          Caption = '5. Cenarios compostos de botao'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = 985605
+          Font.Height = -13
+          Font.Name = 'Segoe UI Semibold'
           Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          WordWrap = True
+          ParentFont = False
         end
-        object BtnDangerTextSmall: TDACButton
-          Caption = 'Texto so'
-          Kind = mbkDanger
-          Size = mbsSmall
-          Tag = 4
-        end
-        object BtnDangerIconLeft: TDACButton
-          Caption = 'Texto + icone esquerda'
-          Kind = mbkDanger
-          Size = mbsSmall
-          ShowIcon = True
-          IconPosition = mipLeft
-          IconKind = mikDanger
-          Tag = 4
-        end
-        object BtnDangerIconRight: TDACButton
-          Caption = 'Texto + icone direita'
-          Kind = mbkDanger
-          Size = mbsSmall
-          ShowIcon = True
-          IconPosition = mipRight
-          IconKind = mikDanger
-          Tag = 4
-        end
-        object BtnDangerIconOnly: TDACButton
-          Caption = 'Apenas icone'
-          Kind = mbkDanger
-          Size = mbsMedium
-          ShowIcon = True
-          IconKind = mikDanger
-          IconSize = 20
-          Tag = 4
-        end
-        object BtnDangerLoading: TDACButton
-          Caption = 'Loading'
-          Kind = mbkDanger
-          Size = mbsLarge
-          Loading = True
-          ShowIcon = True
-          IconKind = mikSpinner
-          Tag = 4
-        end
-        object BtnDangerDisabled: TDACButton
-          Caption = 'Disabled'
-          Kind = mbkDanger
-          Enabled = False
-          Tag = 4
-        end
-        object BtnDangerDisabledLoading: TDACButton
-          Caption = 'Disabled + Loading'
-          Kind = mbkDanger
-          Enabled = False
-          Loading = True
-          ShowIcon = True
-          IconKind = mikSpinner
-          Tag = 4
-        end
-        object BtnDangerRadius0: TDACButton
-          Caption = 'Radius 0'
-          Kind = mbkDanger
-          CornerRadius = 0
-          ShowIcon = True
-          IconKind = mikDanger
-          Tag = 4
-        end
-        object BtnDangerRadius24: TDACButton
-          Caption = 'Radius 24'
-          Kind = mbkDanger
-          CornerRadius = 24
-          ShowIcon = True
-          IconKind = mikDanger
-          Tag = 4
-        end
-        object BtnDangerTabStopFalse: TDACButton
-          Caption = 'TabStop = False'
-          Kind = mbkDanger
-          Size = mbsMedium
-          TabStop = False
-          ShowIcon = True
-          IconKind = mikDanger
-          Tag = 12
-        end
-        object LblButtonsTransparent: TLabel
-          AutoSize = False
-          Caption = 'Kind: mbkTransparent'
-          Tag = 12
-          Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          WordWrap = True
-        end
-        object BtnTransparentTextSmall: TDACButton
-          Caption = 'Texto so'
-          Kind = mbkTransparent
-          Size = mbsSmall
-          Tag = 4
-        end
-        object BtnTransparentIconLeft: TDACButton
-          Caption = 'Texto + icone esquerda'
-          Kind = mbkTransparent
-          Size = mbsSmall
-          ShowIcon = True
-          IconPosition = mipLeft
-          IconKind = mikCalendar
-          Tag = 4
-        end
-        object BtnTransparentIconRight: TDACButton
-          Caption = 'Texto + icone direita'
-          Kind = mbkTransparent
-          Size = mbsSmall
-          ShowIcon = True
-          IconPosition = mipRight
-          IconKind = mikClock
-          Tag = 4
-        end
-        object BtnTransparentIconOnly: TDACButton
-          Caption = 'Apenas icone'
-          Kind = mbkTransparent
-          Size = mbsMedium
-          ShowIcon = True
-          IconKind = mikSearch
-          IconSize = 20
-          Tag = 4
-        end
-        object BtnTransparentLoading: TDACButton
-          Caption = 'Loading'
-          Kind = mbkTransparent
-          Size = mbsLarge
-          Loading = True
-          ShowIcon = True
-          IconKind = mikSpinner
-          Tag = 4
-        end
-        object BtnTransparentDisabled: TDACButton
-          Caption = 'Disabled'
-          Kind = mbkTransparent
-          Enabled = False
-          Tag = 4
-        end
-        object BtnTransparentDisabledLoading: TDACButton
-          Caption = 'Disabled + Loading'
-          Kind = mbkTransparent
-          Enabled = False
-          Loading = True
-          ShowIcon = True
-          IconKind = mikSpinner
-          Tag = 4
-        end
-        object BtnTransparentRadius0: TDACButton
-          Caption = 'Radius 0'
-          Kind = mbkTransparent
-          CornerRadius = 0
-          ShowIcon = True
-          IconKind = mikInfoCircle
-          Tag = 4
-        end
-        object BtnTransparentRadius24: TDACButton
-          Caption = 'Radius 24'
-          Kind = mbkTransparent
-          CornerRadius = 24
-          ShowIcon = True
-          IconKind = mikInfoCircle
-          Tag = 4
-        end
-        object BtnTransparentTabStopFalse: TDACButton
-          Caption = 'TabStop = False'
-          Kind = mbkTransparent
-          Size = mbsMedium
-          TabStop = False
-          ShowIcon = True
-          IconKind = mikInfoCircle
-          Tag = 12
-        end
-        object LblButtonsInputAction: TLabel
-          AutoSize = False
-          Caption = 'Kind: mbkInputAction'
-          Tag = 12
-          Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          WordWrap = True
-        end
-        object BtnInputActionTextSmall: TDACButton
-          Caption = 'Texto so'
-          Kind = mbkInputAction
-          Size = mbsSmall
-          Tag = 4
-        end
-        object BtnInputActionIconLeft: TDACButton
-          Caption = 'Texto + icone esquerda'
-          Kind = mbkInputAction
-          Size = mbsSmall
-          ShowIcon = True
-          IconPosition = mipLeft
-          IconKind = mikUser
-          Tag = 4
-        end
-        object BtnInputActionIconRight: TDACButton
-          Caption = 'Texto + icone direita'
-          Kind = mbkInputAction
-          Size = mbsSmall
-          ShowIcon = True
-          IconPosition = mipRight
-          IconKind = mikUsers
-          Tag = 4
-        end
-        object BtnInputActionIconOnly: TDACButton
-          Caption = 'Apenas icone'
-          Kind = mbkInputAction
-          Size = mbsMedium
-          ShowIcon = True
-          IconKind = mikSearch
-          IconSize = 20
-          Tag = 4
-        end
-        object BtnInputActionLoading: TDACButton
-          Caption = 'Loading'
-          Kind = mbkInputAction
-          Size = mbsLarge
-          Loading = True
-          ShowIcon = True
-          IconKind = mikSpinner
-          Tag = 4
-        end
-        object BtnInputActionDisabled: TDACButton
-          Caption = 'Disabled'
-          Kind = mbkInputAction
-          Enabled = False
-          Tag = 4
-        end
-        object BtnInputActionDisabledLoading: TDACButton
-          Caption = 'Disabled + Loading'
-          Kind = mbkInputAction
-          Enabled = False
-          Loading = True
-          ShowIcon = True
-          IconKind = mikSpinner
-          Tag = 4
-        end
-        object BtnInputActionRadius0: TDACButton
-          Caption = 'Radius 0'
-          Kind = mbkInputAction
-          CornerRadius = 0
-          ShowIcon = True
-          IconKind = mikSearch
-          Tag = 4
-        end
-        object BtnInputActionRadius24: TDACButton
-          Caption = 'Radius 24'
-          Kind = mbkInputAction
-          CornerRadius = 24
-          ShowIcon = True
-          IconKind = mikSearch
-          Tag = 4
-        end
-        object BtnInputActionTabStopFalse: TDACButton
-          Caption = 'TabStop = False'
-          Kind = mbkInputAction
-          Size = mbsMedium
-          TabStop = False
-          ShowIcon = True
-          IconKind = mikSearch
-          Tag = 12
+        object gcButtonSpecials: TDACGridContainer
+          Left = 24
+          Top = 904
+          Width = 1128
+          Height = 150
+          Columns = 12
+          ContentPadding = 16
+          CornerRadius = 10
+          Gutter = 10
+          RowHeight = 46
+          TabOrder = 4
+          object btnSplitMain: TDACButton
+            Left = 40
+            Top = 920
+            Width = 274
+            Height = 46
+            Caption = 'Split: executar acao'
+            ShowIcon = True
+            IconKind = mikSave
+            Tag = 3
+            TabOrder = 0
+          end
+          object btnSplitMenu: TDACButton
+            Left = 324
+            Top = 920
+            Width = 84
+            Height = 46
+            Caption = ''
+            ShowIcon = True
+            IconKind = mikChevronDown
+            Tag = 1
+            TabOrder = 1
+          end
+          object btnSearchAction: TDACButton
+            Left = 418
+            Top = 920
+            Width = 180
+            Height = 46
+            Caption = 'Buscar'
+            Kind = mbkInputAction
+            ShowIcon = True
+            IconKind = mikSearch
+            Tag = 2
+            TabOrder = 2
+          end
+          object btnSaveAction: TDACButton
+            Left = 608
+            Top = 920
+            Width = 180
+            Height = 46
+            Caption = 'Salvar'
+            ShowIcon = True
+            IconKind = mikSave
+            Tag = 2
+            TabOrder = 3
+          end
+          object btnDeleteAction: TDACButton
+            Left = 798
+            Top = 920
+            Width = 180
+            Height = 46
+            Caption = 'Remover'
+            Kind = mbkDanger
+            ShowIcon = True
+            IconKind = mikTrash
+            Tag = 2
+            TabOrder = 4
+          end
+          object btnUploadAction: TDACButton
+            Left = 40
+            Top = 976
+            Width = 180
+            Height = 46
+            Caption = 'Enviar arquivo'
+            Kind = mbkGhost
+            ShowIcon = True
+            IconKind = mikUpload
+            Tag = 3
+            TabOrder = 5
+          end
         end
       end
     end
-    object TabInputs: TDACScrollContainer
-      Left = 0
-      Top = 0
-      Width = 1280
-      Height = 860
-      Align = alClient
-      Anchors = [akLeft, akTop, akRight, akBottom]
-      AutoScroll = True
-      BackgroundColor = $00000000
-      BorderColor = $00000000
-      BorderStyle = bsNone
-      CornerRadius = 0
-      ScrollBarMode = msbmAuto
-      object GridInputs: TDACGridContainer
-        Left = 0
-        Top = 0
-        Width = 1248
-        Height = 128
-        Align = alTop
-        Anchors = [akLeft, akTop, akRight]
-        AutoLayout = True
-        BackgroundColor = $00000000
-        BorderColor = $00000000
-        Columns = 12
-        ContentPadding = 16
-        CornerRadius = 0
-        Gutter = 16
-        RowHeight = 84
-        object LblInputsTitle: TLabel
-          AutoSize = False
-          Caption = 'DEMO: Inputs'
-          Font.Size = 12
-          Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          Tag = 12
-          WordWrap = True
-        end
-        object LblInputsDesc: TLabel
-          AutoSize = False
-          Caption = 'Container em design-time para incluir os controles de entrada da biblioteca.'
-          Tag = 12
-          Font.Style = [fsItalic]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          WordWrap = True
-        end
-      end
+    object tsInputs: TTabSheet
+      Caption = 'Inputs'
+      ImageIndex = 1
     end
-    object TabSeletores: TDACScrollContainer
-      Left = 0
-      Top = 0
-      Width = 1280
-      Height = 860
-      Align = alClient
-      Anchors = [akLeft, akTop, akRight, akBottom]
-      AutoScroll = True
-      BackgroundColor = $00000000
-      BorderColor = $00000000
-      BorderStyle = bsNone
-      CornerRadius = 0
-      ScrollBarMode = msbmAuto
-      object GridSeletores: TDACGridContainer
-        Left = 0
-        Top = 0
-        Width = 1248
-        Height = 128
-        Align = alTop
-        Anchors = [akLeft, akTop, akRight]
-        AutoLayout = True
-        BackgroundColor = $00000000
-        BorderColor = $00000000
-        Columns = 12
-        ContentPadding = 16
-        CornerRadius = 0
-        Gutter = 16
-        RowHeight = 84
-        object LblSeletoresTitle: TLabel
-          AutoSize = False
-          Caption = 'DEMO: Seletores'
-          Font.Size = 12
-          Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          Tag = 12
-          WordWrap = True
-        end
-        object LblSeletoresDesc: TLabel
-          AutoSize = False
-          Caption = 'Container para mostrar checkbox, radio, toggle, slider e paginacao de selecao.'
-          Tag = 12
-          Font.Style = [fsItalic]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          WordWrap = True
-        end
-      end
+    object tsSelectors: TTabSheet
+      Caption = 'Seletores'
+      ImageIndex = 2
     end
-    object TabContainers: TDACScrollContainer
-      Left = 0
-      Top = 0
-      Width = 1280
-      Height = 860
-      Align = alClient
-      Anchors = [akLeft, akTop, akRight, akBottom]
-      AutoScroll = True
-      BackgroundColor = $00000000
-      BorderColor = $00000000
-      BorderStyle = bsNone
-      CornerRadius = 0
-      ScrollBarMode = msbmAuto
-      object GridContainers: TDACGridContainer
-        Left = 0
-        Top = 0
-        Width = 1248
-        Height = 128
-        Align = alTop
-        Anchors = [akLeft, akTop, akRight]
-        AutoLayout = True
-        BackgroundColor = $00000000
-        BorderColor = $00000000
-        Columns = 12
-        ContentPadding = 16
-        CornerRadius = 0
-        Gutter = 16
-        RowHeight = 84
-        object LblContainersTitle: TLabel
-          AutoSize = False
-          Caption = 'DEMO: Containers'
-          Font.Size = 12
-          Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          Tag = 12
-          WordWrap = True
-        end
-        object LblContainersDesc: TLabel
-          AutoSize = False
-          Caption = 'Container para demonstrar GridContainer e ScrollContainer.'
-          Tag = 12
-          Font.Style = [fsItalic]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          WordWrap = True
-        end
-      end
+    object tsControls: TTabSheet
+      Caption = 'Controles'
+      ImageIndex = 3
     end
-    object TabTabs: TDACScrollContainer
-      Left = 0
-      Top = 0
-      Width = 1280
-      Height = 860
-      Align = alClient
-      Anchors = [akLeft, akTop, akRight, akBottom]
-      AutoScroll = True
-      BackgroundColor = $00000000
-      BorderColor = $00000000
-      BorderStyle = bsNone
-      CornerRadius = 0
-      ScrollBarMode = msbmAuto
-      object GridTabs: TDACGridContainer
-        Left = 0
-        Top = 0
-        Width = 1248
-        Height = 128
-        Align = alTop
-        Anchors = [akLeft, akTop, akRight]
-        AutoLayout = True
-        BackgroundColor = $00000000
-        BorderColor = $00000000
-        Columns = 12
-        ContentPadding = 16
-        CornerRadius = 0
-        Gutter = 16
-        RowHeight = 84
-        object LblTabsTitle: TLabel
-          AutoSize = False
-          Caption = 'DEMO: Tabs'
-          Font.Size = 12
-          Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          Tag = 12
-          WordWrap = True
-        end
-        object LblTabsDesc: TLabel
-          AutoSize = False
-          Caption = 'Validar comportamento de aba em execucao: conteudo por indice correto.'
-          Tag = 12
-          Font.Style = [fsItalic]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          WordWrap = True
-        end
-      end
+    object tsTabs: TTabSheet
+      Caption = 'Tabs'
+      ImageIndex = 4
     end
-    object TabCards: TDACScrollContainer
-      Left = 0
-      Top = 0
-      Width = 1280
-      Height = 860
-      Align = alClient
-      Anchors = [akLeft, akTop, akRight, akBottom]
-      AutoScroll = True
-      BackgroundColor = $00000000
-      BorderColor = $00000000
-      BorderStyle = bsNone
-      CornerRadius = 0
-      ScrollBarMode = msbmAuto
-      object GridCards: TDACGridContainer
-        Left = 0
-        Top = 0
-        Width = 1248
-        Height = 128
-        Align = alTop
-        Anchors = [akLeft, akTop, akRight]
-        AutoLayout = True
-        BackgroundColor = $00000000
-        BorderColor = $00000000
-        Columns = 12
-        ContentPadding = 16
-        CornerRadius = 0
-        Gutter = 16
-        RowHeight = 84
-        object LblCardsTitle: TLabel
-          AutoSize = False
-          Caption = 'DEMO: Cards'
-          Font.Size = 12
-          Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          Tag = 12
-          WordWrap = True
-        end
-        object LblCardsDesc: TLabel
-          AutoSize = False
-          Caption = 'Container para cards de status e resumo.'
-          Tag = 12
-          Font.Style = [fsItalic]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          WordWrap = True
-        end
-      end
+    object tsCards: TTabSheet
+      Caption = 'Cards'
+      ImageIndex = 5
     end
-    object TabGrid: TDACScrollContainer
-      Left = 0
-      Top = 0
-      Width = 1280
-      Height = 860
-      Align = alClient
-      Anchors = [akLeft, akTop, akRight, akBottom]
-      AutoScroll = True
-      BackgroundColor = $00000000
-      BorderColor = $00000000
-      BorderStyle = bsNone
-      CornerRadius = 0
-      ScrollBarMode = msbmAuto
-      object GridGrid: TDACGridContainer
-        Left = 0
-        Top = 0
-        Width = 1248
-        Height = 128
-        Align = alTop
-        Anchors = [akLeft, akTop, akRight]
-        AutoLayout = True
-        BackgroundColor = $00000000
-        BorderColor = $00000000
-        Columns = 12
-        ContentPadding = 16
-        CornerRadius = 0
-        Gutter = 16
-        RowHeight = 84
-        object LblGridTitle: TLabel
-          AutoSize = False
-          Caption = 'DEMO: Grid'
-          Font.Size = 12
-          Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          Tag = 12
-          WordWrap = True
-        end
-        object LblGridDesc: TLabel
-          AutoSize = False
-          Caption = 'Container para mostrar grid de dados da biblioteca.'
-          Tag = 12
-          Font.Style = [fsItalic]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          WordWrap = True
-        end
-      end
+    object tsGrid: TTabSheet
+      Caption = 'Grid'
+      ImageIndex = 6
     end
-    object TabStatus: TDACScrollContainer
-      Left = 0
-      Top = 0
-      Width = 1280
-      Height = 860
-      Align = alClient
-      Anchors = [akLeft, akTop, akRight, akBottom]
-      AutoScroll = True
-      BackgroundColor = $00000000
-      BorderColor = $00000000
-      BorderStyle = bsNone
-      CornerRadius = 0
-      ScrollBarMode = msbmAuto
-      object GridStatus: TDACGridContainer
-        Left = 0
-        Top = 0
-        Width = 1248
-        Height = 128
-        Align = alTop
-        Anchors = [akLeft, akTop, akRight]
-        AutoLayout = True
-        BackgroundColor = $00000000
-        BorderColor = $00000000
-        Columns = 12
-        ContentPadding = 16
-        CornerRadius = 0
-        Gutter = 16
-        RowHeight = 84
-        object LblStatusTitle: TLabel
-          AutoSize = False
-          Caption = 'DEMO: Status'
-          Font.Size = 12
-          Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          Tag = 12
-          WordWrap = True
-        end
-        object LblStatusDesc: TLabel
-          AutoSize = False
-          Caption = 'Container para barra de status, badges de estado e indicadores.'
-          Tag = 12
-          Font.Style = [fsItalic]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          WordWrap = True
-        end
-      end
+    object tsStatus: TTabSheet
+      Caption = 'Status'
+      ImageIndex = 7
     end
-    object TabBadges: TDACScrollContainer
-      Left = 0
-      Top = 0
-      Width = 1280
-      Height = 860
-      Align = alClient
-      Anchors = [akLeft, akTop, akRight, akBottom]
-      AutoScroll = True
-      BackgroundColor = $00000000
-      BorderColor = $00000000
-      BorderStyle = bsNone
-      CornerRadius = 0
-      ScrollBarMode = msbmAuto
-      object GridBadges: TDACGridContainer
-        Left = 0
-        Top = 0
-        Width = 1248
-        Height = 128
-        Align = alTop
-        Anchors = [akLeft, akTop, akRight]
-        AutoLayout = True
-        BackgroundColor = $00000000
-        BorderColor = $00000000
-        Columns = 12
-        ContentPadding = 16
-        CornerRadius = 0
-        Gutter = 16
-        RowHeight = 84
-        object LblBadgesTitle: TLabel
-          AutoSize = False
-          Caption = 'DEMO: Badges'
-          Font.Size = 12
-          Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          Tag = 12
-          WordWrap = True
-        end
-        object LblBadgesDesc: TLabel
-          AutoSize = False
-          Caption = 'Container para chips, tags e badges.'
-          Tag = 12
-          Font.Style = [fsItalic]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          WordWrap = True
-        end
-      end
+    object tsProgress: TTabSheet
+      Caption = 'Progresso'
+      ImageIndex = 8
     end
-    object TabProgress: TDACScrollContainer
-      Left = 0
-      Top = 0
-      Width = 1280
-      Height = 860
-      Align = alClient
-      Anchors = [akLeft, akTop, akRight, akBottom]
-      AutoScroll = True
-      BackgroundColor = $00000000
-      BorderColor = $00000000
-      BorderStyle = bsNone
-      CornerRadius = 0
-      ScrollBarMode = msbmAuto
-      object GridProgress: TDACGridContainer
-        Left = 0
-        Top = 0
-        Width = 1248
-        Height = 128
-        Align = alTop
-        Anchors = [akLeft, akTop, akRight]
-        AutoLayout = True
-        BackgroundColor = $00000000
-        BorderColor = $00000000
-        Columns = 12
-        ContentPadding = 16
-        CornerRadius = 0
-        Gutter = 16
-        RowHeight = 84
-        object LblProgressTitle: TLabel
-          AutoSize = False
-          Caption = 'DEMO: Progress'
-          Font.Size = 12
-          Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          Tag = 12
-          WordWrap = True
-        end
-        object LblProgressDesc: TLabel
-          AutoSize = False
-          Caption = 'Container para progressos linear/circular e estados de carregamento.'
-          Tag = 12
-          Font.Style = [fsItalic]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          WordWrap = True
-        end
-      end
+    object tsPills: TTabSheet
+      Caption = 'Pills'
+      ImageIndex = 9
     end
-    object TabPaginacao: TDACScrollContainer
-      Left = 0
-      Top = 0
-      Width = 1280
-      Height = 860
-      Align = alClient
-      Anchors = [akLeft, akTop, akRight, akBottom]
-      AutoScroll = True
-      BackgroundColor = $00000000
-      BorderColor = $00000000
-      BorderStyle = bsNone
-      CornerRadius = 0
-      ScrollBarMode = msbmAuto
-      object GridPaginacao: TDACGridContainer
-        Left = 0
-        Top = 0
-        Width = 1248
-        Height = 128
-        Align = alTop
-        Anchors = [akLeft, akTop, akRight]
-        AutoLayout = True
-        BackgroundColor = $00000000
-        BorderColor = $00000000
-        Columns = 12
-        ContentPadding = 16
-        CornerRadius = 0
-        Gutter = 16
-        RowHeight = 84
-        object LblPaginacaoTitle: TLabel
-          AutoSize = False
-          Caption = 'DEMO: Paginacao'
-          Font.Size = 12
-          Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          Tag = 12
-          WordWrap = True
-        end
-        object LblPaginacaoDesc: TLabel
-          AutoSize = False
-          Caption = 'Container para navegacao de paginas, pagina anterior e proxima.'
-          Tag = 12
-          Font.Style = [fsItalic]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          WordWrap = True
-        end
-      end
+    object tsFeedback: TTabSheet
+      Caption = 'Feedback'
+      ImageIndex = 10
     end
-    object TabLoading: TDACScrollContainer
-      Left = 0
-      Top = 0
-      Width = 1280
-      Height = 860
-      Align = alClient
-      Anchors = [akLeft, akTop, akRight, akBottom]
-      AutoScroll = True
-      BackgroundColor = $00000000
-      BorderColor = $00000000
-      BorderStyle = bsNone
-      CornerRadius = 0
-      ScrollBarMode = msbmAuto
-      object GridLoading: TDACGridContainer
-        Left = 0
-        Top = 0
-        Width = 1248
-        Height = 128
-        Align = alTop
-        Anchors = [akLeft, akTop, akRight]
-        AutoLayout = True
-        BackgroundColor = $00000000
-        BorderColor = $00000000
-        Columns = 12
-        ContentPadding = 16
-        CornerRadius = 0
-        Gutter = 16
-        RowHeight = 84
-        object LblLoadingTitle: TLabel
-          AutoSize = False
-          Caption = 'DEMO: Loading'
-          Font.Size = 12
-          Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          Tag = 12
-          WordWrap = True
-        end
-        object LblLoadingDesc: TLabel
-          AutoSize = False
-          Caption = 'Container para placeholders, spinners e estados de aguarde.'
-          Tag = 12
-          Font.Style = [fsItalic]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          WordWrap = True
-        end
-      end
+    object tsPagination: TTabSheet
+      Caption = 'Paginacao'
+      ImageIndex = 11
     end
-    object TabFeedback: TDACScrollContainer
-      Left = 0
-      Top = 0
-      Width = 1280
-      Height = 860
-      Align = alClient
-      Anchors = [akLeft, akTop, akRight, akBottom]
-      AutoScroll = True
-      BackgroundColor = $00000000
-      BorderColor = $00000000
-      BorderStyle = bsNone
-      CornerRadius = 0
-      ScrollBarMode = msbmAuto
-      object GridFeedback: TDACGridContainer
-        Left = 0
-        Top = 0
-        Width = 1248
-        Height = 128
-        Align = alTop
-        Anchors = [akLeft, akTop, akRight]
-        AutoLayout = True
-        BackgroundColor = $00000000
-        BorderColor = $00000000
-        Columns = 12
-        ContentPadding = 16
-        CornerRadius = 0
-        Gutter = 16
-        RowHeight = 84
-        object LblFeedbackTitle: TLabel
-          AutoSize = False
-          Caption = 'DEMO: Feedback'
-          Font.Size = 12
-          Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          Tag = 12
-          WordWrap = True
-        end
-        object LblFeedbackDesc: TLabel
-          AutoSize = False
-          Caption = 'Container para toast, tooltip e modal da biblioteca.'
-          Tag = 12
-          Font.Style = [fsItalic]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          WordWrap = True
-        end
-      end
+    object tsLoading: TTabSheet
+      Caption = 'Loading'
+      ImageIndex = 12
     end
-    object TabGraficos: TDACScrollContainer
-      Left = 0
-      Top = 0
-      Width = 1280
-      Height = 860
-      Align = alClient
-      Anchors = [akLeft, akTop, akRight, akBottom]
-      AutoScroll = True
-      BackgroundColor = $00000000
-      BorderColor = $00000000
-      BorderStyle = bsNone
-      CornerRadius = 0
-      ScrollBarMode = msbmAuto
-      object GridGraficos: TDACGridContainer
-        Left = 0
-        Top = 0
-        Width = 1248
-        Height = 128
-        Align = alTop
-        Anchors = [akLeft, akTop, akRight]
-        AutoLayout = True
-        BackgroundColor = $00000000
-        BorderColor = $00000000
-        Columns = 12
-        ContentPadding = 16
-        CornerRadius = 0
-        Gutter = 16
-        RowHeight = 84
-        object LblGraficosTitle: TLabel
-          AutoSize = False
-          Caption = 'DEMO: Graficos'
-          Font.Size = 12
-          Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          Tag = 12
-          WordWrap = True
-        end
-        object LblGraficosDesc: TLabel
-          AutoSize = False
-          Caption = 'Container para chart bar, line, area e donut.'
-          Tag = 12
-          Font.Style = [fsItalic]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          WordWrap = True
-        end
-      end
+    object tsCharts: TTabSheet
+      Caption = 'Charts'
+      ImageIndex = 13
     end
-    object TabReport: TDACScrollContainer
-      Left = 0
-      Top = 0
-      Width = 1280
-      Height = 860
-      Align = alClient
-      Anchors = [akLeft, akTop, akRight, akBottom]
-      AutoScroll = True
-      BackgroundColor = $00000000
-      BorderColor = $00000000
-      BorderStyle = bsNone
-      CornerRadius = 0
-      ScrollBarMode = msbmAuto
-      object GridReport: TDACGridContainer
-        Left = 0
-        Top = 0
-        Width = 1248
-        Height = 128
-        Align = alTop
-        Anchors = [akLeft, akTop, akRight]
-        AutoLayout = True
-        BackgroundColor = $00000000
-        BorderColor = $00000000
-        Columns = 12
-        ContentPadding = 16
-        CornerRadius = 0
-        Gutter = 16
-        RowHeight = 84
-        object LblReportTitle: TLabel
-          AutoSize = False
-          Caption = 'DEMO: Report'
-          Font.Size = 12
-          Font.Style = [fsBold]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          Tag = 12
-          WordWrap = True
-        end
-        object LblReportDesc: TLabel
-          AutoSize = False
-          Caption = 'Container para preview de relatorios e controle de pagina.'
-          Tag = 12
-          Font.Style = [fsItalic]
-          Layout = tlTop
-          Margins.Left = 4
-          Margins.Top = 4
-          Margins.Bottom = 4
-          WordWrap = True
-        end
-      end
+    object tsReport: TTabSheet
+      Caption = 'Report'
+      ImageIndex = 14
     end
   end
 end

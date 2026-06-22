@@ -3,6 +3,7 @@ unit DAC.Components.Hooks.Tabs;
 interface
 
 uses
+  System.Types,
   Winapi.Messages,
   Vcl.Controls,
   Vcl.Graphics,

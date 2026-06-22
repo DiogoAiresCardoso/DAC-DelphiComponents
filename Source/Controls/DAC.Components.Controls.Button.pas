@@ -890,6 +890,8 @@ procedure TDACButton.UpdateLabel;
 var
   LPalette: TButtonPalette;
   LIconRect: TRectF;
+  LLabelLeft: Integer;
+  LLabelWidth: Integer;
   LTextRect: TRectF;
 begin
   if (FTextLabel = nil) or not HandleAllocated then
@@ -907,8 +909,10 @@ begin
   CalculateContentLayout(TRectF.Create(0, 0, Width / ScaleFactor,
     Height / ScaleFactor), LIconRect, LTextRect);
 
-  FTextLabel.SetBounds(Round(LTextRect.Left * ScaleFactor), 0,
-    Max(0, Round(LTextRect.Width * ScaleFactor)), Height);
+  LLabelLeft := Max(0, Round((LTextRect.Left - 16) * ScaleFactor));
+  LLabelWidth := Max(0, Round((LTextRect.Width + 32) * ScaleFactor));
+  LLabelWidth := Min(LLabelWidth, Width - LLabelLeft);
+  FTextLabel.SetBounds(LLabelLeft, 0, LLabelWidth, Height);
   FTextLabel.Text := Caption;
   FTextLabel.FontFamily := TDACComponentFontInstaller.FontFamily;
   FTextLabel.FontSize := Round(ButtonFontSize);

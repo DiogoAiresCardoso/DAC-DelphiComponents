@@ -87,7 +87,7 @@ begin
   FHotIndex := -1;
   FShowContentBorder := True;
 
-  OwnerDraw := False;
+  OwnerDraw := True;
   Style := tsTabs;
   TabHeight := 42;
   TabWidth := 128;

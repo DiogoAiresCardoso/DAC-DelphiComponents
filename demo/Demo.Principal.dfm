@@ -164,11 +164,13 @@ object Form1: TForm1
             Top = 186
             Width = 180
             Height = 44
-            Caption = 'Acao de input'
+            Caption = ''
+            Hint = 'Acao de input'
             Kind = mbkInputAction
             ShowIcon = True
+            ShowHint = True
             IconKind = mikSearch
-            Tag = 3
+            Tag = 1
             TabOrder = 6
           end
         end

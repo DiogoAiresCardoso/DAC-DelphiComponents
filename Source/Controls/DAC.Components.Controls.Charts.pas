@@ -8,6 +8,7 @@ uses
   System.Types,
   System.UITypes,
   Winapi.Messages,
+  Winapi.Windows,
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
@@ -31,7 +32,7 @@ type
     FShowGrid: Boolean;
     FShowValue: Boolean;
     FValuesText: string;
-    function ChartRect: TRectF;
+    function ChartRect(const ADest: TRectF): TRectF;
     function ParseValues: TArray<Single>;
     procedure DrawAreaChart(const ACanvas: ISkCanvas; const ARect: TRectF;
       const AValues: TArray<Single>);
@@ -39,7 +40,7 @@ type
       const AValues: TArray<Single>);
     procedure DrawDoughnutChart(const ACanvas: ISkCanvas; const ARect: TRectF;
       const AValues: TArray<Single>);
-    procedure DrawFrame(const ACanvas: ISkCanvas; const ARect: TRectF);
+    procedure DrawFrame(const ACanvas: ISkCanvas; const ADest: TRectF);
     procedure DrawGrid(const ACanvas: ISkCanvas; const ARect: TRectF);
     procedure DrawLineChart(const ACanvas: ISkCanvas; const ARect: TRectF;
       const AValues: TArray<Single>);
@@ -128,6 +129,7 @@ begin
   Height := 170;
   TabStop := False;
   ParentColor := False;
+  Color := clWhite;
   StyleElements := [];
   Font.Name := 'Segoe UI';
   Font.Size := 9;
@@ -155,10 +157,10 @@ begin
   inherited;
 end;
 
-function TDACChart.ChartRect: TRectF;
+function TDACChart.ChartRect(const ADest: TRectF): TRectF;
 begin
   Result := TRectF.Create(ScaleMetric(18), ScaleMetric(16),
-    Width - ScaleMetric(16), Height - ScaleMetric(22));
+    ADest.Width - ScaleMetric(16), ADest.Height - ScaleMetric(22));
   if Result.Right <= Result.Left then
     Result.Right := Result.Left + 1;
   if Result.Bottom <= Result.Top then
@@ -321,11 +323,11 @@ begin
   end;
 end;
 
-procedure TDACChart.DrawFrame(const ACanvas: ISkCanvas; const ARect: TRectF);
+procedure TDACChart.DrawFrame(const ACanvas: ISkCanvas; const ADest: TRectF);
 var
   LRect: TRectF;
 begin
-  LRect := TRectF.Create(0.5, 0.5, Width - 0.5, Height - 0.5);
+  LRect := TRectF.Create(0.5, 0.5, ADest.Width - 0.5, ADest.Height - 0.5);
   FRenderer.FillRoundRect(ACanvas, LRect, TDACComponentColors.White, ScaleMetric(8), 255);
   FRenderer.StrokeRoundRect(ACanvas, LRect, TDACComponentColors.ControlBorder,
     ScaleMetric(8), 1, 255);
@@ -398,10 +400,14 @@ var
   LRect: TRectF;
   LValues: TArray<Single>;
 begin
-  LRect := ChartRect;
+  // The rounded frame intentionally leaves its extreme corner pixels
+  // uncovered. Clear the whole Skia destination first so those pixels keep
+  // the chart surface color rather than the default black backing store.
+  ACanvas.Clear(TDACComponentColors.White);
+  LRect := ChartRect(ADest);
   LValues := ParseValues;
   if FShowFrame then
-    DrawFrame(ACanvas, LRect);
+    DrawFrame(ACanvas, ADest);
   if FShowGrid and (FKind <> mckDoughnut) then
     DrawGrid(ACanvas, LRect);
 
@@ -527,7 +533,15 @@ begin
 end;
 
 procedure TDACChart.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+var
+  LBrush: HBRUSH;
 begin
+  LBrush := CreateSolidBrush(ColorToRGB(Color));
+  try
+    Winapi.Windows.FillRect(AMessage.DC, ClientRect, LBrush);
+  finally
+    DeleteObject(LBrush);
+  end;
   AMessage.Result := 1;
 end;
 

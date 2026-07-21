@@ -115,6 +115,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure Click; override;
+    function MinimumContentWidth: Integer;
     procedure Redraw;
   published
     property Align;
@@ -577,6 +578,32 @@ begin
   else
     Result := 16;
   end;
+end;
+
+function TDACButton.MinimumContentWidth: Integer;
+var
+  LGap: Integer;
+  LTextWidth: Single;
+  LWidth: Integer;
+begin
+  LWidth := ContentPadding * 2;
+  if Trim(Caption) <> '' then
+  begin
+    LTextWidth := 0;
+    if FTextLabel <> nil then
+      LTextWidth := FTextLabel.MeasureTextWidth(Caption,
+        TDACComponentFontInstaller.FontFamily, Round(ButtonFontSize), True) /
+        ScaleFactor;
+    Inc(LWidth, Ceil(LTextWidth));
+  end;
+  if FShowIcon then
+  begin
+    LGap := 0;
+    if Trim(Caption) <> '' then
+      LGap := 8;
+    Inc(LWidth, EffectiveIconSize + LGap);
+  end;
+  Result := Max(ScaleMetric(44), ScaleMetric(LWidth));
 end;
 
 procedure TDACButton.InvalidateButton;

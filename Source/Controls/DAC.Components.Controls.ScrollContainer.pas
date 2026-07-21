@@ -107,6 +107,11 @@ begin
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
   FPaintBox.SetSubComponent(True);
+  // The surface is viewport chrome, not scrollable content.  alClient keeps
+  // it out of TScrollingWinControl.CalcAutoRange, which otherwise feeds the
+  // current ScrollBar.Position back into the range and lets the surface grow
+  // beneath the native scrollbar strip while scrolling.
+  FPaintBox.Align := alClient;
   FPaintBox.StyleElements := [];
   FPaintBox.OnDraw := PaintBoxDraw;
 end;
@@ -300,26 +305,13 @@ begin
 end;
 
 procedure TDACScrollContainer.UpdateChromeBounds;
-var
-  LHeight: Integer;
-  LLeft: Integer;
-  LTop: Integer;
-  LWidth: Integer;
 begin
   if FPaintBox = nil then
     Exit;
-  LLeft := 0;
-  LTop := 0;
-  LWidth := Width;
-  LHeight := Height;
-  if HandleAllocated then
-  begin
-    LLeft := HorzScrollBar.Position;
-    LTop := VertScrollBar.Position;
-    LWidth := ClientWidth;
-    LHeight := ClientHeight;
-  end;
-  FPaintBox.SetBounds(LLeft, LTop, LWidth, LHeight);
+  if FPaintBox.Align <> alClient then
+    FPaintBox.Align := alClient;
+  if not HandleAllocated then
+    FPaintBox.SetBounds(0, 0, Width, Height);
   if (csDesigning in ComponentState) or not HandleAllocated then
     Exit;
   FPaintBox.SendToBack;

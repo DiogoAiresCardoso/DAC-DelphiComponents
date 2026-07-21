@@ -87,6 +87,7 @@ implementation
 
 uses
   System.Math,
+  DAC.Components.Controls.Button,
   DAC.Components.DesignSystem.ColorTokens;
 
 constructor TDACGridContainer.Create(AOwner: TComponent);
@@ -222,14 +223,37 @@ end;
 function TDACGridContainer.EffectiveColumns(const AClientWidth,
   AGutter: Integer): Integer;
 var
-  LMinimumColumns: Integer;
-  LMinimumColumnWidth: Integer;
+  I: Integer;
+  LCandidate: Integer;
+  LChild: TControl;
+  LColumnWidth: Integer;
+  LRequiredWidth: Integer;
+  LSpan: Integer;
 begin
-  LMinimumColumnWidth := ScaleMetric(48);
-  Result := (Max(0, AClientWidth) + AGutter) div
-    Max(1, LMinimumColumnWidth + AGutter);
-  LMinimumColumns := Min(FColumns, 3);
-  Result := Max(LMinimumColumns, Min(FColumns, Result));
+  for LCandidate := FColumns downto 1 do
+  begin
+    LColumnWidth := (Max(0, AClientWidth) -
+      (AGutter * (LCandidate - 1))) div LCandidate;
+    if LColumnWidth <= 0 then
+      Continue;
+    for I := 0 to ControlCount - 1 do
+    begin
+      LChild := Controls[I];
+      if (LChild = FPaintBox) or not LChild.Visible then
+        Continue;
+      LSpan := ChildColumnSpan(LChild, LCandidate);
+      LRequiredWidth := Max(ScaleMetric(48), LChild.Constraints.MinWidth);
+      if LChild is TDACButton then
+        LRequiredWidth := Max(LRequiredWidth,
+          TDACButton(LChild).MinimumContentWidth);
+      if ((LColumnWidth * LSpan) + (AGutter * (LSpan - 1))) <
+        LRequiredWidth then
+        Break;
+    end;
+    if I = ControlCount then
+      Exit(LCandidate);
+  end;
+  Result := 1;
 end;
 
 function TDACGridContainer.LayoutRect: TRect;

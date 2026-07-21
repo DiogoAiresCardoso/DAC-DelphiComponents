@@ -71,11 +71,13 @@ type
     FTargetControl: TControl;
     FText: string;
     FTracker: TTimer;
+    FManualVisible: Boolean;
     function MouseInControl(AControl: TControl): Boolean;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
     procedure SetTargetControl(const AValue: TControl);
     procedure SetText(const AValue: string);
+    procedure ShowForTargetInternal(const AManual: Boolean);
     procedure TrackerTimer(Sender: TObject);
     procedure UpdatePaintBoxBounds;
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
@@ -289,6 +291,7 @@ end;
 
 procedure TDACTooltip.HideTooltip;
 begin
+  FManualVisible := False;
   Visible := False;
 end;
 
@@ -368,6 +371,11 @@ begin
 end;
 
 procedure TDACTooltip.ShowForTarget;
+begin
+  ShowForTargetInternal(True);
+end;
+
+procedure TDACTooltip.ShowForTargetInternal(const AManual: Boolean);
 var
   LParent: TWinControl;
 begin
@@ -379,6 +387,7 @@ begin
     Parent := LParent;
   SetBounds(FTargetControl.Left, FTargetControl.Top + FTargetControl.Height + 4,
     Width, Height);
+  FManualVisible := AManual;
   Visible := True;
   if HandleAllocated and Parent.HandleAllocated then
     BringToFront;
@@ -397,9 +406,9 @@ begin
   if MouseInControl(FTargetControl) then
   begin
     if not Visible then
-      ShowForTarget;
+      ShowForTargetInternal(False);
   end
-  else if Visible and not MouseInControl(Self) then
+  else if Visible and not FManualVisible and not MouseInControl(Self) then
     HideTooltip;
 end;
 

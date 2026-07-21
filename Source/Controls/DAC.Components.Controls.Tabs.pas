@@ -466,8 +466,12 @@ procedure TDACTabs.UpdateHeaderBounds;
 var
   I: Integer;
   LExtent: Integer;
+  LPaddingLeft: Integer;
+  LPaddingTop: Integer;
+  LNeedsRealign: Boolean;
 begin
   LExtent := HeaderExtent;
+  LNeedsRealign := False;
   if FHeader <> nil then
   begin
     if (FHeader.Parent <> Self) and (Parent <> nil) and HandleAllocated and
@@ -483,13 +487,24 @@ begin
   end;
   for I := 0 to PageCount - 1 do
   begin
-    Pages[I].Padding.Top := 0;
-    Pages[I].Padding.Left := 0;
+    LPaddingTop := 0;
+    LPaddingLeft := 0;
     if Orientation = mtoVertical then
-      Pages[I].Padding.Left := LExtent + ScaleMetric(4)
+      LPaddingLeft := LExtent + ScaleMetric(4)
     else
-      Pages[I].Padding.Top := LExtent + ScaleMetric(4);
+      LPaddingTop := LExtent + ScaleMetric(4);
+    if (Pages[I].Padding.Top <> LPaddingTop) or
+      (Pages[I].Padding.Left <> LPaddingLeft) then
+    begin
+      LNeedsRealign := True;
+      Pages[I].Padding.Top := LPaddingTop;
+      Pages[I].Padding.Left := LPaddingLeft;
+      if Pages[I].HandleAllocated then
+        Pages[I].Realign;
+    end;
   end;
+  if LNeedsRealign and HandleAllocated then
+    Realign;
 end;
 
 end.

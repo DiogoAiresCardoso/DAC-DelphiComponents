@@ -4,7 +4,9 @@ program DACComponentsInteraction;
 
 uses
   System.Classes,
+  System.Skia,
   System.SysUtils,
+  System.Types,
   Data.DB,
   Datasnap.DBClient,
   Winapi.Messages,
@@ -12,20 +14,26 @@ uses
   Vcl.ComCtrls,
   Vcl.Controls,
   Vcl.Forms,
+  Vcl.Graphics,
+  Vcl.Skia,
   DAC.Components.Dpi in '..\Source\Core\DAC.Components.Dpi.pas',
   DAC.Components.Controls.Badges in '..\Source\Controls\DAC.Components.Controls.Badges.pas',
   DAC.Components.Controls.Button in '..\Source\Controls\DAC.Components.Controls.Button.pas',
   DAC.Components.Controls.Charts in '..\Source\Controls\DAC.Components.Controls.Charts.pas',
   DAC.Components.Controls.DataGrid in '..\Source\Controls\DAC.Components.Controls.DataGrid.pas',
   DAC.Components.Controls.Feedback in '..\Source\Controls\DAC.Components.Controls.Feedback.pas',
+  DAC.Components.Controls.GridContainer in '..\Source\Controls\DAC.Components.Controls.GridContainer.pas',
   DAC.Components.Controls.Loading in '..\Source\Controls\DAC.Components.Controls.Loading.pas',
   DAC.Components.Controls.Pagination in '..\Source\Controls\DAC.Components.Controls.Pagination.pas',
   DAC.Components.Controls.Progress in '..\Source\Controls\DAC.Components.Controls.Progress.pas',
   DAC.Components.Controls.ReportViewer in '..\Source\Controls\DAC.Components.Controls.ReportViewer.pas',
   DAC.Components.Controls.Selectors in '..\Source\Controls\DAC.Components.Controls.Selectors.pas',
+  DAC.Components.Controls.ScrollContainer in '..\Source\Controls\DAC.Components.Controls.ScrollContainer.pas',
   DAC.Components.Controls.StatusBar in '..\Source\Controls\DAC.Components.Controls.StatusBar.pas',
   DAC.Components.Controls.SummaryCard in '..\Source\Controls\DAC.Components.Controls.SummaryCard.pas',
   DAC.Components.Controls.Tabs in '..\Source\Controls\DAC.Components.Controls.Tabs.pas',
+  DAC.Components.DesignSystem.ColorTokens in '..\Source\DesignSystem\DAC.Components.DesignSystem.ColorTokens.pas',
+  DAC.Components.DesignSystem.IconAssets in '..\Source\DesignSystem\DAC.Components.DesignSystem.IconAssets.pas',
   Demo.Principal in '..\demo\Demo.Principal.pas' {Form1};
 
 var
@@ -58,6 +66,21 @@ begin
   repeat
     Application.ProcessMessages;
   until Cardinal(GetTickCount - LStart) >= AMilliseconds;
+end;
+
+procedure RequireVisibleWithin(const AControl: TControl;
+  const AExpected: Boolean; const ATimeout: Cardinal; const AMessage: string);
+var
+  LStart: Cardinal;
+begin
+  LStart := GetTickCount;
+  repeat
+    Application.ProcessMessages;
+    if AControl.Visible = AExpected then
+      Exit;
+    Sleep(1);
+  until Cardinal(GetTickCount - LStart) >= ATimeout;
+  Require(AControl.Visible = AExpected, AMessage);
 end;
 
 procedure TInteractionProbe.OnApplicationException(Sender: TObject; E: Exception);
@@ -94,10 +117,113 @@ begin
     AName + ' nao foi instanciado como ' + AClass.ClassName + '.');
 end;
 
+procedure RequireSvgIcon(const AKind: TDACIconKind);
+var
+  LSource: string;
+  LDom: ISkSVGDOM;
+begin
+  LSource := TDACIconAssets.SvgSource(AKind, $FF1E5F2A);
+  Require(LSource <> '', 'SVG ausente: ' + TDACIconAssets.Info(AKind).Name + '.');
+  LDom := TSkSVGDOM.Make(LSource);
+  Require(LDom <> nil, 'SVG invalido: ' + TDACIconAssets.Info(AKind).Name + '.');
+end;
+
+procedure RequireGridWithinViewport(const AGrid: TDACGridContainer;
+  const AViewport: TDACScrollContainer; const AMargin: Integer);
+var
+  I: Integer;
+  LChild: TControl;
+  LViewportRect: TRect;
+begin
+  Require(Winapi.Windows.GetClientRect(AViewport.Handle, LViewportRect),
+    'Nao foi possivel obter o viewport nativo do scroll.');
+  Require((AGrid.Left >= AMargin) and
+    (AGrid.Left + AGrid.Width <= LViewportRect.Right - AMargin),
+    'A grade excedeu as margens do viewport.');
+  for I := 0 to AGrid.ControlCount - 1 do
+  begin
+    LChild := AGrid.Controls[I];
+    if not LChild.Visible or (LChild is TSkPaintBox) then
+      Continue;
+    Require((LChild.Left >= AGrid.ClientRect.Left) and
+      (LChild.Left + LChild.Width <= AGrid.ClientRect.Right - 8),
+      'Filho visivel da grade excedeu o viewport: ' + LChild.Name + '.');
+  end;
+end;
+
+procedure RequireFormWithinMonitorWorkArea(const AForm: TForm);
+var
+  LMonitor: TMonitor;
+  LWorkArea: TRect;
+begin
+  LMonitor := AForm.Monitor;
+  Require(LMonitor <> nil, 'Nao foi possivel localizar o monitor da Demo.');
+  LWorkArea := LMonitor.WorkareaRect;
+  Require((AForm.Left >= LWorkArea.Left) and (AForm.Top >= LWorkArea.Top) and
+    (AForm.Left + AForm.Width <= LWorkArea.Right) and
+    (AForm.Top + AForm.Height <= LWorkArea.Bottom),
+    'A Demo excedeu a area util do monitor efetivo.');
+end;
+
+procedure RequireScrollViewportSurface(const AViewport: TDACScrollContainer;
+  const AStage: string);
+const
+  SampleMargin = 12;
+  ColorTolerance = 24;
+var
+  LClientRect: TRect;
+  LDC: HDC;
+  LExpected: COLORREF;
+  LPixel: COLORREF;
+  LSampleY: array[0..2] of Integer;
+  I: Integer;
+  function Component(const AColor: COLORREF; const AShift: Integer): Byte;
+  begin
+    Result := Byte((AColor shr AShift) and $FF);
+  end;
+  function MatchesSurface(const AColor: COLORREF): Boolean;
+  begin
+    Result := (Abs(Integer(Component(AColor, 0)) -
+      Integer(Component(LExpected, 0))) <= ColorTolerance) and
+      (Abs(Integer(Component(AColor, 8)) -
+      Integer(Component(LExpected, 8))) <= ColorTolerance) and
+      (Abs(Integer(Component(AColor, 16)) -
+      Integer(Component(LExpected, 16))) <= ColorTolerance);
+  end;
+begin
+  Require(Winapi.Windows.GetClientRect(AViewport.Handle, LClientRect),
+    'Nao foi possivel obter o viewport para validar a surface: ' + AStage);
+  Require((LClientRect.Right > SampleMargin * 2) and
+    (LClientRect.Bottom > SampleMargin * 2),
+    'Viewport insuficiente para validar a surface: ' + AStage);
+  LSampleY[0] := SampleMargin;
+  LSampleY[1] := LClientRect.Bottom div 2;
+  LSampleY[2] := LClientRect.Bottom - SampleMargin;
+  LExpected := ColorToRGB(TDACComponentColors.ToVclColor(
+    TDACComponentColors.Normalize(AViewport.BackgroundColor)));
+  LDC := GetDC(AViewport.Handle);
+  try
+    Require(LDC <> 0, 'Nao foi possivel acessar pixels do viewport: ' + AStage);
+    for I := Low(LSampleY) to High(LSampleY) do
+    begin
+      LPixel := GetPixel(LDC, SampleMargin, LSampleY[I]);
+      Require((LPixel <> CLR_INVALID) and MatchesSurface(LPixel),
+        'Faixa sem surface/token apos scroll (' + AStage + ').');
+    end;
+  finally
+    if LDC <> 0 then
+      ReleaseDC(AViewport.Handle, LDC);
+  end;
+end;
+
 procedure RunInteraction;
 var
   LBadge: TDACBadge;
   LButton: TDACButton;
+  LColumnFirst: TDACButton;
+  LColumnSecond: TDACButton;
+  LColumnThird: TDACButton;
+  LColumnsGrid: TDACGridContainer;
   LCheck: TDACCheckBox;
   LDataSet: TClientDataSet;
   LDataSource: TDataSource;
@@ -105,6 +231,7 @@ var
   LModal: TDACModalDialog;
   LPagination: TDACPagination;
   LSlider: TDACSlider;
+  LScroll: TDACScrollContainer;
   LTabPage: TTabSheet;
   LTabs: TDACTabs;
   LToast: TDACToast;
@@ -116,6 +243,15 @@ var
 begin
   LProbe := TInteractionProbe.Create;
   try
+  RequireSvgIcon(mikSave);
+  RequireSvgIcon(mikSearch);
+  RequireSvgIcon(mikTrash);
+  RequireSvgIcon(mikCheck);
+  RequireSvgIcon(mikChevronLeft);
+  RequireSvgIcon(mikChevronRight);
+  RequireSvgIcon(mikChevronDown);
+  RequireSvgIcon(mikSpinner);
+
   Require(DACScale(36, 96) = 36, 'DPI 96 invalido.');
   Require(DACScale(36, 120) = 45, 'DPI 120 invalido.');
   Require(DACScale(36, 144) = 54, 'DPI 144 invalido.');
@@ -124,6 +260,7 @@ begin
   Application.CreateForm(TForm1, Form1);
   Form1.Show;
   PumpMessages(150);
+  RequireFormWithinMonitorWorkArea(Form1);
 
   RequireComponent(Form1, 'GalleryTabs', TDACTabs);
   RequireComponent(Form1, 'demoEdit', TControl);
@@ -141,6 +278,52 @@ begin
   RequireComponent(Form1, 'demoLoading', TDACLoading);
   RequireComponent(Form1, 'demoBarChart', TDACBarChart);
   RequireComponent(Form1, 'demoReportViewer', TDACReportViewer);
+
+  LScroll := Form1.scrButtons;
+  Require(LScroll.ControlAtPos(Point(24, 22), False, False) =
+    Form1.lblButtonsTitle,
+    'A surface Skia do scroll container cobriu o primeiro filho VCL.');
+  RequireGridWithinViewport(Form1.gcButtonKinds, LScroll, 24);
+
+  LColumnsGrid := TDACGridContainer.Create(Form1);
+  LColumnsGrid.Parent := Form1;
+  LColumnsGrid.SetBounds(16, 360, 360, 120);
+  LColumnFirst := TDACButton.Create(LColumnsGrid);
+  LColumnFirst.Parent := LColumnsGrid;
+  LColumnSecond := TDACButton.Create(LColumnsGrid);
+  LColumnSecond.Parent := LColumnsGrid;
+  LColumnThird := TDACButton.Create(LColumnsGrid);
+  LColumnThird.Parent := LColumnsGrid;
+  LColumnsGrid.Columns := 1;
+  PumpMessages(30);
+  Require(LColumnSecond.Top > LColumnFirst.Top,
+    'Columns=1 nao foi respeitado.');
+  LColumnsGrid.Columns := 2;
+  PumpMessages(30);
+  Require((LColumnSecond.Top = LColumnFirst.Top) and
+    (LColumnThird.Top > LColumnFirst.Top), 'Columns=2 nao foi respeitado.');
+  LColumnsGrid.Columns := 3;
+  PumpMessages(30);
+  Require(LColumnThird.Top = LColumnFirst.Top,
+    'Columns>=3 nao manteve tres colunas quando havia espaco.');
+  LColumnsGrid.Free;
+
+  Form1.SetBounds(Form1.Left, Form1.Top, 520, 560);
+  PumpMessages(100);
+  Require(Form1.btnKindGhost.Top > Form1.btnKindPrimary.Top,
+    'A grade nao refez as colunas quando a largura ficou reduzida.');
+  RequireGridWithinViewport(Form1.gcButtonKinds, LScroll, 24);
+  LScroll.Perform(WM_VSCROLL, SB_TOP, 0);
+  PumpMessages(80);
+  RequireScrollViewportSurface(LScroll, 'topo');
+  LScroll.Perform(WM_VSCROLL, SB_PAGEDOWN, 0);
+  PumpMessages(80);
+  RequireScrollViewportSurface(LScroll, 'meio');
+  LScroll.Perform(WM_VSCROLL, SB_BOTTOM, 0);
+  PumpMessages(80);
+  RequireScrollViewportSurface(LScroll, 'fim');
+  Require(Form1.HandleAllocated and Form1.Visible,
+    'O scroll destruiu ou ocultou a janela principal.');
 
   LButton := TDACButton.Create(Form1);
   LButton.Parent := Form1;
@@ -202,10 +385,12 @@ begin
   LTooltip := Form1.FindComponent('demoTooltip') as TDACTooltip;
   LTooltip.TargetControl := LButton;
   LTooltip.ShowForTarget;
-  PumpMessages(30);
-  Require(LTooltip.Visible, 'Tooltip nao foi exibido.');
+  RequireVisibleWithin(LTooltip, True, 500, 'Tooltip nao foi exibido.');
+  PumpMessages(160);
+  Require(LTooltip.Visible,
+    'Tooltip programatico foi ocultado pelo rastreador sem HideTooltip.');
   LTooltip.HideTooltip;
-  Require(not LTooltip.Visible, 'Tooltip nao foi ocultado.');
+  RequireVisibleWithin(LTooltip, False, 500, 'Tooltip nao foi ocultado.');
 
   LToast := Form1.FindComponent('demoToast') as TDACToast;
   LToast.TitleText := 'Interaction toast';

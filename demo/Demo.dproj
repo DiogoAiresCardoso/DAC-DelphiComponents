@@ -1,4 +1,4 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{880B61BC-ABD9-47CF-845F-EC9FFCD41FFD}</ProjectGuid>
         <ProjectVersion>18.3</ProjectVersion>
@@ -584,4 +584,3 @@
         <Copy SourceFiles="$(DAC_SkiaRuntimeSource)" DestinationFiles="$(DCC_ExeOutput)\sk4d.dll"/>
     </Target>
 </Project>
-

@@ -42,12 +42,16 @@ type
     procedure SetText(const AValue: string);
     procedure SetTextColor(const AValue: TAlphaColor);
     procedure SetVertAlign(const AValue: TDACSystemTextVertAlign);
+    procedure ApplyCanvasFont(const AFontFamily: string; const AFontSize: Integer;
+      const ABold: Boolean);
   protected
     procedure Paint; override;
   public
     constructor Create(AOwner: TComponent); override;
     procedure BeginUpdate;
     procedure EndUpdate;
+    function MeasureTextWidth(const AText, AFontFamily: string;
+      const AFontSize: Integer; const ABold: Boolean): Integer;
     property Bold: Boolean read FBold write SetBold;
     property FontFamily: string read FFontFamily write SetFontFamily;
     property FontSize: Integer read FFontSize write SetFontSize;
@@ -113,13 +117,8 @@ begin
   inherited;
 
   Canvas.Brush.Style := bsClear;
-  Canvas.Font.Name := FFontFamily;
-  Canvas.Font.Size := FFontSize;
+  ApplyCanvasFont(FFontFamily, FFontSize, FBold);
   Canvas.Font.Color := TDACComponentColors.ToVclColor(FTextColor);
-  if FBold then
-    Canvas.Font.Style := [fsBold]
-  else
-    Canvas.Font.Style := [];
 
   SetBkMode(Canvas.Handle, TRANSPARENT);
 
@@ -147,6 +146,24 @@ begin
   end;
 
   DrawText(Canvas.Handle, PChar(FText), -1, LRect, LFlags);
+end;
+
+procedure TDACSystemText.ApplyCanvasFont(const AFontFamily: string;
+  const AFontSize: Integer; const ABold: Boolean);
+begin
+  Canvas.Font.Name := AFontFamily;
+  Canvas.Font.Size := Max(1, AFontSize);
+  if ABold then
+    Canvas.Font.Style := [fsBold]
+  else
+    Canvas.Font.Style := [];
+end;
+
+function TDACSystemText.MeasureTextWidth(const AText, AFontFamily: string;
+  const AFontSize: Integer; const ABold: Boolean): Integer;
+begin
+  ApplyCanvasFont(AFontFamily, AFontSize, ABold);
+  Result := Canvas.TextWidth(AText);
 end;
 
 procedure TDACSystemText.RequestInvalidate;

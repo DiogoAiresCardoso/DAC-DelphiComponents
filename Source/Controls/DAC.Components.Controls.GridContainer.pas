@@ -8,6 +8,7 @@ uses
   System.Types,
   System.UITypes,
   Winapi.Messages,
+  Winapi.Windows,
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
@@ -26,7 +27,9 @@ type
     FContentPadding: Integer;
     FRenderer: TDACSkiaRenderer;
     FRowHeight: Integer;
-    function ChildColumnSpan(const AControl: TControl): Integer;
+    function ChildColumnSpan(const AControl: TControl;
+      const AColumns: Integer): Integer;
+    function EffectiveColumns(const AClientWidth, AGutter: Integer): Integer;
     function ParentSurfaceColor: TAlphaColor;
     function ScaleFactor: Single;
     function ScaleMetric(const AValue: Integer): Integer;
@@ -105,6 +108,7 @@ begin
   FContentPadding := 24;
   FRowHeight := 64;
   FRenderer := TDACSkiaRenderer.Create;
+  Color := TDACComponentColors.ToVclColor(FBackgroundColor);
 
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
@@ -140,6 +144,7 @@ var
   LClient: TRect;
   LColumn: Integer;
   LColumnWidth: Integer;
+  LEffectiveColumns: Integer;
   LGutter: Integer;
   LLeft: Integer;
   LRow: Integer;
@@ -156,7 +161,9 @@ begin
   if FColumns <= 0 then
     Exit;
 
-  LColumnWidth := (Max(0, LClient.Width) - (LGutter * (FColumns - 1))) div FColumns;
+  LEffectiveColumns := EffectiveColumns(LClient.Width, LGutter);
+  LColumnWidth := (Max(0, LClient.Width) -
+    (LGutter * (LEffectiveColumns - 1))) div LEffectiveColumns;
   if LColumnWidth <= 0 then
     Exit;
 
@@ -170,8 +177,8 @@ begin
       if (LChild = FPaintBox) or not LChild.Visible then
         Continue;
 
-      LSpan := ChildColumnSpan(LChild);
-      if (LColumn > 0) and (LColumn + LSpan > FColumns) then
+      LSpan := ChildColumnSpan(LChild, LEffectiveColumns);
+      if (LColumn > 0) and (LColumn + LSpan > LEffectiveColumns) then
       begin
         LColumn := 0;
         Inc(LRow);
@@ -183,7 +190,7 @@ begin
         (LColumnWidth * LSpan) + (LGutter * (LSpan - 1)), LRowHeight);
 
       Inc(LColumn, LSpan);
-      if LColumn >= FColumns then
+      if LColumn >= LEffectiveColumns then
       begin
         LColumn := 0;
         Inc(LRow);
@@ -201,14 +208,28 @@ begin
   Redraw;
 end;
 
-function TDACGridContainer.ChildColumnSpan(const AControl: TControl): Integer;
+function TDACGridContainer.ChildColumnSpan(const AControl: TControl;
+  const AColumns: Integer): Integer;
 begin
   Result := 1;
   if AControl <> nil then
     Result := AControl.Tag;
   if Result <= 0 then
     Result := 1;
-  Result := Max(1, Min(Result, FColumns));
+  Result := Max(1, Min(Result, AColumns));
+end;
+
+function TDACGridContainer.EffectiveColumns(const AClientWidth,
+  AGutter: Integer): Integer;
+var
+  LMinimumColumns: Integer;
+  LMinimumColumnWidth: Integer;
+begin
+  LMinimumColumnWidth := ScaleMetric(48);
+  Result := (Max(0, AClientWidth) + AGutter) div
+    Max(1, LMinimumColumnWidth + AGutter);
+  LMinimumColumns := Min(FColumns, 3);
+  Result := Max(LMinimumColumns, Min(FColumns, Result));
 end;
 
 function TDACGridContainer.LayoutRect: TRect;
@@ -328,6 +349,11 @@ begin
   if FBackgroundColor = AValue then
     Exit;
   FBackgroundColor := AValue;
+  if FBackgroundColor = TAlphaColor($00000000) then
+    Color := TDACComponentColors.ToVclColor(ParentSurfaceColor)
+  else
+    Color := TDACComponentColors.ToVclColor(
+      TDACComponentColors.Normalize(FBackgroundColor));
   Redraw;
 end;
 
@@ -395,7 +421,18 @@ begin
 end;
 
 procedure TDACGridContainer.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+var
+  LBrush: HBRUSH;
 begin
+  // A grid can be exposed while its scrollbox parent moves child HWNDs.  Its
+  // Skia surface redraws afterward, so the native erase must already carry
+  // the same token color instead of leaving the default black background.
+  LBrush := CreateSolidBrush(ColorToRGB(Color));
+  try
+    Winapi.Windows.FillRect(AMessage.DC, ClientRect, LBrush);
+  finally
+    DeleteObject(LBrush);
+  end;
   AMessage.Result := 1;
 end;
 

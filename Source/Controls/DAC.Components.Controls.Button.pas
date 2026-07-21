@@ -330,7 +330,6 @@ procedure TDACButton.CalculateContentLayout(const ADest: TRectF;
   out AIconRect, ATextRect: TRectF);
 var
   LAvailableWidth: Single;
-  LFontSize: Single;
   LGap: Single;
   LGroupLeft: Single;
   LGroupWidth: Single;
@@ -341,7 +340,6 @@ begin
   AIconRect := TRectF.Empty;
   ATextRect := TRectF.Empty;
 
-  LFontSize := ButtonFontSize;
   LGap := 8;
   LIconSize := EffectiveIconSize;
   LHasText := Trim(Caption) <> '';
@@ -362,9 +360,12 @@ begin
     LGap := 0;
     LTextWidth := 0;
   end
+  else if FTextLabel <> nil then
+    LTextWidth := FTextLabel.MeasureTextWidth(Caption,
+      TDACComponentFontInstaller.FontFamily, Round(ButtonFontSize), True) /
+      ScaleFactor
   else
-    LTextWidth := Ceil(FRenderer.MeasureText(Caption,
-      TDACComponentFontInstaller.FontFamily, LFontSize, False)) + 2;
+    LTextWidth := 0;
   LAvailableWidth := Max(0, ADest.Width - (ContentPadding * 2));
 
   if FShowIcon then
@@ -909,8 +910,8 @@ begin
   CalculateContentLayout(TRectF.Create(0, 0, Width / ScaleFactor,
     Height / ScaleFactor), LIconRect, LTextRect);
 
-  LLabelLeft := Max(0, Round((LTextRect.Left - 16) * ScaleFactor));
-  LLabelWidth := Max(0, Round((LTextRect.Width + 32) * ScaleFactor));
+  LLabelLeft := Max(0, Round(LTextRect.Left * ScaleFactor));
+  LLabelWidth := Max(0, Round(LTextRect.Width * ScaleFactor));
   LLabelWidth := Min(LLabelWidth, Width - LLabelLeft);
   FTextLabel.SetBounds(LLabelLeft, 0, LLabelWidth, Height);
   FTextLabel.Text := Caption;

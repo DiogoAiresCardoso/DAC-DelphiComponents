@@ -8,6 +8,7 @@ uses
   System.Types,
   System.UITypes,
   Winapi.Messages,
+  Winapi.Windows,
   Vcl.Controls,
   Vcl.Forms,
   Vcl.Graphics,
@@ -34,6 +35,8 @@ type
     function ParentSurfaceColor: TAlphaColor;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
+    procedure CMControlListChange(var AMessage: TCMControlListChange);
+      message CM_CONTROLLISTCHANGE;
     procedure RedrawChrome;
     procedure SetBackgroundColor(const AValue: TAlphaColor);
     procedure SetBorderColor(const AValue: TAlphaColor);
@@ -47,6 +50,7 @@ type
     procedure CreateWnd; override;
     procedure Loaded; override;
     procedure Resize; override;
+    procedure WndProc(var Message: TMessage); override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -95,6 +99,7 @@ begin
   FCornerRadius := 8;
   FScrollBarMode := msbmAuto;
   FRenderer := TDACSkiaRenderer.Create;
+  Color := TDACComponentColors.ToVclColor(FBackgroundColor);
 
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
@@ -114,6 +119,18 @@ procedure TDACScrollContainer.ChangeScale(M, D: Integer);
 begin
   inherited;
   Redraw;
+end;
+
+procedure TDACScrollContainer.CMControlListChange(
+  var AMessage: TCMControlListChange);
+begin
+  inherited;
+  // The Skia surface is created before DFM child controls.  Reassert its
+  // background role after every streamed/runtime child insertion so it can
+  // never cover native labels, buttons or grid containers at runtime.
+  if (FPaintBox <> nil) and HandleAllocated and
+    not (csDesigning in ComponentState) then
+    FPaintBox.SendToBack;
 end;
 
 procedure TDACScrollContainer.CreateWnd;
@@ -150,8 +167,8 @@ begin
   if LScale <= 0 then
     LScale := 1;
 
-  LRect := TRectF.Create(0, 0, ADest.Width, ADest.Height);
-  LRect := FRenderer.SnapRect(LRect, LScale);
+  ACanvas.Clear(LBackground);
+  LRect := FRenderer.SnapRect(TRectF.Create(0, 0, ADest.Width, ADest.Height), LScale);
   LRect.Inflate(-0.5, -0.5);
   FRenderer.FillRoundRect(ACanvas, LRect, LBackground, FCornerRadius, 255);
   FRenderer.StrokeRoundRect(ACanvas, LRect,
@@ -188,6 +205,11 @@ begin
   if FBackgroundColor = AValue then
     Exit;
   FBackgroundColor := AValue;
+  if FBackgroundColor = TAlphaColor($00000000) then
+    Color := TDACComponentColors.ToVclColor(ParentSurfaceColor)
+  else
+    Color := TDACComponentColors.ToVclColor(
+      TDACComponentColors.Normalize(FBackgroundColor));
   Redraw;
 end;
 
@@ -217,14 +239,44 @@ begin
 end;
 
 procedure TDACScrollContainer.UpdateChromeBounds;
+var
+  LHeight: Integer;
+  LLeft: Integer;
+  LTop: Integer;
+  LWidth: Integer;
 begin
   if FPaintBox = nil then
     Exit;
-  FPaintBox.SetBounds(0, 0, Width, Height);
-  if (csLoading in ComponentState) or (csDesigning in ComponentState) or
-    not HandleAllocated then
+  LLeft := 0;
+  LTop := 0;
+  LWidth := Width;
+  LHeight := Height;
+  if HandleAllocated then
+  begin
+    LLeft := HorzScrollBar.Position;
+    LTop := VertScrollBar.Position;
+    LWidth := ClientWidth;
+    LHeight := ClientHeight;
+  end;
+  FPaintBox.SetBounds(LLeft, LTop, LWidth, LHeight);
+  if (csDesigning in ComponentState) or not HandleAllocated then
     Exit;
   FPaintBox.SendToBack;
+end;
+
+procedure TDACScrollContainer.WndProc(var Message: TMessage);
+begin
+  inherited;
+  case Message.Msg of
+    WM_HSCROLL,
+    WM_VSCROLL,
+    WM_MOUSEWHEEL,
+    WM_SIZE:
+      begin
+        UpdateChromeBounds;
+        RedrawChrome;
+      end;
+  end;
 end;
 
 procedure TDACScrollContainer.UpdateScrollBars;
@@ -234,7 +286,19 @@ begin
 end;
 
 procedure TDACScrollContainer.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+var
+  LBrush: HBRUSH;
 begin
+  // TScrollBox exposes newly uncovered pixels while it scrolls its children.
+  // The Skia paintbox is a child too, so it can be temporarily outside those
+  // pixels during the native scroll.  Paint the same token surface here to
+  // prevent the default black brush from becoming visible between grids.
+  LBrush := CreateSolidBrush(ColorToRGB(Color));
+  try
+    Winapi.Windows.FillRect(AMessage.DC, ClientRect, LBrush);
+  finally
+    DeleteObject(LBrush);
+  end;
   AMessage.Result := 1;
 end;
 

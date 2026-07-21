@@ -236,6 +236,7 @@ var
   LTabs: TDACTabs;
   LToast: TDACToast;
   LTooltip: TDACTooltip;
+  LWheelPosition: Integer;
   LWidthBefore: Integer;
   LProbe: TInteractionProbe;
   I: Integer;
@@ -322,6 +323,24 @@ begin
   LScroll.Perform(WM_VSCROLL, SB_BOTTOM, 0);
   PumpMessages(80);
   RequireScrollViewportSurface(LScroll, 'fim');
+  LScroll.Perform(WM_VSCROLL, SB_TOP, 0);
+  PumpMessages(80);
+  LWheelPosition := LScroll.VertScrollBar.Position;
+  Form1.btnKindPrimary.Perform(WM_MOUSEWHEEL, WPARAM($FFC40000), 0);
+  PumpMessages(40);
+  Require(LScroll.VertScrollBar.Position = LWheelPosition,
+    'Delta parcial da roda foi aplicado antes de acumular WHEEL_DELTA: ' +
+    IntToStr(LWheelPosition) + ' -> ' +
+    IntToStr(LScroll.VertScrollBar.Position) + '.');
+  Form1.btnKindPrimary.Perform(WM_MOUSEWHEEL, WPARAM($FFC40000), 0);
+  PumpMessages(80);
+  Require(LScroll.VertScrollBar.Position > LWheelPosition,
+    'Roda sobre filho nao deslocou o TDACScrollContainer.');
+  LWheelPosition := LScroll.VertScrollBar.Position;
+  LScroll.Perform(WM_MOUSEWHEEL, WPARAM($FF880000), 0);
+  PumpMessages(80);
+  Require(LScroll.VertScrollBar.Position > LWheelPosition,
+    'Roda sobre viewport nao deslocou o TDACScrollContainer.');
   Require(Form1.HandleAllocated and Form1.Visible,
     'O scroll destruiu ou ocultou a janela principal.');
 

@@ -32,7 +32,10 @@ type
     FPaintBox: TSkPaintBox;
     FRenderer: TDACSkiaRenderer;
     FScrollBarMode: TDACScrollBarMode;
+    FWheelDeltaRemainder: Integer;
     function ParentSurfaceColor: TAlphaColor;
+    procedure ScrollVertically(const ACode: Word);
+    procedure CMMouseWheel(var AMessage: TCMMouseWheel); message CM_MOUSEWHEEL;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
     procedure CMControlListChange(var AMessage: TCMControlListChange);
@@ -133,6 +136,59 @@ begin
     FPaintBox.SendToBack;
 end;
 
+procedure TDACScrollContainer.CMMouseWheel(var AMessage: TCMMouseWheel);
+var
+  LCode: Word;
+  LNotches: Integer;
+  LScrollLines: Cardinal;
+  LSteps: Integer;
+begin
+  if VertScrollBar.Range <= ClientHeight then
+  begin
+    inherited;
+    Exit;
+  end;
+
+  // Mark even a partial high-resolution delta as handled.  Otherwise VCL
+  // falls through to DefWindowProc, which can forward the same wheel input
+  // through the native parent chain and apply it a second time.
+  AMessage.Result := 1;
+  FWheelDeltaRemainder := FWheelDeltaRemainder + AMessage.WheelDelta;
+  LNotches := FWheelDeltaRemainder div WHEEL_DELTA;
+  FWheelDeltaRemainder := FWheelDeltaRemainder - (LNotches * WHEEL_DELTA);
+  if LNotches = 0 then
+    Exit;
+
+  if not SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, @LScrollLines, 0) then
+    LScrollLines := 3;
+  if LScrollLines = 0 then
+    Exit;
+
+  if LScrollLines = WHEEL_PAGESCROLL then
+    LSteps := 1
+  else
+    LSteps := Min(Integer(LScrollLines), 100);
+  if LNotches > 0 then
+    LCode := SB_LINEUP
+  else
+    LCode := SB_LINEDOWN;
+  if LScrollLines = WHEEL_PAGESCROLL then
+  begin
+    if LNotches > 0 then
+      LCode := SB_PAGEUP
+    else
+      LCode := SB_PAGEDOWN;
+  end;
+
+  LSteps := LSteps * Abs(LNotches);
+  while LSteps > 0 do
+  begin
+    ScrollVertically(LCode);
+    Dec(LSteps);
+  end;
+
+end;
+
 procedure TDACScrollContainer.CreateWnd;
 begin
   inherited;
@@ -178,6 +234,11 @@ end;
 function TDACScrollContainer.ParentSurfaceColor: TAlphaColor;
 begin
   Result := TDACComponentColors.ResolveParentSurface(Self);
+end;
+
+procedure TDACScrollContainer.ScrollVertically(const ACode: Word);
+begin
+  Perform(WM_VSCROLL, ACode, 0);
 end;
 
 procedure TDACScrollContainer.Redraw;

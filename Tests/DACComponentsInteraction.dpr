@@ -7,6 +7,7 @@ uses
   System.Skia,
   System.SysUtils,
   System.Types,
+  System.UITypes,
   Data.DB,
   Datasnap.DBClient,
   Winapi.Messages,
@@ -20,6 +21,7 @@ uses
   DAC.Components.Controls.Badges in '..\Source\Controls\DAC.Components.Controls.Badges.pas',
   DAC.Components.Controls.Button in '..\Source\Controls\DAC.Components.Controls.Button.pas',
   DAC.Components.Controls.Charts in '..\Source\Controls\DAC.Components.Controls.Charts.pas',
+  DAC.Components.Controls.Container in '..\Source\Controls\DAC.Components.Controls.Container.pas',
   DAC.Components.Controls.DataGrid in '..\Source\Controls\DAC.Components.Controls.DataGrid.pas',
   DAC.Components.Controls.Feedback in '..\Source\Controls\DAC.Components.Controls.Feedback.pas',
   DAC.Components.Controls.GridContainer in '..\Source\Controls\DAC.Components.Controls.GridContainer.pas',
@@ -396,6 +398,106 @@ begin
   end;
 end;
 
+procedure RequireSemiTransparentRaster;
+const
+  ColorTolerance = 10;
+var
+  LBackground: TAlphaColor;
+  LCard: TDACSummaryCard;
+  LChart: TDACBarChart;
+  LExpected: TColor;
+  LForm: TForm;
+  LPixel: TColor;
+  LSurface: TAlphaColor;
+  function Blend(const ABack, AFront, AAlpha: Byte): Byte;
+  begin
+    Result := (Integer(ABack) * (255 - Integer(AAlpha)) +
+      Integer(AFront) * Integer(AAlpha) + 127) div 255;
+  end;
+  function BlendedColor(const ABack, AFront: TAlphaColor): TColor;
+  var
+    LAlpha: Byte;
+    LBlue: Byte;
+    LGreen: Byte;
+    LRed: Byte;
+  begin
+    LAlpha := Byte((Cardinal(AFront) shr 24) and $FF);
+    LRed := Blend(Byte((Cardinal(ABack) shr 16) and $FF),
+      Byte((Cardinal(AFront) shr 16) and $FF), LAlpha);
+    LGreen := Blend(Byte((Cardinal(ABack) shr 8) and $FF),
+      Byte((Cardinal(AFront) shr 8) and $FF), LAlpha);
+    LBlue := Blend(Byte(Cardinal(ABack) and $FF),
+      Byte(Cardinal(AFront) and $FF), LAlpha);
+    Result := RGB(LRed, LGreen, LBlue);
+  end;
+  procedure RequireBlendAt(const AControl: TControl; const AX, AY: Integer;
+    const AName: string);
+  var
+    LActualBlue: Integer;
+    LActualGreen: Integer;
+    LActualRed: Integer;
+    LExpectedBlue: Integer;
+    LExpectedGreen: Integer;
+    LExpectedRed: Integer;
+    LBitmap: TBitmap;
+  begin
+    LBitmap := TBitmap.Create;
+    try
+      LBitmap.PixelFormat := pf32bit;
+      LBitmap.SetSize(AControl.Width, AControl.Height);
+      LBitmap.Canvas.Brush.Color := TDACComponentColors.ToVclColor(LBackground);
+      LBitmap.Canvas.FillRect(Rect(0, 0, LBitmap.Width, LBitmap.Height));
+      TWinControl(AControl).PaintTo(LBitmap.Canvas.Handle, 0, 0);
+      LPixel := ColorToRGB(LBitmap.Canvas.Pixels[AX, AY]);
+    finally
+      LBitmap.Free;
+    end;
+    LActualRed := GetRValue(LPixel);
+    LActualGreen := GetGValue(LPixel);
+    LActualBlue := GetBValue(LPixel);
+    LExpectedRed := GetRValue(LExpected);
+    LExpectedGreen := GetGValue(LExpected);
+    LExpectedBlue := GetBValue(LExpected);
+    Require((Abs(LActualRed - LExpectedRed) <= ColorTolerance) and
+      (Abs(LActualGreen - LExpectedGreen) <= ColorTolerance) and
+      (Abs(LActualBlue - LExpectedBlue) <= ColorTolerance),
+      Format('%s nao realizou blend raster (RGB atual %d,%d,%d; esperado %d,%d,%d).',
+        [AName, LActualRed, LActualGreen, LActualBlue, LExpectedRed,
+         LExpectedGreen, LExpectedBlue]));
+  end;
+begin
+  LBackground := TDACComponentColors.Alpha($08, $13, $0D);
+  LSurface := TDACComponentColors.Alpha($0E, $1F, $15, 128);
+  LExpected := BlendedColor(LBackground, LSurface);
+  LForm := TForm.Create(nil);
+  try
+    LForm.Color := TDACComponentColors.ToVclColor(LBackground);
+    LForm.ClientWidth := 510;
+    LForm.ClientHeight := 190;
+    LForm.Position := poScreenCenter;
+    LCard := TDACSummaryCard.Create(LForm);
+    LCard.Parent := LForm;
+    LCard.SetBounds(20, 24, 210, 116);
+    LCard.BackgroundColor := LSurface;
+    LCard.BorderColor := TAlphaColor($00000000);
+    LCard.Title := 'Raster';
+    LCard.Value := '128';
+    LChart := TDACBarChart.Create(LForm);
+    LChart.Parent := LForm;
+    LChart.SetBounds(260, 24, 220, 116);
+    LChart.BackgroundColor := LSurface;
+    LChart.BorderColor := TAlphaColor($00000000);
+    LChart.ShowGrid := False;
+    LChart.ValuesText := '';
+    LForm.Show;
+    PumpMessages(120);
+    RequireBlendAt(LCard, LCard.Width - 16, LCard.Height div 2, 'SummaryCard');
+    RequireBlendAt(LChart, LChart.Width - 16, LChart.Height - 16, 'BarChart');
+  finally
+    LForm.Free;
+  end;
+end;
+
 procedure RunInteraction;
 var
   LBadge: TDACBadge;
@@ -407,6 +509,16 @@ var
   LCheck: TDACCheckBox;
   LDataSet: TClientDataSet;
   LDataSource: TDataSource;
+  LDashboardButton: TDACButton;
+  LDashboardCard: TDACSummaryCard;
+  LDashboardPanel: TDACContainer;
+  LDashboardScroll: TDACScrollContainer;
+  LDashboardText: TDACSystemText;
+  LDashboardDateText: TDACSystemText;
+  LDashboardNameText: TDACSystemText;
+  LDashboardQuickGrid: TDACGridContainer;
+  LDashboardSubtitleText: TDACSystemText;
+  LDashboardTitleText: TDACSystemText;
   LGrid: TDACDataGrid;
   LModal: TDACModalDialog;
   LNavigationButton: TDACButton;
@@ -445,8 +557,11 @@ begin
   Form1.Show;
   PumpMessages(150);
   RequireFormWithinMonitorWorkArea(Form1);
+  RequireSemiTransparentRaster;
 
   RequireComponent(Form1, 'GalleryTabs', TDACTabs);
+  Require(Form1.GalleryTabs.PageCount = 16,
+    'A Demo deve manter as 15 familias e acrescentar o Dashboard.');
   RequireComponent(Form1, 'demoEdit', TControl);
   RequireComponent(Form1, 'demoCombo', TControl);
   RequireComponent(Form1, 'demoCheck', TDACCheckBox);
@@ -464,8 +579,72 @@ begin
   RequireComponent(Form1, 'demoReportViewer', TDACReportViewer);
   RequireComponent(Form1, 'demoNavigation', TDACScrollContainer);
   RequireComponent(Form1, 'demoNavigationTitle', TDACSystemText);
+  RequireComponent(Form1, 'tsDashboard', TTabSheet);
+  RequireComponent(Form1, 'scrDashboard', TDACScrollContainer);
+  RequireComponent(Form1, 'dashKpi1', TDACSummaryCard);
+  RequireComponent(Form1, 'dashQuickActionsGrid', TDACGridContainer);
+  RequireComponent(Form1, 'dashProductivityChart', TDACBarChart);
+  RequireComponent(Form1, 'demoNavDashboard', TDACButton);
   RequireComponent(Form1, 'demoNavButtons', TDACButton);
   RequireComponent(Form1, 'demoNavCharts', TDACButton);
+
+  LDashboardButton := Form1.FindComponent('demoNavDashboard') as TDACButton;
+  LDashboardScroll := Form1.FindComponent('scrDashboard') as TDACScrollContainer;
+  LDashboardCard := Form1.FindComponent('dashKpi1') as TDACSummaryCard;
+  LDashboardPanel := Form1.FindComponent('dashAgenda') as TDACContainer;
+  LDashboardText := Form1.FindComponent('dashWelcomeTitle') as TDACSystemText;
+  LDashboardTitleText := LDashboardText;
+  LDashboardNameText := Form1.FindComponent('dashWelcomeName') as TDACSystemText;
+  LDashboardSubtitleText := Form1.FindComponent('dashWelcomeSubtitle') as TDACSystemText;
+  LDashboardDateText := Form1.FindComponent('dashDateValue') as TDACSystemText;
+  LDashboardQuickGrid := Form1.FindComponent('dashQuickActionsGrid') as TDACGridContainer;
+  Require(Assigned(LDashboardButton.OnClick),
+    'Navegacao do Dashboard nao recebeu acao.');
+  LDashboardButton.OnClick(LDashboardButton);
+  PumpMessages(40);
+  Require(Form1.GalleryTabs.ActivePage =
+    (Form1.FindComponent('tsDashboard') as TTabSheet),
+    'Menu interno nao abriu o Dashboard.');
+  Require(LDashboardButton.Kind = mbkPrimary,
+    'Menu interno nao refletiu o Dashboard ativo.');
+  Require((LDashboardCard.Width > 0) and (LDashboardCard.Height > 0) and
+    (Byte((Cardinal(LDashboardCard.BackgroundColor) shr 24) and $FF) = 230),
+    'KPI do Dashboard nao preservou a surface translucida tokenizada.');
+  Require((LDashboardText.Text = 'Bem-vindo,') and
+    (LDashboardText.FontSize = 20) and
+    (Cardinal(LDashboardText.TextColor) = Cardinal($FFF5F8F5)),
+    'Identidade do boas-vindas nao foi materializada no DFM.');
+  Require((LDashboardText.Width >= 220) and
+    (LDashboardNameText.Left >= LDashboardText.Left + LDashboardText.Width + 8),
+    'Cabecalho desktop nao reservou largura fisica para a saudacao completa.');
+  Require((LDashboardPanel.Appearance = mcaDarkPanel) and
+    (LDashboardPanel.CornerRadius = 14) and
+    (Cardinal(LDashboardPanel.BackgroundColor) = Cardinal($E60E1F15)),
+    'Tokens da surface Agenda nao foram materializados no DFM.');
+  Require((Cardinal(LDashboardScroll.BackgroundColor) = Cardinal($FF08130D)) and
+    (LDashboardScroll.VertScrollBar.Range >= LDashboardScroll.ClientHeight),
+    'Dashboard nao recebeu canvas agricola rolavel.');
+  Require((LDashboardQuickGrid.BackgroundColor = TAlphaColor($00000000)) and
+    (LDashboardQuickGrid.BorderColor = TAlphaColor($00000000)),
+    'A grade de acoes rapidas deve permanecer transparente sobre a surface dark.');
+  Form1.SetBounds(Form1.Left, Form1.Top, 520, 560);
+  PumpMessages(100);
+  Require(LDashboardNameText.Top >= LDashboardTitleText.Top +
+    LDashboardTitleText.Height,
+    'Dashboard compacto sobrepoe a saudacao e o nome do usuario.');
+  Require(LDashboardSubtitleText.Top >= LDashboardNameText.Top +
+    LDashboardNameText.Height,
+    'Dashboard compacto sobrepoe nome e subtitulo.');
+  Require((Form1.FindComponent('dashDateSummary') as TDACContainer).Top +
+    LDashboardDateText.Top >= LDashboardSubtitleText.Top +
+    LDashboardSubtitleText.Height,
+    'Dashboard compacto sobrepoe data e cabecalho de boas-vindas.');
+  Require((LDashboardDateText.Left >= 0) and
+    (LDashboardDateText.Left + LDashboardDateText.Width <=
+      (Form1.FindComponent('dashDateSummary') as TDACContainer).Width),
+    'Valor da data excede o card compacto.');
+  Form1.SetBounds(Form1.Left, Form1.Top, 1200, 760);
+  PumpMessages(80);
 
   LNavigationButton := Form1.FindComponent('demoNavCharts') as TDACButton;
   LNavigation := Form1.FindComponent('demoNavigation') as TDACScrollContainer;

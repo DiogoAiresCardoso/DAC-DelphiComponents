@@ -135,6 +135,7 @@ end;
 function TDACSkiaRenderer.GetFillPaint(const AColor: TAlphaColor;
   const AAlpha: Byte): ISkPaint;
 var
+  LColorAlpha: Byte;
   LKey: string;
 begin
   LKey := BuildFillPaintKey(AColor, AAlpha);
@@ -143,7 +144,11 @@ begin
     Result := TSkPaint.Create(TSkPaintStyle.Fill);
     Result.AntiAlias := True;
     Result.Color := AColor;
-    Result.Alpha := AAlpha;
+    // AColor can carry a semantic opacity (for example a glass surface).
+    // Skia's paint alpha replaces the alpha embedded in the color, so the
+    // effective alpha must compose both values instead of discarding it.
+    LColorAlpha := Byte((Cardinal(AColor) shr 24) and $FF);
+    Result.Alpha := Round((Integer(LColorAlpha) * Integer(AAlpha)) / 255);
     FFillPaintCache.Add(LKey, Result);
   end;
 end;
@@ -176,6 +181,7 @@ end;
 function TDACSkiaRenderer.GetStrokePaint(const AColor: TAlphaColor;
   const AWidth: Single; const AAlpha: Byte): ISkPaint;
 var
+  LColorAlpha: Byte;
   LKey: string;
 begin
   LKey := BuildStrokePaintKey(AColor, AWidth, AAlpha);
@@ -185,7 +191,8 @@ begin
     Result.AntiAlias := True;
     Result.Color := AColor;
     Result.StrokeWidth := AWidth;
-    Result.Alpha := AAlpha;
+    LColorAlpha := Byte((Cardinal(AColor) shr 24) and $FF);
+    Result.Alpha := Round((Integer(LColorAlpha) * Integer(AAlpha)) / 255);
     FStrokePaintCache.Add(LKey, Result);
   end;
 end;

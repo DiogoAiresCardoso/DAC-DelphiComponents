@@ -13,6 +13,7 @@ uses
   DAC.Components.Controls.ButtonEdit,
   DAC.Components.Controls.Charts,
   DAC.Components.Controls.ComboBox,
+  DAC.Components.Controls.Container,
   DAC.Components.Controls.DataGrid,
   DAC.Components.Controls.DateTimePicker,
   DAC.Components.Controls.Edit,
@@ -27,6 +28,7 @@ uses
   DAC.Components.Controls.Selectors,
   DAC.Components.Controls.StatusBar,
   DAC.Components.Controls.SummaryCard,
+  DAC.Components.Controls.SystemText,
   DAC.Components.Controls.Tabs;
 
 procedure RegisterDACComponentClasses;
@@ -37,6 +39,7 @@ begin
   RegisterClass(TDACButtonEdit);
   RegisterClass(TDACCheckBox);
   RegisterClass(TDACComboBox);
+  RegisterClass(TDACContainer);
   RegisterClass(TDACDataGrid);
   RegisterClass(TDACDateTimePicker);
   RegisterClass(TDACDoughnutChart);
@@ -52,6 +55,7 @@ begin
   RegisterClass(TDACSlider);
   RegisterClass(TDACStatusBar);
   RegisterClass(TDACSummaryCard);
+  RegisterClass(TDACSystemText);
   RegisterClass(TDACTabs);
   RegisterClass(TDACToast);
   RegisterClass(TDACToggleSwitch);

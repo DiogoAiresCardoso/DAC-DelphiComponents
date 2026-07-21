@@ -19,12 +19,545 @@ object Form1: TForm1
     Top = 0
     Width = 1200
     Height = 760
-    ActivePage = tsButtons
+    ActivePage = tsDashboard
     Align = alClient
     TabOrder = 0
     TabHeight = 44
     TabWidth = 132
     ActiveIndex = 0
+    object tsDashboard: TTabSheet
+      Caption = 'Dashboard'
+      object scrDashboard: TDACScrollContainer
+        Left = 0
+        Top = 0
+        Width = 1192
+        Height = 708
+        Align = alClient
+        AutoScroll = True
+        BorderStyle = bsNone
+        CornerRadius = 0
+        ScrollBarMode = msbmVertical
+        BackgroundColor = -16248051
+        BorderColor = 0
+        TabOrder = 0
+        object dashWelcomeTitle: TDACSystemText
+          Left = 24
+          Top = 24
+          Width = 220
+          Height = 32
+          Bold = False
+          FontSize = 20
+          Text = 'Bem-vindo,'
+          TextColor = -657163
+        end
+        object dashWelcomeName: TDACSystemText
+          Left = 252
+          Top = 24
+          Width = 500
+          Height = 32
+          Bold = False
+          FontSize = 20
+          Text = 'Administrador'
+          TextColor = -12339413
+        end
+        object dashWelcomeSubtitle: TDACSystemText
+          Left = 24
+          Top = 58
+          Width = 430
+          Height = 24
+          Bold = False
+          FontSize = 10
+          Text = 'Aqui esta o resumo da sua operacao hoje.'
+          TextColor = -4668998
+        end
+        object dashDateSummary: TDACContainer
+          Left = 960
+          Top = 24
+          Width = 210
+          Height = 72
+          ContentPadding = 20
+          Appearance = mcaDarkPanel
+          BackgroundColor = -435282155
+          BorderColor = 486539263
+          BorderRadius = 14
+          CornerRadius = 14
+          TitleColor = -657163
+          SubtitleColor = -4668998
+          ShowHeader = False
+          TabOrder = 1
+          object dashDateValue: TDACSystemText
+            Left = 20
+            Top = 18
+            Width = 160
+            Height = 20
+            Bold = True
+            FontSize = 10
+            Text = '24 de maio de 2025'
+            TextColor = -657163
+          end
+          object dashDateWeekday: TDACSystemText
+            Left = 20
+            Top = 40
+            Width = 160
+            Height = 20
+            Bold = False
+            FontSize = 9
+            Text = 'Sabado'
+            TextColor = -4668998
+          end
+        end
+        object dashKpi1: TDACSummaryCard
+          Left = 24
+          Top = 96
+          Width = 214
+          Height = 108
+          AccentColor = -12339413
+          BackgroundColor = -435282155
+          BorderColor = 486539263
+          CornerRadius = 14
+          FooterText = '+ 2 este mes'
+          IconKind = mikField
+          Title = 'Talhoes'
+          Value = '28'
+        end
+        object dashKpi2: TDACSummaryCard
+          Left = 254
+          Top = 96
+          Width = 214
+          Height = 108
+          AccentColor = -12339413
+          BackgroundColor = -435282155
+          BorderColor = 486539263
+          CornerRadius = 14
+          FooterText = '+ 8,4% vs. safra anterior'
+          IconKind = mikLeaf
+          Title = 'Producao (safra)'
+          Value = '12.540 t'
+        end
+        object dashKpi3: TDACSummaryCard
+          Left = 484
+          Top = 96
+          Width = 214
+          Height = 108
+          AccentColor = -12339413
+          BackgroundColor = -435282155
+          BorderColor = 486539263
+          CornerRadius = 14
+          FooterText = '12 itens cadastrados'
+          IconKind = mikInventoryStack
+          Title = 'Estoque'
+          Value = '3.680 t'
+        end
+        object dashKpi4: TDACSummaryCard
+          Left = 714
+          Top = 96
+          Width = 214
+          Height = 108
+          AccentColor = -12339413
+          BackgroundColor = -435282155
+          BorderColor = 486539263
+          CornerRadius = 14
+          FooterText = '5 em andamento'
+          IconKind = mikClipboardOrder
+          Title = 'Ordens'
+          Value = '14'
+        end
+        object dashKpi5: TDACSummaryCard
+          Left = 944
+          Top = 96
+          Width = 214
+          Height = 108
+          AccentColor = -12339413
+          BackgroundColor = -435282155
+          BorderColor = 486539263
+          CornerRadius = 14
+          FooterText = '+ 12,7% vs. mes anterior'
+          IconKind = mikMoneyCircle
+          Title = 'Financeiro (mes)'
+          Value = 'R$ 568.420'
+        end
+        object dashQuickActions: TDACContainer
+          Left = 24
+          Top = 228
+          Width = 370
+          Height = 224
+          ContentPadding = 20
+          Appearance = mcaDarkPanel
+          BackgroundColor = -435282155
+          BorderColor = 486539263
+          BorderRadius = 14
+          CornerRadius = 14
+          SubtitleColor = -4668998
+          TitleColor = -657163
+          Title = 'Acoes rapidas'
+          TabOrder = 2
+          object dashQuickActionsGrid: TDACGridContainer
+            Left = 20
+            Top = 62
+            Width = 330
+            Height = 142
+            Align = alClient
+            Columns = 2
+            BackgroundColor = 0
+            BorderColor = 0
+            ContentPadding = 0
+            Gutter = 12
+            RowHeight = 70
+            TabOrder = 0
+            object dashQuickAction1: TDACButton
+              Left = 0
+              Top = 0
+              Width = 159
+              Height = 70
+              Caption = 'Nova ordem de servico'
+              CornerRadius = 12
+              ShowIcon = True
+              IconKind = mikTractor
+              IconSize = 22
+              Kind = mbkGhost
+              TabOrder = 0
+            end
+            object dashQuickAction2: TDACButton
+              Left = 171
+              Top = 0
+              Width = 159
+              Height = 70
+              Caption = 'Lancar producao'
+              CornerRadius = 12
+              ShowIcon = True
+              IconKind = mikSoybean
+              IconSize = 22
+              Kind = mbkGhost
+              TabOrder = 1
+            end
+            object dashQuickAction3: TDACButton
+              Left = 0
+              Top = 82
+              Width = 159
+              Height = 70
+              Caption = 'Entrada no estoque'
+              CornerRadius = 12
+              ShowIcon = True
+              IconKind = mikPackage
+              IconSize = 22
+              Kind = mbkGhost
+              TabOrder = 2
+            end
+            object dashQuickAction4: TDACButton
+              Left = 171
+              Top = 82
+              Width = 159
+              Height = 70
+              Caption = 'Nova despesa'
+              CornerRadius = 12
+              ShowIcon = True
+              IconKind = mikMoneyCircle
+              IconSize = 22
+              Kind = mbkGhost
+              TabOrder = 3
+            end
+          end
+        end
+        object dashAgenda: TDACContainer
+          Left = 410
+          Top = 228
+          Width = 370
+          Height = 224
+          ContentPadding = 20
+          Appearance = mcaDarkPanel
+          BackgroundColor = -435282155
+          BorderColor = 486539263
+          BorderRadius = 14
+          CornerRadius = 14
+          SubtitleColor = -4668998
+          TitleColor = -657163
+          Title = 'Agenda'
+          TabOrder = 3
+          object dashAgendaLine1: TDACSystemText
+            Left = 20
+            Top = 70
+            Width = 320
+            Height = 32
+            FontSize = 10
+            Text = '24 MAI   Aplicacao de Herbicida   Hoje'
+            TextColor = -657163
+          end
+          object dashAgendaLine2: TDACSystemText
+            Left = 20
+            Top = 110
+            Width = 320
+            Height = 32
+            FontSize = 10
+            Text = '25 MAI   Irrigacao - Talhao 08   Amanha'
+            TextColor = -657163
+          end
+          object dashAgendaLine3: TDACSystemText
+            Left = 20
+            Top = 150
+            Width = 320
+            Height = 32
+            FontSize = 10
+            Text = '27 MAI   Manutencao de Equipamentos'
+            TextColor = -657163
+          end
+          object dashAgendaFooter: TDACSystemText
+            Left = 20
+            Top = 190
+            Width = 320
+            Height = 24
+            Bold = True
+            FontSize = 10
+            Text = 'Ver agenda completa  ->'
+            TextColor = -10302406
+          end
+        end
+        object dashRecentActivity: TDACContainer
+          Left = 796
+          Top = 228
+          Width = 370
+          Height = 224
+          ContentPadding = 20
+          Appearance = mcaDarkPanel
+          BackgroundColor = -435282155
+          BorderColor = 486539263
+          BorderRadius = 14
+          CornerRadius = 14
+          SubtitleColor = -4668998
+          TitleColor = -657163
+          Title = 'Atividades recentes'
+          TabOrder = 4
+          object dashActivityLine1: TDACSystemText
+            Left = 20
+            Top = 70
+            Width = 320
+            Height = 32
+            FontSize = 10
+            Text = 'Entrada de 120 sacas de Sementes de Soja'
+            TextColor = -657163
+          end
+          object dashActivityLine2: TDACSystemText
+            Left = 20
+            Top = 110
+            Width = 320
+            Height = 32
+            FontSize = 10
+            Text = 'Ordem de servico #OS-1456 concluida'
+            TextColor = -657163
+          end
+          object dashActivityLine3: TDACSystemText
+            Left = 20
+            Top = 150
+            Width = 320
+            Height = 32
+            FontSize = 10
+            Text = 'Producao lancada: 320 t de Soja'
+            TextColor = -657163
+          end
+          object dashActivityFooter: TDACSystemText
+            Left = 20
+            Top = 190
+            Width = 320
+            Height = 24
+            Bold = True
+            FontSize = 10
+            Text = 'Ver todas as atividades  ->'
+            TextColor = -10302406
+          end
+        end
+        object dashProductivity: TDACContainer
+          Left = 24
+          Top = 476
+          Width = 560
+          Height = 270
+          ContentPadding = 20
+          Appearance = mcaDarkPanel
+          BackgroundColor = -435282155
+          BorderColor = 486539263
+          BorderRadius = 14
+          CornerRadius = 14
+          SubtitleColor = -4668998
+          TitleColor = -657163
+          Title = 'Produtividade da safra'
+          TabOrder = 5
+          object dashProductivityChart: TDACBarChart
+            Left = 20
+            Top = 62
+            Width = 520
+            Height = 188
+            Align = alClient
+            BackgroundColor = -536077037
+            BorderColor = 486539263
+            CategoriesText = 'Jan;Fev;Mar;Abr;Mai'
+            ValuesText = '42;68;57;75;54'
+            TabOrder = 0
+          end
+        end
+        object dashModules: TDACContainer
+          Left = 600
+          Top = 476
+          Width = 566
+          Height = 270
+          ContentPadding = 20
+          Appearance = mcaDarkPanel
+          BackgroundColor = -435282155
+          BorderColor = 486539263
+          BorderRadius = 14
+          CornerRadius = 14
+          SubtitleColor = -4668998
+          TitleColor = -657163
+          Title = 'Modulos'
+          TabOrder = 6
+          object dashModule1: TDACContainer
+            Left = 20
+            Top = 56
+            Width = 125
+            Height = 172
+            ContentPadding = 12
+            Appearance = mcaDarkPanel
+            BackgroundColor = -536077037
+            BorderColor = -1941719253
+            BorderRadius = 12
+            CornerRadius = 12
+            SubtitleColor = -4668998
+            TitleColor = -657163
+            ShowHeader = False
+            TabOrder = 0
+            object dashModule1Text: TDACSystemText
+              Left = 20
+              Top = 52
+              Width = 100
+              Height = 32
+              Bold = True
+              FontSize = 11
+              Text = 'Producao'
+              TextColor = -657163
+            end
+          end
+          object dashModule2: TDACContainer
+            Left = 157
+            Top = 56
+            Width = 125
+            Height = 172
+            ContentPadding = 12
+            Appearance = mcaDarkPanel
+            BackgroundColor = -536077037
+            BorderColor = -1941719253
+            BorderRadius = 12
+            CornerRadius = 12
+            SubtitleColor = -4668998
+            TitleColor = -657163
+            ShowHeader = False
+            TabOrder = 1
+            object dashModule2Text: TDACSystemText
+              Left = 20
+              Top = 52
+              Width = 100
+              Height = 32
+              Bold = True
+              FontSize = 11
+              Text = 'Estoque'
+              TextColor = -657163
+            end
+          end
+          object dashModule3: TDACContainer
+            Left = 294
+            Top = 56
+            Width = 125
+            Height = 172
+            ContentPadding = 12
+            Appearance = mcaDarkPanel
+            BackgroundColor = -536077037
+            BorderColor = -1941719253
+            BorderRadius = 12
+            CornerRadius = 12
+            SubtitleColor = -4668998
+            TitleColor = -657163
+            ShowHeader = False
+            TabOrder = 2
+            object dashModule3Text: TDACSystemText
+              Left = 20
+              Top = 52
+              Width = 100
+              Height = 32
+              Bold = True
+              FontSize = 11
+              Text = 'Financeiro'
+              TextColor = -657163
+            end
+          end
+          object dashModule4: TDACContainer
+            Left = 431
+            Top = 56
+            Width = 125
+            Height = 172
+            ContentPadding = 12
+            Appearance = mcaDarkPanel
+            BackgroundColor = -536077037
+            BorderColor = -1941719253
+            BorderRadius = 12
+            CornerRadius = 12
+            SubtitleColor = -4668998
+            TitleColor = -657163
+            ShowHeader = False
+            TabOrder = 3
+            object dashModule4Text: TDACSystemText
+              Left = 20
+              Top = 52
+              Width = 100
+              Height = 32
+              Bold = True
+              FontSize = 11
+              Text = 'Relatorios'
+              TextColor = -657163
+            end
+          end
+        end
+        object dashStatus: TDACContainer
+          Left = 24
+          Top = 770
+          Width = 1142
+          Height = 56
+          ContentPadding = 20
+          Appearance = mcaDarkPanel
+          BackgroundColor = -435282155
+          BorderColor = 486539263
+          BorderRadius = 14
+          CornerRadius = 14
+          SubtitleColor = -4668998
+          TitleColor = -657163
+          ShowHeader = False
+          TabOrder = 7
+          object dashStatusConnection: TDACSystemText
+            Left = 20
+            Top = 18
+            Width = 130
+            Height = 20
+            Bold = True
+            FontSize = 9
+            Text = 'Conectado'
+            TextColor = -12205254
+          end
+          object dashStatusFarm: TDACSystemText
+            Left = 480
+            Top = 18
+            Width = 180
+            Height = 20
+            FontSize = 9
+            Text = 'Fazenda Boa Vista'
+            TextColor = -657163
+          end
+          object dashStatusSeason: TDACSystemText
+            Left = 960
+            Top = 18
+            Width = 150
+            Height = 20
+            FontSize = 9
+            Text = 'Safra 2024/25'
+            TextColor = -4668998
+          end
+        end
+      end
+    end
     object tsButtons: TTabSheet
       Caption = 'Botoes'
       object scrButtons: TDACScrollContainer

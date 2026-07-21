@@ -16,6 +16,7 @@ contains
   DAC.Components.Dpi in '..\Source\Core\DAC.Components.Dpi.pas',
   DAC.Components.Geometry in '..\Source\Core\DAC.Components.Geometry.pas',
   DAC.Components.DesignSystem.ColorTokens in '..\Source\DesignSystem\DAC.Components.DesignSystem.ColorTokens.pas',
+  DAC.Components.DesignSystem.DashboardTokens in '..\Source\DesignSystem\DAC.Components.DesignSystem.DashboardTokens.pas',
   DAC.Components.DesignSystem.OpacityTokens in '..\Source\DesignSystem\DAC.Components.DesignSystem.OpacityTokens.pas',
   DAC.Components.DesignSystem.Fonts in '..\Source\DesignSystem\DAC.Components.DesignSystem.Fonts.pas',
   DAC.Components.DesignSystem.TypographyTokens in '..\Source\DesignSystem\DAC.Components.DesignSystem.TypographyTokens.pas',

@@ -52,6 +52,7 @@ type
     procedure EndUpdate;
     function MeasureTextWidth(const AText, AFontFamily: string;
       const AFontSize: Integer; const ABold: Boolean): Integer;
+  published
     property Bold: Boolean read FBold write SetBold;
     property FontFamily: string read FFontFamily write SetFontFamily;
     property FontSize: Integer read FFontSize write SetFontSize;

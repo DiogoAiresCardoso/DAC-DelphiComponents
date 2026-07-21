@@ -5,6 +5,7 @@ interface
 uses
   System.Classes,
   System.Math,
+  System.SysUtils,
   System.Types,
   Winapi.Messages,
   Winapi.Windows,
@@ -18,6 +19,7 @@ uses
   DAC.Components.Controls.ButtonEdit,
   DAC.Components.Controls.Charts,
   DAC.Components.Controls.ComboBox,
+  DAC.Components.Controls.Container,
   DAC.Components.Controls.DataGrid,
   DAC.Components.Controls.DateTimePicker,
   DAC.Components.Controls.Edit,
@@ -42,6 +44,7 @@ const
 type
   TForm1 = class(TForm)
     GalleryTabs: TDACTabs;
+    tsDashboard: TTabSheet;
     tsButtons: TTabSheet;
     tsInputs: TTabSheet;
     tsSelectors: TTabSheet;
@@ -102,12 +105,25 @@ type
     btnDeleteAction: TDACButton;
     btnUploadAction: TDACButton;
   private
+    FDashboardActivity: TDACContainer;
+    FDashboardAgenda: TDACContainer;
+    FDashboardCards: array[0..4] of TDACSummaryCard;
+    FDashboardChart: TDACBarChart;
+    FDashboardDate: TDACContainer;
+    FDashboardModules: TDACContainer;
+    FDashboardPage: TTabSheet;
+    FDashboardProductivity: TDACContainer;
+    FDashboardQuickActions: TDACContainer;
+    FDashboardScroll: TDACScrollContainer;
+    FDashboardStatus: TDACContainer;
     FDemoNavigation: TDACScrollContainer;
     FDemoNavigationButtons: array of TDACButton;
     FDemoNavigationTitle: TDACSystemText;
     function CanApplyRuntimeLayout: Boolean;
     procedure BuildDemoNavigation;
+    procedure BuildDashboard;
     procedure ConfigureDemoLayout;
+    procedure ConfigureDashboardLayout;
     procedure ConfigureResponsiveButtons;
     procedure DemoNavigationClick(Sender: TObject);
     procedure FitToWorkArea;
@@ -133,6 +149,29 @@ function TForm1.CanApplyRuntimeLayout: Boolean;
 begin
   Result := not (csDesigning in ComponentState) and (scrButtons <> nil) and
     (scrButtons.Parent <> nil);
+end;
+
+procedure TForm1.BuildDashboard;
+var
+  I: Integer;
+begin
+  if (csDesigning in ComponentState) then
+    Exit;
+  FDashboardPage := tsDashboard;
+  FDashboardScroll := FindComponent('scrDashboard') as TDACScrollContainer;
+  FDashboardDate := FindComponent('dashDateSummary') as TDACContainer;
+  FDashboardQuickActions := FindComponent('dashQuickActions') as TDACContainer;
+  FDashboardAgenda := FindComponent('dashAgenda') as TDACContainer;
+  FDashboardActivity := FindComponent('dashRecentActivity') as TDACContainer;
+  FDashboardProductivity := FindComponent('dashProductivity') as TDACContainer;
+  FDashboardModules := FindComponent('dashModules') as TDACContainer;
+  FDashboardStatus := FindComponent('dashStatus') as TDACContainer;
+  FDashboardChart := FindComponent('dashProductivityChart') as TDACBarChart;
+  if (FDashboardPage = nil) or (FDashboardScroll = nil) then
+    Exit;
+  for I := Low(FDashboardCards) to High(FDashboardCards) do
+    FDashboardCards[I] := FindComponent('dashKpi' + IntToStr(I + 1)) as TDACSummaryCard;
+  ConfigureDashboardLayout;
 end;
 
 procedure TForm1.BuildDemoNavigation;
@@ -304,6 +343,190 @@ begin
   GalleryTabs.Align := alNone;
   GalleryTabs.SetBounds(LNavigationWidth, 0,
     Max(0, ClientWidth - LNavigationWidth), ClientHeight);
+  ConfigureDashboardLayout;
+end;
+
+procedure TForm1.ConfigureDashboardLayout;
+const
+  Padding = 24;
+  Gap = 16;
+  KpiHeight = 108;
+  PanelHeight = 224;
+var
+  I: Integer;
+  LActivityTop: Integer;
+  LAvailable: Integer;
+  LCardWidth: Integer;
+  LColumns: Integer;
+  LDateWidth: Integer;
+  LMiddleWidth: Integer;
+  LModule: TDACContainer;
+  LModuleColumns: Integer;
+  LModuleWidth: Integer;
+  LProductivityWidth: Integer;
+  LQuickActionsHeight: Integer;
+  LQuickActionsGrid: TDACGridContainer;
+  LRows: Integer;
+  LText: TDACSystemText;
+  LTop: Integer;
+  procedure SetTextWidth(const AName: string; const AWidth: Integer);
+  begin
+    LText := FindComponent(AName) as TDACSystemText;
+    if LText <> nil then
+      LText.Width := Max(0, AWidth);
+  end;
+  procedure SetTextBounds(const AName: string; const ALeft, ATop, AWidth,
+    AHeight: Integer);
+  begin
+    LText := FindComponent(AName) as TDACSystemText;
+    if LText <> nil then
+      LText.SetBounds(ALeft, ATop, Max(0, AWidth), AHeight);
+  end;
+begin
+  if (csDesigning in ComponentState) or (FDashboardScroll = nil) then
+    Exit;
+
+  LAvailable := Max(240, FDashboardScroll.ClientWidth - (Padding * 2));
+  if LAvailable >= 1180 then
+    LColumns := 5
+  else if LAvailable >= 840 then
+    LColumns := 3
+  else if LAvailable >= 520 then
+    LColumns := 2
+  else
+    LColumns := 1;
+  LCardWidth := Max(160, (LAvailable - (Gap * (LColumns - 1))) div LColumns);
+
+  if LAvailable >= 620 then
+  begin
+    LDateWidth := Min(248, Max(224, LAvailable div 4));
+    FDashboardDate.SetBounds(Padding + LAvailable - LDateWidth, Padding,
+      LDateWidth, 72);
+    // TDACSystemText uses the native text rasterizer. Reserve enough logical
+    // width for the 20pt greeting at 144 DPI instead of relying on its
+    // ellipsis fallback; the user name starts after a fixed breathing gap.
+    SetTextBounds('dashWelcomeTitle', Padding, Padding, 220, 32);
+    SetTextBounds('dashWelcomeName', Padding + 228, Padding,
+      Max(0, LAvailable - LDateWidth - 236), 32);
+    SetTextBounds('dashWelcomeSubtitle', Padding, 58,
+      Max(180, LAvailable - LDateWidth - 24), 24);
+    LTop := 96;
+  end
+  else
+  begin
+    // A data leaves the greeting line on compact widths; otherwise the green
+    // user name and the date compete for the same physical pixels at 144 DPI.
+    SetTextBounds('dashWelcomeTitle', Padding, Padding, LAvailable, 32);
+    SetTextBounds('dashWelcomeName', Padding, 58, LAvailable, 32);
+    SetTextBounds('dashWelcomeSubtitle', Padding, 92, LAvailable, 24);
+    LDateWidth := LAvailable;
+    FDashboardDate.SetBounds(Padding, 124, LDateWidth, 72);
+    LTop := 216;
+  end;
+  SetTextWidth('dashDateValue', LDateWidth - 32);
+  SetTextWidth('dashDateWeekday', LDateWidth - 32);
+  for I := Low(FDashboardCards) to High(FDashboardCards) do
+    FDashboardCards[I].SetBounds(Padding + ((I mod LColumns) * (LCardWidth + Gap)),
+      LTop + ((I div LColumns) * (KpiHeight + Gap)), LCardWidth, KpiHeight);
+  LRows := (Length(FDashboardCards) + LColumns - 1) div LColumns;
+  Inc(LTop, LRows * KpiHeight + (LRows - 1) * Gap + 24);
+
+  LQuickActionsGrid := FindComponent('dashQuickActionsGrid') as TDACGridContainer;
+  if LAvailable < 420 then
+  begin
+    LQuickActionsHeight := 356;
+    if LQuickActionsGrid <> nil then
+      LQuickActionsGrid.Columns := 1;
+  end
+  else
+  begin
+    LQuickActionsHeight := PanelHeight;
+    if LQuickActionsGrid <> nil then
+      LQuickActionsGrid.Columns := 2;
+  end;
+
+  if LAvailable >= 1080 then
+  begin
+    LMiddleWidth := (LAvailable - (Gap * 2)) div 3;
+    FDashboardQuickActions.SetBounds(Padding, LTop, LMiddleWidth, LQuickActionsHeight);
+    FDashboardAgenda.SetBounds(Padding + LMiddleWidth + Gap, LTop, LMiddleWidth, PanelHeight);
+    FDashboardActivity.SetBounds(Padding + ((LMiddleWidth + Gap) * 2), LTop,
+      LMiddleWidth, PanelHeight);
+    Inc(LTop, Max(PanelHeight, LQuickActionsHeight) + 24);
+  end
+  else if LAvailable >= 640 then
+  begin
+    LMiddleWidth := (LAvailable - Gap) div 2;
+    FDashboardQuickActions.SetBounds(Padding, LTop, LMiddleWidth, LQuickActionsHeight);
+    FDashboardAgenda.SetBounds(Padding + LMiddleWidth + Gap, LTop, LMiddleWidth, PanelHeight);
+    LActivityTop := LTop + Max(PanelHeight, LQuickActionsHeight) + Gap;
+    FDashboardActivity.SetBounds(Padding, LActivityTop, LAvailable, PanelHeight);
+    LTop := LActivityTop + PanelHeight + 24;
+  end
+  else
+  begin
+    FDashboardQuickActions.SetBounds(Padding, LTop, LAvailable, LQuickActionsHeight);
+    Inc(LTop, LQuickActionsHeight + Gap);
+    FDashboardAgenda.SetBounds(Padding, LTop, LAvailable, PanelHeight);
+    Inc(LTop, PanelHeight + Gap);
+    FDashboardActivity.SetBounds(Padding, LTop, LAvailable, PanelHeight);
+    Inc(LTop, PanelHeight + 24);
+  end;
+
+  if LAvailable >= 840 then
+  begin
+    LProductivityWidth := (LAvailable - Gap) div 2;
+    FDashboardProductivity.SetBounds(Padding, LTop, LProductivityWidth, 270);
+    FDashboardModules.SetBounds(Padding + LProductivityWidth + Gap, LTop,
+      LProductivityWidth, 270);
+    Inc(LTop, 294);
+  end
+  else
+  begin
+    FDashboardProductivity.SetBounds(Padding, LTop, LAvailable, 270);
+    Inc(LTop, 286);
+    FDashboardModules.SetBounds(Padding, LTop, LAvailable, 270);
+    Inc(LTop, 294);
+  end;
+
+  if FDashboardModules.Width >= 760 then
+    LModuleColumns := 4
+  else if FDashboardModules.Width >= 420 then
+    LModuleColumns := 2
+  else
+    LModuleColumns := 1;
+  LModuleWidth := Max(150, (FDashboardModules.Width - 48 -
+    ((LModuleColumns - 1) * 12)) div LModuleColumns);
+  for I := 0 to 3 do
+  begin
+    LModule := FindComponent('dashModule' + IntToStr(I + 1)) as TDACContainer;
+    if LModule <> nil then
+      LModule.SetBounds(20 + ((I mod LModuleColumns) * (LModuleWidth + 12)), 56 +
+        ((I div LModuleColumns) * 178), LModuleWidth, 172);
+    SetTextWidth('dashModule' + IntToStr(I + 1) + 'Text', LModuleWidth - 24);
+  end;
+
+  FDashboardStatus.SetBounds(Padding, LTop, LAvailable, 56);
+  LText := FindComponent('dashStatusConnection') as TDACSystemText;
+  if LText <> nil then
+    LText.SetBounds(20, 18, 130, 20);
+  LText := FindComponent('dashStatusFarm') as TDACSystemText;
+  if LText <> nil then
+    LText.SetBounds(Max(160, LAvailable div 2 - 90), 18, 180, 20);
+  LText := FindComponent('dashStatusSeason') as TDACSystemText;
+  if LText <> nil then
+    LText.SetBounds(Max(300, LAvailable - 170), 18, 150, 20);
+  SetTextWidth('dashAgendaLine1', FDashboardAgenda.Width - 48);
+  SetTextWidth('dashAgendaLine2', FDashboardAgenda.Width - 48);
+  SetTextWidth('dashAgendaLine3', FDashboardAgenda.Width - 48);
+  SetTextWidth('dashAgendaFooter', FDashboardAgenda.Width - 48);
+  SetTextWidth('dashActivityLine1', FDashboardActivity.Width - 48);
+  SetTextWidth('dashActivityLine2', FDashboardActivity.Width - 48);
+  SetTextWidth('dashActivityLine3', FDashboardActivity.Width - 48);
+  SetTextWidth('dashActivityFooter', FDashboardActivity.Width - 48);
+  FDashboardQuickActions.Realign;
+  FDashboardProductivity.Realign;
+  FDashboardModules.Realign;
 end;
 
 procedure TForm1.CMShowingChanged(var AMessage: TMessage);
@@ -370,12 +593,14 @@ end;
 procedure TForm1.Loaded;
 begin
   inherited;
+  BuildDashboard;
   BuildDemoNavigation;
   if GalleryTabs <> nil then
     GalleryTabs.OnChange := GalleryTabsChange;
   RefreshDemoNavigation;
   ConfigureDemoLayout;
   ConfigureResponsiveButtons;
+  ConfigureDashboardLayout;
 end;
 
 function TForm1.NavigationCanRemainExpanded: Boolean;
@@ -465,6 +690,7 @@ begin
     GalleryTabs.ActivePage.Realign;
   scrButtons.Realign;
   ConfigureResponsiveButtons;
+  ConfigureDashboardLayout;
 end;
 
 end.

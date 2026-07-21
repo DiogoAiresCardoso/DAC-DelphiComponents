@@ -26,6 +26,10 @@ type
   TDACSummaryCard = class(TCustomControl)
   private
     FAccentColor: TAlphaColor;
+    FBackgroundColor: TAlphaColor;
+    FBorderColor: TAlphaColor;
+    FCustomBackgroundColor: Boolean;
+    FCustomBorderColor: Boolean;
     FCornerRadius: Integer;
     FFooterText: string;
     FIconKind: TDACIconKind;
@@ -44,6 +48,8 @@ type
     function ScaleFactor: Single;
     function ScaleMetric(const AValue: Integer): Integer;
     procedure SetAccentColor(const AValue: TAlphaColor);
+    procedure SetBackgroundColor(const AValue: TAlphaColor);
+    procedure SetBorderColor(const AValue: TAlphaColor);
     procedure SetCornerRadius(const AValue: Integer);
     procedure SetFooterText(const AValue: string);
     procedure SetIconKind(const AValue: TDACIconKind);
@@ -66,6 +72,8 @@ type
     property Anchors;
     property Constraints;
     property AccentColor: TAlphaColor read FAccentColor write SetAccentColor;
+    property BackgroundColor: TAlphaColor read FBackgroundColor write SetBackgroundColor;
+    property BorderColor: TAlphaColor read FBorderColor write SetBorderColor;
     property CornerRadius: Integer read FCornerRadius write SetCornerRadius default 10;
     property Enabled;
     property FooterText: string read FFooterText write SetFooterText;
@@ -104,6 +112,10 @@ begin
   TabStop := False;
 
   FAccentColor := TDACComponentColors.PrimaryDark;
+  FBackgroundColor := TDACComponentColors.ControlBackground;
+  FBorderColor := TDACComponentColors.ControlBorder;
+  FCustomBackgroundColor := False;
+  FCustomBorderColor := False;
   FCornerRadius := 10;
   FFooterText := '+0,0% vs. mes anterior';
   FIconKind := mikMoneyCircle;
@@ -218,8 +230,14 @@ begin
   LCardRect := FRenderer.SnapRect(TRectF.Create(0, 0, ADest.Width, ADest.Height), LScale);
   LCardRect.Inflate(-0.5 / LScale, -0.5 / LScale);
   LRadius := ScaleMetric(FCornerRadius);
-  LCardBackground := TDACComponentColors.ControlBackgroundForSurface(LSurface);
-  LCardBorder := TDACComponentColors.ControlBorderForSurface(LSurface);
+  if FCustomBackgroundColor then
+    LCardBackground := FBackgroundColor
+  else
+    LCardBackground := TDACComponentColors.ControlBackgroundForSurface(LSurface);
+  if FCustomBorderColor then
+    LCardBorder := FBorderColor
+  else
+    LCardBorder := TDACComponentColors.ControlBorderForSurface(LSurface);
   LAlpha := 255;
   if not Enabled then
     LAlpha := 130;
@@ -294,6 +312,32 @@ begin
     Exit;
 
   FAccentColor := LValue;
+  Redraw;
+end;
+
+procedure TDACSummaryCard.SetBackgroundColor(const AValue: TAlphaColor);
+begin
+  if FBackgroundColor = AValue then
+  begin
+    FCustomBackgroundColor := True;
+    Redraw;
+    Exit;
+  end;
+  FBackgroundColor := AValue;
+  FCustomBackgroundColor := True;
+  Redraw;
+end;
+
+procedure TDACSummaryCard.SetBorderColor(const AValue: TAlphaColor);
+begin
+  if FBorderColor = AValue then
+  begin
+    FCustomBorderColor := True;
+    Redraw;
+    Exit;
+  end;
+  FBorderColor := AValue;
+  FCustomBorderColor := True;
   Redraw;
 end;
 

@@ -25,6 +25,8 @@ type
   TDACChart = class(TCustomControl)
   private
     FCategoriesText: string;
+    FBackgroundColor: TAlphaColor;
+    FBorderColor: TAlphaColor;
     FKind: TDACChartKind;
     FPaintBox: TSkPaintBox;
     FRenderer: TDACSkiaRenderer;
@@ -46,9 +48,12 @@ type
       const AValues: TArray<Single>);
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
+    function ParentSurfaceColor: TAlphaColor;
     function ScaleFactor: Single;
     function ScaleMetric(const AValue: Integer): Integer;
     procedure SetCategoriesText(const AValue: string);
+    procedure SetBackgroundColor(const AValue: TAlphaColor);
+    procedure SetBorderColor(const AValue: TAlphaColor);
     procedure SetKind(const AValue: TDACChartKind);
     procedure SetShowFrame(const AValue: Boolean);
     procedure SetShowGrid(const AValue: Boolean);
@@ -68,6 +73,8 @@ type
   published
     property Align;
     property Anchors;
+    property BackgroundColor: TAlphaColor read FBackgroundColor write SetBackgroundColor;
+    property BorderColor: TAlphaColor read FBorderColor write SetBorderColor;
     property CategoriesText: string read FCategoriesText write SetCategoriesText;
     property Constraints;
     property Enabled;
@@ -135,6 +142,8 @@ begin
   Font.Size := 9;
 
   FKind := mckBar;
+  FBackgroundColor := TDACComponentColors.White;
+  FBorderColor := TDACComponentColors.ControlBorder;
   FShowFrame := True;
   FShowGrid := True;
   FShowValue := True;
@@ -328,8 +337,8 @@ var
   LRect: TRectF;
 begin
   LRect := TRectF.Create(0.5, 0.5, ADest.Width - 0.5, ADest.Height - 0.5);
-  FRenderer.FillRoundRect(ACanvas, LRect, TDACComponentColors.White, ScaleMetric(8), 255);
-  FRenderer.StrokeRoundRect(ACanvas, LRect, TDACComponentColors.ControlBorder,
+  FRenderer.FillRoundRect(ACanvas, LRect, FBackgroundColor, ScaleMetric(8), 255);
+  FRenderer.StrokeRoundRect(ACanvas, LRect, FBorderColor,
     ScaleMetric(8), 1, 255);
 end;
 
@@ -401,9 +410,10 @@ var
   LValues: TArray<Single>;
 begin
   // The rounded frame intentionally leaves its extreme corner pixels
-  // uncovered. Clear the whole Skia destination first so those pixels keep
-  // the chart surface color rather than the default black backing store.
-  ACanvas.Clear(TDACComponentColors.White);
+  // uncovered. Clear with the actual parent surface, then draw the chart
+  // background over it. Clearing directly with a semi-transparent color
+  // would replace the backing store and defeat the glass blend.
+  ACanvas.Clear(ParentSurfaceColor);
   LRect := ChartRect(ADest);
   LValues := ParseValues;
   if FShowFrame then
@@ -446,6 +456,11 @@ begin
   end;
 end;
 
+function TDACChart.ParentSurfaceColor: TAlphaColor;
+begin
+  Result := TDACComponentColors.ResolveParentSurface(Self);
+end;
+
 procedure TDACChart.Redraw;
 begin
   if (FPaintBox <> nil) and not (csDestroying in ComponentState) and
@@ -482,6 +497,23 @@ begin
   if FCategoriesText = AValue then
     Exit;
   FCategoriesText := AValue;
+  Redraw;
+end;
+
+procedure TDACChart.SetBackgroundColor(const AValue: TAlphaColor);
+begin
+  if FBackgroundColor = AValue then
+    Exit;
+  FBackgroundColor := AValue;
+  Color := TDACComponentColors.ToVclColor(FBackgroundColor);
+  Redraw;
+end;
+
+procedure TDACChart.SetBorderColor(const AValue: TAlphaColor);
+begin
+  if FBorderColor = AValue then
+    Exit;
+  FBorderColor := AValue;
   Redraw;
 end;
 
@@ -536,7 +568,8 @@ procedure TDACChart.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 var
   LBrush: HBRUSH;
 begin
-  LBrush := CreateSolidBrush(ColorToRGB(Color));
+  LBrush := CreateSolidBrush(ColorToRGB(
+    TDACComponentColors.ToVclColor(ParentSurfaceColor)));
   try
     Winapi.Windows.FillRect(AMessage.DC, ClientRect, LBrush);
   finally

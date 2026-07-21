@@ -35,10 +35,10 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
-        <DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
-        <DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>
-        <DCC_BplOutput>..\\Build\\Bpl\\</DCC_BplOutput>
-        <DCC_DcpOutput>..\\Build\\Dcp\\</DCC_DcpOutput>
+        <DCC_DcuOutput>.\Build\Dcu\$(Platform)\$(Config)</DCC_DcuOutput>
+        <DCC_ExeOutput>.\Build\Exe\$(Platform)\$(Config)</DCC_ExeOutput>
+        <DCC_BplOutput>.\Build\Bpl\</DCC_BplOutput>
+        <DCC_DcpOutput>.\Build\Dcp\</DCC_DcpOutput>
         <DCC_E>false</DCC_E>
         <DCC_N>false</DCC_N>
         <DCC_S>false</DCC_S>

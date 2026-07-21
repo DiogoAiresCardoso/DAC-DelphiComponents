@@ -99,9 +99,10 @@
         <DCCReference Include="..\Source\Controls\DAC.Components.Controls.Progress.pas"/>
         <DCCReference Include="..\Source\Controls\DAC.Components.Controls.Pagination.pas"/>
         <DCCReference Include="..\Source\Controls\DAC.Components.Controls.Loading.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DataGridColumns.pas"/>
         <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DataGrid.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.Register.pas"/>
         <DCCReference Include="..\Source\Hooks\DAC.Components.Hooks.SkiaControls.pas"/>
-        <DCCReference Include="..\Source\Hooks\DAC.Components.Hooks.Tabs.pas"/>
         <DCCReference Include="..\Source\Hooks\DAC.Components.Hooks.Register.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>

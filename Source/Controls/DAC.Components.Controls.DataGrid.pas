@@ -4,6 +4,7 @@ interface
 
 uses
   System.Classes,
+  System.Skia,
   System.Types,
   System.UITypes,
   Data.DB,
@@ -12,82 +13,67 @@ uses
   Vcl.DBGrids,
   Vcl.Forms,
   Vcl.Grids,
-  Vcl.Graphics;
+  Vcl.Skia,
+  DAC.Components.Skia.Renderer;
 
 type
-  TDACDataGridActionKind = (
-    mdgakNone,
-    mdgakEdit,
-    mdgakDelete,
-    mdgakMore
-  );
-
-  TDACDataGridStatus = (
-    mdgsNone,
-    mdgsSuccess,
-    mdgsWarning,
-    mdgsDanger,
-    mdgsInfo
-  );
-
+  TDACDataGridActionKind = (mdgakNone, mdgakEdit, mdgakDelete, mdgakMore);
   TDACDataGridActionClickEvent = procedure(Sender: TObject;
     AAction: TDACDataGridActionKind; AColumn: TColumn) of object;
+
+  TDACDataGridPaintBox = class(TSkPaintBox)
+  public
+    procedure SetWheelHandler(const AHandler: TMouseWheelEvent);
+  end;
 
   TDACDataGrid = class(TDBGrid)
   private
     FCornerRadius: Integer;
     FFooterText: string;
     FFooterValue: string;
-    FHotAction: TDACDataGridActionKind;
+    FHoverCell: TGridCoord;
     FOnActionClick: TDACDataGridActionClickEvent;
-    FPressedAction: TDACDataGridActionKind;
+    FPaintBox: TDACDataGridPaintBox;
+    FRenderer: TDACSkiaRenderer;
     FShowFooter: Boolean;
     FStatusFieldName: string;
     function ActionAt(const ACellRect: TRect; const X, Y: Integer): TDACDataGridActionKind;
     function ActionRect(const ACellRect: TRect;
       const AAction: TDACDataGridActionKind): TRect;
-    procedure ApplyAppearance;
-    procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
-    procedure CMMouseLeave(var AMessage: TMessage); message CM_MOUSELEAVE;
-    function ColumnFromGridCoord(const ACoord: TGridCoord): TColumn;
-    procedure DoActionClick(const AAction: TDACDataGridActionKind;
-      AColumn: TColumn);
-    procedure DrawActionsCell(const ARect: TRect);
-    procedure DrawFooter(const ARect: TRect);
-    procedure DrawPreview;
-    procedure DrawPreviewRow(const ARowIndex: Integer; const AValues: array of string;
-      const AStatus: TDACDataGridStatus; const ARect: TRect);
-    procedure DrawStatusPill(const ARect: TRect; const AText: string;
-      const AStatus: TDACDataGridStatus);
-    procedure DrawTextCell(const ARect: TRect; const AText: string;
-      const AAlignment: TAlignment; const ABold: Boolean = False);
+    procedure ApplyNativeBehavior;
+    procedure DrawDataSetChrome(const ACanvas: ISkCanvas; const ADest: TRectF);
+    procedure DrawPreview(const ACanvas: ISkCanvas; const ADest: TRectF);
+    procedure EnsurePaintBox;
     function HasActiveDataSet: Boolean;
-    function IsActionsColumn(const AColumn: TColumn): Boolean;
-    function IsStatusColumn(const AColumn: TColumn): Boolean;
+    procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
+      const ADest: TRectF; const AOpacity: Single);
+    procedure PaintBoxMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure PaintBoxMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure PaintBoxMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure PaintBoxMouseWheel(Sender: TObject; Shift: TShiftState;
+      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure SetCornerRadius(const AValue: Integer);
     procedure SetFooterText(const AValue: string);
     procedure SetFooterValue(const AValue: string);
     procedure SetShowFooter(const AValue: Boolean);
     procedure SetStatusFieldName(const AValue: string);
-    function StatusBackgroundColor(const AStatus: TDACDataGridStatus): TColor;
-    function StatusFromText(const AText: string): TDACDataGridStatus;
-    function StatusTextColor(const AStatus: TDACDataGridStatus): TColor;
     function TryHitAction(const X, Y: Integer; out AColumn: TColumn;
       out AAction: TDACDataGridActionKind): Boolean;
-    function TokenColor(const AColor: TAlphaColor): TColor;
+    procedure UpdatePreview;
+    procedure UpdatePaintBoxBounds;
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
   protected
     procedure ChangeScale(M, D: Integer); override;
     procedure CreateWnd; override;
-    procedure DrawColumnCell(const Rect: TRect; DataCol: Integer;
-      Column: TColumn; State: TGridDrawState); override;
     procedure Loaded; override;
-    procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
-    procedure MouseMove(Shift: TShiftState; X, Y: Integer); override;
+    procedure KeyDown(var Key: Word; Shift: TShiftState); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
-    procedure Paint; override;
+    procedure Resize; override;
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
     procedure Redraw;
   published
     property Align;
@@ -155,12 +141,48 @@ implementation
 uses
   System.Math,
   System.SysUtils,
-  Winapi.Windows,
+  DAC.Components.Controls.DataGridColumns,
   DAC.Components.DesignSystem.ColorTokens,
   DAC.Components.DesignSystem.Fonts;
 
 const
   GridHeaderColor: TAlphaColor = TAlphaColor($FF111827);
+
+procedure TDACDataGridPaintBox.SetWheelHandler(const AHandler: TMouseWheelEvent);
+begin
+  OnMouseWheel := AHandler;
+end;
+
+constructor TDACDataGrid.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  ControlStyle := ControlStyle + [csOpaque];
+  Width := 760;
+  Height := 170;
+  FCornerRadius := 8;
+  FFooterText := 'Total: 0 registros';
+  FFooterValue := '';
+  FShowFooter := True;
+  FStatusFieldName := 'STATUS';
+  FHoverCell.X := -1;
+  FHoverCell.Y := -1;
+  BorderStyle := bsNone;
+  Ctl3D := False;
+  ReadOnly := True;
+  TabStop := True;
+  Options := Options + [dgTitles, dgColLines, dgRowLines, dgRowSelect];
+  Options := Options - [dgIndicator];
+  ApplyNativeBehavior;
+  FRenderer := TDACSkiaRenderer.Create;
+  UpdatePreview;
+end;
+
+destructor TDACDataGrid.Destroy;
+begin
+  FPaintBox.Free;
+  FRenderer.Free;
+  inherited;
+end;
 
 function TDACDataGrid.ActionAt(const ACellRect: TRect; const X,
   Y: Integer): TDACDataGridActionKind;
@@ -182,599 +204,429 @@ const
   ActionGap = 5;
 var
   LLeft: Integer;
-  LTop: Integer;
-  LTotalWidth: Integer;
 begin
-  LTotalWidth := (ActionSize * 3) + (ActionGap * 2);
-  LLeft := ACellRect.Left + Max(6, (ACellRect.Width - LTotalWidth) div 2);
-  LTop := ACellRect.Top + ((ACellRect.Height - ActionSize) div 2);
-
+  LLeft := ACellRect.Left + Max(6, (ACellRect.Width - ((ActionSize * 3) +
+    (ActionGap * 2))) div 2);
   case AAction of
-    mdgakDelete:
-      Inc(LLeft, ActionSize + ActionGap);
-    mdgakMore:
-      Inc(LLeft, (ActionSize + ActionGap) * 2);
+    mdgakDelete: Inc(LLeft, ActionSize + ActionGap);
+    mdgakMore: Inc(LLeft, (ActionSize + ActionGap) * 2);
   end;
-
-  Result := Rect(LLeft, LTop, LLeft + ActionSize, LTop + ActionSize);
+  Result := Rect(LLeft, ACellRect.Top + ((ACellRect.Height - ActionSize) div 2),
+    LLeft + ActionSize, ACellRect.Top + ((ACellRect.Height - ActionSize) div 2) + ActionSize);
 end;
 
-constructor TDACDataGrid.Create(AOwner: TComponent);
+procedure TDACDataGrid.ApplyNativeBehavior;
 begin
-  inherited Create(AOwner);
-  ControlStyle := ControlStyle + [csOpaque];
-  Width := 760;
-  Height := 170;
-  FCornerRadius := 8;
-  FFooterText := 'Total: 0 registros';
-  FFooterValue := '';
-  FShowFooter := True;
-  FStatusFieldName := 'STATUS';
-  FHotAction := mdgakNone;
-  FPressedAction := mdgakNone;
-
-  BorderStyle := bsNone;
-  Ctl3D := False;
-  DefaultDrawing := False;
-  ParentColor := False;
-  ReadOnly := True;
-  TabStop := True;
-
-  Options := Options + [dgTitles, dgColLines, dgRowLines, dgRowSelect];
-  Options := Options - [dgIndicator];
-  ApplyAppearance;
-end;
-
-procedure TDACDataGrid.ApplyAppearance;
-begin
-  Color := TokenColor(TDACComponentColors.White);
-  FixedColor := TokenColor(GridHeaderColor);
+  Color := TDACComponentColors.ToVclColor(TDACComponentColors.White);
+  FixedColor := TDACComponentColors.ToVclColor(GridHeaderColor);
   Font.Name := TDACComponentFontInstaller.FontFamily;
   Font.Size := 9;
-  Font.Color := TokenColor(TDACComponentColors.ControlText);
+  Font.Color := TDACComponentColors.ToVclColor(TDACComponentColors.ControlText);
   TitleFont.Assign(Font);
-  TitleFont.Color := TokenColor(TDACComponentColors.White);
-  TitleFont.Style := [fsBold];
+  TitleFont.Color := TDACComponentColors.ToVclColor(TDACComponentColors.White);
+  TitleFont.Style := [];
+  DefaultDrawing := True;
 end;
 
 procedure TDACDataGrid.ChangeScale(M, D: Integer);
 begin
   inherited;
-  ApplyAppearance;
-  Invalidate;
-end;
-
-procedure TDACDataGrid.CMEnabledChanged(var AMessage: TMessage);
-begin
-  inherited;
-  Invalidate;
-end;
-
-procedure TDACDataGrid.CMMouseLeave(var AMessage: TMessage);
-begin
-  inherited;
-  if (FHotAction <> mdgakNone) or (FPressedAction <> mdgakNone) then
-  begin
-    FHotAction := mdgakNone;
-    FPressedAction := mdgakNone;
-    Cursor := crDefault;
-    Invalidate;
-  end;
-end;
-
-function TDACDataGrid.ColumnFromGridCoord(
-  const ACoord: TGridCoord): TColumn;
-var
-  LColumnIndex: Integer;
-begin
-  Result := nil;
-  LColumnIndex := ACoord.X;
-  if dgIndicator in Options then
-    Dec(LColumnIndex);
-
-  if (LColumnIndex >= 0) and (LColumnIndex < Columns.Count) then
-    Result := Columns[LColumnIndex];
+  ApplyNativeBehavior;
+  UpdatePreview;
 end;
 
 procedure TDACDataGrid.CreateWnd;
 begin
   inherited;
-  ApplyAppearance;
+  ApplyNativeBehavior;
+  UpdatePreview;
 end;
 
-procedure TDACDataGrid.DoActionClick(
-  const AAction: TDACDataGridActionKind; AColumn: TColumn);
+procedure TDACDataGrid.EnsurePaintBox;
 begin
-  if Assigned(FOnActionClick) then
-    FOnActionClick(Self, AAction, AColumn);
+  if (FPaintBox <> nil) or (Parent = nil) or not HandleAllocated or
+    not Parent.HandleAllocated then
+    Exit;
+  FPaintBox := TDACDataGridPaintBox.Create(Self);
+  FPaintBox.Parent := Self;
+  FPaintBox.SetSubComponent(True);
+  FPaintBox.StyleElements := [];
+  FPaintBox.OnDraw := PaintBoxDraw;
+  FPaintBox.OnMouseDown := PaintBoxMouseDown;
+  FPaintBox.OnMouseMove := PaintBoxMouseMove;
+  FPaintBox.OnMouseUp := PaintBoxMouseUp;
+  FPaintBox.SetWheelHandler(PaintBoxMouseWheel);
 end;
 
-procedure TDACDataGrid.DrawActionsCell(const ARect: TRect);
+procedure TDACDataGrid.DrawDataSetChrome(const ACanvas: ISkCanvas;
+  const ADest: TRectF);
 var
-  LCenterY: Integer;
-  LHotPoint: TPoint;
-  LHotRect: TRect;
-  LRect: TRect;
-begin
-  Canvas.Brush.Style := bsClear;
-  Canvas.Pen.Width := 1;
-  Canvas.Pen.Color := TokenColor(TDACComponentColors.Alpha(71, 85, 105));
-  LCenterY := ARect.Top + (ARect.Height div 2);
-
-  if FHotAction <> mdgakNone then
+  LCell: TRect;
+  LCellRect: TRectF;
+  LColumn: TColumn;
+  LColumnCount: Integer;
+  LField: TField;
+  LHeaderRect: TRectF;
+  I: Integer;
+  LRow: Integer;
+  LRowRect: TRectF;
+  LStatus: Boolean;
+  LText: string;
+  LOriginalActiveRecord: Integer;
+  function GridColumnAt(const AIndex: Integer): TColumn;
   begin
-    GetCursorPos(LHotPoint);
-    LHotPoint := ScreenToClient(LHotPoint);
-    LHotRect := ActionRect(ARect, FHotAction);
-    if PtInRect(LHotRect, LHotPoint) then
+    Result := TDACDataGridColumnResolver.ColumnAt(Self, AIndex);
+  end;
+  function GridFieldAt(const AIndex: Integer): TField;
+  begin
+    Result := TDACDataGridColumnResolver.FieldAt(Self, AIndex);
+  end;
+  function CellBounds(const AColumn, ARow: Integer): TRectF;
+  begin
+    if (AColumn >= 0) and (AColumn < ColCount) then
     begin
-      Canvas.Brush.Color := TokenColor(TDACComponentColors.Alpha(239, 247, 237));
-      Canvas.Brush.Style := bsSolid;
-      Canvas.Pen.Style := psClear;
-      Canvas.RoundRect(LHotRect.Left, LHotRect.Top, LHotRect.Right, LHotRect.Bottom, 8, 8);
-      Canvas.Pen.Style := psSolid;
-      Canvas.Brush.Style := bsClear;
+      LCell := CellRect(AColumn, ARow);
+      Exit(TRectF.Create(LCell.Left, LCell.Top, LCell.Right, LCell.Bottom));
+    end;
+    Result := TRectF.Create((AColumn * ADest.Width) / LColumnCount,
+      ARow * DefaultRowHeight, ((AColumn + 1) * ADest.Width) / LColumnCount,
+      (ARow + 1) * DefaultRowHeight);
+  end;
+  procedure DrawActionChrome(const ARect: TRectF);
+  var
+    J: Integer;
+    LActionRect: TRectF;
+    LGap: Single;
+    LSize: Single;
+  begin
+    LGap := 4;
+    LSize := 16;
+    for J := 0 to 2 do
+    begin
+      LActionRect := TRectF.Create(ARect.Left + 6 + (J * (LSize + LGap)),
+        ARect.Top + ((ARect.Height - LSize) / 2),
+        ARect.Left + 6 + (J * (LSize + LGap)) + LSize,
+        ARect.Top + ((ARect.Height - LSize) / 2) + LSize);
+      if J = 1 then
+        FRenderer.FillRoundRect(ACanvas, LActionRect, TDACComponentColors.Alpha(253, 235, 233), 5)
+      else
+        FRenderer.FillRoundRect(ACanvas, LActionRect, TDACComponentColors.Alpha(232, 247, 228), 5);
+      FRenderer.StrokeRoundRect(ACanvas, LActionRect,
+        TDACComponentColors.ControlBorder, 5, 1);
     end;
   end;
-
-  LRect := ActionRect(ARect, mdgakEdit);
-  InflateRect(LRect, -3, -3);
-  Canvas.MoveTo(LRect.Left + 2, LRect.Bottom - 2);
-  Canvas.LineTo(LRect.Right - 2, LRect.Top + 2);
-  Canvas.Rectangle(LRect.Left, LRect.Top, LRect.Right, LRect.Bottom);
-
-  Canvas.Pen.Color := TokenColor(TDACComponentColors.Danger);
-  LRect := ActionRect(ARect, mdgakDelete);
-  InflateRect(LRect, -3, -3);
-  Canvas.Rectangle(LRect.Left + 2, LRect.Top + 4, LRect.Right - 2, LRect.Bottom);
-  Canvas.MoveTo(LRect.Left + 1, LRect.Top + 3);
-  Canvas.LineTo(LRect.Right - 1, LRect.Top + 3);
-
-  Canvas.Pen.Color := TokenColor(TDACComponentColors.Alpha(100, 116, 139));
-  LRect := ActionRect(ARect, mdgakMore);
-  InflateRect(LRect, -3, -3);
-  Canvas.Ellipse(LRect.Left + 1, LCenterY - 1, LRect.Left + 3, LCenterY + 1);
-  Canvas.Ellipse(LRect.Left + 6, LCenterY - 1, LRect.Left + 8, LCenterY + 1);
-  Canvas.Ellipse(LRect.Left + 11, LCenterY - 1, LRect.Left + 13, LCenterY + 1);
-end;
-
-procedure TDACDataGrid.DrawColumnCell(const Rect: TRect; DataCol: Integer;
-  Column: TColumn; State: TGridDrawState);
-var
-  LAlignment: TAlignment;
-  LRect: TRect;
-  LStatus: TDACDataGridStatus;
-  LText: string;
 begin
-  LRect := Rect;
-  InflateRect(LRect, -1, -1);
-
-  if gdSelected in State then
-    Canvas.Brush.Color := TokenColor(TDACComponentColors.Alpha(239, 247, 237))
-  else
-    Canvas.Brush.Color := Color;
-  Canvas.FillRect(Rect);
-
-  if IsActionsColumn(Column) then
-  begin
-    DrawActionsCell(LRect);
+  if (ACanvas = nil) or not HasActiveDataSet then
     Exit;
+  LColumnCount := TDACDataGridColumnResolver.Count(Self);
+  if LColumnCount = 0 then
+    Exit;
+  ACanvas.Clear(TDACComponentColors.White);
+  FRenderer.FillRoundRect(ACanvas, TRectF.Create(0.5, 0.5,
+    ADest.Width - 0.5, ADest.Height - 0.5), TDACComponentColors.White, FCornerRadius);
+  FRenderer.StrokeRoundRect(ACanvas, TRectF.Create(0.5, 0.5,
+    ADest.Width - 0.5, ADest.Height - 0.5),
+    TDACComponentColors.ControlBorder, FCornerRadius, 1);
+
+  for I := 0 to LColumnCount - 1 do
+  begin
+    LHeaderRect := CellBounds(I, 0);
+    FRenderer.FillRoundRect(ACanvas, LHeaderRect, GridHeaderColor, 0);
+    LColumn := GridColumnAt(I);
+    if LColumn <> nil then
+      LText := LColumn.Title.Caption
+    else if GridFieldAt(I) <> nil then
+      LText := GridFieldAt(I).DisplayName
+    else
+      LText := '';
+    FRenderer.TextCentered(ACanvas, LText, TDACComponentFontInstaller.FontFamily,
+      LHeaderRect, 9, TDACComponentColors.White, True);
   end;
 
-  if (Column <> nil) and (Column.Field <> nil) then
-    LText := Column.Field.DisplayText
-  else
-    LText := '';
-
-  if IsStatusColumn(Column) then
-  begin
-    LStatus := StatusFromText(LText);
-    DrawStatusPill(LRect, LText, LStatus);
-    Exit;
+  LOriginalActiveRecord := DataLink.ActiveRecord;
+  try
+    for LRow := FixedRows to RowCount - 1 do
+    begin
+      DataLink.ActiveRecord := LRow - FixedRows;
+      LRowRect := CellBounds(0, LRow);
+      LRowRect.Right := ADest.Width - 1;
+      if (LRow mod 2) = 0 then
+        FRenderer.FillRoundRect(ACanvas, LRowRect,
+          TDACComponentColors.Alpha(250, 252, 250), 0);
+      if LRow = Row then
+        FRenderer.FillRoundRect(ACanvas, LRowRect,
+          TDACComponentColors.Alpha(232, 247, 228), 0, 120);
+      for I := 0 to LColumnCount - 1 do
+      begin
+        LCellRect := CellBounds(I, LRow);
+        LColumn := GridColumnAt(I);
+        LField := GridFieldAt(I);
+        if LField <> nil then
+          LText := LField.DisplayText
+        else
+          LText := '';
+        LStatus := (LField <> nil) and SameText(LField.FieldName, FStatusFieldName);
+        if LStatus then
+        begin
+          FRenderer.FillRoundRect(ACanvas, TRectF.Create(LCellRect.Left + 6,
+            LCellRect.Top + 6, LCellRect.Right - 6, LCellRect.Bottom - 6),
+            TDACComponentColors.Alpha(232, 247, 228), 9);
+          FRenderer.TextCentered(ACanvas, LText, TDACComponentFontInstaller.FontFamily,
+            TRectF.Create(LCellRect.Left + 6, LCellRect.Top + 6,
+            LCellRect.Right - 6, LCellRect.Bottom - 6), 8,
+            TDACComponentColors.PrimaryDark, True);
+        end
+        else if (LColumn <> nil) and (LField <> nil) and
+          SameText(LField.FieldName, 'ACTIONS') then
+          DrawActionChrome(LCellRect)
+        else
+          FRenderer.TextCentered(ACanvas, LText, TDACComponentFontInstaller.FontFamily,
+            TRectF.Create(LCellRect.Left + 6, LCellRect.Top,
+            LCellRect.Right - 6, LCellRect.Bottom), 9,
+            TDACComponentColors.ControlText);
+        if (FHoverCell.X = I) and (FHoverCell.Y = LRow) then
+          FRenderer.StrokeRoundRect(ACanvas, TRectF.Create(LCellRect.Left + 1,
+            LCellRect.Top + 1, LCellRect.Right - 1, LCellRect.Bottom - 1),
+            TDACComponentColors.PrimaryLight, 4, 1);
+      end;
+    end;
+  finally
+    DataLink.ActiveRecord := LOriginalActiveRecord;
   end;
-
-  LAlignment := taLeftJustify;
-  if Column <> nil then
-    LAlignment := Column.Alignment;
-  DrawTextCell(LRect, LText, LAlignment);
 end;
 
-procedure TDACDataGrid.DrawFooter(const ARect: TRect);
+procedure TDACDataGrid.DrawPreview(const ACanvas: ISkCanvas; const ADest: TRectF);
+const
+  Headers: array[0..6] of string = ('ID', 'Cliente', 'Cidade', 'Status', 'Valor', 'Data', 'Acoes');
+  Row1: array[0..5] of string = ('1001', 'Maria Silva', 'Sao Paulo - SP', 'Ativo', '1.250,00', '24/05/2025');
+  Row2: array[0..5] of string = ('1002', 'Joao Santos', 'Rio de Janeiro - RJ', 'Ativo', '980,50', '24/05/2025');
 var
-  LRect: TRect;
+  I: Integer;
+  LCellWidth: Single;
+  LHeader: TRectF;
+  LRect: TRectF;
+  LRowTop: Single;
+  procedure DrawRow(const AValues: array of string; const ATop: Single);
+  var
+    J: Integer;
+    LCell: TRectF;
+  begin
+    FRenderer.FillRoundRect(ACanvas, TRectF.Create(1, ATop, ADest.Width - 1,
+      ATop + 32), TDACComponentColors.Alpha(250, 252, 250), 0);
+    for J := 0 to High(AValues) do
+    begin
+      LCell := TRectF.Create(8 + (J * LCellWidth), ATop, (J + 1) * LCellWidth - 8,
+        ATop + 32);
+      FRenderer.TextCentered(ACanvas, AValues[J], TDACComponentFontInstaller.FontFamily,
+        LCell, 9, TDACComponentColors.ControlText);
+    end;
+    FRenderer.FillRoundRect(ACanvas, TRectF.Create(8 + (3 * LCellWidth), ATop + 7,
+      (4 * LCellWidth) - 8, ATop + 25), TDACComponentColors.Alpha(232, 247, 228), 9);
+    FRenderer.TextCentered(ACanvas, AValues[3], TDACComponentFontInstaller.FontFamily,
+      TRectF.Create(8 + (3 * LCellWidth), ATop + 7, (4 * LCellWidth) - 8, ATop + 25),
+      8, TDACComponentColors.PrimaryDark, True);
+  end;
 begin
-  LRect := ARect;
-  Canvas.Brush.Color := TokenColor(GridHeaderColor);
-  Canvas.FillRect(LRect);
-
-  Canvas.Font.Assign(TitleFont);
-  Canvas.Font.Color := clWhite;
-  DrawTextCell(Rect(LRect.Left + 10, LRect.Top, LRect.Left + 280, LRect.Bottom),
-    FFooterText, taLeftJustify, True);
-  DrawTextCell(Rect(LRect.Right - 150, LRect.Top, LRect.Right - 10, LRect.Bottom),
-    FFooterValue, taRightJustify, True);
-end;
-
-procedure TDACDataGrid.DrawPreview;
-var
-  LFooterRect: TRect;
-  LHeaderRect: TRect;
-  LRect: TRect;
-  LRowTop: Integer;
-begin
-  Canvas.Brush.Color := Color;
-  Canvas.FillRect(ClientRect);
-
-  LRect := ClientRect;
-  InflateRect(LRect, -1, -1);
-  Canvas.Pen.Color := TokenColor(TDACComponentColors.ControlBorder);
-  Canvas.Brush.Style := bsClear;
-  Canvas.RoundRect(LRect.Left, LRect.Top, LRect.Right, LRect.Bottom,
-    FCornerRadius, FCornerRadius);
-
-  LHeaderRect := Rect(LRect.Left + 1, LRect.Top + 1, LRect.Right - 1,
-    LRect.Top + 31);
-  Canvas.Brush.Color := TokenColor(GridHeaderColor);
-  Canvas.FillRect(LHeaderRect);
-  Canvas.Font.Assign(TitleFont);
-  DrawTextCell(Rect(LHeaderRect.Left + 8, LHeaderRect.Top, LHeaderRect.Left + 70,
-    LHeaderRect.Bottom), 'ID', taLeftJustify, True);
-  DrawTextCell(Rect(LHeaderRect.Left + 70, LHeaderRect.Top, LHeaderRect.Left + 230,
-    LHeaderRect.Bottom), 'Nome do Cliente', taLeftJustify, True);
-  DrawTextCell(Rect(LHeaderRect.Left + 230, LHeaderRect.Top, LHeaderRect.Left + 390,
-    LHeaderRect.Bottom), 'Cidade', taLeftJustify, True);
-  DrawTextCell(Rect(LHeaderRect.Left + 390, LHeaderRect.Top, LHeaderRect.Left + 490,
-    LHeaderRect.Bottom), 'Status', taCenter, True);
-  DrawTextCell(Rect(LHeaderRect.Left + 490, LHeaderRect.Top, LHeaderRect.Left + 600,
-    LHeaderRect.Bottom), 'Valor (R$)', taRightJustify, True);
-  DrawTextCell(Rect(LHeaderRect.Left + 600, LHeaderRect.Top, LHeaderRect.Left + 690,
-    LHeaderRect.Bottom), 'Data', taCenter, True);
-  DrawTextCell(Rect(LHeaderRect.Left + 690, LHeaderRect.Top, LHeaderRect.Right,
-    LHeaderRect.Bottom), 'Acoes', taCenter, True);
-
-  Canvas.Font.Assign(Font);
-  LRowTop := LHeaderRect.Bottom;
-  DrawPreviewRow(0, ['1001', 'Maria Silva', 'Sao Paulo - SP', 'Ativo',
-    '1.250,00', '24/05/2025'], mdgsSuccess, Rect(LRect.Left + 1, LRowTop,
-    LRect.Right - 1, LRowTop + 30));
-  Inc(LRowTop, 30);
-  DrawPreviewRow(1, ['1002', 'Joao Santos', 'Rio de Janeiro - RJ', 'Ativo',
-    '980,50', '24/05/2025'], mdgsSuccess, Rect(LRect.Left + 1, LRowTop,
-    LRect.Right - 1, LRowTop + 30));
-  Inc(LRowTop, 30);
-  DrawPreviewRow(2, ['1003', 'Ana Oliveira', 'Belo Horizonte - MG', 'Pendente',
-    '750,00', '23/05/2025'], mdgsWarning, Rect(LRect.Left + 1, LRowTop,
-    LRect.Right - 1, LRowTop + 30));
-
+  ACanvas.Clear(TDACComponentColors.White);
+  LRect := TRectF.Create(0.5, 0.5, ADest.Width - 0.5, ADest.Height - 0.5);
+  FRenderer.FillRoundRect(ACanvas, LRect, TDACComponentColors.White, FCornerRadius);
+  FRenderer.StrokeRoundRect(ACanvas, LRect, TDACComponentColors.ControlBorder,
+    FCornerRadius, 1);
+  LHeader := TRectF.Create(1, 1, ADest.Width - 1, 34);
+  FRenderer.FillRoundRect(ACanvas, LHeader, GridHeaderColor, FCornerRadius);
+  LCellWidth := ADest.Width / Length(Headers);
+  for I := Low(Headers) to High(Headers) do
+    FRenderer.TextCentered(ACanvas, Headers[I], TDACComponentFontInstaller.FontFamily,
+      TRectF.Create(I * LCellWidth + 4, 1, (I + 1) * LCellWidth - 4, 34), 9,
+      TDACComponentColors.White, True);
+  LRowTop := 35;
+  DrawRow(Row1, LRowTop);
+  DrawRow(Row2, LRowTop + 32);
   if FShowFooter then
   begin
-    LFooterRect := Rect(LRect.Left + 1, LRect.Bottom - 30, LRect.Right - 1,
-      LRect.Bottom - 1);
-    DrawFooter(LFooterRect);
+    FRenderer.FillRoundRect(ACanvas, TRectF.Create(1, ADest.Height - 31,
+      ADest.Width - 1, ADest.Height - 1), GridHeaderColor, 0);
+    FRenderer.Text(ACanvas, FFooterText, TDACComponentFontInstaller.FontFamily,
+      12, ADest.Height - 12, 9, TDACComponentColors.White, True, ADest.Width * 0.65);
+    FRenderer.TextCentered(ACanvas, FFooterValue, TDACComponentFontInstaller.FontFamily,
+      TRectF.Create(ADest.Width * 0.7, ADest.Height - 30, ADest.Width - 12, ADest.Height - 2),
+      9, TDACComponentColors.White, True);
   end;
-end;
-
-procedure TDACDataGrid.DrawPreviewRow(const ARowIndex: Integer;
-  const AValues: array of string; const AStatus: TDACDataGridStatus;
-  const ARect: TRect);
-var
-  LRect: TRect;
-begin
-  if Odd(ARowIndex) then
-    Canvas.Brush.Color := TokenColor(TDACComponentColors.Alpha(250, 252, 250))
-  else
-    Canvas.Brush.Color := Color;
-  Canvas.FillRect(ARect);
-  Canvas.Pen.Color := TokenColor(TDACComponentColors.Alpha(226, 232, 240));
-  Canvas.MoveTo(ARect.Left, ARect.Bottom);
-  Canvas.LineTo(ARect.Right, ARect.Bottom);
-
-  LRect := Rect(ARect.Left + 8, ARect.Top, ARect.Left + 70, ARect.Bottom);
-  DrawTextCell(LRect, AValues[0], taLeftJustify);
-  LRect := Rect(ARect.Left + 70, ARect.Top, ARect.Left + 230, ARect.Bottom);
-  DrawTextCell(LRect, AValues[1], taLeftJustify);
-  LRect := Rect(ARect.Left + 230, ARect.Top, ARect.Left + 390, ARect.Bottom);
-  DrawTextCell(LRect, AValues[2], taLeftJustify);
-  LRect := Rect(ARect.Left + 390, ARect.Top, ARect.Left + 490, ARect.Bottom);
-  DrawStatusPill(LRect, AValues[3], AStatus);
-  LRect := Rect(ARect.Left + 490, ARect.Top, ARect.Left + 600, ARect.Bottom);
-  DrawTextCell(LRect, AValues[4], taRightJustify);
-  LRect := Rect(ARect.Left + 600, ARect.Top, ARect.Left + 690, ARect.Bottom);
-  DrawTextCell(LRect, AValues[5], taCenter);
-  LRect := Rect(ARect.Left + 690, ARect.Top, ARect.Right, ARect.Bottom);
-  DrawActionsCell(LRect);
-end;
-
-procedure TDACDataGrid.DrawStatusPill(const ARect: TRect;
-  const AText: string; const AStatus: TDACDataGridStatus);
-var
-  LRect: TRect;
-  LTextWidth: Integer;
-begin
-  Canvas.Font.Assign(Font);
-  LTextWidth := Canvas.TextWidth(AText) + 20;
-  LTextWidth := Min(ARect.Width - 8, Max(56, LTextWidth));
-  LRect := Rect(ARect.Left + ((ARect.Width - LTextWidth) div 2),
-    ARect.Top + ((ARect.Height - 20) div 2),
-    ARect.Left + ((ARect.Width + LTextWidth) div 2),
-    ARect.Top + ((ARect.Height + 20) div 2));
-
-  Canvas.Brush.Color := StatusBackgroundColor(AStatus);
-  Canvas.Pen.Style := psClear;
-  Canvas.RoundRect(LRect.Left, LRect.Top, LRect.Right, LRect.Bottom, 10, 10);
-  Canvas.Pen.Style := psSolid;
-  Canvas.Font.Color := StatusTextColor(AStatus);
-  DrawTextCell(LRect, AText, taCenter);
-end;
-
-procedure TDACDataGrid.DrawTextCell(const ARect: TRect; const AText: string;
-  const AAlignment: TAlignment; const ABold: Boolean);
-var
-  LFlags: Cardinal;
-  LRect: TRect;
-begin
-  LRect := ARect;
-  InflateRect(LRect, -8, 0);
-  SetBkMode(Canvas.Handle, TRANSPARENT);
-  if ABold then
-    Canvas.Font.Style := Canvas.Font.Style + [fsBold]
-  else
-    Canvas.Font.Style := Canvas.Font.Style - [fsBold];
-
-  LFlags := DT_SINGLELINE or DT_VCENTER or DT_END_ELLIPSIS;
-  case AAlignment of
-    taRightJustify:
-      LFlags := LFlags or DT_RIGHT;
-    taCenter:
-      LFlags := LFlags or DT_CENTER;
-  else
-    LFlags := LFlags or DT_LEFT;
-  end;
-  DrawText(Canvas.Handle, PChar(AText), Length(AText), LRect, LFlags);
 end;
 
 function TDACDataGrid.HasActiveDataSet: Boolean;
 begin
-  Result := (DataSource <> nil) and (DataSource.DataSet <> nil) and
-    DataSource.DataSet.Active;
-end;
-
-function TDACDataGrid.IsActionsColumn(const AColumn: TColumn): Boolean;
-var
-  LTitle: string;
-begin
-  Result := False;
-  if AColumn = nil then
-    Exit;
-  LTitle := AColumn.Title.Caption.Trim;
-  Result := SameText(LTitle, 'Acoes') or SameText(LTitle, 'Acoes...') or
-    SameText(LTitle, 'A' + #231 + #245 + 'es') or
-    SameText(LTitle, 'A' + #231 + #245 + 'es...');
-end;
-
-function TDACDataGrid.IsStatusColumn(const AColumn: TColumn): Boolean;
-begin
-  Result := False;
-  if AColumn = nil then
-    Exit;
-  Result := SameText(AColumn.FieldName, FStatusFieldName) or
-    SameText(AColumn.Title.Caption, 'Status');
+  Result := (DataSource <> nil) and (DataSource.DataSet <> nil) and DataSource.DataSet.Active;
 end;
 
 procedure TDACDataGrid.Loaded;
 begin
   inherited;
-  ApplyAppearance;
+  UpdatePreview;
 end;
 
-procedure TDACDataGrid.MouseDown(Button: TMouseButton; Shift: TShiftState;
-  X, Y: Integer);
+procedure TDACDataGrid.KeyDown(var Key: Word; Shift: TShiftState);
+begin
+  inherited;
+  Redraw;
+end;
+
+procedure TDACDataGrid.MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
   LAction: TDACDataGridActionKind;
   LColumn: TColumn;
 begin
   inherited;
+  if (Button = mbLeft) and TryHitAction(X, Y, LColumn, LAction) and
+    Assigned(FOnActionClick) then
+    FOnActionClick(Self, LAction, LColumn);
+end;
 
-  if (Button = mbLeft) and TryHitAction(X, Y, LColumn, LAction) then
+procedure TDACDataGrid.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
+  const ADest: TRectF; const AOpacity: Single);
+begin
+  if HasActiveDataSet then
+    DrawDataSetChrome(ACanvas, ADest)
+  else
+    DrawPreview(ACanvas, ADest);
+end;
+
+procedure TDACDataGrid.PaintBoxMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  if CanFocus then
+    SetFocus;
+  inherited MouseDown(Button, Shift, X, Y);
+  Redraw;
+end;
+
+procedure TDACDataGrid.PaintBoxMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+var
+  LCell: TGridCoord;
+begin
+  inherited MouseMove(Shift, X, Y);
+  LCell := MouseCoord(X, Y);
+  if (LCell.X <> FHoverCell.X) or (LCell.Y <> FHoverCell.Y) then
   begin
-    FPressedAction := LAction;
-    FHotAction := LAction;
-    Cursor := crHandPoint;
-    Invalidate;
+    FHoverCell := LCell;
+    Redraw;
   end;
 end;
 
-procedure TDACDataGrid.MouseMove(Shift: TShiftState; X, Y: Integer);
-var
-  LAction: TDACDataGridActionKind;
-  LColumn: TColumn;
+procedure TDACDataGrid.PaintBoxMouseUp(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-  inherited;
-
-  if TryHitAction(X, Y, LColumn, LAction) then
-  begin
-    Cursor := crHandPoint;
-    if FHotAction <> LAction then
-    begin
-      FHotAction := LAction;
-      Invalidate;
-    end;
-    Exit;
-  end;
-
-  if FHotAction <> mdgakNone then
-  begin
-    FHotAction := mdgakNone;
-    Cursor := crDefault;
-    Invalidate;
-  end
-  else if Cursor <> crDefault then
-    Cursor := crDefault;
+  MouseUp(Button, Shift, X, Y);
+  Redraw;
 end;
 
-procedure TDACDataGrid.MouseUp(Button: TMouseButton; Shift: TShiftState;
-  X, Y: Integer);
-var
-  LAction: TDACDataGridActionKind;
-  LColumn: TColumn;
-  LPressedAction: TDACDataGridActionKind;
+procedure TDACDataGrid.PaintBoxMouseWheel(Sender: TObject;
+  Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint;
+  var Handled: Boolean);
 begin
-  inherited;
-
-  LPressedAction := FPressedAction;
-  FPressedAction := mdgakNone;
-
-  if (Button = mbLeft) and (LPressedAction <> mdgakNone) and
-    TryHitAction(X, Y, LColumn, LAction) and (LAction = LPressedAction) then
-    DoActionClick(LAction, LColumn);
-end;
-
-procedure TDACDataGrid.Paint;
-var
-  LFooterRect: TRect;
-begin
-  if not HasActiveDataSet then
-  begin
-    DrawPreview;
-    Exit;
-  end;
-
-  inherited Paint;
-
-  if FShowFooter then
-  begin
-    LFooterRect := Rect(0, ClientHeight - 30, ClientWidth, ClientHeight);
-    DrawFooter(LFooterRect);
-  end;
+  Perform(WM_MOUSEWHEEL, Word(WheelDelta) shl 16,
+    (MousePos.X and $FFFF) or ((MousePos.Y and $FFFF) shl 16));
+  Handled := True;
+  Redraw;
 end;
 
 procedure TDACDataGrid.Redraw;
 begin
+  UpdatePreview;
+  if (FPaintBox <> nil) and FPaintBox.Visible and HandleAllocated and
+    (Parent <> nil) then
+    FPaintBox.Redraw;
   Invalidate;
+end;
+
+procedure TDACDataGrid.Resize;
+begin
+  inherited;
+  UpdatePreview;
 end;
 
 procedure TDACDataGrid.SetCornerRadius(const AValue: Integer);
 begin
-  if FCornerRadius <> AValue then
-  begin
-    FCornerRadius := Max(0, AValue);
-    Invalidate;
-  end;
+  FCornerRadius := Max(0, AValue);
+  Redraw;
 end;
 
 procedure TDACDataGrid.SetFooterText(const AValue: string);
 begin
-  if FFooterText <> AValue then
-  begin
-    FFooterText := AValue;
-    Invalidate;
-  end;
+  FFooterText := AValue;
+  Redraw;
 end;
 
 procedure TDACDataGrid.SetFooterValue(const AValue: string);
 begin
-  if FFooterValue <> AValue then
-  begin
-    FFooterValue := AValue;
-    Invalidate;
-  end;
+  FFooterValue := AValue;
+  Redraw;
 end;
 
 procedure TDACDataGrid.SetShowFooter(const AValue: Boolean);
 begin
-  if FShowFooter <> AValue then
-  begin
-    FShowFooter := AValue;
-    Invalidate;
-  end;
+  FShowFooter := AValue;
+  Redraw;
 end;
 
 procedure TDACDataGrid.SetStatusFieldName(const AValue: string);
 begin
-  if FStatusFieldName <> AValue then
-  begin
-    FStatusFieldName := AValue;
-    Invalidate;
-  end;
+  FStatusFieldName := AValue;
+  Redraw;
 end;
 
-function TDACDataGrid.StatusBackgroundColor(
-  const AStatus: TDACDataGridStatus): TColor;
-begin
-  case AStatus of
-    mdgsWarning:
-      Result := TokenColor(TDACComponentColors.Alpha(255, 244, 205));
-    mdgsDanger:
-      Result := TokenColor(TDACComponentColors.Alpha(255, 224, 224));
-    mdgsInfo:
-      Result := TokenColor(TDACComponentColors.Alpha(219, 234, 254));
-  else
-    Result := TokenColor(TDACComponentColors.Alpha(220, 244, 215));
-  end;
-end;
-
-function TDACDataGrid.StatusFromText(
-  const AText: string): TDACDataGridStatus;
-begin
-  if SameText(AText, 'Pendente') or SameText(AText, 'Alerta') then
-    Result := mdgsWarning
-  else if SameText(AText, 'Cancelado') or SameText(AText, 'Erro') then
-    Result := mdgsDanger
-  else if SameText(AText, 'Info') then
-    Result := mdgsInfo
-  else if AText = '' then
-    Result := mdgsNone
-  else
-    Result := mdgsSuccess;
-end;
-
-function TDACDataGrid.StatusTextColor(
-  const AStatus: TDACDataGridStatus): TColor;
-begin
-  case AStatus of
-    mdgsWarning:
-      Result := TokenColor(TDACComponentColors.Alpha(146, 100, 12));
-    mdgsDanger:
-      Result := TokenColor(TDACComponentColors.DangerDark);
-    mdgsInfo:
-      Result := TokenColor(TDACComponentColors.Alpha(37, 99, 235));
-  else
-    Result := TokenColor(TDACComponentColors.Primary);
-  end;
-end;
-
-function TDACDataGrid.TryHitAction(const X, Y: Integer;
-  out AColumn: TColumn; out AAction: TDACDataGridActionKind): Boolean;
+function TDACDataGrid.TryHitAction(const X, Y: Integer; out AColumn: TColumn;
+  out AAction: TDACDataGridActionKind): Boolean;
 var
-  LCellRect: TRect;
   LCoord: TGridCoord;
 begin
   AColumn := nil;
   AAction := mdgakNone;
   Result := False;
-
   if not HasActiveDataSet then
     Exit;
-
-  if FShowFooter and (Y >= ClientHeight - 30) then
-    Exit;
-
   LCoord := MouseCoord(X, Y);
-  if (LCoord.X < 0) or (LCoord.Y <= 0) then
+  if (LCoord.X < 0) or (LCoord.Y <= 0) or (LCoord.X >= Columns.Count) then
     Exit;
-
-  AColumn := ColumnFromGridCoord(LCoord);
-  if not IsActionsColumn(AColumn) then
+  AColumn := Columns[LCoord.X];
+  if not SameText(AColumn.FieldName, 'ACTIONS') then
+  begin
+    AColumn := nil;
     Exit;
-
-  LCellRect := CellRect(LCoord.X, LCoord.Y);
-  AAction := ActionAt(LCellRect, X, Y);
+  end;
+  AAction := ActionAt(CellRect(LCoord.X, LCoord.Y), X, Y);
   Result := AAction <> mdgakNone;
 end;
 
-function TDACDataGrid.TokenColor(const AColor: TAlphaColor): TColor;
+procedure TDACDataGrid.UpdatePaintBoxBounds;
+var
+  LHeight: Integer;
+  LWidth: Integer;
 begin
-  Result := TDACComponentColors.ToVclColor(AColor);
+  if FPaintBox = nil then
+    Exit;
+  LWidth := Width;
+  LHeight := Height;
+  if HandleAllocated then
+  begin
+    LWidth := ClientWidth;
+    LHeight := ClientHeight;
+  end;
+  FPaintBox.SetBounds(0, 0, LWidth, LHeight);
+end;
+
+procedure TDACDataGrid.UpdatePreview;
+begin
+  EnsurePaintBox;
+  UpdatePaintBoxBounds;
+  if FPaintBox = nil then
+    Exit;
+  FPaintBox.Visible := True;
+  if HandleAllocated then
+    FPaintBox.BringToFront;
+  if HandleAllocated and (Parent <> nil) then
+    FPaintBox.Redraw;
 end;
 
 procedure TDACDataGrid.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
@@ -783,4 +635,3 @@ begin
 end;
 
 end.
-

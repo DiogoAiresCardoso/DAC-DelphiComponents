@@ -4,12 +4,16 @@ interface
 
 uses
   System.Classes,
+  System.Skia,
+  System.Types,
   Winapi.Messages,
   Vcl.Controls,
   Vcl.Graphics,
+  Vcl.Skia,
   DAC.Components.Controls.Button,
   DAC.Components.Controls.ComboBox,
-  DAC.Components.DesignSystem.IconAssets;
+  DAC.Components.DesignSystem.IconAssets,
+  DAC.Components.Skia.Renderer;
 
 type
   TDACPagination = class(TCustomControl)
@@ -23,6 +27,8 @@ type
     FPageSizeText: string;
     FShowPageSize: Boolean;
     FOnChange: TNotifyEvent;
+    FPaintBox: TSkPaintBox;
+    FRenderer: TDACSkiaRenderer;
     procedure ButtonClick(Sender: TObject);
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure CMShowingChanged(var AMessage: TMessage); message CM_SHOWINGCHANGED;
@@ -35,6 +41,8 @@ type
     function PageButtonStart: Integer;
     function PageSizeDisplayText(const AValue: Integer): string;
     procedure PageSizeItemsChanged(Sender: TObject);
+    procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
+      const ADest: TRectF; const AOpacity: Single);
     procedure RefreshChildren(const AUpdateCombo: Boolean = False);
     procedure SelectButton(const AIndex: Integer);
     procedure SetPageCount(const AValue: Integer);
@@ -47,6 +55,7 @@ type
     procedure UpdateChildZOrder;
     procedure UpdateComboItems;
     procedure UpdateLayout;
+    procedure UpdatePaintBoxBounds;
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
   protected
     procedure ChangeScale(M, D: Integer); override;
@@ -94,7 +103,8 @@ implementation
 
 uses
   System.Math,
-  System.SysUtils;
+  System.SysUtils,
+  DAC.Components.DesignSystem.ColorTokens;
 
 const
   CMaxPageButtons = 5;
@@ -124,6 +134,13 @@ begin
   FPageSizeItems.Add(PageSizeDisplayText(50));
   FPageSizeItems.Add(PageSizeDisplayText(100));
 
+  FRenderer := TDACSkiaRenderer.Create;
+  FPaintBox := TSkPaintBox.Create(Self);
+  FPaintBox.Parent := Self;
+  FPaintBox.SetSubComponent(True);
+  FPaintBox.StyleElements := [];
+  FPaintBox.OnDraw := PaintBoxDraw;
+
   for I := Low(FButtons) to High(FButtons) do
     FButtons[I] := CreatePaginationButton(I);
 
@@ -139,6 +156,8 @@ end;
 
 destructor TDACPagination.Destroy;
 begin
+  FPaintBox.Free;
+  FRenderer.Free;
   FPageSizeItems.Free;
   inherited;
 end;
@@ -242,6 +261,19 @@ begin
   Redraw;
 end;
 
+procedure TDACPagination.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
+  const ADest: TRectF; const AOpacity: Single);
+begin
+  if ACanvas = nil then
+    Exit;
+  ACanvas.Clear(TDACComponentColors.Alpha(0, 0, 0, 0));
+  FRenderer.FillRoundRect(ACanvas, TRectF.Create(0.5, 0.5,
+    ADest.Width - 0.5, ADest.Height - 0.5), TDACComponentColors.White, 8);
+  FRenderer.StrokeRoundRect(ACanvas, TRectF.Create(0.5, 0.5,
+    ADest.Width - 0.5, ADest.Height - 0.5),
+    TDACComponentColors.ControlBorder, 8, 1);
+end;
+
 function TDACPagination.PageButtonCount: Integer;
 begin
   Result := Min(CMaxPageButtons, Max(0, FPageCount));
@@ -285,6 +317,8 @@ var
   I: Integer;
 begin
   RefreshChildren(False);
+  if (FPaintBox <> nil) and HandleAllocated and (Parent <> nil) then
+    FPaintBox.Redraw;
   for I := Low(FButtons) to High(FButtons) do
     if FButtons[I] <> nil then
       FButtons[I].Redraw;
@@ -459,6 +493,9 @@ begin
   if not Showing then
     Exit;
 
+  if FPaintBox <> nil then
+    FPaintBox.SendToBack;
+
   for I := Low(FButtons) to High(FButtons) do
     if (FButtons[I] <> nil) and FButtons[I].Visible then
       FButtons[I].BringToFront;
@@ -501,6 +538,7 @@ var
 begin
   DisableAlign;
   try
+    UpdatePaintBoxBounds;
     LButtonSize := 32;
     LGap := 8;
     LTop := Max(0, (Height - LButtonSize) div 2);
@@ -573,6 +611,23 @@ begin
   finally
     EnableAlign;
   end;
+end;
+
+procedure TDACPagination.UpdatePaintBoxBounds;
+var
+  LHeight: Integer;
+  LWidth: Integer;
+begin
+  if FPaintBox = nil then
+    Exit;
+  LWidth := Width;
+  LHeight := Height;
+  if HandleAllocated then
+  begin
+    LWidth := ClientWidth;
+    LHeight := ClientHeight;
+  end;
+  FPaintBox.SetBounds(0, 0, LWidth, LHeight);
 end;
 
 procedure TDACPagination.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);

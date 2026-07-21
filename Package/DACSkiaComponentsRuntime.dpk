@@ -60,9 +60,10 @@ contains
   DAC.Components.Controls.Feedback in '..\Source\Controls\DAC.Components.Controls.Feedback.pas',
   DAC.Components.Controls.StatusBar in '..\Source\Controls\DAC.Components.Controls.StatusBar.pas',
   DAC.Components.Controls.ReportViewer in '..\Source\Controls\DAC.Components.Controls.ReportViewer.pas',
+  DAC.Components.Controls.DataGridColumns in '..\Source\Controls\DAC.Components.Controls.DataGridColumns.pas',
   DAC.Components.Controls.DataGrid in '..\Source\Controls\DAC.Components.Controls.DataGrid.pas',
+  DAC.Components.Controls.Register in '..\Source\Controls\DAC.Components.Controls.Register.pas',
   DAC.Components.Hooks.SkiaControls in '..\Source\Hooks\DAC.Components.Hooks.SkiaControls.pas',
-  DAC.Components.Hooks.Tabs in '..\Source\Hooks\DAC.Components.Hooks.Tabs.pas',
   DAC.Components.Hooks.Register in '..\Source\Hooks\DAC.Components.Hooks.Register.pas';
 
 end.

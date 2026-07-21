@@ -61,6 +61,7 @@ begin
     TDACLoading,
     TDACToast,
     TDACModalDialog,
+    TDACTooltip,
     TDACStatusBar,
     TDACReportViewer,
     TDACDataGrid

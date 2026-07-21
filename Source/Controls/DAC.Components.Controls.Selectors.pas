@@ -177,6 +177,7 @@ type
     property Minimum: Integer read FMinimum write SetMinimum default 0;
     property ParentFont;
     property ParentShowHint;
+    property Position: Integer read FValue write SetValue default 0;
     property PopupMenu;
     property ShowHint;
     property ShowValue: Boolean read FShowValue write SetShowValue default True;

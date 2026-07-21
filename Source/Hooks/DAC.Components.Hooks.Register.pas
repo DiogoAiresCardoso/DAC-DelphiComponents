@@ -31,8 +31,7 @@ uses
   DAC.Components.Controls.StatusBar,
   DAC.Components.Controls.SummaryCard,
   DAC.Components.Controls.Tabs,
-  DAC.Components.Hooks.SkiaControls,
-  DAC.Components.Hooks.Tabs;
+  DAC.Components.Hooks.SkiaControls;
 
 var
   GHooksRegistered: Boolean;
@@ -42,7 +41,6 @@ begin
   if GHooksRegistered then
     Exit;
 
-  TCustomStyleEngine.RegisterStyleHook(TDACTabs, TDACPageControlStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACScrollContainer, TScrollBoxStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACDataGrid, TScrollingStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACContainer, TDACSkiaControlStyleHook);
@@ -82,7 +80,6 @@ begin
 
   TCustomStyleEngine.UnRegisterStyleHook(TDACDataGrid, TScrollingStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACScrollContainer, TScrollBoxStyleHook);
-  TCustomStyleEngine.UnRegisterStyleHook(TDACTabs, TDACPageControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACReportViewer, TDACSkiaControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACStatusBar, TDACSkiaControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACModalDialog, TDACSkiaControlStyleHook);

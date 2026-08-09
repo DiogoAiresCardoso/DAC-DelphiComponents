@@ -574,6 +574,18 @@ type
     Value: Double;
   end;
 
+  TDACChartNativeTextItem = record
+    Text: string;
+    Family: string;
+    Bounds: TRectF;
+    Baseline: TPointF;
+    Size: Single;
+    Color: TAlphaColor;
+    Bold: Boolean;
+    Centered: Boolean;
+    MaxWidth: Single;
+  end;
+
   TDACChart = class(TCustomControl)
   private
     FAppearance: TDACChartAppearance;
@@ -618,6 +630,10 @@ type
     FOnPointHover: TDACChartPointEvent;
     FOnTooltipFormat: TDACChartTooltipFormatEvent;
     FMousePoint: TPointF;
+    FNativeFrameTextItems: TList<TDACChartNativeTextItem>;
+    FNativeOverlayTextItems: TList<TDACChartNativeTextItem>;
+    FNativeStaticTextItems: TList<TDACChartNativeTextItem>;
+    FNativeTextQueue: TList<TDACChartNativeTextItem>;
     FPicture: ISkPicture;
     FPressedHit: TDACChartHitArea;
     FPressedActive: Boolean;
@@ -678,6 +694,8 @@ type
       const ADoughnut: Boolean);
     procedure DrawTitle(const ACanvas: ISkCanvas; const ADest: TRectF);
     procedure DrawTooltip(const ACanvas: ISkCanvas);
+    procedure DrawNativeTextItems(
+      const AItems: TList<TDACChartNativeTextItem>);
     procedure EnsureSurface;
     function EffectiveSeriesCount(const ASnapshot: TDACChartSnapshot): Integer;
     function FieldText(const ADataSet: TDataSet; const AFieldName: string;
@@ -696,6 +714,12 @@ type
       const ASnapshot: TDACChartSnapshot): TRectF;
     function ParentSurfaceColor: TAlphaColor;
     function Pixels(const AValue: Integer): Integer;
+    procedure QueueNativeText(const AText, AFamily: string;
+      const AX, AY, ASize: Single; const AColor: TAlphaColor;
+      const ABold: Boolean = False; const AMaxWidth: Single = 0);
+    procedure QueueNativeTextCentered(const AText, AFamily: string;
+      const ARect: TRectF; const ASize: Single; const AColor: TAlphaColor;
+      const ABold: Boolean = False; const AMaxWidth: Single = 0);
     procedure RefreshDpi;
     function TextPixels(const AValue: Integer): Single;
     procedure PresentSurface;
@@ -2178,6 +2202,9 @@ begin
   FTooltip := TDACChartTooltip.Create(Self);
   FAnimation := TDACChartAnimation.Create(Self);
   FHitAreas := TList<TDACChartHitArea>.Create;
+  FNativeStaticTextItems := TList<TDACChartNativeTextItem>.Create;
+  FNativeOverlayTextItems := TList<TDACChartNativeTextItem>.Create;
+  FNativeFrameTextItems := TList<TDACChartNativeTextItem>.Create;
 
   FThemeMode := dtmInherit;
   FAppearance := mchaDefault;
@@ -2205,6 +2232,9 @@ begin
   StopAnimation(False);
   TDACThemeManager.UnregisterListener(Self);
   SetDataSource(nil);
+  FNativeFrameTextItems.Free;
+  FNativeOverlayTextItems.Free;
+  FNativeStaticTextItems.Free;
   FHitAreas.Free;
   FAnimation.Free;
   FTooltip.Free;
@@ -2545,11 +2575,17 @@ var
 begin
   ValidateSnapshot(ASnapshot);
   FHitAreas.Clear;
+  FNativeStaticTextItems.Clear;
+  FNativeTextQueue := FNativeStaticTextItems;
   LRecorder := TSkPictureRecorder.Create;
-  LCanvas := LRecorder.BeginRecording(Max(1, Width), Max(1, Height));
-  DrawChart(LCanvas, TRectF.Create(0, 0, Max(1, Width), Max(1, Height)),
-    ASnapshot);
-  FPicture := LRecorder.FinishRecording;
+  try
+    LCanvas := LRecorder.BeginRecording(Max(1, Width), Max(1, Height));
+    DrawChart(LCanvas, TRectF.Create(0, 0, Max(1, Width), Max(1, Height)),
+      ASnapshot);
+    FPicture := LRecorder.FinishRecording;
+  finally
+    FNativeTextQueue := nil;
+  end;
   FAnimationFrame := ASnapshot;
   FAnimationSurfaceReady := False;
   FHasRenderSnapshot := True;
@@ -3193,7 +3229,7 @@ begin
           LCaption := FormatFloat(FYAxis.LabelFormat, LValue)
         else
           LCaption := FormatFloat('0.##', LValue);
-        FRenderer.Text(ACanvas, LCaption, DACChartFontName(FYAxis.LabelFont),
+        QueueNativeText(LCaption, DACChartFontName(FYAxis.LabelFont),
           ARect.Left - Pixels(42), LY + Pixels(4), TextPixels(FYAxis.LabelFont.Size),
           DACChartColorOrDefault(FYAxis.LabelColor, LPalette.TextoPrincipal),
           fsBold in FYAxis.LabelFont.Style, Pixels(38));
@@ -3239,20 +3275,20 @@ begin
           ACanvas.DrawLine(LX, Round(ARect.Bottom), LX,
             Round(ARect.Bottom + Pixels(3)), LLinePaint);
         if FXAxis.LabelsVisible then
-          FRenderer.Text(ACanvas, LCaption, DACChartFontName(FXAxis.LabelFont),
+          QueueNativeText(LCaption, DACChartFontName(FXAxis.LabelFont),
             LX - Pixels(24), ARect.Bottom + Pixels(18), TextPixels(FXAxis.LabelFont.Size),
             DACChartColorOrDefault(FXAxis.LabelColor, LPalette.TextoPrincipal),
             fsBold in FXAxis.LabelFont.Style, Pixels(48));
       end;
     if FXAxis.TitleVisible and (FXAxis.Title <> '') then
-      FRenderer.TextCentered(ACanvas, FXAxis.Title, DACChartFontName(FXAxis.TitleFont),
+      QueueNativeTextCentered(FXAxis.Title, DACChartFontName(FXAxis.TitleFont),
         TRectF.Create(ARect.Left, ARect.Bottom + Pixels(18), ARect.Right,
           ARect.Bottom + Pixels(34)), TextPixels(FXAxis.TitleFont.Size),
         DACChartColorOrDefault(FXAxis.TitleColor, LPalette.TextoSecundario),
         fsBold in FXAxis.TitleFont.Style);
   end;
   if FYAxis.Visible and FYAxis.TitleVisible and (FYAxis.Title <> '') then
-    FRenderer.Text(ACanvas, FYAxis.Title, DACChartFontName(FYAxis.TitleFont),
+    QueueNativeText(FYAxis.Title, DACChartFontName(FYAxis.TitleFont),
       ARect.Left, ARect.Top - Pixels(5), TextPixels(FYAxis.TitleFont.Size),
       DACChartColorOrDefault(FYAxis.TitleColor, LPalette.TextoSecundario),
       fsBold in FYAxis.TitleFont.Style, ARect.Width);
@@ -3470,7 +3506,7 @@ end;
 procedure TDACChart.DrawEmpty(const ACanvas: ISkCanvas; const ARect: TRectF;
   const AText: string);
 begin
-  FRenderer.TextCentered(ACanvas, AText, DACChartDefaultFontFamily, ARect,
+  QueueNativeTextCentered(AText, DACChartDefaultFontFamily, ARect,
     TextPixels(TDACComponentStyle.CaptionSize), ResolvedChartPalette.TextoSecundario);
 end;
 
@@ -3543,6 +3579,79 @@ begin
   end;
 end;
 
+procedure TDACChart.DrawNativeTextItems(
+  const AItems: TList<TDACChartNativeTextItem>);
+var
+  I: Integer;
+  LColor: COLORREF;
+  LFlags: Cardinal;
+  LFont: HFONT;
+  LItem: TDACChartNativeTextItem;
+  LOldFont: HGDIOBJ;
+  LOldMode: Integer;
+  LOldTextColor: COLORREF;
+  LRect: TRect;
+  LTextHeight: Integer;
+  LWeight: Integer;
+  LWidth: Integer;
+  function NativeColor(const AColor: TAlphaColor): COLORREF;
+  begin
+    Result := RGB((Cardinal(AColor) shr 16) and $FF,
+      (Cardinal(AColor) shr 8) and $FF, Cardinal(AColor) and $FF);
+  end;
+begin
+  if (AItems = nil) or (AItems.Count = 0) or not HandleAllocated then
+    Exit;
+  for I := 0 to AItems.Count - 1 do
+  begin
+    LItem := AItems[I];
+    if LItem.Text = '' then
+      Continue;
+    LTextHeight := Max(1, MulDiv(Round(LItem.Size), 96, 72));
+    if LItem.Bold then
+      LWeight := FW_BOLD
+    else
+      LWeight := FW_NORMAL;
+    LFont := CreateFont(-LTextHeight, 0, 0, 0,
+      LWeight, 0, 0, 0, DEFAULT_CHARSET,
+      OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+      DEFAULT_PITCH or FF_DONTCARE, PChar(LItem.Family));
+    if LFont = 0 then
+      Continue;
+    LOldFont := SelectObject(Canvas.Handle, LFont);
+    LOldMode := SetBkMode(Canvas.Handle, TRANSPARENT);
+    LColor := NativeColor(LItem.Color);
+    LOldTextColor := SetTextColor(Canvas.Handle, LColor);
+    try
+      LFlags := DT_SINGLELINE or DT_NOPREFIX or DT_END_ELLIPSIS;
+      if LItem.Centered then
+      begin
+        LRect := Rect(Round(LItem.Bounds.Left), Round(LItem.Bounds.Top),
+          Round(LItem.Bounds.Right), Round(LItem.Bounds.Bottom));
+        LFlags := LFlags or DT_CENTER or DT_VCENTER;
+      end
+      else
+      begin
+        LWidth := Round(LItem.MaxWidth);
+        if LWidth <= 0 then
+          LWidth := Max(1, Width - Round(LItem.Baseline.X));
+        LRect := Rect(Round(LItem.Baseline.X),
+          Round(LItem.Baseline.Y - (LItem.Size * 1.34)),
+          Round(LItem.Baseline.X) + LWidth,
+          Round(LItem.Baseline.Y + (LItem.Size * 0.34)));
+        LFlags := LFlags or DT_LEFT or DT_TOP;
+      end;
+      Winapi.Windows.DrawText(Canvas.Handle, PChar(LItem.Text), Length(LItem.Text),
+        LRect, LFlags);
+    finally
+      SetTextColor(Canvas.Handle, LOldTextColor);
+      SetBkMode(Canvas.Handle, LOldMode);
+      SelectObject(Canvas.Handle, LOldFont);
+      DeleteObject(LFont);
+    end;
+  end;
+end;
+
 procedure TDACChart.DrawLegend(const ACanvas: ISkCanvas; const ADest: TRectF;
   const ASnapshot: TDACChartSnapshot);
 var
@@ -3605,7 +3714,7 @@ var
       FRenderer.FillRoundRect(ACanvas, LRect, AColor, Pixels(3));
     end;
     if FLegend.LabelsVisible then
-      FRenderer.Text(ACanvas, AName, LFamily,
+      QueueNativeText(AName, LFamily,
         LX + Ord(FLegend.MarkersVisible) * (Pixels(FLegend.MarkerSize) + Pixels(6)), LY,
         TextPixels(FLegend.Font.Size), LTextColor, fsBold in FLegend.Font.Style,
         LLegendRect.Right - LX);
@@ -3943,12 +4052,12 @@ begin
   end;
   LTextY := LRect.Top + TextPixels(FTitle.Font.Size) + Pixels(2);
   if FTitle.TextVisible then
-    FRenderer.Text(ACanvas, LText, LFamily, LX, LTextY, TextPixels(FTitle.Font.Size), LColor,
+    QueueNativeText(LText, LFamily, LX, LTextY, TextPixels(FTitle.Font.Size), LColor,
       fsBold in FTitle.Font.Style, LRect.Width);
   if FTitle.SubTextVisible and (FTitle.SubText <> '') then
   begin
     LSubY := LTextY + TextPixels(FTitle.SubFont.Size) + Pixels(4);
-    FRenderer.Text(ACanvas, FTitle.SubText, DACChartFontName(FTitle.SubFont),
+    QueueNativeText(FTitle.SubText, DACChartFontName(FTitle.SubFont),
       LRect.Left, LSubY, TextPixels(FTitle.SubFont.Size), LSubColor,
       fsBold in FTitle.SubFont.Style, LRect.Width);
   end;
@@ -4100,7 +4209,7 @@ begin
     if LHasTitle then
     begin
       LTextY := LTextY + TextPixels(FTooltip.TitleFont.Size);
-      FRenderer.Text(ACanvas, LLines[0], DACChartFontName(FTooltip.TitleFont),
+      QueueNativeText(LLines[0], DACChartFontName(FTooltip.TitleFont),
         LRect.Left + LPadding, LTextY, TextPixels(FTooltip.TitleFont.Size),
         WithOpacity(LTitleColor), fsBold in FTooltip.TitleFont.Style,
         LRect.Width - (LPadding * 2));
@@ -4122,7 +4231,7 @@ begin
         ACanvas.DrawCircle(LRect.Left + LPadding + Pixels(4),
           LTextY + (LLineHeight / 2), Pixels(4), LMarker);
       end;
-      FRenderer.Text(ACanvas, LName, LFontFamily,
+      QueueNativeText(LName, LFontFamily,
         LRect.Left + LPadding + LMarkerOffset, LRowY, TextPixels(FTooltip.Font.Size),
         WithOpacity(LDataTextColor), fsBold in FTooltip.Font.Style,
         LRect.Width - (LPadding * 2) - LMarkerOffset);
@@ -4130,7 +4239,7 @@ begin
       begin
         LValueWidth := FRenderer.MeasureText(LValue, LFontFamily,
           TextPixels(FTooltip.Font.Size), True);
-        FRenderer.Text(ACanvas, LValue, LFontFamily,
+        QueueNativeText(LValue, LFontFamily,
           LRect.Right - LPadding - LValueWidth, LRowY, TextPixels(FTooltip.Font.Size),
           WithOpacity(LDataTextColor), True, LValueWidth + Pixels(2));
       end;
@@ -4275,13 +4384,22 @@ begin
   if FAnimationSurfaceReady then
   begin
     PresentSurface;
+    DrawNativeTextItems(FNativeFrameTextItems);
     Exit;
   end;
   FSurface.Canvas.Clear(ParentSurfaceColor);
   if Assigned(FPicture) then
     FSurface.Canvas.DrawPicture(FPicture);
-  DrawTooltip(FSurface.Canvas);
+  FNativeOverlayTextItems.Clear;
+  FNativeTextQueue := FNativeOverlayTextItems;
+  try
+    DrawTooltip(FSurface.Canvas);
+  finally
+    FNativeTextQueue := nil;
+  end;
   PresentSurface;
+  DrawNativeTextItems(FNativeStaticTextItems);
+  DrawNativeTextItems(FNativeOverlayTextItems);
 end;
 
 procedure TDACChart.EnsureSurface;
@@ -4333,23 +4451,29 @@ begin
     Exit;
   EnsureSurface;
   FSurface.Canvas.Clear(ParentSurfaceColor);
-  DrawChart(FSurface.Canvas, TRectF.Create(0, 0, Max(1, Width),
-    Max(1, Height)), FAnimationFrame);
-  if FHoverActive and TryHitTest(FMousePoint, LHit) then
-  begin
-    if (FHover.SeriesIndex <> LHit.SeriesIndex) or
-      (FHover.PointIndex <> LHit.PointIndex) then
+  FNativeFrameTextItems.Clear;
+  FNativeTextQueue := FNativeFrameTextItems;
+  try
+    DrawChart(FSurface.Canvas, TRectF.Create(0, 0, Max(1, Width),
+      Max(1, Height)), FAnimationFrame);
+    if FHoverActive and TryHitTest(FMousePoint, LHit) then
     begin
-      FHover := LHit;
-      FHoverTooltipSeriesIndex := -1;
-      FHoverTooltipPointIndex := -1;
+      if (FHover.SeriesIndex <> LHit.SeriesIndex) or
+        (FHover.PointIndex <> LHit.PointIndex) then
+      begin
+        FHover := LHit;
+        FHoverTooltipSeriesIndex := -1;
+        FHoverTooltipPointIndex := -1;
+      end;
+      if FTooltip.Enabled and ((FHoverTooltip = '') or
+        (FHoverTooltipSeriesIndex <> LHit.SeriesIndex) or
+        (FHoverTooltipPointIndex <> LHit.PointIndex)) then
+        FHoverTooltip := TooltipForHit(LHit);
     end;
-    if FTooltip.Enabled and ((FHoverTooltip = '') or
-      (FHoverTooltipSeriesIndex <> LHit.SeriesIndex) or
-      (FHoverTooltipPointIndex <> LHit.PointIndex)) then
-      FHoverTooltip := TooltipForHit(LHit);
+    DrawTooltip(FSurface.Canvas);
+  finally
+    FNativeTextQueue := nil;
   end;
-  DrawTooltip(FSurface.Canvas);
   FAnimationSurfaceReady := True;
 end;
 
@@ -4444,6 +4568,46 @@ begin
   Result := Round(AValue * FDpiScale);
   if (AValue > 0) and (Result < 1) then
     Result := 1;
+end;
+
+procedure TDACChart.QueueNativeText(const AText, AFamily: string;
+  const AX, AY, ASize: Single; const AColor: TAlphaColor;
+  const ABold: Boolean; const AMaxWidth: Single);
+var
+  LItem: TDACChartNativeTextItem;
+begin
+  if (FNativeTextQueue = nil) or (AText = '') then
+    Exit;
+  LItem.Text := AText;
+  LItem.Family := AFamily;
+  LItem.Baseline := TPointF.Create(AX, AY);
+  LItem.Bounds := TRectF.Create(0, 0, 0, 0);
+  LItem.Size := ASize;
+  LItem.Color := AColor;
+  LItem.Bold := ABold;
+  LItem.Centered := False;
+  LItem.MaxWidth := AMaxWidth;
+  FNativeTextQueue.Add(LItem);
+end;
+
+procedure TDACChart.QueueNativeTextCentered(const AText, AFamily: string;
+  const ARect: TRectF; const ASize: Single; const AColor: TAlphaColor;
+  const ABold: Boolean; const AMaxWidth: Single);
+var
+  LItem: TDACChartNativeTextItem;
+begin
+  if (FNativeTextQueue = nil) or (AText = '') then
+    Exit;
+  LItem.Text := AText;
+  LItem.Family := AFamily;
+  LItem.Bounds := ARect;
+  LItem.Baseline := TPointF.Create(0, 0);
+  LItem.Size := ASize;
+  LItem.Color := AColor;
+  LItem.Bold := ABold;
+  LItem.Centered := True;
+  LItem.MaxWidth := AMaxWidth;
+  FNativeTextQueue.Add(LItem);
 end;
 
 procedure TDACChart.RefreshDpi;

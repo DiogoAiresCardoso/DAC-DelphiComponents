@@ -6,7 +6,8 @@ uses
   System.Generics.Collections,
   System.Skia,
   System.Types,
-  System.UITypes;
+  System.UITypes,
+  DAC.Components.DesignSystem.OpacityTokens;
 
 type
   TDACSkiaRenderer = class
@@ -31,10 +32,11 @@ type
       const ABold: Boolean = False): Single;
     function SnapRect(const ARect: TRectF; const AScale: Single = 1): TRectF;
     procedure FillRoundRect(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const AColor: TAlphaColor; const ARadius: Single; const AAlpha: Byte = 255);
+      const AColor: TAlphaColor; const ARadius: Single;
+      const AAlpha: Byte = DACOpacityOpaque);
     procedure StrokeRoundRect(const ACanvas: ISkCanvas; const ARect: TRectF;
       const AColor: TAlphaColor; const ARadius, AStrokeWidth: Single;
-      const AAlpha: Byte = 255);
+      const AAlpha: Byte = DACOpacityOpaque);
     procedure Svg(const ACanvas: ISkCanvas; const AIcon: ISkSVGDOM; const ARect: TRectF);
     procedure Text(const ACanvas: ISkCanvas; const AText, AFamily: string;
       const AX, AY, ASize: Single; const AColor: TAlphaColor;
@@ -148,7 +150,8 @@ begin
     // Skia's paint alpha replaces the alpha embedded in the color, so the
     // effective alpha must compose both values instead of discarding it.
     LColorAlpha := Byte((Cardinal(AColor) shr 24) and $FF);
-    Result.Alpha := Round((Integer(LColorAlpha) * Integer(AAlpha)) / 255);
+    Result.Alpha := Round((Integer(LColorAlpha) * Integer(AAlpha)) /
+      DACOpacityOpaque);
     FFillPaintCache.Add(LKey, Result);
   end;
 end;
@@ -167,13 +170,23 @@ begin
       LStyle := TSkFontStyle.Bold
     else
       LStyle := TSkFontStyle.Normal;
-    LTypeface := nil;
-    if SameText(AFamily, DACComponentFontFamily) then
-      LTypeface := TDACComponentFontInstaller.InterTypeface;
+    // Inter remains the design-system default. A component can nevertheless
+    // request a named family (for example a chart title) and its measurement
+    // and rendering will use the same family, with Inter as a safe fallback.
+    if (AFamily <> '') and not SameText(AFamily, DACComponentFontFamily) then
+      LTypeface := TSkTypeface.MakeFromName(AFamily, LStyle)
+    else
+      LTypeface := TDACComponentFontInstaller.InterTypeface(ABold);
     if LTypeface = nil then
-      LTypeface := TSkTypeface.MakeFromName(AFamily, LStyle);
+      LTypeface := TDACComponentFontInstaller.InterTypeface(ABold);
     Result := TSkFont.Create(LTypeface, ASize, 1, 0);
+    { Make the raster surface behave as close as possible to native Windows
+      text: full hinting, native glyph outlines and subpixel antialiasing.
+      This is important for dense chart axes and legends. }
     Result.Subpixel := True;
+    Result.Edging := TSkFontEdging.SubpixelAntiAlias;
+    Result.Hinting := TSkFontHinting.Full;
+    Result.ForceAutoHinting := False;
     FFontCache.Add(LKey, Result);
   end;
 end;
@@ -192,7 +205,8 @@ begin
     Result.Color := AColor;
     Result.StrokeWidth := AWidth;
     LColorAlpha := Byte((Cardinal(AColor) shr 24) and $FF);
-    Result.Alpha := Round((Integer(LColorAlpha) * Integer(AAlpha)) / 255);
+    Result.Alpha := Round((Integer(LColorAlpha) * Integer(AAlpha)) /
+      DACOpacityOpaque);
     FStrokePaintCache.Add(LKey, Result);
   end;
 end;
@@ -267,8 +281,8 @@ begin
 
   LFont := GetFont(AFamily, ASize, ABold);
   LText := FitTextWithEllipsis(AText, LFont, AMaxWidth);
-  LPaint := GetFillPaint(AColor, 255);
-  ACanvas.DrawSimpleText(LText, AX, AY, LFont, LPaint);
+  LPaint := GetFillPaint(AColor, DACOpacityOpaque);
+  ACanvas.DrawSimpleText(LText, Round(AX), Round(AY), LFont, LPaint);
 end;
 
 procedure TDACSkiaRenderer.TextCentered(const ACanvas: ISkCanvas;
@@ -277,6 +291,7 @@ procedure TDACSkiaRenderer.TextCentered(const ACanvas: ISkCanvas;
 var
   LBaseline: Single;
   LFont: ISkFont;
+  LFontMetrics: TSkFontMetrics;
   LMaxWidth: Single;
   LPaint: ISkPaint;
   LText: string;
@@ -291,9 +306,11 @@ begin
     LMaxWidth := ARect.Width;
   LText := FitTextWithEllipsis(AText, LFont, LMaxWidth);
   LX := ARect.Left + (ARect.Width - LFont.MeasureText(LText)) / 2;
-  LBaseline := ARect.Top + (ARect.Height / 2) + (ASize * 0.36);
-  LPaint := GetFillPaint(AColor, 255);
-  ACanvas.DrawSimpleText(LText, LX, LBaseline, LFont, LPaint);
+  LFont.GetMetrics(LFontMetrics);
+  LBaseline := ARect.Top + (ARect.Height / 2) -
+    ((LFontMetrics.Ascent + LFontMetrics.Descent) / 2);
+  LPaint := GetFillPaint(AColor, DACOpacityOpaque);
+  ACanvas.DrawSimpleText(LText, Round(LX), Round(LBaseline), LFont, LPaint);
 end;
 
 end.

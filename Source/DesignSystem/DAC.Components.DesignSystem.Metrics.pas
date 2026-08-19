@@ -10,6 +10,9 @@ type
     DefaultControlHeight: Single;
     DefaultCardWidth: Single;
     DefaultCardHeight: Single;
+    ButtonSmallHeight: Single;
+    ButtonMediumHeight: Single;
+    ButtonLargeHeight: Single;
     class function Default: TDACComponentMetrics; static;
   end;
 
@@ -23,6 +26,9 @@ begin
   Result.DefaultControlHeight := 36;
   Result.DefaultCardWidth := 280;
   Result.DefaultCardHeight := 160;
+  Result.ButtonSmallHeight := 32;
+  Result.ButtonMediumHeight := 40;
+  Result.ButtonLargeHeight := 48;
 end;
 
 end.

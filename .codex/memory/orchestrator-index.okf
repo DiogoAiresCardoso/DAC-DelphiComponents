@@ -1,0 +1,191 @@
+# Memoria e Indice do Orquestrador
+
+Fonte de verdade para fluxo, consumidores e gates. Leitura obrigatoria antes de
+delegar uma demanda. Formato e regras: `team-memory-model.okf`.
+
+## Registros canonicos por papel
+
+| Papel | Memoria exclusiva | Registros legados preservados |
+|---|---|---|
+| Orquestrador | `orchestrator-index.okf` | `.codex/knowledge/architecture-orchestration.okf` (protocolo de fluxo) |
+| Arquitetura | `architecture.okf` | `.codex/knowledge/architecture-orchestration.okf` |
+| Delphi/Skia/VCL | `delphi_skia_vcl.okf` | `agents/delphi-vcl-skia-stylehook-contract.okf`, `novomaxxrural-skia.md` |
+| Revisao | `revisao_codigo.okf` | `code-review-gate.okf` |
+| Testes de interface | `testes_interface.okf` | nenhum nesta data |
+
+## Estado de uma demanda
+
+```text
+RECEIVED -> ARCHITECTURE_READY -> DEVELOPMENT -> REVIEW
+         -> UI_TEST -> READY_TO_COMMIT -> PR_OPEN
+```
+
+Somente o orquestrador muda o estado. `BLOCKED`, `CHANGES_REQUESTED` ou falha
+de UI devolvem a demanda a `ARCHITECTURE_READY` ou `DEVELOPMENT`, conforme o
+ID de memoria que originou a pendencia. Nao pular gates.
+
+## Indice de memoria ativa
+
+| ID | Fonte | Status | Consumidores | Uso |
+|---|---|---|---|---|
+| MEM-ORQ-001 | `team-memory-model.okf` | CONFIRMED | todos | formato, disseminacao e handoffs |
+| MEM-ORQ-002 | `.codex/knowledge/architecture-orchestration.okf` | CONFIRMED | arquitetura, delphi_skia_vcl, revisao_codigo, testes_interface | branch e gates da suite |
+
+## Registro inicial
+
+ID: MEM-ORQ-003
+Data: 2026-07-20
+Demanda/branch: N/A
+Fato: Existem memorias anteriores de desenvolvimento e revisao, preservadas e indexadas nesta estrutura.
+Decisao: Adotar uma memoria exclusiva por papel, uma demanda por `.okf` e disseminacao somente pelo orquestrador.
+Evidencia: `team-memory-model.okf`; arquivos legados listados na tabela de registros canonicos.
+Impacto: Evita copias concorrentes, reduz releitura de codigo e torna os gates rastreaveis.
+Consumidores: orquestrador, arquitetura, delphi_skia_vcl, revisao_codigo, testes_interface
+Status: CONFIRMED
+Handoff: Orquestrador entrega `MEM-ORQ-001` a todo papel na proxima demanda.
+
+---
+
+ID: MEM-ORQ-004
+Data: 2026-07-24
+Demanda: tabs-inputs-datetime-buttonedit
+Estado: UI_TEST_APPROVED_LOCAL
+Desenvolvimento: `MEM-DEL-107`
+Teste de interface: `MEM-UI-002`
+Evidencia canonica: `Build\VisualValidation\mem-del-106`
+Decisao: os quatro defeitos reportados passaram build, smoke, interaction,
+design lifecycle e matriz fisica. Nenhum High DPI foi habilitado; todas as
+saidas permanecem sob `Build`.
+Proximo gate: revisao do diff atual e, somente para o mesmo conteudo aprovado,
+commit/push/PR conforme autorizacao do usuario. Um novo SHA ou alteracao nos
+componentes reinicia review e UI test.
+
+---
+
+ID: MEM-ORQ-114
+Data: 2026-07-24
+Demanda/branch: tabs-asset-parity / codex/fix-demo-visual-regressions
+Fato: O asset `assets/Tabs.png` substitui a evidencia visual antiga para a
+familia Tabs. MEM-ARCH-114 definiu Line horizontal/vertical como contrato;
+MEM-DEL-114 implementou layout intrinseco, tokens exclusivos e demo
+declarativa; MEM-REV-114 encontrou falhas de indice com pagina oculta,
+disabled, foco e streaming; MEM-DEL-115 corrigiu essas falhas; MEM-REV-115
+aprovou o codigo. Packages runtime/design-time, Demo, Smoke, Interaction e
+DesignLifecycle passaram no Delphi 10.2 com saidas em `Build`.
+Decisao: O estado da demanda e `UI_TEST_BLOCKED`. A aprovacao anterior
+MEM-ORQ-004 foi invalidada para Tabs pelo novo build e pelo novo contrato do
+asset. Nao criar commit, push ou PR enquanto MEM-QA-114 estiver bloqueado.
+Evidencia: MEM-ARCH-114; MEM-DEL-114; MEM-DEL-115; MEM-REV-114;
+MEM-REV-115; MEM-QA-114; `assets/Tabs.png`;
+`Build\EXE\Win32\Debug\Demo.exe`.
+Impacto: Tabs agora possuem API aditiva para Filled, Segmented e Size, mantem
+os ordinais serializados de Underline/Pills e preservam TPageControl,
+Ctrl+Tab, designer sem Parent e metricas fixas sem High DPI. A paridade de
+pixels e a interacao fisica do binario novo ainda nao foram comprovadas.
+Consumidores: arquitetura, delphi_skia_vcl, revisao_codigo, testes_interface,
+orquestrador, usuario
+Status: BLOCKED
+Handoff: Usuario abre manualmente
+`Build\EXE\Win32\Debug\Demo.exe` e mantem a janela
+`DAC Componentes - Demo` visivel; testes_interface retoma MEM-QA-114 com nova
+observacao e, se aprovado, o orquestrador promove para READY_TO_COMMIT.
+
+---
+
+ID: MEM-ORQ-118
+Data: 2026-07-24
+Demanda/branch: fields-native-states-and-demo / codex/fix-demo-visual-regressions
+Fato: MEM-ARCH-116 definiu os contratos nativos e de design; MEM-DEL-116 e
+MEM-DEL-117 foram rejeitados pelo revisor; MEM-DEL-118 corrigiu foco em
+Loading, coerencia Text/ItemIndex/HWND, lifecycle e matrizes declarativas;
+MEM-REV-118 aprovou o codigo sem P0, P1 ou P2. Runtime, Design, Smoke,
+Interaction, DesignLifecycle e Demo canonico passaram, mas MEM-QA-118 nao
+produziu interacao ou captura fisica porque o helper Computer Use travou na
+captura e perdeu a janela na unica recuperacao permitida.
+Decisao: Manter a demanda em UI_TEST_BLOCKED. Nao criar commit, push ou PR e
+nao reutilizar capturas antigas. O proximo turno deve reinicializar o helper
+Computer Use e repetir integralmente a matriz fisica sobre o mesmo executavel;
+qualquer mudanca de fonte reinicia revisao e QA.
+Evidencia: MEM-ARCH-116; MEM-DEL-118; MEM-REV-118; MEM-QA-118;
+`Build\EXE\Win32\Debug\Demo.exe`; SHA-256
+`9795B81AAC42B80D98E5DE805C02E9CE071F975EBFF196490189A3604C8BCB4D`.
+Impacto: Codigo e gates automatizados estao aprovados, incluindo design-time
+sem vazamentos e ausencia de High DPI, mas paridade visual, foco observado,
+toggle por mouse, popup, temas, scroll, redimensionamento e ausencia do frame
+UxTheme ainda nao possuem evidencia fisica valida para liberar publicacao.
+Consumidores: arquitetura, delphi_skia_vcl, revisao_codigo, testes_interface,
+orquestrador, usuario
+Status: BLOCKED
+Handoff: testes_interface reinicia o helper Computer Use em novo turno e
+executa a matriz MEM-QA-118 contra o mesmo hash; somente UI_APPROVED promove
+para READY_TO_COMMIT.
+
+---
+
+ID: MEM-ORQ-121
+Data: 2026-07-24
+Demanda/branch: dark-theme-all-tab-content / codex/fix-demo-visual-regressions
+Fato: As capturas do usuario mostraram Dashboard escuro e paginas da galeria
+claras sob o mesmo tema. MEM-ARCH-119 localizou fallback Light em
+TDACTabs.ApplyPageStyle e refresh restrito ao Dashboard. MEM-DEL-119 corrigiu
+o boundary das 16 paginas, containers, Demo e scrollbar Skia localizada;
+MEM-DEL-120 e MEM-DEL-121 fecharam tracking, drag, sete zonas e reentrancia do
+observer. MEM-REV-121 aprovou o codigo sem achados. MEM-QA-121 confirmou o
+hash do Demo, mas nao obteve janela ou captura porque sky.launch_app expirou
+por approval timeout e a recuperacao retornou zero janelas.
+Decisao: Manter UI_TEST_BLOCKED. Nao criar commit, push ou PR e nao reutilizar
+capturas anteriores. O usuario deve abrir manualmente o Demo canonico e um
+novo turno deve repetir o QA fisico Dark/Light para as 16 paginas e scrollbars
+contra o mesmo hash.
+Evidencia: MEM-ARCH-119; MEM-DEL-121; MEM-REV-121; MEM-QA-121;
+`Build\EXE\Win32\Debug\Demo.exe`; SHA-256
+`9C5970A4F81D31CBCCDB85910316AC1110489674B6327FB25ED95FF1DBC013EC`;
+`Build\VisualValidation\mem-qa-121\summary.txt`;
+`Build\VisualValidation\mem-qa-121\steps.txt`.
+Impacto: Implementacao, revisao e gates automatizados estao aprovados,
+incluindo 16 paginas, tracking H/V, lifecycle sem leaks e ausencia de High
+DPI. A ausencia de fundo branco, seams, flicker, contraste e interacao fisica
+do novo build ainda nao possui evidencia atual valida.
+Consumidores: arquitetura, delphi_skia_vcl, revisao_codigo, testes_interface,
+orquestrador, usuario
+Status: BLOCKED
+Handoff: Usuario abre
+`Build\EXE\Win32\Debug\Demo.exe`, mantem a janela
+`DAC Componentes - Demo` visivel e inicia novo turno; testes_interface retoma
+MEM-QA-121 e somente UI_APPROVED promove READY_TO_COMMIT.
+
+---
+
+ID: MEM-ORQ-133
+Data: 2026-07-24
+Demanda/branch: inputs-layout-native-wheel-dark-theme-physical-qa / codex/fix-demo-visual-regressions
+Fato: O QA retomado encontrou e documentou colisao da pagina Inputs
+(MEM-QA-126), corrigida por MEM-DEL-126 com composicao DFM scroll/grid e 21
+componentes reais. MEM-QA-129 e MEM-QA-130 expuseram roteamento fisico
+incorreto da roda no Memo sem scrollbar visivel; MEM-ARCH-130/131 e
+MEM-DEL-131 implementaram TDACNativeMemo privado com acumulacao de detents,
+EM_LINESCROLL localizado e handoff de borda. MEM-REV-131 aprovou producao,
+DFM, lifecycle e gates. MEM-QA-132 teve falso negativo porque Computer Use
+escolheu overlay UAC; MEM-DEL-132 criou startlifecycle por PID+TForm1+caption
+e MEM-REV-132 aprovou. MEM-QA-133 comprovou a TForm1 real, visivel,
+responsiva e com fechamento limpo, mas Computer Use nao expos o HWND
+verificado e nenhum input fisico chegou ao produto.
+Decisao: Manter UI_TEST_BLOCKED por infraestrutura. Nao declarar P1/P2 do
+produto, nao emitir UI_APPROVED e nao criar commit, push ou PR. Preservar o
+hash atual e repetir a matriz somente quando Computer Use expuser a TForm1.
+Evidencia: MEM-ARCH-126; MEM-DEL-126; MEM-REV-128; MEM-QA-129;
+MEM-ARCH-129; MEM-DEL-129; MEM-REV-129; MEM-QA-130; MEM-ARCH-130;
+MEM-ARCH-131; MEM-DEL-131; MEM-REV-131; MEM-ARCH-132; MEM-DEL-132;
+MEM-REV-132; MEM-QA-133; `Build\VisualValidation\mem-qa-133\summary.txt`;
+`Build\VisualValidation\mem-qa-133\steps.txt`.
+Impacto: Layout Inputs e gates automatizados de wheel, tema, scroll,
+design-time, DFM, startup e lifecycle estao aprovados. O startlifecycle prova
+o Demo real por TForm1 sem MainWindowHandle, mas a validacao visual completa
+Light/Dark e o wheel por Computer Use permanecem sem evidencia fisica.
+Consumidores: arquitetura, delphi_skia_vcl, revisao_codigo, testes_interface,
+orquestrador, usuario
+Status: BLOCKED
+Handoff: Em nova sessao de Computer Use, selecionar a janela por
+PID+classe TForm1+caption `DAC Componentes - Demo`, ignorando overlays. Rodar
+primeiro o wheel MEM-QA-130 e depois a matriz Light/Dark completa; somente
+MEM-QA com UI_APPROVED promove READY_TO_COMMIT.

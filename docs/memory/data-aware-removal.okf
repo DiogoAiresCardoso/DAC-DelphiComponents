@@ -1,0 +1,20 @@
+MEM-SUITE-DB-REMOVAL
+Status: removido da árvore pública; validação estática concluída sem build.
+
+Escopo removido:
+- todas as classes TDACDB*;
+- TDACDataGrid e suas colunas/hook localizado;
+- registro runtime, paleta design-time "DAC Skia DB", tab Data-Aware do Demo
+  e o teste dedicado DACComponentsDataAware.
+
+Infraestrutura de projeto:
+- Package/DACSkiaComponents.dpk é o package único e não requer vcldb/dcldb;
+- o agrupador DemoComponentes.groupproj referencia somente o package único e o Demo;
+- Data.DB/dbrtl continua intencionalmente no package porque TDACChart mantém a
+  propriedade DataSource. Essa capacidade do gráfico não constitui uma família
+  de componentes TDACDB.
+
+Restrições:
+- não houve compilação, execução ou teste nesta alteração;
+- alvos de teste antigos que continham cenários TDACDB foram retirados do
+  agrupador e precisam ser reescritos antes de voltar a integrar o build.

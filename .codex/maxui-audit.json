@@ -1,0 +1,602 @@
+{
+  "root": "M:\\Delphi Componentes\\DAC-DelphiComponents",
+  "summary": {
+    "files_scanned": 105,
+    "register_count": 42,
+    "unregister_count": 42,
+    "families_detected": 15,
+    "families_missing": [],
+    "risk_count": 3
+  },
+  "registers": [
+    {
+      "file": ".codex\\skills\\delphi-components\\assets\\starter\\Source\\Hooks\\MaxUI.Hooks.Register.pas",
+      "line": 30,
+      "control_class": "TMaxButton",
+      "hook_class": "TMaxButtonStyleHook"
+    },
+    {
+      "file": ".codex\\skills\\delphi-components\\assets\\starter\\Source\\Hooks\\MaxUI.Hooks.Register.pas",
+      "line": 31,
+      "control_class": "TMaxEdit",
+      "hook_class": "TMaxEditStyleHook"
+    },
+    {
+      "file": ".codex\\skills\\delphi-components\\assets\\starter\\Source\\Hooks\\MaxUI.Hooks.Register.pas",
+      "line": 32,
+      "control_class": "TMaxMaskedEdit",
+      "hook_class": "TMaxMaskedEditStyleHook"
+    },
+    {
+      "file": ".codex\\skills\\delphi-components\\assets\\starter\\Source\\Hooks\\MaxUI.Hooks.Register.pas",
+      "line": 33,
+      "control_class": "TMaxMemo",
+      "hook_class": "TMaxMemoStyleHook"
+    },
+    {
+      "file": ".codex\\skills\\delphi-components\\assets\\starter\\Source\\Hooks\\MaxUI.Hooks.Register.pas",
+      "line": 34,
+      "control_class": "TMaxComboBox",
+      "hook_class": "TMaxComboBoxStyleHook"
+    },
+    {
+      "file": ".codex\\skills\\delphi-components\\assets\\starter\\Source\\Hooks\\MaxUI.Hooks.Register.pas",
+      "line": 35,
+      "control_class": "TMaxCheckBox",
+      "hook_class": "TMaxCheckBoxStyleHook"
+    },
+    {
+      "file": ".codex\\skills\\delphi-components\\assets\\starter\\Source\\Hooks\\MaxUI.Hooks.Register.pas",
+      "line": 36,
+      "control_class": "TMaxRadioButton",
+      "hook_class": "TMaxRadioButtonStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 49,
+      "control_class": "TDACScrollContainer",
+      "hook_class": "TDACScrollContainerStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 51,
+      "control_class": "TDACDBLookupComboBox",
+      "hook_class": "TDACDBLookupComboBoxStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 53,
+      "control_class": "TDACDBNavigator",
+      "hook_class": "TDACDBNavigatorStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 55,
+      "control_class": "DACNativeComboBoxClass",
+      "hook_class": "TDACNativeComboBoxStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 57,
+      "control_class": "DACNativeDateTimePickerClass",
+      "hook_class": "TDACNativeDateTimePickerStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 59,
+      "control_class": "DACNativeDBLookupComboBoxClass",
+      "hook_class": "TDACNativeFieldStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 61,
+      "control_class": "TDACDataGrid",
+      "hook_class": "TDACDataGridStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 62,
+      "control_class": "TDACContainer",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 63,
+      "control_class": "TDACGridContainer",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 64,
+      "control_class": "TDACButton",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 65,
+      "control_class": "TDACEdit",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 66,
+      "control_class": "TDACButtonEdit",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 67,
+      "control_class": "TDACDateTimePicker",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 68,
+      "control_class": "TDACComboBox",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 69,
+      "control_class": "TDACMemo",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 70,
+      "control_class": "TDACCheckBox",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 71,
+      "control_class": "TDACRadioButton",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 72,
+      "control_class": "TDACToggleSwitch",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 73,
+      "control_class": "TDACSlider",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 74,
+      "control_class": "TDACSummaryCard",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 75,
+      "control_class": "TDACChart",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 76,
+      "control_class": "TDACBarChart",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 77,
+      "control_class": "TDACLineChart",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 78,
+      "control_class": "TDACAreaChart",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 79,
+      "control_class": "TDACDoughnutChart",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 80,
+      "control_class": "TDACBadge",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 81,
+      "control_class": "TDACProgress",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 82,
+      "control_class": "TDACPagination",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 83,
+      "control_class": "TDACLoading",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 84,
+      "control_class": "TDACToast",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 85,
+      "control_class": "TDACModalDialog",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 86,
+      "control_class": "TDACStatusBar",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 87,
+      "control_class": "TDACReportViewer",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 88,
+      "control_class": "TDACSkiaControl",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 89,
+      "control_class": "TDACTooltip",
+      "hook_class": "TDACSkiaControlStyleHook"
+    }
+  ],
+  "unregisters": [
+    {
+      "file": ".codex\\skills\\delphi-components\\assets\\starter\\Source\\Hooks\\MaxUI.Hooks.Register.pas",
+      "line": 43,
+      "control_class": "TMaxRadioButton",
+      "hook_class": "TMaxRadioButtonStyleHook"
+    },
+    {
+      "file": ".codex\\skills\\delphi-components\\assets\\starter\\Source\\Hooks\\MaxUI.Hooks.Register.pas",
+      "line": 44,
+      "control_class": "TMaxCheckBox",
+      "hook_class": "TMaxCheckBoxStyleHook"
+    },
+    {
+      "file": ".codex\\skills\\delphi-components\\assets\\starter\\Source\\Hooks\\MaxUI.Hooks.Register.pas",
+      "line": 45,
+      "control_class": "TMaxComboBox",
+      "hook_class": "TMaxComboBoxStyleHook"
+    },
+    {
+      "file": ".codex\\skills\\delphi-components\\assets\\starter\\Source\\Hooks\\MaxUI.Hooks.Register.pas",
+      "line": 46,
+      "control_class": "TMaxMemo",
+      "hook_class": "TMaxMemoStyleHook"
+    },
+    {
+      "file": ".codex\\skills\\delphi-components\\assets\\starter\\Source\\Hooks\\MaxUI.Hooks.Register.pas",
+      "line": 47,
+      "control_class": "TMaxMaskedEdit",
+      "hook_class": "TMaxMaskedEditStyleHook"
+    },
+    {
+      "file": ".codex\\skills\\delphi-components\\assets\\starter\\Source\\Hooks\\MaxUI.Hooks.Register.pas",
+      "line": 48,
+      "control_class": "TMaxEdit",
+      "hook_class": "TMaxEditStyleHook"
+    },
+    {
+      "file": ".codex\\skills\\delphi-components\\assets\\starter\\Source\\Hooks\\MaxUI.Hooks.Register.pas",
+      "line": 49,
+      "control_class": "TMaxButton",
+      "hook_class": "TMaxButtonStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 99,
+      "control_class": "TDACDBNavigator",
+      "hook_class": "TDACDBNavigatorStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 101,
+      "control_class": "DACNativeDateTimePickerClass",
+      "hook_class": "TDACNativeDateTimePickerStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 103,
+      "control_class": "DACNativeComboBoxClass",
+      "hook_class": "TDACNativeComboBoxStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 105,
+      "control_class": "DACNativeDBLookupComboBoxClass",
+      "hook_class": "TDACNativeFieldStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 107,
+      "control_class": "TDACDBLookupComboBox",
+      "hook_class": "TDACDBLookupComboBoxStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 109,
+      "control_class": "TDACDataGrid",
+      "hook_class": "TDACDataGridStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 110,
+      "control_class": "TDACScrollContainer",
+      "hook_class": "TDACScrollContainerStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 112,
+      "control_class": "TDACReportViewer",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 113,
+      "control_class": "TDACSkiaControl",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 114,
+      "control_class": "TDACTooltip",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 115,
+      "control_class": "TDACStatusBar",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 116,
+      "control_class": "TDACModalDialog",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 117,
+      "control_class": "TDACToast",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 118,
+      "control_class": "TDACLoading",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 119,
+      "control_class": "TDACPagination",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 120,
+      "control_class": "TDACProgress",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 121,
+      "control_class": "TDACBadge",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 122,
+      "control_class": "TDACDoughnutChart",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 123,
+      "control_class": "TDACAreaChart",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 124,
+      "control_class": "TDACLineChart",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 125,
+      "control_class": "TDACBarChart",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 126,
+      "control_class": "TDACChart",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 127,
+      "control_class": "TDACSummaryCard",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 128,
+      "control_class": "TDACSlider",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 129,
+      "control_class": "TDACToggleSwitch",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 130,
+      "control_class": "TDACRadioButton",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 131,
+      "control_class": "TDACCheckBox",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 132,
+      "control_class": "TDACMemo",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 133,
+      "control_class": "TDACComboBox",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 134,
+      "control_class": "TDACDateTimePicker",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 135,
+      "control_class": "TDACButtonEdit",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 136,
+      "control_class": "TDACEdit",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 137,
+      "control_class": "TDACButton",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 138,
+      "control_class": "TDACGridContainer",
+      "hook_class": "TDACSkiaControlStyleHook"
+    },
+    {
+      "file": "Source\\Hooks\\DAC.Components.Hooks.Register.pas",
+      "line": 139,
+      "control_class": "TDACContainer",
+      "hook_class": "TDACSkiaControlStyleHook"
+    }
+  ],
+  "family_hits": {
+    "1": [
+      "TMaxButton",
+      "TMaxIconButton",
+      "TMaxSplitButton"
+    ],
+    "2": [
+      "TMaxEdit",
+      "TMaxSearchEdit",
+      "TMaxPasswordEdit",
+      "TMaxMaskedEdit",
+      "TMaxMemo"
+    ],
+    "3": [
+      "TMaxComboBox",
+      "TMaxDatePicker",
+      "TMaxTimePicker",
+      "TMaxSpinField"
+    ],
+    "4": [
+      "TMaxCheckBox",
+      "TMaxRadioButton",
+      "TMaxToggleSwitch",
+      "TMaxSlider"
+    ],
+    "5": [
+      "TMaxPageControl"
+    ],
+    "6": [
+      "TMaxSummaryCard"
+    ],
+    "7": [
+      "TMaxStringGrid",
+      "TMaxDBGrid"
+    ],
+    "8": [
+      "TMaxStatusBar"
+    ],
+    "9": [
+      "TMaxLinearProgress",
+      "TMaxCircularProgress"
+    ],
+    "10": [
+      "TMaxBadge",
+      "TMaxChip",
+      "TMaxTag",
+      "TMaxPill"
+    ],
+    "11": [
+      "TMaxToast",
+      "TMaxTooltip",
+      "TMaxModalPanel"
+    ],
+    "12": [
+      "TMaxPagination"
+    ],
+    "13": [
+      "TMaxSpinner"
+    ],
+    "14": [
+      "TMaxChart"
+    ],
+    "15": [
+      "TMaxReportViewer"
+    ]
+  },
+  "risks": [
+    {
+      "severity": "warning",
+      "file": "Tests\\DACComponentsDataAware.dpr",
+      "message": "TODO encontrado"
+    },
+    {
+      "severity": "warning",
+      "file": "Tests\\DACComponentsInteraction.dpr",
+      "message": "TODO encontrado"
+    },
+    {
+      "severity": "warning",
+      "file": "Tests\\DACPhysicalQAController.dpr",
+      "message": "TODO encontrado"
+    }
+  ]
+}

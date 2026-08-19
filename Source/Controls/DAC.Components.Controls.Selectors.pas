@@ -11,8 +11,11 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
+  DAC.Components.Controls.SystemText,
   DAC.Components.DesignSystem.Fonts,
+  DAC.Components.DesignSystem.ComponentStyle,
   DAC.Components.DesignSystem.IconAssets,
+  DAC.Components.DesignSystem.Theme,
   DAC.Components.Skia.IconPainter,
   DAC.Components.Skia.Renderer;
 
@@ -26,6 +29,7 @@ type
   TDACSelector = class(TCustomControl)
   private
     FChecked: Boolean;
+    FBindingCanModify: Boolean;
     FIconPainter: TDACSkiaIconPainter;
     FKind: TDACSelectorKind;
     FMouseInside: Boolean;
@@ -33,11 +37,13 @@ type
     FPaintBox: TSkPaintBox;
     FPressed: Boolean;
     FRenderer: TDACSkiaRenderer;
+    FTextOverlay: TDACSystemTextOverlay;
+    FThemeMode: TDACThemeMode;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure CMTextChanged(var AMessage: TMessage); message CM_TEXTCHANGED;
     procedure DrawCircle(const ACanvas: ISkCanvas; const ACenter: TPointF;
       const ARadius: Single; const AColor: TAlphaColor; const AStroke: Boolean;
-      const AStrokeWidth: Single = 1; const AAlpha: Byte = 255);
+      const AStrokeWidth: Single; const AAlpha: Byte);
     procedure InvalidateSelector;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
@@ -48,25 +54,27 @@ type
     procedure PaintBoxMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     function ParentSurfaceColor: TAlphaColor;
-    function ScaleFactor: Single;
-    function ScaleMetric(const AValue: Integer): Integer;
+    function Pixels(const AValue: Integer): Integer;
     procedure SetChecked(const AValue: Boolean);
     procedure SetKind(const AValue: TDACSelectorKind);
+    procedure SetThemeMode(const AValue: TDACThemeMode);
+    procedure ThemeChanged(Sender: TObject);
     procedure Toggle;
     procedure UpdatePaintBoxBounds;
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
   protected
-    procedure ChangeScale(M, D: Integer); override;
     procedure CreateWnd; override;
     procedure KeyDown(var Key: Word; Shift: TShiftState); override;
     procedure Loaded; override;
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
     procedure Resize; override;
+    procedure SetBindingCanModify(const AValue: Boolean);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure Click; override;
+    function ResolvedTextColor: TAlphaColor;
     property Kind: TDACSelectorKind read FKind write SetKind default mskCheckBox;
   published
     property Align;
@@ -82,6 +90,7 @@ type
     property ShowHint;
     property TabOrder;
     property TabStop default True;
+    property ThemeMode: TDACThemeMode read FThemeMode write SetThemeMode default dtmInherit;
     property Visible;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
     property OnClick;
@@ -121,18 +130,21 @@ type
   TDACSlider = class(TCustomControl)
   private
     FDragging: Boolean;
+    FBindingCanModify: Boolean;
     FMaximum: Integer;
     FMinimum: Integer;
     FMouseInside: Boolean;
     FOnChange: TNotifyEvent;
     FPaintBox: TSkPaintBox;
     FRenderer: TDACSkiaRenderer;
+    FTextOverlay: TDACSystemTextOverlay;
+    FThemeMode: TDACThemeMode;
     FShowValue: Boolean;
     FValue: Integer;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure DrawCircle(const ACanvas: ISkCanvas; const ACenter: TPointF;
       const ARadius: Single; const AColor: TAlphaColor; const AStroke: Boolean;
-      const AStrokeWidth: Single = 1; const AAlpha: Byte = 255);
+      const AStrokeWidth: Single; const AAlpha: Byte);
     procedure InvalidateSlider;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
@@ -145,17 +157,17 @@ type
       Shift: TShiftState; X, Y: Integer);
     function ParentSurfaceColor: TAlphaColor;
     function Percent: Single;
-    function ScaleFactor: Single;
-    function ScaleMetric(const AValue: Integer): Integer;
+    function Pixels(const AValue: Integer): Integer;
     procedure SetMaximum(const AValue: Integer);
     procedure SetMinimum(const AValue: Integer);
     procedure SetShowValue(const AValue: Boolean);
     procedure SetValue(const AValue: Integer);
     procedure SetValueFromX(const AX: Integer);
+    procedure SetThemeMode(const AValue: TDACThemeMode);
+    procedure ThemeChanged(Sender: TObject);
     procedure UpdatePaintBoxBounds;
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
   protected
-    procedure ChangeScale(M, D: Integer); override;
     procedure CreateWnd; override;
     procedure KeyDown(var Key: Word; Shift: TShiftState); override;
     procedure Loaded; override;
@@ -163,9 +175,11 @@ type
     procedure MouseMove(Shift: TShiftState; X, Y: Integer); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
     procedure Resize; override;
+    procedure SetBindingCanModify(const AValue: Boolean);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    function ResolvedTrackColor: TAlphaColor;
     procedure Redraw;
   published
     property Align;
@@ -183,6 +197,7 @@ type
     property ShowValue: Boolean read FShowValue write SetShowValue default True;
     property TabOrder;
     property TabStop default True;
+    property ThemeMode: TDACThemeMode read FThemeMode write SetThemeMode default dtmInherit;
     property Value: Integer read FValue write SetValue default 0;
     property Visible;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
@@ -202,6 +217,7 @@ implementation
 
 uses
   DAC.Components.DesignSystem.ColorTokens,
+  DAC.Components.DesignSystem.ControlTokens,
   System.Math,
   System.SysUtils,
   Winapi.Windows;
@@ -210,14 +226,16 @@ constructor TDACSelector.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque, csClickEvents, csCaptureMouse];
-  Width := 180;
-  Height := 28;
+  Width := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.SelectorDefaultWidth);
+  Height := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.SelectorDefaultHeight);
   TabStop := True;
   ParentColor := False;
   StyleElements := [];
   Cursor := crHandPoint;
   Caption := 'Opcao';
+  FBindingCanModify := True;
   FKind := mskCheckBox;
+  FThemeMode := dtmInherit;
 
   FRenderer := TDACSkiaRenderer.Create;
   FIconPainter := TDACSkiaIconPainter.Create(FRenderer);
@@ -231,25 +249,24 @@ begin
   FPaintBox.OnMouseEnter := PaintBoxMouseEnter;
   FPaintBox.OnMouseLeave := PaintBoxMouseLeave;
   FPaintBox.OnMouseUp := PaintBoxMouseUp;
+  FTextOverlay := TDACSystemTextOverlay.Create(Self);
+  FTextOverlay.Parent := Self;
+  FTextOverlay.SetSubComponent(True);
+  FTextOverlay.Align := alClient;
+  TDACThemeManager.RegisterListener(Self, ThemeChanged);
 
   UpdatePaintBoxBounds;
 end;
 
 destructor TDACSelector.Destroy;
 begin
+  TDACThemeManager.UnregisterListener(Self);
+  FTextOverlay.Free;
   FPaintBox.Free;
   FIconPainter.Free;
   FRenderer.Free;
   inherited;
 end;
-
-procedure TDACSelector.ChangeScale(M, D: Integer);
-begin
-  inherited;
-  UpdatePaintBoxBounds;
-  InvalidateSelector;
-end;
-
 procedure TDACSelector.Click;
 begin
   Toggle;
@@ -298,14 +315,27 @@ end;
 procedure TDACSelector.InvalidateSelector;
 begin
   UpdatePaintBoxBounds;
-  if (FPaintBox <> nil) and HandleAllocated then
+  if (FPaintBox = nil) or (csDestroying in ComponentState) then
+    Exit;
+
+  { The designer needs the same Skia chrome as runtime, but must never force
+    the HWND chain while the component is still waiting for its Parent. }
+  if csDesigning in ComponentState then
+  begin
+    if Parent <> nil then
+      FPaintBox.Redraw;
+    Invalidate;
+    Exit;
+  end;
+
+  if (Parent <> nil) and HandleAllocated and Parent.HandleAllocated then
     FPaintBox.Redraw;
 end;
 
 procedure TDACSelector.KeyDown(var Key: Word; Shift: TShiftState);
 begin
   inherited;
-  if (Key = VK_SPACE) and Enabled then
+  if (Key = VK_SPACE) and Enabled and FBindingCanModify then
   begin
     Toggle;
     Key := 0;
@@ -323,7 +353,7 @@ procedure TDACSelector.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 begin
   inherited;
-  if (Button = mbLeft) and Enabled then
+  if (Button = mbLeft) and Enabled and FBindingCanModify then
   begin
     FPressed := True;
     if CanFocus then
@@ -342,7 +372,8 @@ begin
     Exit;
   FPressed := False;
   LPoint := Point(X, Y);
-  if Enabled and PtInRect(Rect(0, 0, Width, Height), LPoint) then
+  if Enabled and FBindingCanModify and
+    PtInRect(Rect(0, 0, Width, Height), LPoint) then
     Click
   else
     InvalidateSelector;
@@ -361,84 +392,102 @@ var
   LTextColor: TAlphaColor;
   LTextLeft: Single;
   LTrackRect: TRectF;
+  LTokens: TDACControlTokens;
 begin
   if (ACanvas = nil) or (ADest.Width <= 0) or (ADest.Height <= 0) then
     Exit;
 
-  LScale := ScaleFactor;
+  FRenderer.BeginNativeText(FTextOverlay);
+  try
+
   LSurface := ParentSurfaceColor;
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  LScale := LTokens.BorderWidth;
   ACanvas.Clear(LSurface);
 
-  LTextColor := TDACComponentColors.ControlTextForSurface(LSurface);
+  LTextColor := LTokens.SelectorText;
   if not Enabled then
-    LTextColor := TDACComponentColors.ControlTextDisabledForSurface(LSurface);
+    LTextColor := LTokens.SelectorDisabledText;
 
   case FKind of
     mskToggleSwitch:
       begin
         LTrackRect := FRenderer.SnapRect(TRectF.Create(0,
-          (ADest.Height - ScaleMetric(24)) / 2, ScaleMetric(44),
-          (ADest.Height + ScaleMetric(24)) / 2), LScale);
-        LFill := TDACComponentColors.ControlBorderForSurface(LSurface);
+          (ADest.Height - Pixels(Round(LTokens.SelectorToggleHeight))) / 2,
+          Pixels(Round(LTokens.SelectorToggleWidth)),
+          (ADest.Height + Pixels(Round(LTokens.SelectorToggleHeight))) / 2), LScale);
+        LFill := LTokens.SelectorTrack;
         if FChecked then
-          LFill := TDACComponentColors.Primary;
+          LFill := LTokens.Success;
         if FMouseInside and Enabled and not FChecked then
-          LFill := TDACComponentColors.ControlBorderHoverForSurface(LSurface);
+          LFill := LTokens.SelectorTrackHover;
         FRenderer.FillRoundRect(ACanvas, LTrackRect, LFill, LTrackRect.Height / 2,
-          IfThen(Enabled, 255, 120));
-        LKnobCenter := TPointF.Create(LTrackRect.Left + ScaleMetric(12),
+          IfThen(Enabled, LTokens.AlphaOpaque, LTokens.SelectorDisabledAlpha));
+        LKnobCenter := TPointF.Create(LTrackRect.Left + Pixels(Round(LTokens.SelectorToggleKnobOffset)),
           LTrackRect.Top + (LTrackRect.Height / 2));
         if FChecked then
-          LKnobCenter.X := LTrackRect.Right - ScaleMetric(12);
-        DrawCircle(ACanvas, LKnobCenter, ScaleMetric(9), TDACComponentColors.White, False);
-        LTextLeft := LTrackRect.Right + ScaleMetric(12);
+          LKnobCenter.X := LTrackRect.Right - Pixels(Round(LTokens.SelectorToggleKnobOffset));
+        DrawCircle(ACanvas, LKnobCenter,
+          Pixels(Round(LTokens.SelectorToggleKnobRadius)), LTokens.SelectorKnob,
+          False, LTokens.SelectorStrokeWidth, LTokens.AlphaOpaque);
+        LTextLeft := LTrackRect.Right + Pixels(Round(LTokens.SelectorTextOffset - LTokens.SelectorCheckSize));
       end;
     mskRadioButton:
       begin
-        LKnobCenter := TPointF.Create(ScaleMetric(10), ADest.Height / 2);
-        DrawCircle(ACanvas, LKnobCenter, ScaleMetric(8),
-          TDACComponentColors.ControlBorderForSurface(LSurface), True, ScaleMetric(1));
+        LKnobCenter := TPointF.Create(Pixels(Round(LTokens.SelectorRadioCenter)), ADest.Height / 2);
+        DrawCircle(ACanvas, LKnobCenter, Pixels(Round(LTokens.SelectorRadioRadius)),
+          LTokens.SelectorBorder, True, Pixels(Round(LTokens.SelectorStrokeWidth)),
+          LTokens.AlphaOpaque);
         if FMouseInside and Enabled then
-          DrawCircle(ACanvas, LKnobCenter, ScaleMetric(8),
-            TDACComponentColors.Primary, True, ScaleMetric(1), 180);
+          DrawCircle(ACanvas, LKnobCenter, Pixels(Round(LTokens.SelectorRadioRadius)),
+            LTokens.Success, True, Pixels(Round(LTokens.SelectorStrokeWidth)), LTokens.SelectorHoverAlpha);
         if FChecked then
         begin
-          DrawCircle(ACanvas, LKnobCenter, ScaleMetric(8),
-            TDACComponentColors.Primary, True, 1.5 * ScaleFactor);
-          DrawCircle(ACanvas, LKnobCenter, ScaleMetric(4),
-            TDACComponentColors.Primary, False);
+          DrawCircle(ACanvas, LKnobCenter, Pixels(Round(LTokens.SelectorRadioRadius)),
+            LTokens.Success, True, LTokens.SelectorCheckedBorderWidth,
+            LTokens.AlphaOpaque);
+          DrawCircle(ACanvas, LKnobCenter, Pixels(Round(LTokens.SelectorRadioDotRadius)),
+            LTokens.Success, False, LTokens.SelectorStrokeWidth,
+            LTokens.AlphaOpaque);
         end;
-        LTextLeft := ScaleMetric(28);
+        LTextLeft := Pixels(Round(LTokens.SelectorTextOffset));
       end;
   else
     begin
       LBoxRect := FRenderer.SnapRect(TRectF.Create(0,
-        (ADest.Height - ScaleMetric(18)) / 2, ScaleMetric(18),
-        (ADest.Height + ScaleMetric(18)) / 2), LScale);
-      LFill := TDACComponentColors.ControlBackgroundForSurface(LSurface);
+        (ADest.Height - Pixels(Round(LTokens.SelectorCheckSize))) / 2,
+        Pixels(Round(LTokens.SelectorCheckSize)),
+        (ADest.Height + Pixels(Round(LTokens.SelectorCheckSize))) / 2), LScale);
+      LFill := LTokens.SelectorControlBackground;
       if FChecked then
-        LFill := TDACComponentColors.Primary;
-      FRenderer.FillRoundRect(ACanvas, LBoxRect, LFill, ScaleMetric(4), IfThen(Enabled, 255, 120));
+        LFill := LTokens.Success;
+      FRenderer.FillRoundRect(ACanvas, LBoxRect, LFill,
+        Pixels(Round(LTokens.SelectorCheckRadius)),
+        IfThen(Enabled, LTokens.AlphaOpaque, LTokens.SelectorDisabledAlpha));
       FRenderer.StrokeRoundRect(ACanvas, LBoxRect,
-        TDACComponentColors.ControlBorderForSurface(LSurface), ScaleMetric(4),
-        ScaleMetric(1), IfThen(FMouseInside and Enabled, 255, 180));
+        LTokens.SelectorBorder, Pixels(Round(LTokens.SelectorCheckRadius)),
+        Pixels(Round(LTokens.SelectorStrokeWidth)), IfThen(FMouseInside and Enabled,
+          LTokens.AlphaOpaque, LTokens.SelectorHoverAlpha));
       if FChecked then
       begin
-        LIconRect := TRectF.Create(LBoxRect.Left + ScaleMetric(2), LBoxRect.Top + ScaleMetric(2),
-          LBoxRect.Right - ScaleMetric(2), LBoxRect.Bottom - ScaleMetric(2));
-        LIconStyle.Color := TDACComponentColors.White;
-        LIconStyle.Alpha := 255;
+        LIconRect := TRectF.Create(LBoxRect.Left + Pixels(Round(LTokens.SelectorCheckInset)), LBoxRect.Top + Pixels(Round(LTokens.SelectorCheckInset)),
+          LBoxRect.Right - Pixels(Round(LTokens.SelectorCheckInset)), LBoxRect.Bottom - Pixels(Round(LTokens.SelectorCheckInset)));
+        LIconStyle.Color := LTokens.FeedbackText;
+        LIconStyle.Alpha := LTokens.AlphaOpaque;
         FIconPainter.Draw(ACanvas, LIconRect, mikCheck, LIconStyle);
       end;
-      LTextLeft := ScaleMetric(28);
+      LTextLeft := Pixels(Round(LTokens.SelectorTextOffset));
     end;
   end;
 
   if Caption <> '' then
     FRenderer.Text(ACanvas, Caption,
-      TDACComponentFontInstaller.FontFamily, LTextLeft,
-      (ADest.Height / 2) + ScaleMetric(4), 10.5, LTextColor, False,
+      TDACComponentStyle.FontFamily, LTextLeft,
+      (ADest.Height / 2) + Pixels(Round(LTokens.SelectorTextBaselineOffset)), LTokens.SelectorTextSize, LTextColor, False,
       ADest.Width - LTextLeft);
+  finally
+    FRenderer.EndNativeText;
+  end;
 end;
 
 procedure TDACSelector.PaintBoxMouseDown(Sender: TObject;
@@ -468,7 +517,12 @@ end;
 
 function TDACSelector.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TDACComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.PopupBackground;
+end;
+
+function TDACSelector.ResolvedTextColor: TAlphaColor;
+begin
+  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.SelectorText;
 end;
 
 procedure TDACSelector.Resize;
@@ -478,18 +532,9 @@ begin
   InvalidateSelector;
 end;
 
-function TDACSelector.ScaleFactor: Single;
+function TDACSelector.Pixels(const AValue: Integer): Integer;
 begin
-  Result := 1;
-  if FPaintBox <> nil then
-    Result := FPaintBox.ScaleFactor;
-  if Result <= 0 then
-    Result := 1;
-end;
-
-function TDACSelector.ScaleMetric(const AValue: Integer): Integer;
-begin
-  Result := Round(AValue * ScaleFactor);
+  Result := AValue;
   if (AValue > 0) and (Result < 1) then
     Result := 1;
 end;
@@ -504,11 +549,36 @@ begin
     FOnChange(Self);
 end;
 
+procedure TDACSelector.SetBindingCanModify(const AValue: Boolean);
+begin
+  if FBindingCanModify = AValue then
+    Exit;
+  FBindingCanModify := AValue;
+  if not FBindingCanModify then
+    FPressed := False;
+  Cursor := crHandPoint;
+  if not Enabled or not FBindingCanModify then
+    Cursor := crDefault;
+  InvalidateSelector;
+end;
+
 procedure TDACSelector.SetKind(const AValue: TDACSelectorKind);
 begin
   if FKind = AValue then
     Exit;
   FKind := AValue;
+  InvalidateSelector;
+end;
+
+procedure TDACSelector.SetThemeMode(const AValue: TDACThemeMode);
+begin
+  if FThemeMode = AValue then Exit;
+  FThemeMode := AValue;
+  ThemeChanged(Self);
+end;
+
+procedure TDACSelector.ThemeChanged(Sender: TObject);
+begin
   InvalidateSelector;
 end;
 
@@ -525,12 +595,15 @@ var
   LHeight: Integer;
   LWidth: Integer;
 begin
-  if FPaintBox = nil then
+  if (FPaintBox = nil) or (csLoading in ComponentState) or
+    (csDestroying in ComponentState) then
     Exit;
 
+  { Width/Height are valid while the IDE is streaming a component.  Client
+    dimensions are only safe after the runtime HWND exists. }
   LWidth := Width;
   LHeight := Height;
-  if HandleAllocated then
+  if not (csDesigning in ComponentState) and HandleAllocated then
   begin
     LWidth := ClientWidth;
     LHeight := ClientHeight;
@@ -565,16 +638,16 @@ begin
   inherited Create(AOwner);
   Kind := mskToggleSwitch;
   Caption := 'Toggle Switch';
-  Width := 190;
-  Height := 30;
+  Width := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.ToggleDefaultWidth);
+  Height := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.ToggleDefaultHeight);
 end;
 
 constructor TDACSlider.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque, csClickEvents, csCaptureMouse];
-  Width := 260;
-  Height := 36;
+  Width := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.SliderDefaultWidth);
+  Height := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.SliderDefaultHeight);
   TabStop := True;
   ParentColor := False;
   StyleElements := [];
@@ -582,7 +655,9 @@ begin
   FMinimum := 0;
   FMaximum := 100;
   FValue := 0;
+  FBindingCanModify := True;
   FShowValue := True;
+  FThemeMode := dtmInherit;
   FRenderer := TDACSkiaRenderer.Create;
 
   FPaintBox := TSkPaintBox.Create(Self);
@@ -595,29 +670,28 @@ begin
   FPaintBox.OnMouseLeave := PaintBoxMouseLeave;
   FPaintBox.OnMouseMove := PaintBoxMouseMove;
   FPaintBox.OnMouseUp := PaintBoxMouseUp;
+  FTextOverlay := TDACSystemTextOverlay.Create(Self);
+  FTextOverlay.Parent := Self;
+  FTextOverlay.SetSubComponent(True);
+  FTextOverlay.Align := alClient;
+  TDACThemeManager.RegisterListener(Self, ThemeChanged);
 
   UpdatePaintBoxBounds;
 end;
 
 destructor TDACSlider.Destroy;
 begin
+  TDACThemeManager.UnregisterListener(Self);
+  FTextOverlay.Free;
   FPaintBox.Free;
   FRenderer.Free;
   inherited;
 end;
-
-procedure TDACSlider.ChangeScale(M, D: Integer);
-begin
-  inherited;
-  UpdatePaintBoxBounds;
-  InvalidateSlider;
-end;
-
 procedure TDACSlider.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
   Cursor := crHandPoint;
-  if not Enabled then
+  if not Enabled or not FBindingCanModify then
     Cursor := crDefault;
   InvalidateSlider;
 end;
@@ -649,14 +723,25 @@ end;
 procedure TDACSlider.InvalidateSlider;
 begin
   UpdatePaintBoxBounds;
-  if (FPaintBox <> nil) and HandleAllocated then
+  if (FPaintBox = nil) or (csDestroying in ComponentState) then
+    Exit;
+
+  if csDesigning in ComponentState then
+  begin
+    if Parent <> nil then
+      FPaintBox.Redraw;
+    Invalidate;
+    Exit;
+  end;
+
+  if (Parent <> nil) and HandleAllocated and Parent.HandleAllocated then
     FPaintBox.Redraw;
 end;
 
 procedure TDACSlider.KeyDown(var Key: Word; Shift: TShiftState);
 begin
   inherited;
-  if not Enabled then
+  if not Enabled or not FBindingCanModify then
     Exit;
   case Key of
     VK_LEFT, VK_DOWN:
@@ -683,7 +768,7 @@ procedure TDACSlider.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 begin
   inherited;
-  if (Button = mbLeft) and Enabled then
+  if (Button = mbLeft) and Enabled and FBindingCanModify then
   begin
     FDragging := True;
     if CanFocus then
@@ -695,7 +780,7 @@ end;
 procedure TDACSlider.MouseMove(Shift: TShiftState; X, Y: Integer);
 begin
   inherited;
-  if FDragging and Enabled then
+  if FDragging and Enabled and FBindingCanModify then
     SetValueFromX(X);
 end;
 
@@ -720,41 +805,52 @@ var
   LSurface: TAlphaColor;
   LTrackRect: TRectF;
   LValueText: string;
+  LTokens: TDACControlTokens;
 begin
   if (ACanvas = nil) or (ADest.Width <= 0) or (ADest.Height <= 0) then
     Exit;
 
+  FRenderer.BeginNativeText(FTextOverlay);
+  try
+
   LSurface := ParentSurfaceColor;
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
   ACanvas.Clear(LSurface);
 
   LCenterY := ADest.Height / 2;
-  LTrackRect := TRectF.Create(ScaleMetric(8), LCenterY - ScaleMetric(3),
-    ADest.Width - ScaleMetric(50), LCenterY + ScaleMetric(3));
+  LTrackRect := TRectF.Create(Pixels(Round(LTokens.SliderTrackLeft)), LCenterY - Pixels(Round(LTokens.SliderTrackThickness)),
+    ADest.Width - Pixels(Round(LTokens.SliderTrackRightWithValue)), LCenterY + Pixels(Round(LTokens.SliderTrackThickness)));
   if not FShowValue then
-    LTrackRect.Right := ADest.Width - ScaleMetric(12);
+    LTrackRect.Right := ADest.Width - Pixels(Round(LTokens.SliderTrackRightWithoutValue));
 
   FRenderer.FillRoundRect(ACanvas, LTrackRect,
-    TDACComponentColors.ControlBorderForSurface(LSurface), ScaleMetric(3),
-    IfThen(Enabled, 150, 80));
+    LTokens.SliderTrack, Pixels(Round(LTokens.SliderTrackThickness)),
+    IfThen(Enabled, LTokens.SliderTrackAlpha, LTokens.SliderDisabledTrackAlpha));
   LPercent := Percent;
   LActiveRect := LTrackRect;
   LActiveRect.Right := LTrackRect.Left + (LTrackRect.Width * LPercent);
-  FRenderer.FillRoundRect(ACanvas, LActiveRect, TDACComponentColors.Primary,
-    ScaleMetric(3), IfThen(Enabled, 255, 120));
+  FRenderer.FillRoundRect(ACanvas, LActiveRect, LTokens.Success,
+    Pixels(Round(LTokens.SliderTrackThickness)), IfThen(Enabled,
+      LTokens.AlphaOpaque, LTokens.SliderDisabledAlpha));
 
   LKnobCenter := TPointF.Create(LActiveRect.Right, LCenterY);
-  DrawCircle(ACanvas, LKnobCenter, ScaleMetric(8), TDACComponentColors.White, False);
-  DrawCircle(ACanvas, LKnobCenter, ScaleMetric(8), TDACComponentColors.Primary,
-    True, 1.5 * ScaleFactor, IfThen(FMouseInside or FDragging, 255, 220));
+  DrawCircle(ACanvas, LKnobCenter, Pixels(Round(LTokens.SliderKnobRadius)),
+    LTokens.SelectorKnob, False, LTokens.SelectorStrokeWidth,
+    LTokens.AlphaOpaque);
+  DrawCircle(ACanvas, LKnobCenter, Pixels(Round(LTokens.SliderKnobRadius)), LTokens.Success,
+    True, LTokens.SelectorCheckedBorderWidth, IfThen(FMouseInside or FDragging,
+      LTokens.AlphaOpaque, LTokens.SliderHoverAlpha));
 
   if FShowValue then
   begin
     LValueText := IntToStr(FValue) + '%';
     FRenderer.Text(ACanvas, LValueText,
-      TDACComponentFontInstaller.FontFamily, ADest.Width - ScaleMetric(40),
-      LCenterY + ScaleMetric(4), 10,
-      TDACComponentColors.ControlTextForSurface(LSurface), False,
-      ScaleMetric(38));
+      TDACComponentStyle.FontFamily, ADest.Width - Pixels(Round(LTokens.SliderValueRight)),
+      LCenterY + Pixels(Round(LTokens.SliderValueBaselineOffset)), LTokens.SliderValueTextSize,
+      LTokens.SliderText, False, Pixels(Round(LTokens.SliderValueWidth)));
+  end;
+  finally
+    FRenderer.EndNativeText;
   end;
 end;
 
@@ -791,7 +887,12 @@ end;
 
 function TDACSlider.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TDACComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.PopupBackground;
+end;
+
+function TDACSlider.ResolvedTrackColor: TAlphaColor;
+begin
+  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.SliderTrack;
 end;
 
 function TDACSlider.Percent: Single;
@@ -814,18 +915,9 @@ begin
   InvalidateSlider;
 end;
 
-function TDACSlider.ScaleFactor: Single;
+function TDACSlider.Pixels(const AValue: Integer): Integer;
 begin
-  Result := 1;
-  if FPaintBox <> nil then
-    Result := FPaintBox.ScaleFactor;
-  if Result <= 0 then
-    Result := 1;
-end;
-
-function TDACSlider.ScaleMetric(const AValue: Integer): Integer;
-begin
-  Result := Round(AValue * ScaleFactor);
+  Result := AValue;
   if (AValue > 0) and (Result < 1) then
     Result := 1;
 end;
@@ -856,6 +948,19 @@ begin
   InvalidateSlider;
 end;
 
+procedure TDACSlider.SetBindingCanModify(const AValue: Boolean);
+begin
+  if FBindingCanModify = AValue then
+    Exit;
+  FBindingCanModify := AValue;
+  if not FBindingCanModify then
+    FDragging := False;
+  Cursor := crHandPoint;
+  if not Enabled or not FBindingCanModify then
+    Cursor := crDefault;
+  InvalidateSlider;
+end;
+
 procedure TDACSlider.SetValue(const AValue: Integer);
 var
   LValue: Integer;
@@ -876,13 +981,25 @@ var
   LTrackLeft: Integer;
   LTrackWidth: Integer;
 begin
-  LTrackLeft := ScaleMetric(8);
-  LRightPadding := ScaleMetric(50);
+  LTrackLeft := Pixels(Round(TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.SliderTrackLeft));
+  LRightPadding := Pixels(Round(TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.SliderTrackRightWithValue));
   if not FShowValue then
-    LRightPadding := ScaleMetric(12);
+    LRightPadding := Pixels(Round(TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.SliderTrackRightWithoutValue));
   LTrackWidth := Max(1, Width - LTrackLeft - LRightPadding);
   LPercent := EnsureRange((AX - LTrackLeft) / LTrackWidth, 0, 1);
   Value := FMinimum + Round((FMaximum - FMinimum) * LPercent);
+end;
+
+procedure TDACSlider.SetThemeMode(const AValue: TDACThemeMode);
+begin
+  if FThemeMode = AValue then Exit;
+  FThemeMode := AValue;
+  ThemeChanged(Self);
+end;
+
+procedure TDACSlider.ThemeChanged(Sender: TObject);
+begin
+  InvalidateSlider;
 end;
 
 procedure TDACSlider.UpdatePaintBoxBounds;
@@ -890,12 +1007,13 @@ var
   LHeight: Integer;
   LWidth: Integer;
 begin
-  if FPaintBox = nil then
+  if (FPaintBox = nil) or (csLoading in ComponentState) or
+    (csDestroying in ComponentState) then
     Exit;
 
   LWidth := Width;
   LHeight := Height;
-  if HandleAllocated then
+  if not (csDesigning in ComponentState) and HandleAllocated then
   begin
     LWidth := ClientWidth;
     LHeight := ClientHeight;

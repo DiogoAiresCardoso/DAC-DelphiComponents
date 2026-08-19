@@ -11,7 +11,10 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
+  DAC.Components.DesignSystem.ControlTokens,
   DAC.Components.DesignSystem.IconAssets,
+  DAC.Components.DesignSystem.Theme,
+  DAC.Components.Controls.SystemText,
   DAC.Components.Skia.IconPainter,
   DAC.Components.Skia.Renderer;
 
@@ -50,9 +53,11 @@ type
     FOnCloseClick: TNotifyEvent;
     FPaintBox: TSkPaintBox;
     FRenderer: TDACSkiaRenderer;
+    FTextOverlay: TDACSystemTextOverlay;
     FShowClose: Boolean;
     FShowIcon: Boolean;
     FStatus: TDACBadgeStatus;
+    FThemeMode: TDACThemeMode;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure CMTextChanged(var AMessage: TMessage); message CM_TEXTCHANGED;
     function AccentColor: TAlphaColor;
@@ -75,8 +80,7 @@ type
     procedure PaintBoxMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     function ParentSurfaceColor: TAlphaColor;
-    function ScaleFactor: Single;
-    function ScaleMetric(const AValue: Integer): Integer;
+    function Pixels(const AValue: Integer): Integer;
     procedure SetAppearance(const AValue: TDACBadgeAppearance);
     procedure SetCornerRadius(const AValue: Integer);
     procedure SetIconKind(const AValue: TDACIconKind);
@@ -84,12 +88,13 @@ type
     procedure SetShowClose(const AValue: Boolean);
     procedure SetShowIcon(const AValue: Boolean);
     procedure SetStatus(const AValue: TDACBadgeStatus);
+    procedure SetThemeMode(const AValue: TDACThemeMode);
     function TextColor: TAlphaColor;
     procedure UpdateCursor;
     procedure UpdatePaintBoxBounds;
+    procedure ThemeChanged(Sender: TObject);
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
   protected
-    procedure ChangeScale(M, D: Integer); override;
     procedure CreateWnd; override;
     procedure Loaded; override;
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
@@ -99,6 +104,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    function ResolvedBackgroundColor: TAlphaColor;
     procedure Redraw;
   published
     property Align;
@@ -106,7 +112,8 @@ type
     property Appearance: TDACBadgeAppearance read FAppearance write SetAppearance default mbaSoft;
     property Caption;
     property Constraints;
-    property CornerRadius: Integer read FCornerRadius write SetCornerRadius default 10;
+    property CornerRadius: Integer read FCornerRadius write SetCornerRadius
+      default DACBadgeDefaultCornerRadius;
     property Enabled;
     property Hint;
     property IconKind: TDACIconKind read FIconKind write SetIconKind default mikTag;
@@ -119,6 +126,7 @@ type
     property Status: TDACBadgeStatus read FStatus write SetStatus default mbsSuccess;
     property TabOrder;
     property TabStop default False;
+    property ThemeMode: TDACThemeMode read FThemeMode write SetThemeMode default dtmInherit;
     property Visible;
     property OnClick;
     property OnCloseClick: TNotifyEvent read FOnCloseClick write FOnCloseClick;
@@ -135,14 +143,15 @@ implementation
 uses
   System.Math,
   DAC.Components.DesignSystem.ColorTokens,
-  DAC.Components.DesignSystem.Fonts;
+  DAC.Components.DesignSystem.Fonts,
+  DAC.Components.DesignSystem.ComponentStyle;
 
 constructor TDACBadge.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque, csClickEvents, csCaptureMouse];
-  Width := 92;
-  Height := 28;
+  Width := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.BadgeDefaultWidth);
+  Height := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.BadgeDefaultHeight);
   TabStop := False;
   ParentColor := False;
   StyleElements := [];
@@ -150,12 +159,13 @@ begin
   Caption := 'Ativo';
 
   FAppearance := mbaSoft;
-  FCornerRadius := 10;
+  FCornerRadius := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.BadgeRadius);
   FIconKind := mikTag;
   FKind := mbkChip;
   FShowClose := False;
   FShowIcon := False;
   FStatus := mbsSuccess;
+  FThemeMode := dtmInherit;
 
   FRenderer := TDACSkiaRenderer.Create;
   FIconPainter := TDACSkiaIconPainter.Create(FRenderer);
@@ -170,12 +180,19 @@ begin
   FPaintBox.OnMouseLeave := PaintBoxMouseLeave;
   FPaintBox.OnMouseMove := PaintBoxMouseMove;
   FPaintBox.OnMouseUp := PaintBoxMouseUp;
+  FTextOverlay := TDACSystemTextOverlay.Create(Self);
+  FTextOverlay.Parent := Self;
+  FTextOverlay.SetSubComponent(True);
+  FTextOverlay.Align := alClient;
+  TDACThemeManager.RegisterListener(Self, ThemeChanged);
 
   UpdatePaintBoxBounds;
 end;
 
 destructor TDACBadge.Destroy;
 begin
+  TDACThemeManager.UnregisterListener(Self);
+  FTextOverlay.Free;
   FPaintBox.Free;
   FIconPainter.Free;
   FRenderer.Free;
@@ -183,48 +200,32 @@ begin
 end;
 
 function TDACBadge.AccentColor: TAlphaColor;
+var
+  LTokens: TDACControlTokens;
 begin
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
   case FStatus of
-    mbsWarning:
-      Result := TDACComponentColors.Warning;
-    mbsDanger:
-      Result := TDACComponentColors.Danger;
-    mbsInfo:
-      Result := TDACComponentColors.Alpha(43, 125, 233);
-    mbsNeutral:
-      Result := TDACComponentColors.Alpha(71, 85, 105);
+    mbsWarning: Result := LTokens.ProgressWarning;
+    mbsDanger: Result := LTokens.ProgressDanger;
+    mbsInfo: Result := LTokens.ProgressInfo;
+    mbsNeutral: Result := LTokens.ProgressNeutral;
   else
-    Result := TDACComponentColors.Primary;
+    Result := LTokens.Success;
   end;
 end;
 
 function TDACBadge.BackgroundColor: TAlphaColor;
 var
   LAccent: TAlphaColor;
-  LSurface: TAlphaColor;
 begin
   LAccent := AccentColor;
-  LSurface := ParentSurfaceColor;
   case FAppearance of
     mbaFilled:
       Result := LAccent;
     mbaOutline:
-      Result := TDACComponentColors.ControlBackgroundForSurface(LSurface);
+      Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.BadgeOutlineBackground;
   else
-    if TDACComponentColors.IsDarkSurface(LSurface) then
-      Exit(TDACComponentColors.Alpha(18, 36, 24));
-    case FStatus of
-      mbsWarning:
-        Result := TDACComponentColors.Alpha(255, 246, 214);
-      mbsDanger:
-        Result := TDACComponentColors.Alpha(255, 232, 229);
-      mbsInfo:
-        Result := TDACComponentColors.Alpha(229, 241, 255);
-      mbsNeutral:
-        Result := TDACComponentColors.Alpha(241, 245, 249);
-    else
-      Result := TDACComponentColors.Alpha(230, 246, 227);
-    end;
+    Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.BadgeSoftBackground;
   end;
 end;
 
@@ -234,12 +235,12 @@ begin
     mbaFilled:
       Result := 0;
     mbaOutline:
-      Result := 230;
+      Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.BadgeOutlineBorderAlpha;
   else
-    Result := 170;
+    Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.BadgeBorderAlpha;
   end;
   if not Enabled then
-    Result := 110;
+    Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.BadgeDisabledAlpha;
 end;
 
 function TDACBadge.BorderColor: TAlphaColor;
@@ -248,24 +249,16 @@ begin
     Exit(AccentColor);
   if FMouseInside and Enabled then
     Exit(AccentColor);
-  Result := TDACComponentColors.ControlBorderForSurface(ParentSurfaceColor);
+  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.BadgeBorder;
 end;
-
-procedure TDACBadge.ChangeScale(M, D: Integer);
-begin
-  inherited;
-  UpdatePaintBoxBounds;
-  InvalidateBadge;
-end;
-
 function TDACBadge.CloseRect: TRect;
 var
   LSize: Integer;
 begin
-  LSize := ScaleMetric(IconSize);
-  Result := Rect(Width - ScaleMetric(ContentPadding) - LSize,
+  LSize := Pixels(IconSize);
+  Result := Rect(Width - Pixels(ContentPadding) - LSize,
     (Height - LSize) div 2,
-    Width - ScaleMetric(ContentPadding),
+    Width - Pixels(ContentPadding),
     (Height + LSize) div 2);
 end;
 
@@ -286,11 +279,11 @@ function TDACBadge.ContentPadding: Integer;
 begin
   case FKind of
     mbkBadge:
-      Result := 10;
+      Result := Round(TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.BadgePadding);
     mbkPill:
-      Result := 16;
+      Result := Round(TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.BadgePillPadding);
   else
-    Result := 12;
+    Result := Round(TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.BadgePadding);
   end;
 end;
 
@@ -305,11 +298,11 @@ function TDACBadge.FontSize: Single;
 begin
   case FKind of
     mbkBadge:
-      Result := 12;
+      Result := TDACComponentStyle.TabTextSize;
     mbkPill:
-      Result := 12;
+      Result := TDACComponentStyle.TabTextSize;
   else
-    Result := 12;
+    Result := TDACComponentStyle.TabTextSize;
   end;
 end;
 
@@ -317,18 +310,27 @@ function TDACBadge.IconSize: Integer;
 begin
   case FKind of
     mbkBadge:
-      Result := 12;
+      Result := Round(TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.BadgeIconSize);
     mbkPill:
-      Result := 14;
+      Result := Round(TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.BadgePillIconSize);
   else
-    Result := 13;
+    Result := Round(TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.BadgeIconSize);
   end;
 end;
 
 procedure TDACBadge.InvalidateBadge;
 begin
   UpdatePaintBoxBounds;
-  if (FPaintBox <> nil) and HandleAllocated then
+  if (FPaintBox = nil) or (csDestroying in ComponentState) then
+    Exit;
+  if csDesigning in ComponentState then
+  begin
+    if Parent <> nil then
+      FPaintBox.Redraw;
+    Invalidate;
+    Exit;
+  end;
+  if (Parent <> nil) and HandleAllocated and Parent.HandleAllocated then
     FPaintBox.Redraw;
 end;
 
@@ -408,47 +410,54 @@ var
   LTextColor: TAlphaColor;
   LTextLeft: Single;
   LTextRight: Single;
+  LTokens: TDACControlTokens;
 begin
   if ACanvas = nil then
     Exit;
 
-  LScale := ScaleFactor;
+  FRenderer.BeginNativeText(FTextOverlay);
+  try
+
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  LScale := LTokens.BorderWidth;
   ACanvas.Clear(ParentSurfaceColor);
   LRect := FRenderer.SnapRect(TRectF.Create(0, 0, ADest.Width, ADest.Height), LScale);
-  LRect.Inflate(-0.5 / LScale, -0.5 / LScale);
-  LRadius := ScaleMetric(FCornerRadius);
+  LRect.Inflate(-(LTokens.BorderWidth / 2) / LScale,
+    -(LTokens.BorderWidth / 2) / LScale);
+  LRadius := Pixels(FCornerRadius);
   if FKind = mbkPill then
     LRadius := LRect.Height / 2;
 
-  LAlpha := 255;
+  LAlpha := LTokens.AlphaOpaque;
   if not Enabled then
-    LAlpha := 120;
+    LAlpha := LTokens.BadgeDisabledAlpha;
 
   LBackground := BackgroundColor;
   LBorder := BorderColor;
   FRenderer.FillRoundRect(ACanvas, LRect, LBackground, LRadius, LAlpha);
   if BorderAlpha > 0 then
-    FRenderer.StrokeRoundRect(ACanvas, LRect, LBorder, LRadius, ScaleMetric(1), BorderAlpha);
+    FRenderer.StrokeRoundRect(ACanvas, LRect, LBorder, LRadius,
+      Pixels(Round(LTokens.BorderWidth)), BorderAlpha);
 
-  LPadding := ScaleMetric(ContentPadding);
+  LPadding := Pixels(ContentPadding);
   LTextLeft := LRect.Left + LPadding;
   LTextRight := LRect.Right - LPadding;
   LTextColor := TextColor;
 
   if FShowIcon and (FIconKind <> mikNone) then
   begin
-    LIconRect := TRectF.Create(LTextLeft, (LRect.Height - ScaleMetric(IconSize)) / 2,
-      LTextLeft + ScaleMetric(IconSize), (LRect.Height + ScaleMetric(IconSize)) / 2);
+    LIconRect := TRectF.Create(LTextLeft, (LRect.Height - Pixels(IconSize)) / 2,
+      LTextLeft + Pixels(IconSize), (LRect.Height + Pixels(IconSize)) / 2);
     LIconStyle.Color := LTextColor;
     LIconStyle.Alpha := LAlpha;
     FIconPainter.Draw(ACanvas, LIconRect, FIconKind, LIconStyle);
-    LTextLeft := LIconRect.Right + ScaleMetric(6);
+    LTextLeft := LIconRect.Right + Pixels(Round(LTokens.BadgeIconGap));
   end;
 
   if FShowClose then
-    LTextRight := CloseRect.Left - ScaleMetric(6);
+    LTextRight := CloseRect.Left - Pixels(Round(LTokens.BadgeIconGap));
 
-  FRenderer.TextCentered(ACanvas, Caption, TDACComponentFontInstaller.FontFamily,
+  FRenderer.TextCentered(ACanvas, Caption, TDACComponentStyle.FontFamily,
     TRectF.Create(LTextLeft, LRect.Top, LTextRight, LRect.Bottom), FontSize,
     LTextColor, True, Max(0, LTextRight - LTextLeft));
 
@@ -458,11 +467,16 @@ begin
     LCloseRect := TRectF.Create(LCloseControlRect.Left, LCloseControlRect.Top,
       LCloseControlRect.Right, LCloseControlRect.Bottom);
     if FCloseMouseInside and Enabled then
-      FRenderer.FillRoundRect(ACanvas, LCloseRect, LTextColor, LCloseRect.Height / 2, 24);
-    LCloseRect.Inflate(-ScaleMetric(2), -ScaleMetric(2));
+      FRenderer.FillRoundRect(ACanvas, LCloseRect, LTextColor, LCloseRect.Height / 2,
+        LTokens.BadgeCloseHoverAlpha);
+    LCloseRect.Inflate(-Pixels(Round(LTokens.BadgeCloseInset)),
+      -Pixels(Round(LTokens.BadgeCloseInset)));
     LIconStyle.Color := LTextColor;
     LIconStyle.Alpha := LAlpha;
     FIconPainter.Draw(ACanvas, LCloseRect, mikClose, LIconStyle);
+  end;
+  finally
+    FRenderer.EndNativeText;
   end;
 end;
 
@@ -501,7 +515,12 @@ end;
 
 function TDACBadge.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TDACComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.PopupBackground;
+end;
+
+function TDACBadge.ResolvedBackgroundColor: TAlphaColor;
+begin
+  Result := BackgroundColor;
 end;
 
 procedure TDACBadge.Redraw;
@@ -516,18 +535,11 @@ begin
   InvalidateBadge;
 end;
 
-function TDACBadge.ScaleFactor: Single;
-begin
-  Result := 1;
-  if FPaintBox <> nil then
-    Result := FPaintBox.ScaleFactor;
-end;
-
-function TDACBadge.ScaleMetric(const AValue: Integer): Integer;
+function TDACBadge.Pixels(const AValue: Integer): Integer;
 begin
   if AValue <= 0 then
     Exit(0);
-  Result := Max(1, Round(AValue * ScaleFactor));
+  Result := Max(1, Round(AValue * 1));
 end;
 
 procedure TDACBadge.SetAppearance(const AValue: TDACBadgeAppearance);
@@ -587,23 +599,25 @@ begin
   InvalidateBadge;
 end;
 
+procedure TDACBadge.SetThemeMode(const AValue: TDACThemeMode);
+begin
+  if FThemeMode = AValue then
+    Exit;
+  FThemeMode := AValue;
+  ThemeChanged(Self);
+end;
+
 function TDACBadge.TextColor: TAlphaColor;
 begin
   if FAppearance = mbaFilled then
-    Exit(TDACComponentColors.White);
+    Exit(TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.FeedbackText);
 
-  case FStatus of
-    mbsWarning:
-      Result := TDACComponentColors.WarningDark;
-    mbsDanger:
-      Result := TDACComponentColors.DangerDark;
-    mbsInfo:
-      Result := TDACComponentColors.Alpha(28, 94, 168);
-    mbsNeutral:
-      Result := TDACComponentColors.Alpha(51, 65, 85);
-  else
-    Result := TDACComponentColors.Primary;
-  end;
+  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.BadgeText;
+end;
+
+procedure TDACBadge.ThemeChanged(Sender: TObject);
+begin
+  InvalidateBadge;
 end;
 
 procedure TDACBadge.UpdateCursor;
@@ -625,12 +639,13 @@ var
   LHeight: Integer;
   LWidth: Integer;
 begin
-  if FPaintBox = nil then
+  if (FPaintBox = nil) or (csLoading in ComponentState) or
+    (csDestroying in ComponentState) then
     Exit;
 
   LWidth := Width;
   LHeight := Height;
-  if HandleAllocated then
+  if not (csDesigning in ComponentState) and HandleAllocated then
   begin
     LWidth := ClientWidth;
     LHeight := ClientHeight;

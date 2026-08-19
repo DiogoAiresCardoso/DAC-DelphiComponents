@@ -1,0 +1,70 @@
+# Revisao de codigo - MEM-DEL-007
+
+Data: 2026-07-21  
+Branch: `codex/fix-demo-visual-regressions`  
+Status: `APPROVED_FOR_UI_TEST`
+
+## Veredicto de arquitetura e VCL
+
+- `TDACScrollContainer` conserva o paint box Skia no viewport do `TScrollBox`:
+  usa `ClientWidth` e `ClientHeight`, compensa as posicoes horizontal e
+  vertical apos as mensagens de scroll e volta o chrome para tras somente
+  quando ha handle em runtime. A limpeza explicita do canvas remove pixels
+  residuais; borda e raio continuam centralizados no renderer Skia. Antes de
+  parent/handle, a geometria usa apenas `Width` e `Height`, portanto a mudanca
+  nao introduz acesso prematuro de designer.
+- `TDACTabs.UpdateHeaderBounds` calcula o padding depois da geometria do
+  header e somente faz `Realign` quando o padding mudou. O uso de handle e
+  `BringToFront` permanece protegido no runtime; a alteracao evita o header
+  Skia sobrepor o conteudo sem criar loop de realinhamento.
+- `TDACSystemText` mede e desenha pelo mesmo `TCanvas` VCL, com familia,
+  tamanho e negrito identicos. `TDACButton` converte a largura fisica para a
+  escala logica e remove a margem artificial de 16 px. Isto preserva a
+  nitidez/texto nativo e alinha a metrica usada no layout com a metrica visivel.
+- Nao houve novo hook global ou alteracao de registro: os hooks continuam
+  registrados somente em classes `TDAC...` e com unregister correspondente.
+- O novo teste de SVG confirma fonte nao vazia e `TSkSVGDOM.Make` nao nulo para
+  save, search, trash, check, chevrons e spinner. E uma boa prova de asset e
+  parser Skia, mas nao prova a aparencia rasterizada ou o posicionamento do
+  icone em relacao ao caption.
+
+## Evidencia executada pelo revisor
+
+- Build Win32/Delphi 32.0 de runtime, design-time, Demo, smoke e interaction:
+  todos com `0 Warning(s)` e `0 Error(s)`; os targets copiaram `sk4d.dll` para
+  a Demo e para o teste de interacao.
+- `DACComponentsSmoke.exe`: `PASS`, exit code `0`.
+- `DACComponentsInteraction.exe`: `PASS`, exit code `0`, incluindo DFM real,
+  foco/teclado, DPI, resize, grid/scroll e o parse dos SVGs.
+- A Demo canonica foi aberta por cinco segundos em processo isolado: permaneceu
+  responsiva, com handle de janela valido e titulo `DAC Componentes - Demo`.
+- `git diff --check` nao reportou erro de whitespace (somente avisos LF/CRLF).
+
+## Limite da prova automatica e handoff obrigatorio ao QA
+
+Build, DOM SVG, DPI aritmetico e teste de interacao sao suficientes para
+liberar o QA, mas nao para aprovar visualmente a entrega. O QA deve anexar,
+em desktop com a janela efetivamente exposta, screenshots em 96, 120, 144 e
+192 PPI que comprovem:
+
+1. cada aba/familia, com foco e estados relevantes, sem clipping ou area
+   reservada para componentes removidos;
+2. uma secao rolavel no topo, meio e fim: o fundo/chrome deve acompanhar o
+   viewport, sem retangulo preto, borda movel ou conteudo escondido;
+3. tabs horizontal e vertical apos resize: header nao cobre o primeiro
+   controle e nao deixa faixa exposta;
+4. botoes com e sem SVG: caption nao fica truncado/encoberto e os SVGs sao
+   reconheciveis, sem caixa ou glifo substituto;
+5. abertura de `demo/Demo.Principal.dfm` no Delphi Designer com os packages
+   runtime/design-time instalados, incluindo criacao de `TDACScrollContainer`,
+   `TDACTabs` e `TDACButton` sem `Control has no parent window`.
+
+Somente apos essa evidencia o orquestrador deve liberar commit e PR. Qualquer
+regressao retorna ao especialista Delphi na mesma branch.
+
+## Observacao de worktree
+
+O build removeu `Package/DACSkiaComponentsRuntime.vrc`, que ja aparecia
+modificado antes desta revisao. O revisor nao o restaurou nem o incluiu em
+escopo; o orquestrador deve decidir explicitamente o tratamento desse arquivo
+antes de preparar o commit.

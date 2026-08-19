@@ -22,9 +22,9 @@ implementation
 class function TDACInteractionTokens.Default: TDACInteractionTokens;
 begin
   Result.HoverColor := TAlphaColor($FF1F3B23);
-  Result.PressedColor := TAlphaColor($FF3DB82A);
-  Result.FocusColor := TAlphaColor($FF74D64A);
-  Result.FocusStrokeColor := TAlphaColor($FF74D64A);
+  Result.PressedColor := TAlphaColor($FF4DAA33);
+  Result.FocusColor := TAlphaColor($FF4CD964);
+  Result.FocusStrokeColor := TAlphaColor($FF4CD964);
   Result.HoverOpacity := 100;
   Result.PressedOpacity := 120;
   Result.FocusOpacity := 190;

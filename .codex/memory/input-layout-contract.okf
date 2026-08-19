@@ -1,0 +1,55 @@
+# MEM-DEL-INPUT-001 — contrato compacto de campos de entrada
+
+Data: 2026-08-17
+Status: aplicado estaticamente; compilacao e QA visual pendentes por decisao do usuario.
+
+## Decisao
+
+Todos os campos de uma linha da suite DAC usam uma unica densidade visual:
+
+- chrome Skia: 30 px;
+- host nativo de texto: 22 px;
+- deslocamento optico nativo: 2 px;
+- borda fisica inferior livre: 2 px quando o host aceita 22 px;
+- label/helper/error: `TDACFieldTextSupport` e tokens `Field*` compartilhados.
+
+O contrato e definido somente em `TDACControlTokens`:
+`InputSmallChromeHeight`, `InputSmallEditorHeight` e
+`InputNativeVerticalOffset`. `misMedium` e `misLarge` continuam somente para
+compatibilidade de DFM e resolvem para a mesma densidade `misSmall`.
+
+## Consumidores
+
+- `TDACEdit`, incluindo `mekNumber` e demais `EditKind`;
+- `TDACButtonEdit`, por composicao de `TDACEdit`;
+- `TDACComboBox`, que herda os tokens de chrome e host do Edit;
+- `TDACDateTimePicker`, que usa chrome/editor equivalentes e reserva a borda
+  antes de posicionar o HWND nativo;
+- a pre-visualizacao de design-time dos campos acima usa os mesmos bounds.
+
+`ButtonEditDefaultHeight`, `DateTimeDefaultHeight`,
+`DateTimeChromeHeight` e `DateTimeEditorHeight` sao aliases do contrato de
+input, e nao medidas independentes.
+
+## Exclusoes intencionais
+
+- `TDACMemo` e multiline e preserva padding e altura proprios;
+- checkbox, radio, toggle e slider sao seletores, nao hosts de texto de uma
+  linha; compartilham tokens de label/estado, nao a geometria do editor.
+
+## Regras de manutencao
+
+- nunca alterar somente `Top` de um HWND nativo: alterar tokens e recalcular
+  o inset inferior para nao cobrir a borda Skia;
+- manter o texto editavel na janela VCL/Windows; Skia desenha apenas chrome,
+  borda, icones e estados;
+- qualquer nova familia de campo de uma linha deve consumir este contrato;
+- validar design-time e runtime, com label, required, helper/error, foco,
+  caret, selecao e temas claro/escuro antes de aprovar a mudanca.
+
+## Evidencia
+
+Captura do usuario `codex-clipboard-3dd4822c-58c3-4b2c-81b3-f39806fe13d2.png`
+mostrou o host de 24 px invadindo o ultimo pixel da borda em chrome de 30 px.
+A configuracao final reduz o host para 22 px e preserva o inset inferior.
+Nao houve compilacao, teste nem commit nesta rodada.

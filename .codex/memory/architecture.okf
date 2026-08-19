@@ -1,0 +1,1254 @@
+# Memoria Exclusiva - Arquitetura e Analise
+
+O arquiteto usa esta memoria para regras reutilizaveis e decisoes confirmadas.
+Estudos por demanda ficam em `.codex/knowledge/demands/`. Formato: `team-memory-model.okf`.
+
+ID: MEM-ARC-001
+Data: 2026-07-20
+Demanda/branch: N/A
+Fato: A suite possui camadas Core, DesignSystem, Skia, Controls, Hooks e DesignTime; runtime e design-time sao packages distintos.
+Decisao: Estudos devem ser orientados aos arquivos reais, mapear impacto entre camadas e concluir com um handoff antes de qualquer alteracao de fonte.
+Evidencia: `.codex/knowledge/architecture-orchestration.okf`, secoes 1 a 4; `Package/DACSkiaComponentsRuntime.dpk`; `Package/DACSkiaComponentsDesign.dpk`.
+Impacto: Toda feature precisa declarar compatibilidade DFM/package, estrategia Skia/StyleHook e ordem de build antes de desenvolvimento.
+Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, testes_interface
+Status: CONFIRMED
+Handoff: Arquitetura entrega estudo da demanda ao orquestrador para liberar Delphi.
+
+ID: MEM-ARC-002
+Data: 2026-07-20
+Demanda/branch: N/A
+Fato: O protocolo completo de arquitetura e branch por demanda ja existe e foi preservado.
+Decisao: Referenciar, e nao duplicar, `.codex/knowledge/architecture-orchestration.okf`; esta memoria conserva apenas entradas reutilizaveis.
+Evidencia: `.codex/knowledge/architecture-orchestration.okf`, secoes 2, 5 e 6.
+Impacto: Evita duas fontes conflitantes para o mesmo fluxo.
+Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, testes_interface
+Status: CONFIRMED
+Handoff: N/A
+
+ID: MEM-ARC-003
+Data: 2026-07-20
+Demanda/branch: phase-1-static-audit / codex-sanitize-dac (somente observacao)
+Fato: A auditoria estatica encontrou fundacao de packages/tokens/Skia, mas tabs e data grid usam GDI, a demo so materializa botoes, nao ha tooltip e nao ha projeto de testes/smoke.
+Decisao: Priorizar migracao Skia de tabs/grid antes de ampliar a galeria; manter uma demanda por correcao e entregar o estudo ao especialista Delphi pelo orquestrador.
+Evidencia: `.codex/knowledge/demands/2026-07-20-phase-1-static-audit.okf`.
+Impacto: A suite ainda nao satisfaz integralmente o criterio de Skia obrigatorio nem a demonstracao das 15 familias.
+Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, testes_interface
+Status: CONFIRMED
+Handoff: Orquestrador deve entregar o estudo de Fase 1 ao desenvolvedor antes de liberar a primeira branch de correcao.
+
+---
+
+# Diagnostico visual - demo VCL/Skia (2026-07-21)
+
+Escopo: analise estatica dos sintomas informados no screenshot e do checkout
+atual. Nenhuma unit, DFM, package ou projeto foi alterado nesta analise. A
+imagem nao foi disponibilizada como arquivo local a este agente; as observacoes
+do usuario foram usadas como contrato visual e confrontadas com os caminhos de
+renderizacao abaixo.
+
+## Contrato visual observado
+
+- cabecalhos do topo cortados verticalmente;
+- na altura da secao 4, um container branco/arredondado se sobrepoe a pagina e
+  ha fundo preto exposto atras/entre sections;
+- a pagina/conteudo e containers se sobrepoem;
+- captions de botoes terminam em reticencias;
+- icones aparecem como glifos/caixas antes das captions.
+
+## Causas confirmadas por arquivo
+
+### V1 - chrome do `TDACScrollContainer` se move com o conteudo e tem apenas a altura inicial do viewport (P0)
+
+Evidencia:
+
+- `demo/Demo.Principal.dfm:30-36` declara `scrButtons: TDACScrollContainer`
+  alinhado ao cliente, com viewport inicial de `1192 x 708` e `AutoScroll=True`.
+- O mesmo DFM posiciona `gcButtonStates` em `Top=706` e `gcButtonSpecials` em
+  `Top=904`; portanto, o conteudo ultrapassa o viewport ja no inicio da secao 4.
+- `Source/Controls/DAC.Components.Controls.ScrollContainer.pas`,
+  `UpdateChromeBounds`, executa `FPaintBox.SetBounds(0, 0, Width, Height)` e
+  depois `FPaintBox.SendToBack`. O paintbox e filho do proprio `TScrollBox`,
+  logo participa do deslocamento de scroll e nao cobre a extensao rolavel.
+- `PaintBoxDraw` desenha um retangulo branco arredondado e com borda. Quando
+  esse filho de `708px` termina ou e deslocado, a area restante depende do
+  apagamento VCL; `WM_ERASEBKGND` retorna `1`, impedindo o preenchimento
+  padrao. Isso explica a faixa preta e tambem a borda branca/arredondada
+  aparente no meio da pagina.
+
+Decisao arquitetural: o fundo/chrome do scroll deve pertencer ao viewport que
+nao rola, ou o `TScrollBox` deve pintar de modo opaco a area exposta com a
+superficie de tema. Um paintbox no mesmo plano dos filhos rolaveis nao pode
+simular simultaneamente backdrop fixo e conteudo extensivel.
+
+### V2 - header Skia das tabs e um overlay sem realinhamento explicito do conteudo da pagina (P0)
+
+Evidencia:
+
+- `Source/Controls/DAC.Components.Controls.Tabs.pas`, `UpdateHeaderBounds`,
+  posiciona `FHeader` em `(0,0,Width,52)` e faz `FHeader.BringToFront`.
+- O metodo apenas escreve `Pages[I].Padding.Top := HeaderExtent + 4`; ele nao
+  chama `Pages[I].Realign`, `Realign` do page control ou outro recalculo depois
+  da mudanca de padding.
+- `TDACTabs` reduz o header nativo para `TabHeight := 1`/`TabWidth := 1`, em
+  `Create` e `ApplyPageStyle`. Assim, a reserva efetiva para o cabecalho depende
+  exclusivamente do padding que pode ser aplicado depois que o filho
+  `scrButtons` ja recebeu `Align=alClient`.
+- No DFM, `scrButtons` esta em `tsButtons` com `Top=0` e `Align=alClient`.
+
+Impacto: o `FHeader` de 52px pode permanecer sobre o inicio da pagina e ocultar
+`lblButtonsTitle`/`lblButtonsSubtitle`, coerente com o corte vertical relatado.
+O mesmo overlay interfere com qualquer pagina que possua controles no topo.
+
+### V3 - o layout de texto do botao mede em Skia e desenha em VCL com outra metrica (P0)
+
+Evidencia:
+
+- `TDACButton.CalculateContentLayout` em
+  `Source/Controls/DAC.Components.Controls.Button.pas` calcula
+  `LTextWidth` por `TDACSkiaRenderer.MeasureText`.
+- `TDACButton.UpdateLabel` usa esse retangulo para limitar `FTextLabel` e
+  atribui `FontSize := Round(ButtonFontSize)`; os tamanhos logicos sao 7.5,
+  8 e 9.
+- `TDACSystemText.Paint`, em
+  `Source/Controls/DAC.Components.Controls.SystemText.pas`, desenha com
+  `Canvas.Font.Size` (pontos VCL) e sempre ativa `DT_END_ELLIPSIS` para uma
+  linha.
+- A medicao Skia opera no tamanho da surface; `Canvas.Font.Size` segue a
+  semantica em pontos/PPI do Windows. A diferenca aumenta em DPI alto e tambem
+  porque a largura e medida sem bold, mas o label e configurado como bold.
+
+Impacto: a caixa nativa fica menor que o texto que ela propria desenha e o
+`DT_END_ELLIPSIS` produz as reticencias do screenshot, mesmo quando o retangulo
+Skia parecia suficiente. Este nao e um caso a ser resolvido alargando captions
+no DFM.
+
+### V4 - os icones nao usam fonte de icones; glifos/caixas indicam binario ou SVG invalido no processo em execucao (P0 de diagnostico)
+
+Evidencia:
+
+- `TDACButton.PaintBoxDraw` chama `TDACSkiaIconPainter.Draw` para todo
+  `IconKind`; o caption e desenhado separadamente por `TDACSystemText`.
+- `Source/Skia/DAC.Components.Skia.IconPainter.pas` resolve icones como
+  `ISkSVGDOM` por `TDACIconAssets.SvgSource` e renderiza por `ASvg.Render`.
+  Nao ha caminho de desenho de icone por caractere, fonte de simbolos ou texto.
+- O DFM usa `IconKind` tipado (`mikSave`, `mikSearch`, `mikTrash`, etc.), sem
+  prefixar caracteres de icone na `Caption`.
+- `Source/DesignSystem/DAC.Components.DesignSystem.Fonts.pas` pode falhar
+  silenciosamente ao instalar Inter, mas essa falha afeta texto/fallback de
+  fonte; ela nao converte os SVGs em glifos.
+
+Conclusao: as caixas vistas antes da caption nao sao explicadas pelo caminho
+fonte atual. Antes de qualquer ajuste estetico, o desenvolvedor deve provar que
+o executavel testado foi compilado a partir deste checkout e que cada
+`TDACIconAssets.SvgSource(IconKind, ...)` gera um `ISkSVGDOM` nao nulo. Se o
+binario for o atual, registrar screenshot/log do `TSkSVGDOM.Make` e revisar o
+SVG retornado; nao trocar SVGs por glifos de fonte como contorno.
+
+## Causa contribuinte: secao em grid e reflow automatico
+
+`TDACGridContainer.ArrangeChildren` reposiciona todos os filhos com base no
+`Tag` (span), nao nos `Left/Top/Width/Height` gravados no DFM. Isso e valido
+para o grid, mas torna obrigatoria a verificacao de todos os breakpoints. No
+DFM, as sections usam 12 colunas, padding 16, gutter 10 e spans pelos tags;
+qualquer viewport menor reduz a largura calculada e amplifica o problema V3.
+Nao ha evidencia estatica de que o grid seja a origem primaria da faixa preta,
+mas ele deve entrar no QA de resize apos a correcao de V1 e V3.
+
+## Ordem de correcao para o especialista Delphi
+
+1. **P0 - `TDACScrollContainer`:** separar a pintura de fundo fixa do conteudo
+   rolavel; garantir preenchimento opaco da viewport em todo offset e usar a
+   mesma superficie/tokens do container. Revisar `WM_ERASEBKGND`, bounds e
+   z-order do paintbox. Nao mover os sections no DFM para esconder o defeito.
+2. **P0 - `TDACTabs`:** reservar o `HeaderExtent` antes/alem de alinhar filhos
+   da pagina e forcar um realinhamento seguro depois de alterar padding. O
+   header deve ficar acima da pagina sem invadir seus primeiros 56px.
+3. **P0 - `TDACButton`/`TDACSystemText`:** manter texto nativo, mas medir com
+   a mesma fonte, peso e PPI do `Canvas` que o desenha; remover o acoplamento
+   da largura ao `MeasureText` Skia. Manter icon e caption como camadas
+   independentes, sem fazer caption encobrir a area do SVG.
+4. **P0 - cadeia de SVG/binario:** adicionar diagnostico temporario ou smoke
+   que verifica DOM valido para todos os `IconKind` demonstrados e confirmar
+   caminho/exe/BPL carregado. So corrigir assets que falharem na evidencia.
+5. **P1 - grid responsivo:** validar `TDACGridContainer` em larguras menores
+   que 1200 e impor minimo/overflow/redistribuicao documentados por section;
+   nao usar ellipsis como substituto de layout.
+
+## Criterios visuais de aceite
+
+| Cenario | Aceite mensuravel |
+|---|---|
+| Scroll da aba Botoes, do topo ate a section 5 | nenhum pixel preto, transparente inesperado ou fundo herdado aparece entre/atras das sections; backdrop e borda nao atravessam conteudo. |
+| Section 4/5 | nenhum retangulo branco arredondado de `TDACScrollContainer` sobrepoe uma section; cada `TDACGridContainer` mantem apenas seu proprio chrome. |
+| Topo de todas as abas | titulo e subtitulo inteiros, sem serem cobertos pelo header de tabs; header fica clicavel e foco/navegacao por teclado continuam nativos. |
+| Botoes em 96/120/144/192 PPI | captions do DFM demonstrado nao recebem reticencias por erro de medicao; o texto nao invade icone, borda ou padding. Quando a largura for fisicamente insuficiente, truncamento e deliberado/documentado. |
+| Icones `mikSave`, `mikSearch`, `mikTrash`, `mikCheck`, `mikChevron*`, `mikSpinner` | cada um renderiza como SVG reconhecivel, sem caixa/glifo substituto e sem deslocar caption. |
+| Resize | 1200px, 1024px e 800px de largura nao criam sobreposicao, clipping vertical ou fundo exposto; comportamento de grid/scroll e registrado. |
+| Design-time | abrir, redimensionar e salvar `demo/Demo.Principal.dfm` nao cria handle precoce, z-order indevido ou `Control '' has no parent window`. |
+
+## Handoff ao especialista Delphi/Skia/VCL
+
+Entrada autorizada pelo orquestrador, em branch exclusiva `codex/<slug>`:
+
+- usar este registro como contrato e atualizar o `.okf` da demanda com a
+  evidencia de cada causa resolvida;
+- alterar primeiro `ScrollContainer.pas`, `Tabs.pas`, `Button.pas` e
+  `SystemText.pas`; somente entao avaliar DFM e `GridContainer.pas`;
+- preservar `TScrollBox`, `TPageControl`, semantica VCL, designer e texto
+  nativo; Skia continua responsavel pelo chrome e SVGs;
+- nao fazer ajuste cego de posicoes/alturas no DFM, nao converter icones para
+  fonte e nao ocultar a area preta com um painel adicional;
+- devolver ao revisor: diff, build real, evidencias de SVG, screenshots dos
+  cenarios de aceite e resultados de 96/120/144/192 PPI.
+
+ID: MEM-ARC-004
+Data: 2026-07-21
+Demanda/branch: diagnostico-visual-demo / N/A
+Fato: O scroll chrome limitado ao viewport rolavel, o header overlay sem realign e a medicao Skia para texto VCL explicam o clipping, fundo exposto/sobreposicao e reticencias; os SVGs nao possuem caminho por glifos no fonte atual.
+Decisao: Corrigir scroll, tabs e metrica de texto antes de ajustar DFM; tratar os icones como verificacao de identidade do binario/DOM SVG, nao como problema de fonte de icones.
+Evidencia: `ScrollContainer.pas:219-228`, `Tabs.pas:465-489`, `Button.pas:330-403,897-922`, `SystemText.pas:95-137`, `IconPainter.pas:90-141`, `demo/Demo.Principal.dfm:30-36,379-483`.
+Impacto: Corrige integridade visual e de interacao da demo sem sacrificar semantica VCL ou reintroduzir GDI no chrome.
+Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, testes_interface
+Status: CONFIRMED
+Handoff: Orquestrador entrega este diagnostico ao especialista Delphi e, apos implementacao, aciona revisao e QA visual pelos criterios acima.
+
+ID: MEM-ARC-DB-003
+Data: 2026-07-30
+Demanda/branch: etapa-3-data-aware-texto / codex/data-aware-suite
+Baseline autorizado: b0ec1a8dc06e62d1fc44342e4ff310d04243c7fbb767fcc2834e70f5104cbf6c
+Fato: A Etapa 3 esta limitada a `TDACDBEdit`, `TDACDBMemo`,
+`TDACDBComboBox`, `TDACDBButtonEdit` e `TDACDBText`. O baseline ja declara
+os cinco tipos, registra suas classes e editores de `DataField`, possui
+instancias DFM e testes de binding/lifecycle. Os tres editores VCL e o texto
+usam os DataLinks nativos de seus ancestrais; somente `TDACDBButtonEdit`,
+por descender de `TCustomEdit`, usa `TDACFieldDataLink`.
+Decisao: Preservar ancestrais, semantica VCL, nomes/propriedades streamadas e
+o DFM existente. Nesta etapa nao criar child controls, paintbox, StyleHook,
+renderer ou pintura Skia. A migracao visual e a invocacao do botao por chrome
+ficam exclusivamente para a Etapa 6.
+Impacto: A implementacao da Etapa 3 pode ser validada como binding nativo e
+lifecycle seguro sem acoplar comportamento de dados a uma arquitetura visual
+ainda nao liberada.
+Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, testes_interface
+Status: CONFIRMED
+
+## Contrato estrutural fechado
+
+| Classe | Ancestral preservado | Autoridade de binding | Contrato desta etapa |
+|---|---|---|---|
+| `TDACDBEdit` | `TDBEdit` | DataLink nativo herdado | texto, mascara, selecao, caret, clipboard, undo, IME e `OnChange` permanecem VCL; nao adicionar segundo DataLink. |
+| `TDACDBMemo` | `TDBMemo` | DataLink nativo herdado | multiline/CRLF, selecao, scroll, clipboard, undo e IME permanecem VCL; `Text` continua alias de `Lines.Text`. |
+| `TDACDBComboBox` | `TDBComboBox` | DataLink nativo herdado | lista, teclado e selecao permanecem VCL; preservar `Style=csDropDownList` definido pelo construtor e `ItemIndex=-1` streamavel. |
+| `TDACDBButtonEdit` | `TCustomEdit` | unico `TDACFieldDataLink` proprio | `Text` e o unico valor vinculado; `OnButtonClick` e acao independente, exposta por `ExecuteButtonAction`. |
+| `TDACDBText` | `TDBText` | DataLink nativo herdado | somente leitura, mostra `Field.DisplayText`; `Text` continua alias de `Caption` para DFM/fallback e nunca grava o field. |
+
+Os aliases visuais ja publicados (`CornerRadius`, `LabelText`, `HelperText`,
+`ErrorText`, `Status`, `ThemeMode`, `Variant`, tipografia e propriedades do
+botao) permanecem compativeis com DFM, mas nao ganham efeito visual novo nesta
+etapa. Nao trocar os ancestrais pelos equivalentes visuais `TDAC*`, porque isso
+mudaria DataLink, HWND, foco e streaming antes da etapa visual autorizada.
+
+## Semantica de dados e eventos
+
+1. `TDACDBEdit`, `TDACDBMemo` e `TDACDBComboBox` delegam `Edit`, `Modified`,
+   `UpdateRecord`, `Reset`, `Post`, `Cancel`, formatacao e conversao ao VCL.
+   Nenhum deles faz `Post` ou `ApplyUpdates`.
+2. Mudanca real do usuario emite `OnChange` uma vez. Refresh, rebind,
+   navegacao, `Post` ou `Cancel` externos nao podem fabricar um `OnChange`.
+3. String vazia conserva o contrato vigente de limpar o field. Erro de
+   conversao/overflow em `UpdateRecord` propaga a excecao, conserva o field
+   confirmado e o buffer pendente; `Cancel` posterior restaura a exibicao.
+4. Em `TDACDBButtonEdit`, `Change` tenta `Edit/Modified`; se o dataset nao
+   puder editar, o DataLink executa `Reset`, sem deixar texto visual divergente.
+   `CM_EXIT` chama `UpdateRecord`, nao faz `Post` e nao engole excecoes.
+5. `ExecuteButtonAction` chama somente `OnButtonClick`. Ele nao chama
+   `Edit`, `Modified`, `UpdateRecord` ou `Post`, inclusive em `dsBrowse` ou
+   dataset read-only. A acao pode alterar dados apenas se o handler do
+   consumidor decidir faze-lo.
+6. `TDACDBText` acompanha navegacao/refresh por `DisplayText`, nao entra em
+   edicao, nao recebe TabStop de editor e nao publica evento de mudanca de dado.
+
+`TDACFieldDataLink` continua helper interno somente onde o ancestral nao possui
+DataLink adequado. Para `TDACDBButtonEdit`, manter os guards contra refresh
+durante `Edit`, reentrancia de `Change`, `FreeNotification` de `DataSource` e
+separacao entre `ReadControl`/`WriteField`. Nao generalizar esse adapter aos
+quatro controles que ja possuem binding VCL nativo.
+
+## DFM, package e lifecycle
+
+- Preservar os nomes de classe, unit publica
+  `DAC.Components.Controls.DataAware`, palette `DAC Skia DB`, registry runtime
+  e property editor de `DataField`.
+- Preservar no DFM os componentes `demoDBText`, `demoDBEdit`,
+  `demoDBButtonEdit`, `demoDBMemo` e `demoDBComboBox`, seus `DataSource`,
+  `DataField`, items, `TabOrder` e `OnButtonClick`. Nao substituir por criacao
+  runtime e nao renomear campos do form.
+- Criar/destruir cada controle com `Owner=nil` e `Parent=nil`, atribuir e
+  reatribuir `DataSource`/`DataField`, destruir o DataSource anterior e o atual
+  e fazer round-trip DFM sem alocar HWND nem acessar parent/z-order.
+- Construtor, streaming, `Notification`, setters de binding e destrutor nao
+  podem chamar `Handle`, `CreateWnd`, `SetFocus`, `BringToFront`, coordenadas de
+  tela ou APIs que exijam parent.
+- `DAC.Components.Controls.DataAware.Binding` permanece no package runtime.
+  Nenhuma referencia de design-time entra no package runtime.
+
+## Correcao de fronteira nos testes
+
+O baseline contem em `tests/DACComponentsDataAware.dpr:360` a chamada
+`LButtonEdit.ButtonControl.Click`, mas `TDACDBButtonEdit` nao publica
+`ButtonControl` e, por decisao desta etapa, nao deve criar um child button.
+O teste funcional da Etapa 3 deve chamar `LButtonEdit.ExecuteButtonAction`.
+A futura Etapa 6 sera responsavel por provar que o chrome/botao visual encaminha
+o clique a esse mesmo metodo publico.
+
+Nao usar nesta etapa os testes de theme/chrome, repaint, bounds ou acesso ao
+botao de `TDACButtonEdit` como aceite de `TDACDBButtonEdit`. Esses testes
+pertencem ao componente visual nao data-aware ou a Etapa 6.
+
+## Gates para desenvolvimento, revisao e QA
+
+1. Compilar package runtime, package design-time, demo e
+   `DACComponentsDataAware` sem warning novo no escopo.
+2. Provar registry e property editor dos cinco tipos, leitura inicial,
+   edicao/UpdateRecord, ausencia de Post automatico, Cancel/refresh/rebind,
+   string vazia, multiline, combo, overflow e acao independente do button edit.
+3. Provar `TDACDBText` por navegacao e `DisplayText`, sem escrita.
+4. Executar `DACComponentsDesignLifecycle` para os cinco tipos, incluindo
+   `Create(nil)`, `Parent=nil`, zero handles, rebind e destruicao dos
+   DataSources.
+5. Abrir, carregar, salvar/reabrir e executar a demo com os cinco componentes
+   streamados. O aceite de Etapa 3 e de dados, foco VCL e DFM; aparencia Skia
+   nao e gate.
+6. Revisor rejeita duplicacao de DataLink, Post automatico, excecao engolida,
+   dependencia design-time no runtime, criacao precoce de HWND, child controls
+   no button edit ou mudanca fora dos cinco tipos.
+
+## Fora de escopo expresso
+
+Nao alterar nem usar como justificativa para esta etapa:
+`TDACDBDateTimePicker`, `TDACDBCheckBox`, `TDACDBRadioButton`,
+`TDACDBToggleSwitch`, `TDACDBSlider`, `TDACDBLookupComboBox`,
+`TDACDBNavigator`, `TDACDataGrid`, outros controles, tokens, renderers,
+StyleHooks, Skia, layout visual da demo ou Etapas 4 em diante.
+
+Evidencia: `Source/Controls/DataAware/DAC.Components.Controls.DataAware.pas:26-240,430-466,496-691`;
+`Source/Controls/DataAware/DAC.Components.Controls.DataAware.Binding.pas:15-150`;
+`Source/Controls/DAC.Components.Controls.Register.pas:49-60`;
+`Source/DesignTime/DAC.Components.Design.Register.pas:73-86`;
+`Source/DesignTime/DAC.Components.Design.DataAware.pas:16-34`;
+`Package/DACSkiaComponentsRuntime.dpk:57-58`;
+`demo/Demo.Principal.dfm:1753-1803`;
+`tests/DACComponentsDataAware.dpr:219-395,703-738`;
+`tests/DACComponentsDesignLifecycle.dpr:296-300,633-795`.
+Handoff: O especialista Delphi recebe este contrato e atua somente nos cinco
+tipos e nos testes diretamente necessarios. Ao terminar, notifica o
+orquestrador com evidencias dos gates; o orquestrador entao aciona revisor e
+depois QA, sem liberar Etapa 4+ ou Etapa 6.
+
+ID: MEM-ARC-DB-004
+Data: 2026-07-31
+Demanda/branch: etapa-4-data-aware-seletores-controles / codex/data-aware-suite
+Baseline documental: MEM-ARCH-DB-038, MEM-ARC-DB-003 e implementacao
+MEM-DEL-DB-040. A Etapa 3 terminou com
+`DAC.Components.Controls.DataAware.pas=669f01275d74a96a9282c8979d24ee177ba17e955674273cdc1c69056c67f912`.
+Fato: A Etapa 4 esta limitada a `TDACDBDateTimePicker`, `TDACDBCheckBox`,
+`TDACDBRadioButton`, `TDACDBToggleSwitch` e `TDACDBSlider`. Date, Radio,
+Toggle e Slider usam um `TDACFieldDataLink` cada; CheckBox conserva somente o
+DataLink nativo de `TDBCheckBox`. O codigo atual ainda deixa null visualmente
+stale no Date/Slider, nao materializa `ValueGrayed` nao vazio pelo writer
+nativo do CheckBox e nao distingue configuracao de interacao no Slider.
+Decisao: concluir apenas a semantica nativa de dados, eventos, conversoes,
+teclado e lifecycle dos cinco tipos. Nao alterar ancestral, nao criar segundo
+DataLink, child control, popup proprio, hook, renderer ou pintura. Delphi
+10.2/Win32 e o unico alvo desta etapa; por proibicao expressa do usuario,
+nenhuma API, helper, metrica, teste ou mudanca de High DPI entra no escopo.
+Impacto: A Etapa 4 entrega controles data-aware deterministas e streamaveis,
+sem antecipar aparencia ou composicao das etapas seguintes.
+Consumidores: orquestrador, delphi_skia_vcl
+Status: CONFIRMED
+
+## Estrutura e autoridade de binding
+
+| Classe | Ancestral congelado | DataLink permitido |
+|---|---|---|
+| `TDACDBDateTimePicker` | `TDateTimePicker` | um `TDACFieldDataLink` |
+| `TDACDBCheckBox` | `TDBCheckBox` | somente o `TFieldDataLink` nativo |
+| `TDACDBRadioButton` | `TRadioButton` | um `TDACFieldDataLink` |
+| `TDACDBToggleSwitch` | `TCheckBox` | um `TDACFieldDataLink` |
+| `TDACDBSlider` | `TTrackBar` | um `TDACFieldDataLink` |
+
+O adapter compartilhado continua com guards de leitura/reentrancia,
+`Edit/Modified`, `UpdateRecord`, `Reset` na recusa e notificacao pareada do
+`DataSource`. Nenhum controle faz `Post`, `ApplyUpdates` ou engole excecao.
+`CM_EXIT` atualiza somente o record buffer e deixa a excecao subir.
+
+No CheckBox, qualquer extensao deve obter o DataLink ja existente pelo contrato
+VCL `CM_GETDATALINK`; e proibido declarar outro `FDataLink`. O acesso deve ser
+localizado e compativel com Win32, sem acessar campo `private/strict private` da
+VCL. Se os eventos nativos forem encadeados, guardar e delegar os handlers
+originais e restaura-los antes da destruicao.
+
+## TDACDBDateTimePicker
+
+- `AllowNull=False` controla somente se o usuario/API `Clear` pode limpar. Um
+  field que chega null continua null, `IsNull=True` e visualmente vazio mesmo
+  quando `AllowNull=False`; nunca fabricar uma data default.
+- `IsNull` e estado transitorio somente leitura e nao e streamado. Null nao usa
+  `TDateTime(0)` como sentinel. O buffer `DateTime` pode conservar a ultima data
+  valida, mas nao e dado enquanto `IsNull=True`.
+- Para eliminar data stale sem Skia, aplicar formato nativo vazio enquanto
+  null e restaurar `FormatString` ao materializar. O valor logico de
+  `FormatString` permanece separado desse formato tecnico, inclusive durante
+  streaming; `PickerKind` ou `FormatString` alterados em null nao tornam o
+  valor nao nulo e nao disparam `OnChange`.
+- `Clear` primeiro precisa obter `Edit` pelo DataLink. Se `AllowNull=False`,
+  `ReadOnly=True`, field/dataset nao modificavel ou o controle ja estiver null,
+  ele nao muda buffer, field ou evento. Quando aceito, marca null, emite um
+  unico `OnChange` e grava `Field.Clear` somente no `UpdateRecord`.
+- Uma alteracao nativa aceita de data/hora sai de null, restaura o formato,
+  marca Modified e emite `OnChange` uma vez. Refresh, rebind, navegacao,
+  `Post`, `Cancel` e aplicacao de formato emitem zero.
+- `Delete` sem modificadores chama `Clear` e so e consumido quando a limpeza e
+  aceita. Setas, digitacao, dropdown nativo e foco permanecem com a semantica
+  de `TDateTimePicker`; nao criar `OpenPopup`, footer, calendario ou popup DAC.
+- `ReadOnly` bloqueia materializacao/limpeza e restaura o valor confirmado sem
+  remover TabStop ou foco. `PickerControl=Self` permanece facade funcional.
+- Leitura/escrita usa `AsDateTime`; erro de tipo/conversao propaga sem trocar
+  `IsNull`, formato, buffer confirmado ou field. `TimeStepMinutes` permanece
+  configuracao DFM validada como maior ou igual a 1, sem substituir o stepping
+  nativo nesta etapa; seu consumo por popup pertence a etapa visual futura.
+
+## TDACDBCheckBox e ValueGrayed nativo
+
+- O DataLink nativo continua responsavel por `DataSource`, `DataField`,
+  `ReadOnly`, `Edit/Modified`, booleanos, `ValueChecked`, `ValueUnchecked`,
+  teclado, foco, `UpdateRecord` e notificacao.
+- Leitura null resulta `cbGrayed`; `ftBoolean` usa `AsBoolean`; fields textuais
+  preservam o matching VCL de `ValueChecked/ValueUnchecked`; valor textual
+  desconhecido tambem aparece `cbGrayed` e nunca e normalizado na leitura.
+- Encadear o `OnDataChange` do mesmo DataLink apenas para marcar leitura e
+  impedir `OnChange` consumidor durante refresh/rebind/Post/Cancel. Setters de
+  mapeamento sao configuracao, reavaliam o display e nao editam o dataset.
+- Encadear o `OnUpdateData` do mesmo DataLink: para `cbGrayed`, field boolean
+  ou `ValueGrayed=''` executa `Field.Clear`; em field textual com
+  `ValueGrayed<>''`, grava exatamente `ValueGrayed`; para checked/unchecked,
+  delega integralmente ao writer VCL. Assim nao existe escrita transitoria nem
+  segunda autoridade de binding.
+- `AllowGrayed` continua governando o ciclo nativo. Testes de escrita devem
+  usar `BM_CLICK`/Space e o ciclo real, nao tratar simples atribuicao de
+  `State` como edicao do dataset. Cada toggle aceito emite `OnChange` uma vez;
+  toggle recusado por ReadOnly/CanModify e leitura externa emitem zero.
+
+## TDACDBRadioButton
+
+- Null e false no modo boolean aparecem unchecked. `Value=''` conserva o modo
+  boolean legado e uma selecao escreve `True`; `Value<>''` compara e grava
+  `Field.AsString` exatamente. Conversao invalida propaga.
+- Somente a transicao aceita para checked marca Modified e emite `OnChange`.
+  Clique repetido no radio ja selecionado, desmarcacao automatica pelo grupo,
+  refresh/rebind/Post/Cancel e recusa de edicao nao gravam nem emitem evento.
+- Space, mnemonic, setas e agrupamento permanecem nativos de `TRadioButton`.
+  Trocar `Value` reavalia o field sem editar e sem evento.
+
+## TDACDBToggleSwitch
+
+- Null aparece unchecked/off sem converter o field. `ftBoolean` usa
+  `AsBoolean`; field textual considera on somente quando
+  `AsString=ValueOn`, e qualquer outro valor aparece off sem normalizacao.
+- Mudanca aceita escreve `ValueOn` ou `ValueOff` em texto e Boolean em
+  `ftBoolean`, diferida ate `UpdateRecord`, sem Post. Space/mouse e agrupamento
+  de foco permanecem `TCheckBox` nativos.
+- Uma mudanca aceita emite `OnClick`/`OnChange` uma vez; recusa, refresh,
+  rebind, Post, Cancel ou troca de `ValueOn/ValueOff` emitem zero. Setters dos
+  mapeamentos reavaliam o display sem editar.
+
+## TDACDBSlider, null e materializacao
+
+- Adicionar `IsNull:Boolean` publico somente leitura e `Clear` publico; nenhum
+  dos dois cria propriedade DFM de estado. Field nil/inativo/null define
+  `IsNull=True` e posiciona fisicamente o trackbar em `Minimum`, sob guard de
+  leitura. Isso elimina o valor visual stale; `Minimum` e apenas placeholder,
+  nunca sentinel persistido. A etapa visual futura usa `IsNull` para omitir o
+  label de valor.
+- `Clear` aceito marca null, reposiciona em `Minimum`, emite `OnChange` uma vez
+  e grava `Field.Clear` no `UpdateRecord`. Recusa ou null repetido nao altera
+  nem emite evento. `Delete` sem modificadores aciona essa rota.
+- Materializam um Slider null: mudanca real de `Position` produzida por
+  mouse/drag, setas, PageUp/PageDown, Home/End e wheel quando a rota nativa tem
+  foco; atribuicao programatica explicita a `Value`; e atribuicao a `Position`
+  quando ela realmente muda. `Value := Minimum` materializa mesmo se a posicao
+  placeholder ja for `Minimum`, com um unico evento.
+- Nao materializam: construtor/Loaded/streaming, DataChange, rebind,
+  navegacao, Post/Cancel, `Minimum`, `Maximum`, `ValueScale`, `ShowValue` ou
+  `ThemeMode`. Mudanca de range/escala e configuracao, reprocessa o field sob
+  guard e emite zero eventos.
+- Fields integrais suportados sao `ftSmallint`, `ftInteger`, `ftWord`,
+  `ftAutoInc`, `ftLargeint`, `ftLongWord`, `ftShortint` e `ftByte`; ler por
+  inteiro largo e validar `Integer` e `[Minimum..Maximum]` antes de atribuir.
+  Decimais suportados permanecem `ftFloat`, `ftCurrency`, `ftBCD` e
+  `ftFMTBcd`: leitura calcula `Field.AsFloat / ValueScale`, valida finitude e
+  range e so entao arredonda/atribui; escrita calcula
+  `Position * ValueScale`, valida e so entao grava.
+- `ValueScale` deve ser finito e maior que zero. Setter invalido nao muda nada;
+  se uma escala valida nao puder reprojetar o field atual, restaurar escala,
+  `Position` e `IsNull` anteriores e propagar a excecao. Tipo nao suportado,
+  overflow, NaN, infinito ou valor fora do range tambem preservam estado/field
+  e propagam erro.
+- Toda alteracao aceita emite `OnChange` exatamente uma vez e apenas marca
+  Modified; leitura/configuracao emite zero. Nao clampar silenciosamente dado
+  persistido fora do range, pois isso esconderia corrupcao/conversao.
+
+## DFM, Parent=nil e compatibilidade Delphi 10.2/Win32
+
+- Preservar nomes, ancestrais, unit publica, registry/palette, property editor
+  de `DataField`, tipos/defaults e propriedades streamadas do contrato
+  MEM-ARCH-DB-038. `IsNull` de Date e Slider nunca e serializado.
+- Construtor, `Loaded`, setters, DataLink, `Notification`, `Clear` e destrutor
+  devem funcionar com `Owner=nil` e `Parent=nil`, sem `Handle`,
+  `HandleNeeded`, `CreateWnd`, coordenadas de tela, z-order ou child controls.
+- Round-trip DFM standalone deve preservar `AllowNull`, `FormatString`,
+  `PickerKind`, `ReadOnly`, `TimeStepMinutes`, `ValueChecked`,
+  `ValueUnchecked`, `ValueGrayed`, `Value`, `ValueOn`, `ValueOff`, `Minimum`,
+  `Maximum`, `ShowValue`, `ValueScale`, `DataSource` e `DataField`.
+- Usar somente RTL/VCL e mensagens existentes no RAD Studio 10.2. Proibidos
+  nesta etapa: `CurrentPPI`, `MulDiv`, `ScaleForPPI`, `ChangeScale`,
+  Per-Monitor DPI, escala manual, testes de DPI e build Win64.
+
+## Gates minimos para o especialista Delphi
+
+1. Criar selecao de teste `DAC_STAGE4_ONLY` que materialize apenas os cinco
+   tipos em `DACComponentsDataAware` e `DACComponentsDesignLifecycle`; o fluxo
+   default permanece intacto, mas nao e gate desta etapa.
+2. Compilar somente runtime package e esses dois projetos em Delphi 10.2,
+   Win32 Debug, sem warning/error novo no escopo. Nao compilar/abrir Demo.
+3. DataAware deve provar null/materializacao/Cancel, OnChange 1x/0x,
+   ReadOnly/CanModify, ValueGrayed vazio/nao vazio, boolean/texto, radio group,
+   toggle, Slider integral/decimal/range/escala/forte garantia e ausencia de
+   Post automatico pelas rotas nativas de teclado/mouse aplicaveis.
+4. DesignLifecycle deve provar registry, `Create(nil)`, `Parent=nil`, zero
+   handles/children, streaming standalone, rebind e destruicao do DataSource
+   por tres rodadas com saldo USER/GDI/HWND zero.
+5. Scan estatico deve encontrar quatro `TDACFieldDataLink` nestes cinco tipos,
+   zero no CheckBox, zero `Post`/`ApplyUpdates`, zero hook/Skia/popup/child e
+   zero API de High DPI no incremento.
+6. Entregar ao orquestrador diff limitado, resultados reais, APIs afetadas e
+   novos hashes. Nao chamar revisao ou QA.
+
+## Fora de escopo expresso
+
+Nao alterar Etapa 3, `TDACDBLookupComboBox`, `TDACDBNavigator`,
+`TDACDataGrid`, outros controles, Demo/DFM da Demo, packages de design alem do
+necessario para compilar, StyleHooks, Skia, tokens, renderers, High DPI,
+Etapa 5+, revisao, QA ou Git.
+
+Evidencia: MEM-ARCH-DB-038; MEM-ARC-DB-003; MEM-DEL-DB-040;
+`Source/Controls/DataAware/DAC.Components.Controls.DataAware.pas:317-503,550-559,1088-1101,1243-1705`;
+`Source/Controls/DataAware/DAC.Components.Controls.DataAware.Binding.pas:15-150`;
+VCL Delphi 10.2 `Vcl.DBCtrls.pas:271-345,2350-2566`;
+`tests/DACComponentsDataAware.dpr:497-802`;
+`tests/DACComponentsDesignLifecycle.dpr:264-322,633-795`.
+Handoff: o orquestrador deve devolver este contrato ao mesmo especialista
+canonico `delphi_skia_vcl`. Ele executa somente a Etapa 4 e para apos os gates,
+sem iniciar Etapa 5, StyleHooks, Demo, revisao, QA ou Git.
+
+ID: MEM-ARC-DB-005
+Data: 2026-08-01
+Demanda/branch: reexecucao-etapa-4-data-aware / branch de desenvolvimento a
+ser criada pelo orquestrador/especialista Delphi
+Baseline: Etapas 1-3 PASS; contrato MEM-ARC-DB-004; implementacao produtiva da
+Etapa 4 aprovada sob `DAC_STAGE4_ONLY` e registrada em MEM-DEL-DB-041.
+Fato: a reexecucao encontrou duas lacunas de evidencia, nao uma autorizacao
+para redesenhar produto. Primeiro, `tests/DACComponentsDataAware.dproj` sem
+define ainda compila o procedimento legado `TestDateAndSelectors`, que chama
+`OpenPopup`, `PopupVisible` e `SimulatePopup*`, APIs removidas quando Date
+voltou ao `TDateTimePicker` nativo. Segundo, os testes da Etapa 4 comprovam
+estado e binding, mas nao fecham todas as rotas nativas exigidas de teclado e
+mouse de Date, Check, Radio, Toggle e Slider.
+Decisao: substituir a trilha legada do runner pelos testes nativos da Etapa 4
+tambem no fluxo sem define e acrescentar provas deterministicas por mensagens
+VCL/Win32. Nao reintroduzir popup DAC, facade antiga, child control, pintura,
+Skia ou StyleHook. A expectativa e alterar somente testes; uma correcao
+produtiva so e admissivel se uma nova prova nativa revelar defeito real e deve
+ficar estritamente dentro das cinco classes da Etapa 4.
+Impacto: `DACComponentsDataAware.dproj` volta a compilar no fluxo default sem
+ressuscitar API obsoleta, enquanto a Etapa 4 ganha evidencia reproduzivel de
+interacao real no Delphi 10.2 VCL.
+Consumidores: orquestrador, delphi_skia_vcl, revisor, interface_qa
+Status: CONFIRMED
+
+## Correcao obrigatoria do fluxo default
+
+- Remover/substituir `TestDateAndSelectors` e o teste de Slider legado que
+  dependem das APIs de popup eliminadas. E proibido recolocar `OpenPopup`,
+  `PopupVisible`, `SimulatePopup*` ou equivalentes no controle produtivo.
+- Tornar `TestStage4SelectorsAndChoices` e `TestStage4Sliders` compilaveis no
+  fluxo sem define e em `DAC_STAGE4_ONLY`, mantendo-os excluidos de
+  `DAC_STAGE3_ONLY`. Uma forma compativel com o compilador Delphi 10.2 e
+  proteger suas declaracoes com `{$IFNDEF DAC_STAGE3_ONLY}`.
+- No runner, `DAC_STAGE3_ONLY` continua executando somente Etapa 3;
+  `DAC_STAGE4_ONLY` e o fluxo sem define executam as duas suites da Etapa 4;
+  somente o fluxo sem define segue para as chamadas ja existentes de Etapa
+  5+. Nao editar procedimentos, assertions ou produto das etapas posteriores.
+- Renomear apenas os textos de saida que afirmam `DAC_STAGE4_ONLY` quando a
+  mesma suite tambem roda sem define. Usar rotulo neutro `Stage4`.
+- Compilar o projeto DataAware sem define e gate obrigatorio. Executar o EXE
+  default completo nao e gate da reexecucao, porque ele alcança Lookup,
+  Navigator, Grid e etapas futuras. Se a compilacao passar e uma execucao
+  opcional falhar depois da Etapa 4, registrar a falha como fora de escopo e
+  nao corrigi-la nesta branch.
+
+## Harness deterministico comum
+
+- Para as provas de interacao, criar `TForm` real, atribuir `Parent` e
+  `TabOrder`, materializar os HWNDs, mostrar o form, focar o controle e
+  confirmar `GetFocus=Control.Handle` antes de enviar entrada.
+- Usar `SendMessage`/`Perform` com mensagens nativas, seguido por uma drenagem
+  curta e limitada de `Application.ProcessMessages`; nao usar sleeps,
+  automacao por coordenadas, pixel hit-test, popup sintetico ou dependencia de
+  tema/locale.
+- Para toda interacao aceita, provar dataset em `dsEdit`, field ainda
+  inalterado antes de `CM_EXIT`, escrita no record buffer depois de `CM_EXIT`
+  e exatamente um evento logico. Refresh/Cancel e tentativa ReadOnly devem
+  emitir zero e restaurar o estado confirmado.
+- Helpers de acesso protegido podem continuar existindo para assertions
+  auxiliares, mas chamada direta a `Change`, `Click` ou `KeyDown` nao conta
+  como evidencia principal quando ha uma rota nativa exigida abaixo.
+
+## Interacoes exigidas nesta reexecucao
+
+### TDACDBDateTimePicker
+
+- Enviar `WM_KEYDOWN/WM_KEYUP` de `VK_DELETE` ao HWND focado para comprovar
+  `Clear`, null, consumo aceito, evento unico e escrita diferida.
+- Partindo de null com um buffer fisico de data conhecido, enviar `VK_UP` ou
+  `VK_DOWN` ao HWND focado. A notificacao nativa do date-time picker deve
+  materializar o valor, restaurar o `FormatString`, emitir um evento e manter
+  o field null ate `CM_EXIT`. Nao fixar o valor final exato, pois calendario e
+  locale podem variar; provar somente transicao null -> valor valido.
+- Abrir o dropdown nativo com `VK_F4`, confirmar o calendario pela mensagem
+  `DTM_GETMONTHCAL` e fechar com `VK_ESCAPE`. Cancelar nao pode mudar valor,
+  null, field ou contagem de eventos. Essa prova usa `Winapi.CommCtrl` e nao
+  cria API publica de popup.
+
+### TDACDBCheckBox
+
+- Manter `BM_CLICK` como prova da rota nativa de mouse e do ciclo que inclui
+  `ValueGrayed` vazio e nao vazio.
+- Acrescentar Space focado via `WM_KEYDOWN/WM_KEYUP` para uma mudanca aceita e
+  para a recusa ReadOnly. Provar o mesmo DataLink nativo obtido por
+  `CM_GETDATALINK`, um evento na aceitacao, zero na recusa e escrita diferida.
+
+### TDACDBRadioButton
+
+- Manter `BM_CLICK` para selecao por mouse, desmarcacao do peer e clique
+  repetido sem evento.
+- Acrescentar Space focado sobre um radio unchecked enquanto o peer esta
+  selecionado. Provar selecao, peer desmarcado, DataLink marcado uma vez,
+  evento unico e escrita diferida.
+- Setas e mnemonic nao sao gate desta reexecucao: a classe nao altera essa
+  navegacao e Space percorre a rota nativa `TRadioButton` ate `Click`/DataLink.
+  Qualquer matriz ampliada de acessibilidade fica para QA futuro autorizado.
+
+### TDACDBToggleSwitch
+
+- Manter `BM_CLICK` como prova de mouse.
+- Acrescentar Space focado para toggle aceito e recusa ReadOnly, com um/zero
+  evento respectivamente e escrita diferida de boolean ou `ValueOn/ValueOff`.
+
+### TDACDBSlider
+
+- No HWND focado, provar `VK_LEFT` ou `VK_RIGHT` partindo de null, `VK_PRIOR`,
+  `VK_NEXT`, `VK_HOME` e `VK_END`. Verificar direcao/limites ou endpoints e
+  exatamente um evento para cada mudanca real de `Position`; nao assumir
+  distancia dependente de tema.
+- Provar rota de mouse sem coordenadas: ajustar a posicao por `TBM_SETPOS` e
+  enviar ao parent `WM_HSCROLL` com `TB_THUMBTRACK` e o HWND do Slider,
+  finalizando com `TB_ENDTRACK`. Uma mudanca logica deve marcar o DataLink uma
+  vez, emitir um evento e permanecer diferida ate `CM_EXIT`.
+- Manter as provas de `Value := Minimum` materializando o placeholder e Delete
+  limpando. Wheel nao e gate agora: a rota varia entre versoes VCL/Windows e o
+  controle nao possui override proprio; `TB_THUMBTRACK` cobre a notificacao
+  nativa de mouse sem introduzir DPI ou coordenadas.
+
+## Limite de alteracao produtiva
+
+A solucao esperada e test-only em `tests/DACComponentsDataAware.dpr`, com
+ajuste minimo de projeto apenas se indispensavel para o define. Se uma prova
+nativa falhar por defeito produtivo confirmado, o especialista deve parar,
+registrar a evidencia e limitar eventual patch autorizado a
+`TDACDBDateTimePicker`, `TDACDBCheckBox`, `TDACDBRadioButton`,
+`TDACDBToggleSwitch` ou `TDACDBSlider` dentro de
+`DAC.Components.Controls.DataAware.pas`. Nenhuma outra unit produtiva entra.
+
+## Gates da reexecucao da Etapa 4
+
+1. Scan ativo/default com zero referencia a `OpenPopup`, `PopupVisible` e
+   `SimulatePopup*` no teste DataAware; nenhuma API antiga volta ao produto.
+2. Compilar runtime package Win32 Debug e
+   `DACComponentsDataAware.dproj` com `DAC_STAGE4_ONLY`; executar e obter exit
+   code 0 com as cinco familias e as rotas nativas acima.
+3. Compilar e executar `DACComponentsDesignLifecycle.dproj` com
+   `DAC_STAGE4_ONLY`; manter tres rodadas e saldo USER/GDI/HWND 0/0/0.
+4. Compilar `DACComponentsDataAware.dproj` Win32 Debug sem define. Nao exigir
+   execucao default nem corrigir falhas runtime de Etapa 5+.
+5. Scan estatico: zero `Post`/`ApplyUpdates` novo; zero High DPI; zero diff em
+   Lookup, Navigator, Grid, StyleHooks, Skia, Demo/DFM e Etapa 5+.
+6. Entregar hashes novos de fonte/testes/binarios, comandos, exit codes,
+   contagens de eventos e diff limitado. Se produto nao mudou, declarar isso
+   explicitamente; se mudou, justificar pelo teste nativo que falhou.
+
+## Fora de escopo expresso
+
+Nao alterar `TDACDBLookupComboBox`, `TDACDBNavigator`, `TDACDataGrid`, outras
+classes, Binding compartilhado, packages de design, registry, StyleHooks,
+Skia, tokens, renderers, Demo, DFM da Demo, High DPI, Etapa 5+, arquitetura
+visual, revisao, QA, commit, push ou PR nesta execucao do especialista Delphi.
+
+Evidencia: MEM-ARC-DB-004; MEM-DEL-DB-041;
+`Source/Controls/DataAware/DAC.Components.Controls.DataAware.pas:317-503,1128-1254,1399-2114`;
+`tests/DACComponentsDataAware.dpr:539-689,849-1334`;
+`tests/DACComponentsDesignLifecycle.dpr`; VCL/Win32 Delphi 10.2,
+`Winapi.Messages` e `Winapi.CommCtrl`.
+Handoff: o orquestrador deve chamar exclusivamente o especialista canonico
+`delphi_skia_vcl` neste mesmo branch de desenvolvimento. Ele implementa os
+ajustes e provas acima, executa somente os gates definidos, atualiza a memoria
+dele e notifica o orquestrador. Deve parar antes de revisao, QA, Git ou Etapa
+5; o orquestrador preserva a ordem desenvolvedor -> revisor -> interface_qa.
+
+ID: MEM-ARC-DB-006
+Data: 2026-08-02
+Demanda/branch: etapas-5-e-6-data-aware / codex/data-aware-suite
+Baseline: MEM-ARC-DB-005 e MEM-DEL-DB-042; Etapas 1-4 encerradas. O hash
+produtivo final da Etapa 4 e
+`DAC.Components.Controls.DataAware.pas=9D73902910FBA737EFDB08E8725B9A93D56079059E699854882B6FFABEAEC1C5`.
+Fato auditado: `TDACDBLookupComboBox` ainda e um `TCustomControl` composto com
+`TDBLookupComboBox` e `TSkPaintBox` privados; isso viola a nova exigencia de
+ancestral direto. `TDACDBNavigator` ja descende diretamente de
+`TDBNavigator` e executa `BtnClick`; `TDACDataGrid` ja descende de `TDBGrid`,
+possui observer auxiliar, overlay Skia, sincronizacao postada, reserva de
+footer e filtro localizado de input. O registro de hooks ainda usa os aliases
+de classe `DACNativeComboBoxClass`, `DACNativeDateTimePickerClass` e
+`DACNativeDBLookupComboBoxClass`. A suite DataAware default mistura binding,
+Grid e asserts visuais, sem recortes independentes para Etapas 5 e 6.
+Decisao: Etapa 5 fecha somente comportamento de Lookup, Navigator e Grid,
+sem exigir chrome. Etapa 6 aplica e valida somente chrome Skia/hook localizado
+sobre controles ja funcionais. Nenhuma falha visual autoriza reescrever
+binding ou navegacao sem uma regressao funcional demonstrada por gate da
+Etapa 5. Delphi 10.2 Win32 e o unico alvo; nenhuma API, metrica, teste ou
+alteracao de High DPI/escala manual entra.
+Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, testes_interface
+Status: CONFIRMED
+
+## Etapa 5 - contrato comportamental
+
+### Lookup
+
+- Refatorar `TDACDBLookupComboBox` para descendente direto de
+  `TDBLookupComboBox`. O proprio controle e a unica autoridade de DataLink,
+  ListLink, KeyValue, popup, foco e teclado. Proibidos wrapper, `FLookup`,
+  segundo DataLink, `TSkPaintBox`, subclass global de popup e child editor.
+- Republicar sem alterar tipos/defaults os contratos nativos usados:
+  `DataSource`, `DataField`, `ListSource`, `KeyField`, `ListField`,
+  `ListFieldIndex`, `DropDownRows`, `DropDownWidth` e `KeyValue`. Para
+  compatibilidade source, `LookupControl` pode permanecer somente leitura e
+  retornar `Self`; nunca pode expor proxy ou filho.
+- Preservar `Variant`/chave composta e multiplos `ListField` da VCL. Provar
+  F4/Alt+Down, setas, busca incremental, Enter, Escape, Tab/Shift+Tab,
+  clique de item, null, ReadOnly, Cancel, rebind e destruicao de DataSource e
+  ListSource. Escape nao grava; aceite usa somente a semantica nativa.
+
+### Navigator
+
+- Preservar ancestral direto `TDBNavigator`, DataSource e habilitacao nativos.
+  `BtnClick` permanece a unica execucao de First/Prior/Next/Last/Insert/
+  Delete/Edit/Post/Cancel/Refresh; nenhuma chamada paralela ao dataset.
+- `VisibleButtons`, `Hints`, `ConfirmDelete`, `BeforeAction` e `OnClick`
+  mantem semantica/ordem VCL e uma notificacao por acao. Excecoes nativas,
+  inclusive Refresh sem provider e validacao no Post, devem propagar.
+- Mouse, Space/Enter, Home/End e setas podem selecionar chrome proprio, mas a
+  acao final sempre converge em `BtnClick`. Tab/Shift+Tab deixa o controle.
+  A Etapa 5 nao aprova pixels, iconografia, hover ou foco desenhado.
+
+### Grid
+
+- `TDACDataGrid` permanece descendente direto de `TDBGrid`. O DataLink privado
+  da VCL e a autoridade de buffer, `ActiveRecord`, selecao, edicao e scroll.
+  `TDACDataGridDataLink` pode existir somente como observer read-only; nunca
+  escreve, navega ou substitui o DataLink nativo.
+- `Paint`, `DrawDataSetChrome`, observer e sincronizacao nao podem chamar
+  `First`, `Last`, `Next`, `Prior`, `MoveBy`, `Locate`, atribuir `RecNo` ou
+  confirmar edicao. Se a composicao trocar `DataLink.ActiveRecord` para ler o
+  buffer visivel, deve restaura-lo em `try/finally`, inclusive sob excecao.
+- Eventos `DataEvent`, `Scroll`, `TopLeftChanged`, `LayoutChanged`,
+  `LinkActive`, wheel e `WM_VSCROLL/WM_HSCROLL` convergem em uma unica
+  sincronizacao coalescida depois do estado VCL final. Um gesto produz no
+  maximo uma composicao final; repaint nao muda `RecNo`, `Row`, `TopRow`,
+  `LeftCol`, `ActiveRecord`, selecao ou `EditorMode`.
+- Provar dataset nil/inativo/vazio/curto/longo, rebind, refresh externo,
+  navegacao externa, clique de linha, Up/Down/Page/Home/End, wheel integral e
+  delta parcial, thumb vertical/horizontal, selecao persistente e scroll H/V.
+- Com `ReadOnly=False`, `dgEditing` e sem `dgRowSelect`, clique de celula + F2
+  deve abrir o editor nativo, aceitar texto, Enter e Cancel sem o overlay
+  roubar foco/caret. `ReadOnly`, `Loading` e celula de acao nao podem abrir
+  editor indevido; action hit-test dispara somente na acao acertada.
+- O footer e geometria nao interativa. Sua reserva nao cria row semantica;
+  toggle, resize, density, dataset vazio/curto e ultima linha recompõem
+  `RowCount` sem mudar registro. MouseMove, down/up, click, double click,
+  wheel e hover no footer em rota HWND e overlay emitem zero `OnCellClick`,
+  `OnClick`, `OnDblClick`, acao ou navegacao e limpam o hot anterior.
+- Dentro de `TDACScrollContainer`, foco/clique inicial pode aplicar somente o
+  AutoScrollInView vertical necessario. Deve preservar a posicao horizontal
+  externa; navegacao de dataset, teclado, edicao F2 e scroll proprio H/V da
+  Grid nao movem o container externo. `AControl=nil`, grid de outra arvore e
+  excecao do ancestral preservam/restauram posicoes no `finally`; controles
+  nao-Grid continuam com AutoScrollInView VCL normal.
+
+## Arquivos permitidos - Etapa 5
+
+- `Source/Controls/DataAware/DAC.Components.Controls.DataAware.Lookup.pas`;
+- `Source/Controls/DataAware/DAC.Components.Controls.DataAware.Navigator.pas`;
+- `Source/Controls/DAC.Components.Controls.DataGrid.pas`;
+- `Source/Controls/DAC.Components.Controls.ScrollContainer.pas`, somente se
+  um teste do conflito provar que a correcao pertence ao container;
+- `Tests/DACComponentsDataAware.dpr/.dproj`;
+- `Tests/DACComponentsDesignLifecycle.dpr/.dproj`;
+- `Package/DACSkiaComponentsRuntime.dpk/.dproj`, somente para sincronizar
+  referencias ja pertencentes ao runtime, sem mudar dependencias.
+
+## Gates exclusivos - Etapa 5
+
+1. Criar `DAC_STAGE5_ONLY` nos dois runners. Ele executa somente Lookup,
+   Navigator e Grid comportamental; nao executa asserts de Skia, hooks, tokens,
+   Demo ou Etapas 3/4/6. O fluxo default continua compilavel.
+2. Runtime package Win32 Debug build; DataAware Stage5 build/run exit 0;
+   DesignLifecycle Stage5 build/run por tres rodadas com USER/GDI/HWND 0/0/0;
+   DataAware sem define build somente.
+3. DesignLifecycle prova `Create(nil)`, Parent=nil sem HWND/children,
+   streaming, attach/detach, `RecreateWnd`, rebind e destruicao em ambas as
+   ordens. Lookup deve ser `InheritsFrom(TDBLookupComboBox)` diretamente,
+   Navigator `TDBNavigator` e Grid `TDBGrid`.
+4. Grid roda a matriz de sincronizacao, scroll, selecao, F2, footer e conflito
+   ScrollContainer descrita acima com asserts antes/depois de RecNo, Row,
+   TopRow, LeftCol, ActiveRecord, EditorMode e contadores de eventos.
+5. Scan: zero navegacao de dataset em paint/observer; zero segundo DataLink no
+   Lookup/Navigator/Grid; zero Post/ApplyUpdates fora do BtnClick explicito;
+   zero High DPI/escala manual e zero diff em hooks/tokens/renderer/Demo.
+6. Entregar hashes frescos, comandos, exit codes e diff. Parar antes da Etapa
+   6; o orquestrador libera a etapa seguinte somente sobre o SHA aprovado.
+
+## Etapa 6 - contrato visual localizado
+
+- Skia desenha somente chrome: background, borda, foco, hover/pressed,
+  glyphs, icones, separadores, track/thumb e scrollbars. Texto, caret,
+  selecao, IME, clipboard, undo/redo, popup Lookup e semantica Grid continuam
+  Windows/VCL. Texto de formulario usa DrawText/fonte nativa, nao texto Skia.
+- Registrar hooks somente em classes publicas `TDAC...` concretas. Remover dos
+  dois lados os registros por `DACNativeComboBoxClass`,
+  `DACNativeDateTimePickerClass` e `DACNativeDBLookupComboBoxClass`; nao
+  substitui-los por `TComboBox`, `TDateTimePicker`, `TDBLookupComboBox`,
+  `TDBNavigator`, `TDBGrid`, `TEdit`, `TMemo`, `TWinControl` ou outra base.
+  Os pares Register/UnRegister sao exatos, centralizados e idempotentes.
+- `TDACDBLookupComboBox` direto recebe hook localizado de borda/foco que nao
+  substitui texto nem popup. `TDACDBNavigator` pode pintar diretamente em seu
+  proprio HWND e o Grid conserva overlay client Skia mais
+  `TDACDataGridStyleHook` localizado para scrollbars/non-client; hook no
+  Navigator so e aceito se tiver funcao observavel e testada, nao como no-op.
+- Para Edit/Memo/ButtonEdit/Combo/Date e demais controles DB, aplicar hook
+  somente onde preservar integralmente o client nativo. Check/Radio/Toggle e
+  Slider podem ter glyph/track Skia, mas caption continua DrawText nativo e a
+  mensagem que altera estado continua ancestral. `TDACDBText`, por ser
+  graphic/read-only, permanece DrawText nativo e nao recebe StyleHook.
+- Toda pintura Skia para HDC usa o renderer compartilhado e uma superficie
+  temporaria deterministica apresentada por BitBlt, com liberacao em
+  `try/finally`; nao criar renderer/paint/font por frame quando houver cache
+  compartilhavel. Cores, raios, strokes e estados saem de
+  `TDACControlTokens` via `ResolveForSurface(Self, ThemeMode)`, sem hex ou
+  aliases globais. Nenhum fallback GDI desenha chrome novo.
+- Mudanca de tema/Enabled/foco/hot/pressed invalida somente a area necessaria
+  e nao recria HWND, DataLink, popup ou dataset. Nenhum hook captura input,
+  chama Click/Change/BtnClick, navega dataset ou suprime excecao.
+
+## Arquivos permitidos - Etapa 6
+
+- `Source/Controls/DataAware/DAC.Components.Controls.DataAware.pas`;
+- as units Lookup/Navigator e `Source/Controls/DAC.Components.Controls.DataGrid.pas`;
+- `Source/Hooks/DAC.Components.Hooks.DataAware.pas`;
+- `Source/Hooks/DAC.Components.Hooks.Register.pas`;
+- `Source/Hooks/DAC.Components.Hooks.ScrollContainer.pas`, somente hook Grid;
+- `Source/Skia/DAC.Components.Skia.Renderer.pas`;
+- `Source/DesignSystem/DAC.Components.DesignSystem.ControlTokens.pas` e
+  `DAC.Components.DesignSystem.ComponentStyle.pas`;
+- runtime `.dpk/.dproj` somente se uma unit runtime nova for indispensavel;
+- `Tests/DACComponentsDataAware.dpr/.dproj` e
+  `Tests/DACComponentsDesignLifecycle.dpr/.dproj` para `DAC_STAGE6_ONLY`.
+
+## Gates exclusivos - Etapa 6
+
+1. Partir do SHA aprovado da Etapa 5 e criar `DAC_STAGE6_ONLY`; nenhuma prova
+   visual entra em Stage5. Depois das mudancas, rerodar integralmente Stage5.
+2. Inspecao do registry real exige mapeamentos somente `TDAC...`, rejeita
+   todas as bases VCL e os tres aliases `DACNative*Class`, conta pares iguais
+   e prova Register/UnRegister repetidos sem duplicacao ou excecao.
+3. Em HWND real, observer diagnostico exception-safe prova para cada chrome
+   aplicavel: HWND/retangulo corretos, `RenderedWithSkia=True`, apresentacao
+   concluida, tokens Dark/Light e estados normal/focused/hot/pressed/disabled.
+   O observer e removido em `finally`, inclusive se setup/construtor falhar.
+4. Antes/depois de habilitar o estilo, repetir caret/selecao/clipboard/undo/
+   IME de editores; Lookup F4/setas/Enter/Escape/Tab; Navigator mouse/teclado;
+   Grid selecao, wheel, H/V, F2/editor e footer. Valores, foco, dataset e
+   contagens funcionais devem ser identicos aos gates da Etapa 5.
+5. Grid deve comprovar client Skia e scrollbars V/H Skia em Dark/Light sem
+   alterar RecNo, viewport, selecao, editor ou footer. Repaint reentrante
+   suprime apenas callback aninhado e permite notificacao no paint seguinte.
+6. Runtime, DataAware Stage6 e DesignLifecycle Stage6 compilam Win32 Debug;
+   ambos executam exit 0 e lifecycle fecha 3x com USER/GDI/HWND 0/0/0. Rerun
+   Stage5 tambem exit 0. Nao compilar/abrir Demo, design package ou Interaction
+   acoplado a Demo.
+7. Scans: zero hook global/base/alias; zero chrome novo por GDI/TCanvas;
+   zero High DPI/escala manual; zero diff de binding, navegacao, Demo,
+   design-time/palette ou Etapa 7+. Entregar hashes e parar antes de review.
+
+## Fora de escopo expresso
+
+Etapa 7+, Demo/DFM, `Source/DesignTime`, palette/registro design-time, design
+package, familias nao data-aware, API High DPI, escala manual, Win64,
+redesenho de popup, renderer de texto, acessibilidade custom, revisao, QA,
+stage, commit, push e PR. `Source/Controls/DAC.Components.Controls.Register.pas`
+permanece intacta: registry de streaming nao e StyleHook global.
+
+Riscos principais: migracao do Lookup pode quebrar DFM/facade se criar proxy;
+hook client pode destruir caret/popup; Navigator pode duplicar acao se nao
+convergir em BtnClick; Grid pode navegar durante paint, perder ActiveRecord,
+criar rows de footer interativas ou vazar scroll para o container; observers
+globais de teste podem sobreviver a excecao. Cada risco possui gate acima.
+
+Evidencia: MEM-ARC-DB-005; MEM-DEL-DB-042;
+`Source/Controls/DataAware/DAC.Components.Controls.DataAware.Lookup.pas:20-130,146-175,313-949`;
+`Source/Controls/DataAware/DAC.Components.Controls.DataAware.Navigator.pas:34-109,111-552`;
+`Source/Controls/DAC.Components.Controls.DataGrid.pas:1-320,480-760,1180-1960`;
+`Source/Hooks/DAC.Components.Hooks.DataAware.pas:1-142`;
+`Source/Hooks/DAC.Components.Hooks.Register.pas:45-145`;
+`Source/Hooks/DAC.Components.Hooks.ScrollContainer.pas:68-72,372-390`;
+`Source/Skia/DAC.Components.Skia.Renderer.pas:1-306`;
+`Source/DesignSystem/DAC.Components.DesignSystem.ControlTokens.pas`;
+`Package/DACSkiaComponentsRuntime.dpk/.dproj`;
+`Tests/DACComponentsDataAware.dpr:1270-1905`;
+`Tests/DACComponentsDesignLifecycle.dpr`; `Tests/DACComponentsInteraction.dpr`.
+Handoff: chamar somente `delphi_skia_vcl`. Executar Etapa 5, registrar memoria
+e parar. Apos aceite do orquestrador no SHA exato, executar Etapa 6, rerodar
+Etapa 5, registrar memoria e parar. Nao chamar revisor/QA nem operar Git.
+
+---
+id: MEM-ARC-DB-007
+date: 2026-08-02
+type: architecture-contract
+status: READY_FOR_STAGE_7
+branch: codex/data-aware-suite
+baseline: MEM-DEL-DB-044
+predecessor: MEM-ARC-DB-006
+scope: stages-7-to-11-only
+owner_architecture: arquitetura
+developer: delphi_skia_vcl
+reviewer: revisao_codigo
+qa: testes_interface
+orchestrator: root
+---
+
+# Fechamento arquitetural das Etapas 7 a 11
+
+Contrato imutavel: Delphi 10.2 Win32; todas as saidas, logs, imagens e
+artefatos gerados ficam sob `Build`; runtime sem FireDAC; Demo usa
+`TClientDataSet`; zero High DPI ou escala manual; zero hook global ou em classe
+VCL base; nenhum componente executa `Post`/`ApplyUpdates` automaticamente;
+DFM-first e seguro com `Parent=nil`; sem Win64 e sem merge automatico.
+
+O codigo real confirma a separacao pretendida: o runtime requer `vcldb`, mas
+nao `designide`, `dcldb`, `DBReg`, `DesignIntf` ou FireDAC; o design package
+requer `designide`, `dcldb` e runtime e contem somente as duas units de
+design-time. A pagina Data-Aware da Demo ja esta declarada no DFM, contem os
+12 wrappers, Grid, `TClientDataSet`/`TDataSource` e botoes explicitos de
+Edit/Insert/Post/Cancel. Isso ainda nao e aceite da Etapa 7: packages, Demo,
+Startup e lifecycle precisam ser reconstruidos contra a arvore exata da
+Etapa 6. Os binarios hoje presentes em `Build` sao historicos e nao valem como
+evidencia, inclusive porque o BPL runtime atual nao coincide com MEM-DEL-DB-044.
+
+## Hashes-fonte de entrada
+
+- Runtime dpk/dproj: `975A792D069DCF16D2A895DFD8713B6DF2DCBB43F5BC6828FF781E906AB7897F` /
+  `EC3B311AD25ACAA0BB551D5B3A1FA69BC74E56E57ACC81136B3B70FB813FE65A`.
+- Design dpk/dproj: `CE920CAC46B78715CC093FF51202BCB8DB3737069839DD62634D8D48819B79D4` /
+  `806276ED892683C1CE5B40EBDB9310D529AE774BE0005FB3C40D6624BFA4C755`.
+- Design Register/DataAware: `914F0EE6D230CF3C10C1C2B1AD325F975FBA9EF1DEF4765BBA86C61A6E0D5D09` /
+  `30AE6FA70A08DBA4109445BA300293C735E61C2C46DBDC11BFDFD572B5547DFD`.
+- Demo dpr/dproj: `B1CEE980BFC6FE79554593E8F52E56F455755A38B73BA7B4B9D503B10A210B86` /
+  `EB2ACFF1D7C126807F3D01248F45B46CE7B4E7CB8C3ECB1A505C358EA3FF56E1`.
+- Demo PAS/DFM: `3CEBC6B47DD979CE54594435A31E8223859586BD01A1FBCD6D7246F816A81CBF` /
+  `36E501F8905EA2024A4E17D945C49265CF775E2C8EB26322319945EB5A8C2952`.
+- Smoke dpr/dproj: `E4852BD91A9D99A849E1B8A7CFEC618225944F9045D5446BB233A2200CDA242B` /
+  `2E14C4E14378D5DB700896B757E12752938F27878164A47AC03C2E8525720DED`.
+- DataAware dpr/dproj: `09ACACEA41F8F3829D53E4753BB6E8283793D1CBB3F9BA4506D635E09160BA0C` /
+  `159D0F45314B48A041C1DE67121D798279FFC120429BD9C0A74AEBA2EDD5BB79`.
+- Interaction dpr/dproj: `CAACD921B7FD33337DDD3E34F3E8DFAB1E74BBC30A4A9512B228D4E15EF05564` /
+  `B524B87947B4BC57B7C008866580889F8521478DEEDD45EC87A704600F2E2937`.
+- Startup dpr/dproj: `EBF77A0B44B1F83314BD0DB4CBD22E291896FE248ECE57F472D40DCA3AE62821` /
+  `DF438C6FD79B39861A46C630646AF505D07DB3D11A7F7DFB01E72C9AD2650974`.
+- DesignLifecycle dpr/dproj: `20003585F70CA2F1523F94C306C1FC4D3AE5EFE43E41A5D8405EBED5AB41BD6F` /
+  `D5DA02D99E675CE381199583898C20B07F3635E6248D3109C2F935206D94B4F8`.
+- PhysicalQAController dpr/dproj: `43E46AA6DC76513FC563FF739E70763649F29E0611EE5D1AA8DDD6A8A50084F2` /
+  `C30F434B3C9072A6D3096B825AE8FB1D219E92D1BD652DA0C72B55CC3D124117`.
+
+Qualquer diferenca nesses hashes deve ser explicada no registro do
+desenvolvedor. O SHA Git mais o manifesto SHA-256 completo dos fontes
+permitidos identifica a entrega; timestamp ou nome do executavel nunca a
+identifica. Evidencia sem SHA Git e manifesto correspondente e invalida.
+
+## Etapa 7 - packages, design-time e Demo Data-Aware
+
+Executa somente `delphi_skia_vcl`, na branch existente. Arquivos permitidos:
+`Package/DACSkiaComponentsRuntime.dpk/.dproj`,
+`Package/DACSkiaComponentsDesign.dpk/.dproj`, as duas units sob
+`Source/DesignTime`, `Source/Controls/DAC.Components.Controls.Register.pas`
+somente se faltar registro de streaming concreto, `demo/Demo.dpr/.dproj`,
+`demo/Demo.Principal.pas/.dfm`, e Startup/DesignLifecycle `.dpr/.dproj`
+somente para corrigir expectativa de harness obsoleta. Nenhuma unit de
+controle, DataAware, hook, renderer ou token pode mudar nesta etapa; defeito
+nessa camada volta ao fluxo de desenvolvimento e gera novo SHA.
+
+Gates: runtime Debug e Release, design Debug, Demo Debug e Release, Startup
+Debug e DesignLifecycle Debug compilam; instalacao estatica registra a suite
+base em `DAC Skia` e os 12 wrappers em `DAC Skia DB`; os 11 controles com
+`DataField` recebem `TDataFieldProperty`, Lookup recebe `TListFieldProperty`
+para KeyField/ListField e Navigator fica sem editor de campo. DFM abre/cria e
+destroi com `Parent=nil`, sem criar dataset/handle indevido. Demo usa apenas
+`TClientDataSet`, preserva bindings do DFM e botoes explicitos; o componente
+nao faz Post. Startup deve ser confrontado com o Lookup direto da Etapa 6:
+helpers/metricas antigos de popup podem ser atualizados no teste, mas jamais
+justificam restaurar alias, proxy ou wrapper no produto. BPL runtime copiado
+ao lado de cada Demo deve ser byte-identico ao BPL da mesma configuracao.
+
+## Etapa 8 - DB037, matriz de 11 alvos e regressao executavel
+
+Somente `delphi_skia_vcl` executa e corrige harness. Arquivos de teste
+permitidos, apenas se a correcao for demonstravelmente do harness:
+`Tests/DACComponentsSmoke.dpr/.dproj`,
+`Tests/DACComponentsDataAware.dpr/.dproj`,
+`Tests/DACComponentsInteraction.dpr/.dproj`,
+`Tests/DACDemoStartup.dpr/.dproj`,
+`Tests/DACComponentsDesignLifecycle.dpr/.dproj` e
+`Tests/DACPhysicalQAController.dpr/.dproj`. Produto/package/Demo nao muda na
+Etapa 8; achado real encerra a etapa, volta ao desenvolvimento e reinicia a
+matriz em novo SHA.
+
+Os 11 alvos canonicos, Delphi 10.2 Win32, sao:
+
+1. `DACSkiaComponentsRuntime` Debug;
+2. `DACSkiaComponentsRuntime` Release;
+3. `DACSkiaComponentsDesign` Debug;
+4. `Demo` Debug;
+5. `Demo` Release;
+6. `DACComponentsSmoke` Debug;
+7. `DACComponentsDataAware` Debug;
+8. `DACComponentsInteraction` Debug;
+9. `DACComponentsDesignLifecycle` Debug;
+10. `DACDemoStartup` Debug;
+11. `DACPhysicalQAController` Debug.
+
+Depois da compilacao limpa: Smoke uma vez; DataAware default e regressao das
+Etapas 5/6; Interaction em tres processos independentes; DesignLifecycle em
+tres processos, tres ciclos cada, encerrando USER/GDI/HWND em 0/0/0; Startup
+em cinco processos independentes com exit 0 e tempos maximo/p95; lifecycle
+externo via controller com SC_CLOSE 3/3 e WM_CLOSE 1/1, uma `TForm1`, zero
+modal/WER/residual. Executar tambem as 11 rotas negativas do controller:
+`startlifecyclefail`, `startlifecyclehelperfail`,
+`startlifecyclesavefailoriginal`, `startlifecyclesavefail`,
+`startlifecycleensureoutputfail`, `startlifecyclepartialfilefail`,
+`startlifecycleauxtimeout`, `startlifecyclewersecondaryfail`,
+`startlifecyclewerfail`, `startlifecycledemoexitwerfail` e
+`startlifecyclewernonzero`; cada uma deve sair 1, informar a falha esperada,
+ter PASS count 0 e residual 0.
+
+DB037 e obrigatorio no Interaction: rodada nominal, nove injecoes
+`before-page-switch`, `after-page-switch`, `before-observer-install`,
+`after-observer-install`, `before-hook-construction`,
+`after-hook-construction`, `configuration`, `observer-callback` e
+`reentrant-callback`, e nova nominal. Cada falha deve restaurar pagina/indice/
+controle, tema, HWND/enabled/read-only/loading/visible do Grid e globais de
+observer/probe; observer fica nil/inativo e USER/GDI/process handles nao
+crescem. A nominal posterior prova que a falha nao contaminou o processo.
+
+Scans finais: `git diff --check`, zero marcador de conflito, zero hook em base
+VCL/alias global, paridade Register/UnRegister, zero High DPI/escala manual,
+zero FireDAC no runtime, zero Post/ApplyUpdates em componentes, zero
+DesignIntf/DBReg/designide no runtime, zero saida fora de `Build` e zero
+processo residual.
+
+## Politica unica de evidencia e hash
+
+Criar uma pasta nova e imutavel sob `Build/Evidence/MEM-DEL-DB-045/` (ou ID
+subsequente formalmente declarado), nunca reaproveitar logs/binarios antigos.
+Ela contem: `manifest.json` com SHA Git, branch, Delphi/Platform/Config,
+comando, exit code, inicio/fim e SHA-256 de cada fonte, log e artefato;
+`build/` com os 11 logs; `tests/` com execucao individual e PID; `db037/` com
+as 11 fases; `lifecycle/`; `scans/`; e `artifacts.sha256`. Binarios ficam nos
+diretorios `Build` ja definidos pelos projetos; a evidencia referencia os
+hashes, sem copia opaca. Runtime BPL Package/Demo deve ter paridade por config.
+O registro append-only do desenvolvedor aponta para o manifesto e declara
+`READY_FOR_REVIEW`; nao se aceita apenas resumo textual ou log agregado.
+
+## Etapa 9 - revisao independente no SHA exato
+
+O orquestrador chama somente o agente canonico `revisao_codigo`, depois de
+`READY_FOR_REVIEW`. O revisor e read-only: confere SHA Git, manifesto e hashes
+de MEM-DEL-DB-045, separacao runtime/design, DFM-first/Parent=nil, ausencia de
+duplicacao, acoplamento, leaks e hooks globais, contratos DataAware/Lookup/
+Navigator/Grid e reroda independentemente a matriz completa da Etapa 8 em uma
+nova pasta de evidencia `Build/Evidence/MEM-REV-DB-.../`. A aprovacao deve
+registrar o mesmo SHA e hashes como `APPROVED_FOR_UI_TEST`.
+
+`CHANGES_REQUESTED` volta exclusivamente ao mesmo `delphi_skia_vcl`. O revisor
+nao corrige codigo. Qualquer novo SHA, inclusive mudanca de teste/package/Demo,
+invalida as evidencias e reinicia Etapa 8 e Etapa 9; nao existe aprovacao
+parcial nem reutilizacao de resultado do SHA anterior.
+
+## Etapa 10 - QA fisico, visual e de interacao
+
+Somente apos `APPROVED_FOR_UI_TEST`, o orquestrador chama o agente canonico
+`testes_interface`, no SHA/hashes aprovados. O QA nao edita codigo. Antes da
+inspecao visual, repete o lifecycle fisico do controller. Na Demo Debug valida
+Dark/Light, desktop 1200x760 e viewport compacto 520x560 sem mudar DPI:
+Browse/Edit/Insert/Post/Cancel; Tab/Shift+Tab; foco/caret/selecao/clipboard/
+undo/IME; Date null/Delete/dropdown; Check/Radio/Toggle/Slider; Lookup por
+mouse, F4/setas/Enter/Escape/Tab; Navigator; Grid selecao/wheel/H/V/F2/editor/
+footer; dataset vazio/inativo quando suportado pelo harness; resize, clipping,
+overlap, stale pixels e botoes/rodape sempre acessiveis. Percorre ainda toda a
+galeria de 17 paginas/15 familias em Dark/Light para detectar regressao global.
+
+Evidencia fica somente em `Build/VisualValidation/MEM-QA-DB-.../`, com
+manifesto do mesmo SHA, roteiro, resultados, screenshots nomeadas por tema/
+viewport/estado, logs do controller e hashes SHA-256. Saida valida e
+`UI_APPROVED` no SHA exato. Qualquer finding volta ao `delphi_skia_vcl`; novo
+SHA obriga Etapas 8, 9 e 10 completas. Nao aceitar somente build ou screenshot
+sem interacao, foco e lifecycle.
+
+## Etapa 11 - documentacao, Git e PR
+
+Somente depois de `UI_APPROVED`, o orquestrador coordena a documentacao final.
+Arquivos permitidos: `README.md`, `IMPLEMENTATION_PLAN.md` se ja for o indice
+canonico, registros append-only `.codex/memory/*.okf` dos agentes e evidencia
+sob `Build`; nenhuma fonte, DFM, package ou teste pode mudar. Documentar
+instalacao runtime/design, Demo `TClientDataSet`, contratos sem Post automatico,
+matriz executada, evidencias, hashes e limitacoes. Mudanca executavel cancela
+a publicacao e retorna a Etapa 8; mudanca apenas documental exige scans e
+confirmacao de que todos os hashes executaveis aprovados permanecem identicos.
+
+Na branch unica `codex/data-aware-suite`, selecionar intencionalmente somente
+arquivos aprovados, criar commit em portugues, push e PR draft no GitHub. O
+corpo do PR informa Delphi 10.2 Win32, escopo das Etapas 7-11, 11 alvos,
+DB037, resultados de revisao/QA, caminhos de evidencia, SHA/hashes e riscos
+residuais. O orquestrador verifica branch remota e leitura do PR. Ninguem faz
+merge automatico; a decisao de merge permanece humana.
+
+## Ordem e handoff obrigatorios
+
+`root -> delphi_skia_vcl (Etapa 7) -> delphi_skia_vcl (Etapa 8) -> root ->
+revisao_codigo (Etapa 9) -> root -> testes_interface (Etapa 10) -> root
+(Etapa 11)`. Nao criar copias dos agentes. Cada agente registra memoria
+append-only, identifica SHA e hashes recebidos/entregues e para no seu gate.
+Arquitetura nao implementa, revisao nao corrige, QA nao corrige e nenhum agente
+ultrapassa a etapa sem o status formal anterior.
+
+Evidencia arquitetural: MEM-ARC-DB-006; MEM-DEL-DB-044; packages runtime/design;
+`Source/DesignTime`; Demo DFM/PAS/DPR/DPROJ; projetos Smoke, DataAware,
+Interaction, Startup, DesignLifecycle e PhysicalQAController; DB037 no
+Interaction; scripts e artefatos existentes sob `Build` tratados apenas como
+historico nao confiavel ate reconstrucao no SHA contratado.
+
+---
+ID: MEM-ARC-DB-062
+Data: 2026-08-03
+Tipo: estudo-arquitetural-read-only
+Status: READY_FOR_DELPHI_DIAGNOSTIC
+Origem: MEM-DEL-DB-061
+Branch: codex/data-aware-suite
+SHA Git base: d038a51a97d7b44b8157e1c05b264aa83d15ea01
+Escopo: scrollbar non-client do TDACDataGrid; sem Git/publicacao
+---
+
+# Diagnostico e plano apos MEM-DEL-DB-061
+
+Estado comprovado: Runtime, DataAware, Interaction e Demo compilam; DataAware
+default e Stage6 passam; as 11 fases DB037 passam; Interaction termina exit 1
+em `DataGrid Data-Aware permaneceu clara em Dark 1200x760 (dark=0/0)`.
+ScrollContainer passa antes. `0/0` significa que GetPixel devolveu
+`CLR_INVALID` em todos os pontos; nao prova barra branca nem falha do Skia.
+
+Inventario classificado:
+- BLOQUEADOR confirmado: capturador usa GetWindowDC do Grid e confunde zero
+  amostra com cor clara. Delphi 10.2 TScrollingStyleHook pinta V/H em helper
+  windows `TScrollWindow`; a regiao visivel pode nao pertencer ao DC do Grid.
+- ALTO confirmado: autoridade por HWND e booleano. DB037 cria outro hook
+  manual; seu Destroy remove a marca mesmo se o hook VCL real segue vivo,
+  permitindo fallback WM_NCPAINT e StyleHook concorrentes.
+- ALTO provavel: fallback converte rcScrollBar de tela para janela, mas usa
+  xyThumbTop/Bottom crus. O contrato VCL usa rcScrollBar em client coordinates
+  e xyThumb no mesmo espaco; diferenca client/window fica mascarada em
+  BorderStyle=bsNone.
+- MEDIO: observer prova Skia+BitBlt para um DC, nao que o pixel apresentado
+  pertence a janela visivel. Hot/pressed do fallback tambem dependem de novo
+  WM_NCPAINT e ainda nao possuem prova fisica.
+- REMANESCENTE: pixels Dark/Light do Grid, hit-test, setas/track/thumb drag,
+  wheel, foco, dataset, troca repetida de tema e lifecycle ainda nao estao
+  aprovados para esta implementacao. Nenhuma matriz fresca/review/QA existe.
+
+Autoridade decidida:
+- com StyleHook localizado ativo, ele e a unica autoridade; helper windows
+  preservam a interacao nativa e WM_NCPAINT do controle nao pinta;
+- sem hook ativo/system-style, WM_NCPAINT do TDAC controla o fallback;
+- ambos usam o renderer Skia compartilhado, mas recebem geometria propria do
+  destino; nunca reutilizar coordenadas do helper em GetWindowDC do controle.
+
+Plano pequeno para o mesmo `delphi_skia_vcl`:
+1. Diagnostico independente apenas no Interaction: registrar HWND do Grid,
+   WindowFromPoint, window/client/scroll rects, client origin, xyThumb,
+   dxyLineButton, GetClipBox/PtVisible e DC origin para track/thumb/arrows.
+   Zero amostra deve falhar como `CAPTURE_INVALID`, nunca `permaneceu clara`.
+   Aceite: explicar qual HWND/DC possui cada pixel sem mudar painter.
+2. Corrigir o capturador: trabalhar com retangulos canonicos de tela e ler o
+   HWND realmente visivel ou screen DC; amostrar separadamente track, thumb e
+   setas e comparar com tokens por tolerancia. Nao relaxar threshold, pular
+   Grid ou aceitar zero. Aceite: >0 amostras validas em ScrollContainer e Grid
+   e falhas distintas para captura invalida versus cor divergente.
+3. Tornar autoridade aninhavel: substituir booleano por refcount/ticket por
+   HWND. Hook incrementa somente apos construcao herdada bem-sucedida e reduz
+   somente depois de destruir helpers. DB037 preserva contagem anterior.
+   Aceite: real=N, manual=N+1, cleanup=N, recriacao/destruicao final=0; quando
+   N>0 fallback conta zero; quando N=0 somente fallback pinta.
+4. Separar provedores de geometria: StyleHook continua com rects protegidos da
+   VCL. Fallback converte rcScrollBar screen->window DC e xyThumb
+   client->screen->window usando GetWindowRect e ClientToScreen, limita thumb
+   entre botoes e trata INVISIBLE/UNAVAILABLE. Sem DPI/escala manual.
+   Aceite: V/H, com delta client/window nao zero, todos os rects dentro da
+   scrollbar, ordem arrow-thumb-arrow e BitBlt dentro do clip.
+5. Provar pintura real: observer inclui fonte (StyleHook/fallback), HWND
+   destino e espaco de coordenadas. Em Windows10 StyleHook pinta ambos eixos e
+   fallback zero; em processo system-style ocorre o inverso. Dark e Light
+   devem produzir pixels de track/thumb/setas compativeis com tokens.
+6. Regressao funcional direcionada: click de setas/track, drag do thumb,
+   wheel/deltas parciais, foco, selecao, TopRow/RecNo/editor/footer; dez ciclos
+   Dark-Light sem recriar HWND, stale pixels ou pintura dupla; Interaction
+   tres processos com DB037 11/11 e clean teardown; DesignLifecycle tres
+   processos USER/GDI/HWND 0/0/0; ScrollContainer permanece PASS.
+7. Somente depois executar a matriz Etapa 8 de MEM-ARC-DB-007 e registrar novo
+   manifesto/hash. Fluxo continua `delphi_skia_vcl -> revisao_codigo ->
+   testes_interface`; qualquer novo SHA reinicia gates. Sem stage, commit,
+   push, PR ou merge nesta correcao.
+
+Arquivos de implementacao esperados: ScrollRenderer, hook ScrollContainer,
+NativeWindowTheme, DataGrid/ScrollContainer somente se a autoridade exigir, e
+Interaction. Nao tocar package, Demo/DFM, design-time ou outras familias sem
+evidencia direta. Hashes de entrada: ScrollRenderer `9820842B...`, hook
+`D70905DC...`, NativeWindowTheme `E97F28CA...`, DataGrid `BBE89756...`,
+ScrollContainer `1DD36F35...`, Interaction `DCA17D87...`.
+
+Handoff: chamar somente `delphi_skia_vcl` para a Etapa 1 e parar no aceite.
+Arquitetura nao implementa; revisor e QA ainda nao devem ser chamados.

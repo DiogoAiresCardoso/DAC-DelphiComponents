@@ -6,6 +6,7 @@ uses
   System.Classes,
   System.Skia,
   System.Types,
+  System.UITypes,
   Winapi.Messages,
   Vcl.Controls,
   Vcl.Graphics,
@@ -13,6 +14,7 @@ uses
   DAC.Components.Controls.Button,
   DAC.Components.Controls.ComboBox,
   DAC.Components.DesignSystem.IconAssets,
+  DAC.Components.DesignSystem.Theme,
   DAC.Components.Skia.Renderer;
 
 type
@@ -29,6 +31,7 @@ type
     FOnChange: TNotifyEvent;
     FPaintBox: TSkPaintBox;
     FRenderer: TDACSkiaRenderer;
+    FThemeMode: TDACThemeMode;
     procedure ButtonClick(Sender: TObject);
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure CMShowingChanged(var AMessage: TMessage); message CM_SHOWINGCHANGED;
@@ -51,6 +54,8 @@ type
     procedure SetPageSizeItems(const AValue: TStrings);
     procedure SetPageSizeText(const AValue: string);
     procedure SetShowPageSize(const AValue: Boolean);
+    procedure SetThemeMode(const AValue: TDACThemeMode);
+    procedure ThemeChanged(Sender: TObject);
     procedure UpdateButtonState;
     procedure UpdateChildZOrder;
     procedure UpdateComboItems;
@@ -58,13 +63,13 @@ type
     procedure UpdatePaintBoxBounds;
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
   protected
-    procedure ChangeScale(M, D: Integer); override;
     procedure CreateWnd; override;
     procedure Loaded; override;
     procedure Resize; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    function ResolvedBackgroundColor: TAlphaColor;
     procedure Redraw;
   published
     property Align;
@@ -83,6 +88,7 @@ type
     property ShowPageSize: Boolean read FShowPageSize write SetShowPageSize default True;
     property TabOrder;
     property TabStop default True;
+    property ThemeMode: TDACThemeMode read FThemeMode write SetThemeMode default dtmInherit;
     property Visible;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
     property OnClick;
@@ -104,10 +110,8 @@ implementation
 uses
   System.Math,
   System.SysUtils,
-  DAC.Components.DesignSystem.ColorTokens;
-
-const
-  CMaxPageButtons = 5;
+  DAC.Components.DesignSystem.ComponentStyle,
+  DAC.Components.DesignSystem.ControlTokens;
 
 constructor TDACPagination.Create(AOwner: TComponent);
 var
@@ -115,17 +119,22 @@ var
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csAcceptsControls, csClickEvents];
-  Width := 520;
-  Height := 40;
+  Width := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.PaginationDefaultWidth);
+  Height := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.PaginationDefaultHeight);
   TabStop := True;
   ParentColor := False;
   StyleElements := [];
+  FThemeMode := dtmInherit;
 
-  FPageCount := 5;
-  FPageIndex := 1;
-  FPageSize := 10;
+  FPageCount := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).
+    Tokens.Controls.PaginationDefaultPageCount;
+  FPageIndex := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).
+    Tokens.Controls.PaginationDefaultPageIndex;
+  FPageSize := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).
+    Tokens.Controls.PaginationDefaultPageSize;
   FPageSizeText := PageSizeDisplayText(FPageSize);
   FShowPageSize := True;
+  TDACThemeManager.RegisterListener(Self, ThemeChanged);
 
   FPageSizeItems := TStringList.Create;
   FPageSizeItems.OnChange := PageSizeItemsChanged;
@@ -156,6 +165,7 @@ end;
 
 destructor TDACPagination.Destroy;
 begin
+  TDACThemeManager.UnregisterListener(Self);
   FPaintBox.Free;
   FRenderer.Free;
   FPageSizeItems.Free;
@@ -167,13 +177,6 @@ begin
   if Sender is TDACButton then
     SelectButton(TDACButton(Sender).Tag);
 end;
-
-procedure TDACPagination.ChangeScale(M, D: Integer);
-begin
-  inherited;
-  Redraw;
-end;
-
 procedure TDACPagination.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
@@ -263,33 +266,49 @@ end;
 
 procedure TDACPagination.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
   const ADest: TRectF; const AOpacity: Single);
+var
+  LTokens: TDACControlTokens;
 begin
   if ACanvas = nil then
     Exit;
-  ACanvas.Clear(TDACComponentColors.Alpha(0, 0, 0, 0));
-  FRenderer.FillRoundRect(ACanvas, TRectF.Create(0.5, 0.5,
-    ADest.Width - 0.5, ADest.Height - 0.5), TDACComponentColors.White, 8);
-  FRenderer.StrokeRoundRect(ACanvas, TRectF.Create(0.5, 0.5,
-    ADest.Width - 0.5, ADest.Height - 0.5),
-    TDACComponentColors.ControlBorder, 8, 1);
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  ACanvas.Clear(LTokens.TransparentSurfaceFallback);
+  FRenderer.FillRoundRect(ACanvas, TRectF.Create(LTokens.BorderWidth / 2,
+    LTokens.BorderWidth / 2, ADest.Width - (LTokens.BorderWidth / 2),
+    ADest.Height - (LTokens.BorderWidth / 2)), LTokens.PaginationBackground,
+    LTokens.PaginationRadius, LTokens.AlphaOpaque);
+  FRenderer.StrokeRoundRect(ACanvas, TRectF.Create(LTokens.BorderWidth / 2,
+    LTokens.BorderWidth / 2, ADest.Width - (LTokens.BorderWidth / 2),
+    ADest.Height - (LTokens.BorderWidth / 2)), LTokens.PaginationBorder,
+    LTokens.PaginationRadius, LTokens.PaginationBorderWidth,
+    LTokens.AlphaOpaque);
+end;
+
+function TDACPagination.ResolvedBackgroundColor: TAlphaColor;
+begin
+  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.PaginationBackground;
 end;
 
 function TDACPagination.PageButtonCount: Integer;
 begin
-  Result := Min(CMaxPageButtons, Max(0, FPageCount));
+  Result := Min(TDACComponentStyle.ResolveForSurface(Self, FThemeMode).
+    Tokens.Controls.PaginationVisiblePageButtonCount, Max(0, FPageCount));
 end;
 
 function TDACPagination.PageButtonStart: Integer;
 var
   LHalf: Integer;
 begin
-  if FPageCount <= CMaxPageButtons then
+  if FPageCount <= TDACComponentStyle.ResolveForSurface(Self, FThemeMode).
+    Tokens.Controls.PaginationVisiblePageButtonCount then
     Exit(1);
 
-  LHalf := CMaxPageButtons div 2;
+  LHalf := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).
+    Tokens.Controls.PaginationVisiblePageButtonCount div 2;
   Result := FPageIndex - LHalf;
   Result := Max(1, Result);
-  Result := Min(Result, FPageCount - CMaxPageButtons + 1);
+  Result := Min(Result, FPageCount - TDACComponentStyle.ResolveForSurface(
+    Self, FThemeMode).Tokens.Controls.PaginationVisiblePageButtonCount + 1);
 end;
 
 function TDACPagination.PageSizeDisplayText(const AValue: Integer): string;
@@ -316,8 +335,12 @@ procedure TDACPagination.Redraw;
 var
   I: Integer;
 begin
+  if not (not (csLoading in ComponentState) and not (csDestroying in ComponentState) and
+    not (csDesigning in ComponentState) and (Parent <> nil) and HandleAllocated and
+    Parent.HandleAllocated) then
+    Exit;
   RefreshChildren(False);
-  if (FPaintBox <> nil) and HandleAllocated and (Parent <> nil) then
+  if FPaintBox <> nil then
     FPaintBox.Redraw;
   for I := Low(FButtons) to High(FButtons) do
     if FButtons[I] <> nil then
@@ -352,7 +375,9 @@ end;
 
 procedure TDACPagination.RefreshChildren(const AUpdateCombo: Boolean);
 begin
-  if csDestroying in ComponentState then
+  if (csLoading in ComponentState) or (csDestroying in ComponentState) or
+    (csDesigning in ComponentState) or (Parent = nil) or not HandleAllocated or
+    not Parent.HandleAllocated then
     Exit;
 
   if AUpdateCombo then
@@ -437,6 +462,33 @@ begin
   Redraw;
 end;
 
+procedure TDACPagination.SetThemeMode(const AValue: TDACThemeMode);
+var
+  I: Integer;
+begin
+  if FThemeMode = AValue then
+    Exit;
+  FThemeMode := AValue;
+  for I := Low(FButtons) to High(FButtons) do
+    if FButtons[I] <> nil then
+      FButtons[I].ThemeMode := AValue;
+  if FPageSizeCombo <> nil then
+    FPageSizeCombo.ThemeMode := AValue;
+  ThemeChanged(Self);
+end;
+
+procedure TDACPagination.ThemeChanged(Sender: TObject);
+var
+  I: Integer;
+begin
+  for I := Low(FButtons) to High(FButtons) do
+    if FButtons[I] <> nil then
+      FButtons[I].ThemeMode := FThemeMode;
+  if FPageSizeCombo <> nil then
+    FPageSizeCombo.ThemeMode := FThemeMode;
+  Redraw;
+end;
+
 procedure TDACPagination.UpdateButtonState;
 var
   I: Integer;
@@ -488,9 +540,8 @@ begin
     Exit;
   if csDesigning in ComponentState then
     Exit;
-  if not HandleAllocated then
-    Exit;
-  if not Showing then
+  if (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated or
+    not Showing then
     Exit;
 
   if FPaintBox <> nil then
@@ -528,6 +579,7 @@ end;
 procedure TDACPagination.UpdateLayout;
 var
   I: Integer;
+  LTokens: TDACControlTokens;
   LButtonSize: Integer;
   LGap: Integer;
   LLeft: Integer;
@@ -536,11 +588,16 @@ var
   LShowChildren: Boolean;
   LTop: Integer;
 begin
+  if (csLoading in ComponentState) or (csDestroying in ComponentState) or
+    (csDesigning in ComponentState) or (Parent = nil) or not HandleAllocated or
+    not Parent.HandleAllocated then
+    Exit;
   DisableAlign;
   try
     UpdatePaintBoxBounds;
-    LButtonSize := 32;
-    LGap := 8;
+    LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+    LButtonSize := Round(LTokens.PaginationButtonSize);
+    LGap := Round(LTokens.PaginationGap);
     LTop := Max(0, (Height - LButtonSize) div 2);
     LLeft := 0;
     LPageCount := PageButtonCount;
@@ -559,7 +616,7 @@ begin
 
       FButtons[I].SetBounds(LLeft, LTop, LButtonSize, LButtonSize);
       FButtons[I].ShowIcon := I < 2;
-      FButtons[I].IconSize := 14;
+      FButtons[I].IconSize := Round(LTokens.PaginationIconSize);
       FButtons[I].Kind := mbkSecondary;
 
       case I of
@@ -605,8 +662,11 @@ begin
         FPageSizeCombo.Parent := Self;
       FPageSizeCombo.Visible := LShowChildren and FShowPageSize;
       if FPageSizeCombo.Visible then
-        FPageSizeCombo.SetBounds(Max(LLeft + 16, Width - 132), LTop - 2, 132,
-          LButtonSize + 4);
+        FPageSizeCombo.SetBounds(Max(LLeft + Round(LTokens.PaginationPageSizeGap),
+          Width - Round(LTokens.PaginationComboWidth)),
+          LTop - Round(LTokens.PaginationComboVerticalOffset),
+          Round(LTokens.PaginationComboWidth),
+          LButtonSize + Round(LTokens.PaginationComboHeightOffset));
     end;
   finally
     EnableAlign;
@@ -618,15 +678,12 @@ var
   LHeight: Integer;
   LWidth: Integer;
 begin
-  if FPaintBox = nil then
+  if (FPaintBox = nil) or (csLoading in ComponentState) or
+    (csDestroying in ComponentState) or (csDesigning in ComponentState) or
+    (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated then
     Exit;
-  LWidth := Width;
-  LHeight := Height;
-  if HandleAllocated then
-  begin
-    LWidth := ClientWidth;
-    LHeight := ClientHeight;
-  end;
+  LWidth := ClientWidth;
+  LHeight := ClientHeight;
   FPaintBox.SetBounds(0, 0, LWidth, LHeight);
 end;
 

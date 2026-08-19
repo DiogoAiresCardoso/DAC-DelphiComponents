@@ -11,7 +11,9 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
-  DAC.Components.Skia.Renderer;
+  DAC.Components.Controls.SystemText,
+  DAC.Components.Skia.Renderer,
+  DAC.Components.DesignSystem.Theme;
 
 type
   TDACProgressKind = (
@@ -33,37 +35,41 @@ type
     FMaximum: Integer;
     FPaintBox: TSkPaintBox;
     FRenderer: TDACSkiaRenderer;
+    FTextOverlay: TDACSystemTextOverlay;
     FShowValue: Boolean;
     FStatus: TDACProgressStatus;
+    FThemeMode: TDACThemeMode;
     FValue: Integer;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     function AccentColor: TAlphaColor;
     procedure DrawArc(const ACanvas: ISkCanvas; const ARect: TRectF;
       const AStartAngle, ASweepAngle, AStrokeWidth: Single;
-      const AColor: TAlphaColor; const AAlpha: Byte = 255);
+      const AColor: TAlphaColor; const AAlpha: Byte);
     procedure InvalidateProgress;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
     function ParentSurfaceColor: TAlphaColor;
     function Percent: Single;
-    function ScaleFactor: Single;
-    function ScaleMetric(const AValue: Integer): Integer;
+    function Pixels(const AValue: Integer): Integer;
     procedure SetKind(const AValue: TDACProgressKind);
     procedure SetMaximum(const AValue: Integer);
     procedure SetShowValue(const AValue: Boolean);
     procedure SetStatus(const AValue: TDACProgressStatus);
+    procedure SetThemeMode(const AValue: TDACThemeMode);
     procedure SetValue(const AValue: Integer);
     function TrackColor: TAlphaColor;
+    procedure ThemeChanged(Sender: TObject);
     procedure UpdatePaintBoxBounds;
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
   protected
-    procedure ChangeScale(M, D: Integer); override;
     procedure CreateWnd; override;
     procedure Loaded; override;
     procedure Resize; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    function ResolvedAccentColor: TAlphaColor;
+    function ResolvedTrackColor: TAlphaColor;
     procedure Redraw;
   published
     property Align;
@@ -80,6 +86,7 @@ type
     property Status: TDACProgressStatus read FStatus write SetStatus default mpsSuccess;
     property TabOrder;
     property TabStop default False;
+    property ThemeMode: TDACThemeMode read FThemeMode write SetThemeMode default dtmInherit;
     property Value: Integer read FValue write SetValue default 0;
     property Visible;
     property OnClick;
@@ -96,15 +103,16 @@ implementation
 uses
   System.Math,
   System.SysUtils,
-  DAC.Components.DesignSystem.ColorTokens,
-  DAC.Components.DesignSystem.Fonts;
+  DAC.Components.DesignSystem.Fonts,
+  DAC.Components.DesignSystem.ComponentStyle,
+  DAC.Components.DesignSystem.ControlTokens;
 
 constructor TDACProgress.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque, csReplicatable];
-  Width := 260;
-  Height := 28;
+  Width := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.ProgressDefaultWidth);
+  Height := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.ProgressDefaultHeight);
   TabStop := False;
   ParentColor := False;
   StyleElements := [];
@@ -114,6 +122,8 @@ begin
   FShowValue := True;
   FStatus := mpsSuccess;
   FValue := 0;
+  FThemeMode := dtmInherit;
+  TDACThemeManager.RegisterListener(Self, ThemeChanged);
 
   FRenderer := TDACSkiaRenderer.Create;
   FPaintBox := TSkPaintBox.Create(Self);
@@ -121,40 +131,41 @@ begin
   FPaintBox.SetSubComponent(True);
   FPaintBox.StyleElements := [];
   FPaintBox.OnDraw := PaintBoxDraw;
+  FTextOverlay := TDACSystemTextOverlay.Create(Self);
+  FTextOverlay.Parent := Self;
+  FTextOverlay.SetSubComponent(True);
+  FTextOverlay.Align := alClient;
 
   UpdatePaintBoxBounds;
 end;
 
 destructor TDACProgress.Destroy;
 begin
+  TDACThemeManager.UnregisterListener(Self);
+  FTextOverlay.Free;
   FPaintBox.Free;
   FRenderer.Free;
   inherited;
 end;
 
 function TDACProgress.AccentColor: TAlphaColor;
+var
+  LTokens: TDACControlTokens;
 begin
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
   case FStatus of
     mpsWarning:
-      Result := TDACComponentColors.Warning;
+      Result := LTokens.ProgressWarning;
     mpsDanger:
-      Result := TDACComponentColors.Danger;
+      Result := LTokens.ProgressDanger;
     mpsInfo:
-      Result := TDACComponentColors.Alpha(43, 125, 233);
+      Result := LTokens.ProgressInfo;
     mpsNeutral:
-      Result := TDACComponentColors.Alpha(71, 85, 105);
+      Result := LTokens.ProgressNeutral;
   else
-    Result := TDACComponentColors.Primary;
+    Result := LTokens.Success;
   end;
 end;
-
-procedure TDACProgress.ChangeScale(M, D: Integer);
-begin
-  inherited;
-  UpdatePaintBoxBounds;
-  InvalidateProgress;
-end;
-
 procedure TDACProgress.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
@@ -185,9 +196,20 @@ end;
 
 procedure TDACProgress.InvalidateProgress;
 begin
+  if (FPaintBox = nil) or (csLoading in ComponentState) or
+    (csDestroying in ComponentState) then
+    Exit;
   UpdatePaintBoxBounds;
-  if (FPaintBox <> nil) and HandleAllocated then
-    FPaintBox.Redraw;
+  if csDesigning in ComponentState then
+  begin
+    if Parent <> nil then
+      FPaintBox.Redraw;
+    Invalidate;
+    Exit;
+  end;
+  if (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated then
+    Exit;
+  FPaintBox.Redraw;
 end;
 
 procedure TDACProgress.Loaded;
@@ -210,19 +232,24 @@ var
   LStrokeWidth: Single;
   LText: string;
   LTrackRect: TRectF;
+  LTokens: TDACControlTokens;
 begin
   if ACanvas = nil then
     Exit;
 
-  LScale := ScaleFactor;
+  FRenderer.BeginNativeText(FTextOverlay);
+  try
+
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  LScale := LTokens.BorderWidth;
   ACanvas.Clear(ParentSurfaceColor);
-  LAlpha := 255;
+  LAlpha := LTokens.AlphaOpaque;
   if not Enabled then
-    LAlpha := 120;
+    LAlpha := LTokens.ProgressDisabledAlpha;
 
   if FKind = mpkCircular then
   begin
-    LStrokeWidth := ScaleMetric(8);
+    LStrokeWidth := Pixels(Round(LTokens.ProgressCircularThickness));
     LRadius := (Min(ADest.Width, ADest.Height) - LStrokeWidth) / 2;
     LCenter := TPointF.Create(ADest.Width / 2, ADest.Height / 2);
     LRect := TRectF.Create(LCenter.X - LRadius, LCenter.Y - LRadius,
@@ -232,17 +259,19 @@ begin
     if FShowValue then
     begin
       LText := Format('%d%%', [Round(Percent * 100)]);
-      LFontColor := TDACComponentColors.ControlTextForSurface(ParentSurfaceColor);
+      LFontColor := LTokens.ProgressValueText;
       FRenderer.TextCentered(ACanvas, LText,
-        TDACComponentFontInstaller.FontFamily,
-        TRectF.Create(0, 0, ADest.Width, ADest.Height), 13, LFontColor, True);
+        TDACComponentStyle.FontFamily,
+        TRectF.Create(0, 0, ADest.Width, ADest.Height), LTokens.ProgressValueTextSize, LFontColor, True);
     end;
     Exit;
   end;
 
-  LTrackRect := FRenderer.SnapRect(TRectF.Create(0, (ADest.Height - ScaleMetric(8)) / 2,
-    ADest.Width, (ADest.Height + ScaleMetric(8)) / 2), LScale);
-  LTrackRect.Inflate(-0.5 / LScale, -0.5 / LScale);
+  LTrackRect := FRenderer.SnapRect(TRectF.Create(0,
+    (ADest.Height - Pixels(Round(LTokens.ProgressLinearThickness))) / 2,
+    ADest.Width, (ADest.Height + Pixels(Round(LTokens.ProgressLinearThickness))) / 2), LScale);
+  LTrackRect.Inflate(-(LTokens.BorderWidth / 2) / LScale,
+    -(LTokens.BorderWidth / 2) / LScale);
   FRenderer.FillRoundRect(ACanvas, LTrackRect, TrackColor, LTrackRect.Height / 2, LAlpha);
 
   LProgressRect := LTrackRect;
@@ -254,16 +283,21 @@ begin
   if FShowValue then
   begin
     LText := Format('%d%%', [Round(Percent * 100)]);
-    LFontColor := TDACComponentColors.ControlTextForSurface(ParentSurfaceColor);
-    FRenderer.Text(ACanvas, LText, TDACComponentFontInstaller.FontFamily,
-      ADest.Width - ScaleMetric(36), (ADest.Height / 2) + ScaleMetric(4),
-      9, LFontColor, True, ScaleMetric(34));
+    LFontColor := LTokens.ProgressValueText;
+    FRenderer.Text(ACanvas, LText, TDACComponentStyle.FontFamily,
+      ADest.Width - Pixels(Round(LTokens.ProgressValueTextInset)),
+      (ADest.Height / 2) + Pixels(Round(LTokens.ProgressValueTextOffset)),
+      LTokens.ProgressValueTextSize, LFontColor, True,
+      Pixels(Round(LTokens.ProgressValueTextInset - LTokens.ProgressValueTextOffset)));
+  end;
+  finally
+    FRenderer.EndNativeText;
   end;
 end;
 
 function TDACProgress.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TDACComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.PopupBackground;
 end;
 
 function TDACProgress.Percent: Single;
@@ -278,6 +312,16 @@ begin
   InvalidateProgress;
 end;
 
+function TDACProgress.ResolvedAccentColor: TAlphaColor;
+begin
+  Result := AccentColor;
+end;
+
+function TDACProgress.ResolvedTrackColor: TAlphaColor;
+begin
+  Result := TrackColor;
+end;
+
 procedure TDACProgress.Resize;
 begin
   inherited;
@@ -285,18 +329,11 @@ begin
   InvalidateProgress;
 end;
 
-function TDACProgress.ScaleFactor: Single;
-begin
-  Result := 1;
-  if FPaintBox <> nil then
-    Result := FPaintBox.ScaleFactor;
-end;
-
-function TDACProgress.ScaleMetric(const AValue: Integer): Integer;
+function TDACProgress.Pixels(const AValue: Integer): Integer;
 begin
   if AValue <= 0 then
     Exit(0);
-  Result := Max(1, Round(AValue * ScaleFactor));
+  Result := Max(1, Round(AValue * 1));
 end;
 
 procedure TDACProgress.SetKind(const AValue: TDACProgressKind);
@@ -333,6 +370,14 @@ begin
   InvalidateProgress;
 end;
 
+procedure TDACProgress.SetThemeMode(const AValue: TDACThemeMode);
+begin
+  if FThemeMode = AValue then
+    Exit;
+  FThemeMode := AValue;
+  ThemeChanged(Self);
+end;
+
 procedure TDACProgress.SetValue(const AValue: Integer);
 begin
   if FValue = AValue then
@@ -343,9 +388,12 @@ end;
 
 function TDACProgress.TrackColor: TAlphaColor;
 begin
-  if TDACComponentColors.IsDarkSurface(ParentSurfaceColor) then
-    Exit(TDACComponentColors.Alpha(38, 58, 44));
-  Result := TDACComponentColors.Alpha(226, 232, 240);
+  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.ProgressTrack;
+end;
+
+procedure TDACProgress.ThemeChanged(Sender: TObject);
+begin
+  InvalidateProgress;
 end;
 
 procedure TDACProgress.UpdatePaintBoxBounds;
@@ -353,12 +401,13 @@ var
   LHeight: Integer;
   LWidth: Integer;
 begin
-  if FPaintBox = nil then
+  if (FPaintBox = nil) or (csLoading in ComponentState) or
+    (csDestroying in ComponentState) then
     Exit;
 
   LWidth := Width;
   LHeight := Height;
-  if HandleAllocated then
+  if not (csDesigning in ComponentState) and HandleAllocated then
   begin
     LWidth := ClientWidth;
     LHeight := ClientHeight;

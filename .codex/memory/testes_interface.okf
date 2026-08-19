@@ -1,0 +1,3442 @@
+# Memoria Exclusiva - Testes de Interface e Comportamento
+
+O especialista de interface registra cenarios reutilizaveis e resultados reais.
+Ele so inicia apos `APPROVED_FOR_UI_TEST`. Formato: `team-memory-model.okf`.
+
+ID: MEM-UI-001
+Data: 2026-07-20
+Demanda/branch: N/A
+Fato: Componentes VCL/Skia precisam de validacao alem do build, cobrindo foco, teclado, mouse, resize, DPI, design-time e estados visuais.
+Decisao: Todo roteiro de UI deve declarar ambiente, PPI, controle/cenario, acao, resultado esperado, resultado observado e evidencia (screenshot, log ou video quando disponivel).
+Evidencia: `.codex/knowledge/architecture-orchestration.okf`, secoes 3 e 6; `code-review-gate.okf`, secao "Saida e handoff".
+Impacto: Build ou revisao estatica isolados nao aprovam clipping, foco invisivel, comportamento de teclado, z-order, flicker ou falhas de design-time.
+Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, arquitetura
+Status: CONFIRMED
+Handoff: Testes entregam ao orquestrador resultado por cenario e IDs de regressao; falha retorna ao desenvolvedor na mesma branch.
+
+## Matriz minima reutilizavel
+
+| Categoria | Casos minimos quando aplicavel |
+|---|---|
+| Foco e teclado | Tab/Shift+Tab, setas, Space/Enter/Escape, foco visivel, ordem e retorno de foco |
+| Mouse | hover, pressed, click, clique fora, captura e cursor |
+| Input nativo | caret, selecao, clipboard, IME, undo/redo, dropdown e leitura por tecnologia assistiva quando disponivel |
+| Layout | resize, scroll, sobreposicao/z-order, clipping e estados disabled/selected/erro |
+| DPI/tema | 96/120/144/192 PPI, contraste e indicador que nao depende apenas de cor |
+| Designer | criar, carregar e salvar DFM; componente sem Parent nao deve disparar erro de janela/parent |
+
+---
+
+# Execucao QA - branch `codex/skia-suite-compliance-demo`
+
+Data: 2026-07-20
+Status de entrada: `APPROVED_FOR_UI_TEST` em `.codex/memory/revisao_codigo.okf`, secao `MEM-DEL-004`.
+Decisao QA: `BLOCKED`.
+
+## Artefatos e ambiente observados
+
+- Branch: `codex/skia-suite-compliance-demo`.
+- A demo solicitada no handoff, `Build\\demo\\Win32\\Debug\\DemoComponentes.exe`, nao existe no worktree.
+- A demo real usada foi `Build\\EXE\\Win32\\Debug\\Demo.exe` (16,632,086 bytes; 2026-07-20 22:14:32).
+- Artefatos atuais tambem presentes: `Build\\Bpl\\DACSkiaComponentsRuntime.bpl`, `Build\\Bpl\\DACSkiaComponentsDesign.bpl` e `Build\\Tests\\Win32\\Debug\\DACComponentsSmoke.exe`.
+- O handoff de revisao registra Delphi 32.0/Win32 e build de runtime, design-time, demo e smoke com zero warnings/erros. Esta etapa nao recompilou.
+
+## Evidencia de inicializacao real controlada
+
+| ID | Acao | Resultado observado | Evidencia / encerramento |
+|---|---|---|---|
+| UI-INIT-001 | Iniciar a demo real, aguardar cinco segundos e consultar processo/janela. | `FAIL`: processo vivo e respondendo com `MainWindowTitle = Error`; nao houve inicio limpo sem popup/excecao. | PID 11980; `Exited=False`, `Responding=True`, `MainWindowHandle=3082290`, titulo `Error`. Instancia encerrada pelo teste temporizado. |
+| UI-INIT-002 | Reproduzir com PID isolado para capturar a janela. | `FAIL`: o inventario de janelas retornou uma janela da demo com titulo `Error`. | PID 8312; janela id 1769616; titulo `Error`. PID validado contra o caminho da demo e encerrado explicitamente. |
+| UI-INIT-003 | Ler texto/screenshot do dialogo `Error`. | `BLOCKED`: o auxiliar de automacao Windows travou durante a captura e as tentativas foram interrompidas. | O titulo/responsividade acima sao a evidencia real. O texto do dialogo nao foi capturado; por orientacao, nao houve nova automacao GUI. |
+
+Nao restou processo `Demo` ou `DemoComponentes` apos o encerramento do PID 8312.
+
+## Matriz estatica/documental executada
+
+| ID | Cenario | Resultado | Evidencia |
+|---|---|---|---|
+| UI-STATIC-001 | Demo declarativa cobre as 15 familias. | `PASS` estatico. | `demo/Demo.Principal.dfm` contem 15 `TTabSheet`: Botoes, Inputs, Seletores, Controles, Tabs, Cards, Grid, Status, Progresso, Pills, Feedback, Paginacao, Loading, Charts e Report. |
+| UI-STATIC-002 | Instancias das superficies alteradas. | `PASS` estatico. | O DFM declara `TDACTabs`, `TDACDataGrid`, `TDACToast`, `TDACTooltip` e `TDACPagination`; tooltip declara `TargetControl = btnTooltipTarget`. |
+| UI-STATIC-003 | Pontos de interacao dos controles existem no delta. | `PASS` estatico; sem prova de comportamento. | Tabs/DataGrid tem handlers de mouse/resize; DataGrid declara teclado, roda e acao; Pagination expoe click, teclado, mouse e resize; Tooltip monitora mouse. |
+| UI-STATIC-004 | Smoke pode ser repetido nesta sessao. | `BLOCKED` de ambiente. | `Start-Process` falhou antes de criar processo por chave duplicada `Path`/`PATH` no ambiente PowerShell. O handoff do revisor permanece como evidencia de cinco execucoes anteriores com exit code 0; esta QA nao a reproduziu. |
+| UI-STATIC-005 | Designer/DFM e interacao visual. | `BLOCKED`. | Nao houve evidencia de abrir/salvar/reabrir o DFM no RAD Studio, e a demo nao superou o popup `Error`. |
+
+## Gates restantes
+
+Sem resultado runtime: visibilidade/usabilidade das 15 familias; Tab/Shift+Tab; Space/Enter/Escape/setas; mouse e scroll; tooltip/toast/modal; tabs; grid com dataset, colunas automaticas, scroll e acoes; resize/clipping/flicker; e DPI 96/120/144/192. A presenca no DFM e handlers no codigo nao substituem esses testes.
+
+## Reproducao e handoff
+
+1. Na branch indicada, iniciar `Build\\EXE\\Win32\\Debug\\Demo.exe`.
+2. Em ate cinco segundos, a instancia criada apresenta janela responsiva com titulo `Error`, em vez de carregar a galeria.
+3. Corrigir a excecao/modal de inicializacao e informar causa confirmada ao revisor/desenvolvedor.
+4. Reexecutar build e smoke; o revisor aprova o novo diff; entao o QA retoma a matriz visual completa, designer e quatro PPIs.
+
+Handoff ao orquestrador: `BLOCKED`. Nenhum codigo, DFM, package, projeto, branch, commit ou PR foi alterado por este agente. O unico arquivo atualizado nesta etapa e esta memoria de QA.
+
+---
+
+# Reexecucao QA - MEM-DEL-005
+
+Data: 2026-07-20
+Branch: `codex/skia-suite-compliance-demo`
+Artefato canonico: `Build\\EXE\\Win32\\Debug\\Demo.exe` (18,479,614 bytes; 2026-07-20 22:45:19).
+Pre-condicao: `APPROVED_FOR_UI_TEST` em `.codex/memory/revisao_codigo.okf`, `MEM-DEL-005`.
+Decisao QA: `BLOCKED` por cobertura visual/interativa nao comprovada; a abertura isolada passou.
+
+## Checkpoints executados
+
+| ID | Cenario | Resultado | Evidencia |
+|---|---|---|---|
+| UI-005-INIT | Iniciar o artefato canonico, aguardar cinco segundos e consultar processo/janela. | `PASS` observado. | PID 20472; `Exited=False`, `Responding=True`, `MainWindowHandle=7536746`, `MainWindowTitle=DAC Componentes - Demo`. Nenhum popup `Error`, `Application Error`, excecao 217 ou termino prematuro foi observado nesse intervalo. |
+| UI-005-ARTIFACT | Confirmar artefato Build antes da execucao. | `PASS` observado. | `Demo.exe` atualizado em 2026-07-20 22:45:19; o handoff MEM-DEL-005 confirma `sk4d.dll` ao lado do executavel. |
+| UI-005-UIA | Ler a arvore/acessibilidade da janela para navegar controles. | `BLOCKED`. | O controlador Windows retornou a janela unica correta da demo, mas `get_window_state` nao respondeu dentro do checkpoint e a tentativa foi interrompida. Nenhuma nova automacao GUI foi iniciada. |
+
+O PID 20472 foi validado contra o caminho do artefato e encerrado explicitamente apos o checkpoint. Nao restou processo `Demo` ou `DemoComponentes` desta execucao.
+
+## Itens nao comprovados nesta reexecucao
+
+Nao marcar como PASS: 15 familias visiveis/usaveis via tabs e scroll; foco e
+Tab/Shift+Tab; Space/Enter/Escape/setas; mouse; tooltip/toast/modal;
+DataGrid com dataset, colunas, selecao, hover, acoes e scroll; pagination;
+resize/clipping/flicker; DPI 96/120/144/192; e abrir/salvar/reabrir DFM no
+designer. A falha da automacao de interface impede observacao segura desses
+cenarios e nao e atribuida ao produto sem evidencia adicional.
+
+## Handoff
+
+O defeito anterior de inicializacao com janela `Error` esta fechado para o
+checkpoint de cinco segundos do artefato canonico atual. O veredicto global
+permanece `BLOCKED` porque os gates UI exigidos nao puderam ser observados sem
+o controlador Windows. Para liberar commit/PR, executar a matriz interativa em
+ambiente com controle de janela funcional ou registrar evidencias manuais
+reproduziveis (capturas, PPI e resultados por cenario); depois este agente
+reavalia apenas os itens pendentes.
+
+---
+
+# QA final por evidencia executavel - MEM-DEL-006
+
+Data: 2026-07-20
+Branch: `codex/skia-suite-compliance-demo`
+Pre-condicao: QA autorizado apos `MEM-DEL-006`; controlador de UI nao utilizado.
+Decisao QA: `PASS` para o roteiro executavel autorizado.
+
+## Evidencia de interacao real
+
+Executavel: `Build\\Tests\\Win32\\Debug\\DACComponentsInteraction.exe`.
+Cada execucao recebeu limite de 15 segundos, stdout/stderr redirecionados e encerramento somente seria aplicado ao PID da propria execucao se ocorresse timeout. Nenhum timeout ocorreu.
+
+| Execucao | PID | Exit code | Stdout | Stderr | Resultado |
+|---|---:|---:|---|---|---|
+| 1 | 17732 | 0 | `DACComponentsInteraction: PASS` | vazio | `PASS` |
+| 2 | 21644 | 0 | `DACComponentsInteraction: PASS` | vazio | `PASS` |
+| 3 | 18204 | 0 | `DACComponentsInteraction: PASS` | vazio | `PASS` |
+
+Depois das tres execucoes nao havia processo `DACComponentsInteraction`, `Demo` ou `DemoComponentes` pendente.
+
+## Cobertura confirmada pelo teste compilado
+
+O teste usa `Demo.Principal` e chama `Application.CreateForm(TForm1, Form1)`; portanto carrega o DFM real da demo. Ele confirma instanciacao de `GalleryTabs` e das 15 familias demonstradas: inputs, seletores, controles, tabs, cards, grid, status, progresso, pills, feedback, paginacao, loading, charts e report, alem de botoes. O programa tambem valida:
+
+- escala DPI por helper em 96, 120, 144 e 192 PPI;
+- Enter em `TDACButton`, selecao de proximo foco, Space em checkbox e setas em slider;
+- `TDACDataGrid` com dataset ativo, tres colunas automaticas, scroll e cursor do dataset preservado durante repaint;
+- show/hide de tooltip, estado de toast e Escape fechando modal;
+- clamp de paginacao e resize que atualiza largura das tabs;
+- ausencia de excecao VCL observada pelo handler de `Application.OnException`.
+
+## Checkpoint da demo canonica
+
+Artefato: `Build\\EXE\\Win32\\Debug\\Demo.exe` (18,479,691 bytes).
+
+| Cenario | Resultado | Evidencia |
+|---|---|---|
+| Inicializacao limitada | `PASS` | PID 20228 permaneceu vivo e respondendo por cinco segundos, com `MainWindowTitle=DAC Componentes - Demo` e `MainWindowHandle=1574842`; nao apresentou titulo `Error` ou `Application Error`. O PID foi encerrado explicitamente ao termino do checkpoint. |
+
+## Limite honesto da evidencia
+
+Nao houve inspecao manual por screenshot nem abertura/salvamento no IDE RAD Studio, pois o controlador de UI esta indisponivel nesta sessao e foi explicitamente excluido deste roteiro. O PASS cobre o DFM carregado em runtime e os comportamentos exercitados pelo executavel de interacao; nao afirma uma avaliacao estetica manual adicional. Nao ha bloqueio aberto para o escopo autorizado.
+
+Handoff ao orquestrador: `APPROVED_FOR_COMMIT_PR`. Nenhum arquivo de fonte, DFM, package, projeto, branch, commit ou PR foi alterado por este agente; esta memoria recebeu somente o registro de QA.
+
+---
+
+# QA visual - MEM-DEL-007
+
+Data: 2026-07-21
+Branch: `codex/skia-suite-compliance-demo`
+Decisao QA visual: `BLOCKED` por indisponibilidade do capturador de janela.
+
+## Tentativa controlada de evidencia visual
+
+| ID | Acao | Resultado | Evidencia |
+|---|---|---|---|
+| UI-007-OPEN | Iniciar uma unica instancia de `Build\\EXE\\Win32\\Debug\\Demo.exe`. | `PASS` de exposicao. | PID 26832; `Exited=False`; `Responding=True`; `MainWindowTitle=DAC Componentes - Demo`; `MainWindowHandle=1378576`. |
+| UI-007-CAPTURE | Capturar a janela retornada pelo controlador Windows com `get_window_state(include_screenshot=true)`. | `BLOCKED`. | A chamada nao retornou imagem, screenshot id, URL ou path e ficou presa ate ser interrompida apos aproximadamente 181 s. |
+| UI-007-CLEANUP | Encerrar a instancia criada para o teste. | `PASS`. | PID 26832 validado contra o caminho de `Demo.exe` e encerrado explicitamente; nenhum processo Demo permaneceu. |
+
+## Screenshots
+
+Nenhum arquivo de imagem foi produzido. Portanto nao ha paths para anexar nem
+base visual para comparar fundo preto, sobreposicao, clipping vertical, icones
+SVG/glifos, scroll topo/meio/fim, tabs horizontal/vertical, resize ou DPI.
+
+## Designer e DPI
+
+Nao foi possivel abrir o DFM no Delphi Designer nem capturar 96/120/144/192
+PPI, pois a unica captura de janela disponivel falha antes da primeira imagem.
+O PASS executavel de MEM-DEL-006 continua valido para DFM carregado em runtime
+e DPI por helper, mas nao substitui a evidencia visual exigida nesta etapa.
+
+## Handoff
+
+O bloqueio e de infraestrutura de captura, nao um defeito atribuivel ao
+produto: a janela foi exposta e responsiva antes da captura travar. Retomar a
+matriz visual em uma sessao com `get_window_state` funcional ou outro capturador
+Windows aprovado; nessa retomada obter imagens reais para os quatro PPIs e
+estados solicitados antes de emitir PASS visual. Nenhum fonte, DFM, package,
+projeto, branch, commit ou PR foi alterado por este agente.
+
+---
+
+# QA visual por captura nativa - MEM-DEL-007 (tentativa alternativa)
+
+Data: 2026-07-21
+Branch: `codex/skia-suite-compliance-demo`
+Decisao QA visual: `BLOCKED` por barreira de ambiente/autenticacao exposta na captura.
+
+## Evidencia obtida
+
+| ID | Cenario | Resultado | Evidencia |
+|---|---|---|---|
+| UI-007-NATIVE-001 | Captura nativa da unica instancia da Demo. | `FAIL/BLOCKED`. | Demo PID 540, responsiva, capturada em 144 DPI; janela 1215x785. PNG salvo em `C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-144-top.png`. |
+| UI-007-NATIVE-002 | Inspecao visual do PNG. | `FAIL`. | A imagem mostra fundo preto quase integral e o texto `Inserir seu PIN`. Esse texto nao existe em `demo`/`Source`; portanto a imagem esta coberta por uma barreira de ambiente/autenticacao, e nao fornece a superficie da demo para QA. |
+| UI-007-NATIVE-003 | Encerramento controlado. | `PASS`. | PID 540 validado contra `Build\\EXE\\Win32\\Debug\\Demo.exe` e encerrado explicitamente; nenhum processo Demo foi mantido. |
+
+## Cenarios sem evidencia valida
+
+Nao foram capturados scroll topo/meio/fim, tabs horizontal/vertical apos resize, botoes com/sem SVG, 96/120/192 DPI ou abertura do DFM no Delphi Designer. Nao houve interacao com a solicitacao de PIN, pois ela e uma barreira de autenticacao e esta fora da autorizacao de QA.
+
+## Handoff
+
+O PNG e o path acima sao a evidencia concreta do bloqueio. Retomar somente com a sessao Windows desbloqueada e uma superficie da demo realmente exposta; entao capturar os estados solicitados em uma instancia por vez. Este bloqueio nao altera a evidencia executavel `PASS` de MEM-DEL-006, mas impede emitir PASS visual. Nenhum fonte, DFM, package, projeto, branch, commit ou PR foi alterado por este agente.
+
+---
+
+# Reexecucao visual apos desbloqueio - branch `codex/fix-demo-visual-regressions`
+
+Data: 2026-07-21
+Decisao QA visual: `BLOCKED` por regressao visual/runtime reproduzida.
+
+## Capturas e resultado observado
+
+| ID | Cenario | Resultado | Evidencia |
+|---|---|---|---|
+| UI-VIS-001 | Abrir a demo canonica em sessao desbloqueada. | `PASS` de inicializacao inicial. | PID 27796, titulo `DAC Componentes - Demo`, handle 4851598 e responsiva apos quatro segundos. |
+| UI-VIS-002 | Capturar o topo da aba Botoes com janela em primeiro plano. | `FAIL` bloqueante. | 144 DPI, janela 1215x785. PNG: `C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-144-buttons-top.png`. Mostra area cliente preta quase integral e nenhuma tab, botao ou conteudo da galeria. |
+| UI-VIS-003 | Captura de confirmacao apos cinco segundos. | `INCONCLUSIVO`. | PNG: `C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-144-buttons-after-5s.png`. Foi contaminado por outra superficie apos a Demo perder primeiro plano; nao e usado como prova da UI. |
+| UI-VIS-004 | Verificar ciclo de vida apos as capturas. | `FAIL` bloqueante. | O processo Demo continuou respondendo, mas perdeu janela principal (`MainWindowHandle=0`, titulo vazio). |
+| UI-VIS-005 | Encerrar instancia criada. | `PASS`. | PID 27796 validado contra `Build\\EXE\\Win32\\Debug\\Demo.exe` e encerrado explicitamente. |
+
+## Gates bloqueados
+
+A superficie preta valida em UI-VIS-002 viola diretamente a exigencia de nao expor fundo preto. Sem tabs ou conteudo da galeria, nao ha como executar de modo valido scroll topo/meio/fim, tabs horizontal/vertical apos resize, botoes com SVG, clipping/sobreposicao, 96/120/192 DPI ou Designer/DFM. O ambiente disponibilizou apenas 144 DPI real nesta captura; nao foram alteradas configuracoes do Windows para simular os outros PPIs.
+
+## Reproducao para desenvolvimento
+
+1. Na branch `codex/fix-demo-visual-regressions`, iniciar `Build\\EXE\\Win32\\Debug\\Demo.exe` em sessao desbloqueada.
+2. Com a janela em primeiro plano, capturar sua regiao: o topo da galeria aparece com cliente preto e sem controles renderizados.
+3. Apos alguns segundos, o processo pode permanecer vivo sem janela principal.
+
+Handoff: retornar ao especialista Delphi/VCL para investigar inicializacao e paint Skia/ciclo de vida da janela. O PASS executavel anterior nao cobre esta regressao visual. Nenhum fonte, DFM, package, projeto, branch, commit ou PR foi alterado por este agente.
+
+---
+
+# Revalidacao visual - MEM-DEL-008
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Decisao QA da regressao P0: `PASS`.
+
+## Checkpoint reproduzido
+
+| ID | Cenario | Resultado | Evidencia |
+|---|---|---|---|
+| UI-008-OPEN | Abrir `Build\\EXE\\Win32\\Debug\\Demo.exe` e aguardar cinco segundos. | `PASS`. | PID 26452, responsivo, titulo `DAC Componentes - Demo`, handle 4259962. |
+| UI-008-CAPTURE | Capturar a mesma regiao que antes mostrou cliente preto. | `PASS`. | 144 DPI, janela 1215x785. PNG: `C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-144-buttons-mem-del-008.png`. |
+| UI-008-INSPECT | Inspecionar o PNG gerado. | `PASS`. | A aba Botoes exibe titulo, subtitulo, grids e botoes Primario, Secundario, Perigo, Transparente, Pequeno, Medio, Raio pill e TabStop False. Nao ha area cliente preta e nenhum paintbox cobre os filhos visiveis. Icones SVG aparecem como icones, nao como glifos/caixas. |
+| UI-008-CLEANUP | Encerrar instancia criada. | `PASS`. | PID 26452 validado contra o executavel canonico e encerrado explicitamente. |
+
+O ambiente real desta captura e 144 DPI; este checkpoint revalida somente a
+regressao P0 de pintura/ordem de filhos. Scroll, orientacao vertical, outros
+PPIs e Designer continuam fora deste recorte e exigem cenarios visuais
+separados. Nenhum fonte, DFM, package, projeto, branch, commit ou PR foi
+alterado por este agente.
+
+---
+
+# Gate visual real - recuperacao CUA final
+
+Data: 2026-07-22
+Decisao: `BLOCKED`.
+
+Em nova sessao CUA, `sky.list_apps` e `sky.get_window` voltaram a localizar a
+unica Demo (window id `9112720`). A etapa seguinte, limitada a
+`sky.activate_window` seguida de `sky.list_windows`, nao retornou antes da
+interrupcao apos aproximadamente 114 s. Por a chamada estar sequencialmente
+pendente, nao ha confirmacao honesta de que a ativacao ocorreu e nao ha lista
+de modal, desktop alternativo ou janela filha.
+
+Nao foi executado novo `get_window_state`, clique, teclado, wheel ou captura.
+O helper fica considerado indisponivel para este gate; nenhuma aprovacao por
+listagem foi emitida. Nenhum fonte, DFM, package, projeto, branch, commit ou
+PR foi alterado por este agente.
+
+---
+
+# QA visual expandido - branch `codex/fix-demo-visual-regressions`
+
+Data: 2026-07-21
+Decisao QA final expandida: `BLOCKED`.
+
+## Evidencias geradas
+
+| ID | Cenario | Resultado | Evidencia |
+|---|---|---|---|
+| UI-EXP-001 | Topo integral da aba Botoes, apos cinco segundos. | `FAIL` bloqueante. | 144 DPI, janela 1215x785. PNG: `C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-expanded-144-buttons-top.png`. O conteudo esta visivel, sem fundo preto, mas o subtitulo e as colunas/botoes a direita terminam no limite da janela: clipping horizontal reproduzido. |
+| UI-EXP-002 | Scroll de seis passos na aba Botoes. | `INCONCLUSIVO`. | A primeira chamada de roda falhou por conversao de dado; a repeticao nativa foi enviada. PNG subsequente: `C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-expanded-144-buttons-middle.png`. A janela perdeu primeiro plano antes da captura e a imagem nao e prova de scroll. |
+| UI-EXP-003 | Ciclo de vida apos scroll/captura. | `FAIL` bloqueante. | Demo PID 8004 permaneceu respondendo, mas com `MainWindowHandle=0` e titulo vazio. Sem janela para tabs, tooltip/modal, resize ou capturas adicionais. |
+| UI-EXP-004 | Cleanup. | `PASS`. | PID 8004 validado contra `Build\\EXE\\Win32\\Debug\\Demo.exe` e encerrado explicitamente. |
+
+## Gates pendentes por bloqueio
+
+Nao foi possivel validar scroll topo/meio/fim, tabs horizontal/vertical apos
+resize, tooltip/modal, SVG em outras secoes, Designer/DFM ou 96/120/192 DPI.
+O monitor da sessao fornece 144 DPI real; nao foram modificadas configuracoes
+do Windows. O clipping horizontal em UI-EXP-001 e a perda da janela em
+UI-EXP-003 impedem um PASS final, independentemente do P0 de paintbox ter sido
+fechado em MEM-DEL-008.
+
+## Reproducao
+
+1. Abrir `Build\\EXE\\Win32\\Debug\\Demo.exe` e aguardar cinco segundos.
+2. Capturar a janela integral em 144 DPI: os elementos a direita do topo da
+   aba Botoes sao cortados pela borda.
+3. Durante a interacao/captura seguinte, o processo pode continuar vivo sem
+   janela principal.
+
+Handoff: retornar ao especialista Delphi/VCL para corrigir o layout High DPI
+horizontal e o ciclo de vida da janela. Nenhum fonte, DFM, package, projeto,
+branch, commit ou PR foi alterado por este agente.
+
+---
+
+# QA final visual - MEM-DEL-010
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Decisao QA final: `BLOCKED`.
+
+## Evidencia executada
+
+| ID | Cenario | Resultado | Evidencia |
+|---|---|---|---|
+| UI-010-OPEN | Abrir a demo atualizada e aguardar cinco segundos. | `PASS`. | PID 1700, responsivo, titulo `DAC Componentes - Demo`, handle 4982986. |
+| UI-010-144-TOP | Captura integral da janela atualizada. | `FAIL` bloqueante. | 144 DPI, 1215x785. PNG: `C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-final-144-top.png`. A imagem nao possui fundo preto, e SVGs sao icones corretos, mas o subtitulo e a direita dos botoes `Alerta` e `Raio 4` sao cortados pela borda da janela. |
+| UI-010-CLEANUP | Encerrar a instancia criada. | `PASS`. | PID 1700 validado contra `Build\\EXE\\Win32\\Debug\\Demo.exe` e encerrado explicitamente. |
+
+## Criterios nao liberados
+
+O clipping horizontal em UI-010-144-TOP impede `APPROVED_FOR_COMMIT_PR`. Por
+isso nao foram considerados aprovados scroll topo/meio/fim, tabs H/V apos
+resize, tooltip/modal, Designer/DFM ou 96/120/192 DPI. A sessao exibe somente
+144 DPI real; nenhum ajuste de escala do Windows foi feito para fabricar os
+outros PPIs.
+
+## Reproducao exata
+
+1. Na branch `codex/fix-demo-visual-regressions`, abrir
+   `Build\\EXE\\Win32\\Debug\\Demo.exe`.
+2. Aguardar cinco segundos e capturar a janela integral em 144 DPI.
+3. Na aba Botoes, verificar que `Alerta` e `Raio 4`, alem do fim do subtitulo,
+   terminam fora da borda direita; o conteudo nao reflowa nem aparece uma barra
+   horizontal para acessa-los.
+
+Handoff: retornar ao especialista Delphi/VCL para corrigir o layout/reflow
+High DPI antes de nova QA. Nenhum fonte, DFM, package, projeto, branch, commit
+ou PR foi alterado por este agente.
+
+---
+
+# QA conclusivo por PrintWindow - MEM-DEL-011/012
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Decisao QA final: `BLOCKED`.
+
+## Capturas integrais do HWND
+
+| ID | Estado | Resultado | Evidencia |
+|---|---|---|---|
+| UI-011-TOP | Topo da aba Botoes. | `PASS` local. | [PrintWindow 144 topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-printwindow-144-top.png): janela integral sem clipping horizontal, sem fundo preto e com icones SVG corretos. |
+| UI-011-MID | Uma pagina abaixo via `WM_VSCROLL` no handle real de `TDACScrollContainer`. | `FAIL` bloqueante. | [PrintWindow 144 meio](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-printwindow-144-middle.png): faixas pretas largas aparecem entre os grids de botoes. |
+| UI-011-BOTTOM | Fim do scroll via `WM_VSCROLL/SB_BOTTOM`. | `FAIL` bloqueante. | [PrintWindow 144 fim](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-printwindow-144-bottom.png): as faixas pretas persistem entre os containers de estados e acoes. |
+| UI-011-HANDLE | Ciclo de vida durante os dois scrolls. | `PASS`. | PID 28100 permaneceu respondendo; `MainWindowHandle=30277754` e titulo `DAC Componentes - Demo` foram preservados antes do cleanup. |
+| UI-011-CLEANUP | Encerramento da instancia criada. | `PASS`. | PID 28100 validado contra `Build\\EXE\\Win32\\Debug\\Demo.exe` e encerrado explicitamente. |
+
+## Limites e veredicto
+
+O monitor disponivel fornece somente 144 DPI real; 96/120/192 nao foram
+fabricados por mudanca de configuracao do Windows. Mesmo assim, a falha visual
+em 144 DPI e suficiente para impedir `APPROVED_FOR_COMMIT_PR`: o requisito de
+nao expor area preta falha em scroll. Tabs H/V apos resize, tooltip manual/hover,
+modal/Escape e Designer/DFM nao foram considerados aprovados porque o gate
+basico de pintura/scroll continua falhando.
+
+## Reproducao exata
+
+1. Abrir `Build\\EXE\\Win32\\Debug\\Demo.exe` em 144 DPI.
+2. Enviar `WM_VSCROLL/SB_PAGEDOWN` ao handle de `TDACScrollContainer` da aba
+   Botoes e capturar o HWND principal via `PrintWindow`.
+3. Faixas pretas aparecem entre os cards/grids; repetir com `SB_BOTTOM` mantem
+   a mesma falha.
+
+Handoff: retornar ao especialista Delphi/VCL para corrigir o repaint/chrome do
+scroll container apos mudanca de viewport. Nenhum fonte, DFM, package, projeto,
+branch, commit ou PR foi alterado por este agente.
+
+---
+
+# QA de regressao visual - MEM-DEL-013
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Decisao: `PASS` para a regressao de paint/scroll em 144 DPI real.
+
+## Evidencia executada
+
+| ID | Cenario | Resultado | Evidencia |
+|---|---|---|---|
+| UI-013-OPEN | Abrir a Demo e aguardar cinco segundos. | `PASS`. | PID 25612, responsivo, titulo `DAC Componentes - Demo`, handle 6162390. |
+| UI-013-TOP | Captura nativa integral no topo. | `PASS`. | [PrintWindow 144 topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-printwindow-144-mem-del-013-top.png): conteudo, SVGs e limites laterais inteiros, sem fundo preto. |
+| UI-013-MID | `WM_VSCROLL/SB_PAGEDOWN` no HWND real de `TDACScrollContainer`. | `PASS`. | [PrintWindow 144 meio](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-printwindow-144-mem-del-013-middle.png): sem faixas pretas entre grids; botoes e icones permanecem legiveis. |
+| UI-013-BOTTOM | `WM_VSCROLL/SB_BOTTOM` no mesmo HWND. | `PASS`. | [PrintWindow 144 fim](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-printwindow-144-mem-del-013-bottom.png): sem artefatos pretos, clipping ou sobreposicao. |
+| UI-013-HANDLE | Ciclo de vida apos scroll. | `PASS`. | A instancia permaneceu `Responding=True`, com mesmo handle e titulo. |
+| UI-013-INTERACTION | Suite de interacao VCL atual. | `PASS`. | `DACComponentsInteraction.exe`: exit code 0, `DACComponentsInteraction: PASS`; cobre escalas deterministicas 96/120/144/192, reflow, scroll, teclado/foco, SVG, tooltip programatico e Escape no modal. |
+
+## Limites de ambiente e proximo gate
+
+O monitor da sessao fornece somente 144 DPI real (`GetDpiForWindow`); a QA nao
+alterou a escala do Windows para fabricar 96, 120 ou 192 DPI. As quatro escalas
+foram validadas de forma deterministica na suite de interacao, mas a inspecao
+visual nativa ficou limitada a 144 DPI.
+
+A evidencia acima libera a regressao de scroll para revisao. Ela nao substitui
+uma validacao visual manual de tabs horizontal/vertical apos resize, hover real
+de tooltip e Designer/DFM quando esses ambientes estiverem acessiveis.
+
+Handoff: a regressao MEM-DEL-011/012 esta fechada. Nenhum fonte, DFM, package,
+projeto, branch, commit ou PR foi alterado por este agente.
+
+## Veredicto de liberacao - MEM-DEL-013
+
+Decisao: `APPROVED_FOR_COMMIT_PR`.
+
+A limitacao de haver somente 144 DPI fisico nesta sessao **nao impede a
+release**: a janela integral e a rolagem topo/meio/fim foram inspecionadas por
+`PrintWindow` em 144 DPI real, e 96/120/144/192 possuem cobertura deterministica
+na suite `DACComponentsInteraction.exe`, encerrada com exit code 0. Nao houve
+falha bloqueante remanescente na regressao visual entregue por MEM-DEL-013.
+
+---
+
+# QA da roda do mouse - pre-commit
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Decisao: `PASS`.
+
+## Build e execucao real
+
+`Tests\\DACComponentsInteraction.dproj` foi recompilado com Delphi Win32 32.0:
+`Build succeeded`, `0 Warning(s)`, `0 Error(s)`. A versao recem-gerada de
+`Build\\Tests\\Win32\\Debug\\DACComponentsInteraction.exe` foi executada cinco
+vezes, cada uma com limite de 15 segundos:
+
+| Execucao | PID | Tempo | Exit code | Saida |
+|---|---:|---:|---:|---|
+| 1 | 26172 | 3069 ms | 0 | `DACComponentsInteraction: PASS` |
+| 2 | 24428 | 2313 ms | 0 | `DACComponentsInteraction: PASS` |
+| 3 | 14288 | 2371 ms | 0 | `DACComponentsInteraction: PASS` |
+| 4 | 13084 | 2321 ms | 0 | `DACComponentsInteraction: PASS` |
+| 5 | 21684 | 2254 ms | 0 | `DACComponentsInteraction: PASS` |
+
+Todos os stderr ficaram vazios; nao houve timeout, popup ou excecao VCL.
+
+## Comportamentos confirmados pelo teste recem-compilado
+
+- A roda enviada sobre o filho real `btnKindPrimary` com delta `-60` nao muda
+  `VertScrollBar.Position` antes de completar `WHEEL_DELTA`.
+- O segundo delta `-60` acumula `-120` e desloca o `TDACScrollContainer`.
+- Um `-120` enviado diretamente ao viewport tambem desloca o container.
+- O mesmo ciclo valida `SB_TOP`, `SB_PAGEDOWN` e `SB_BOTTOM`, superficie sem
+  faixa preta nos tres estados, limites/reflow da grade e preservacao da janela.
+- A suite ainda exercita DPI 96/120/144/192, foco/teclado, grid, tooltip,
+  modal/Escape, SVG e ausencia de excecao capturada pela aplicacao.
+
+Nenhum fonte, DFM, package, projeto, branch, commit ou PR foi alterado por este
+agente; somente artefatos normais de build foram regenerados.
+
+---
+
+# Diretriz permanente: gate visual estrito
+
+Data: 2026-07-21
+
+Para qualquer proxima correcao visual, nao sera emitido
+`APPROVED_FOR_COMMIT_PR` com base somente em fluxo, build ou Interaction. A QA
+deve produzir capturas `PrintWindow` integrais de topo/meio/fim do viewport e
+de resize aplicavel, em cada DPI fisico disponivel, e reprovar por qualquer:
+
+- clipping/corte de texto, SVG, borda, botao, foco, card, tab ou acao;
+- overflow sem scrollbar funcional, inclusive no ultimo item/coluna/linha;
+- area preta, buraco de paint, pixel residual ou superficie fora do token;
+- invasao da scrollbar sobre conteudo ou hit area;
+- sobreposicao/z-order incorreto entre filhos VCL, chrome Skia e overlays;
+- regressao de viewport, resize, DPI, handle ou responsividade.
+
+O resultado deve listar cada criterio como PASS/FAIL/BLOCKED, anexar os
+caminhos das capturas e declarar o DPI real. Qualquer detalhe visual observado
+e reprodutivel e bloqueante; ausencia de ambiente para capturar tambem bloqueia
+o cenario, em vez de produzir aprovacao presumida.
+
+---
+
+# QA VIS estrita - ajustes de clip/menu/reflow/subtitulo
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Decisao: `CHANGES_REQUESTED`.
+
+## Build e comportamento funcional
+
+Os projetos `demo\\Demo.dproj` e `Tests\\DACComponentsInteraction.dproj`
+foram recompilados com Delphi Win32 32.0, ambos com `Build succeeded`,
+`0 Warning(s)` e `0 Error(s)`. O Interaction recem-gerado executou em 2432 ms,
+exit code `0`, stdout `DACComponentsInteraction: PASS` e stderr vazio.
+
+## Matriz VIS em framebuffer desktop
+
+Ambiente: captura nativa `PrintWindow`, janela integral da Demo, 144 DPI real.
+O menu lateral foi usado para abrir `Botoes` e `Charts`; a janela permaneceu
+responsiva, com handle e titulo validos em todas as capturas.
+
+| ID | Resultado | Evidencia e observacao |
+|---|---|---|
+| VIS-01 | `FAIL` | Em [resize topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-014-144-resize-top.png), `Ghost`, `Transparente`, `Grande`, `TabStop False` e o fim do subtitulo terminam cortados pela borda direita do viewport. |
+| VIS-02 | `FAIL` | O resize deixa conteudo horizontal fora da area visivel; `scrButtons` esta em modo vertical e nao oferece scrollbar horizontal nem outro acesso ao trecho cortado. |
+| VIS-03 | `PASS` | [topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-014-144-top.png), [meio](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-014-144-middle.png) e [fim](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-014-144-bottom.png) nao exibiram faixas pretas, buracos de paint ou residuos. |
+| VIS-04 | `FAIL` | O clipping horizontal no resize torna acoes e texto inacessiveis; portanto o gutter/viewport nao protege o conteudo contra a borda direita. |
+| VIS-05 | `FAIL` | No [topo normal](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-014-144-top.png), o titulo e a primeira linha do subtitulo ficam visualmente sobrepostos/sem separacao suficiente. Deve ser corrigido ou demonstrado sem interseccao em nova captura. |
+| VIS-06 | `FAIL` | [resize meio](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-014-144-resize-middle.png) e [resize fim](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-014-144-resize-bottom.png) preservam a janela, mas confirmam reflow horizontal incompleto e cortes no lado direito. |
+| VIS-07 | `PASS` | A janela permaneceu `Responding=True`, titulo `DAC Componentes - Demo` e handle 38537208 apos navegação, rolagem e resize. A scrollbar reportou `min=0; max=1255; page=796; pos=460` em `SB_BOTTOM`, portanto o fim vertical foi atingido. |
+
+## Superficie Charts
+
+[Charts](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-014-144-charts.png) abriu pelo botao de navegacao e nao mostrou clipping, area preta, overlap ou z-order incorreto na largura normal. Isso nao elimina a falha da superficie Botoes em resize.
+
+## Reproducao para devolucao
+
+1. Compilar e abrir `Build\\EXE\\Win32\\Debug\\Demo.exe` em 144 DPI.
+2. Manter `Botoes` ativo e redimensionar a janela para 760x600.
+3. No primeiro grid, verificar que o lado direito de `Ghost` e `Transparente` esta fora do viewport; nos grids seguintes, `Grande` e `TabStop False` tambem ficam cortados.
+4. Nao existe scrollbar horizontal para recuperar as acoes cortadas.
+
+O processo de QA PID 21888 foi encerrado depois das capturas. Nenhum fonte,
+DFM, package, projeto, branch, commit ou PR foi alterado por este agente.
+
+
+---
+
+# Revalidacao VIS - reflow por viewport real
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Decisao: `CHANGES_REQUESTED`.
+
+## Evidencia executada
+
+Demo e Interaction recompilados com Delphi Win32 32.0: ambos `Build succeeded`,
+com `0 Warning(s)` e `0 Error(s)`. O Interaction recem-gerado terminou em
+2447 ms, exit code `0`, stdout `DACComponentsInteraction: PASS` e stderr vazio.
+
+As capturas foram obtidas pelo framebuffer desktop via `PrintWindow`, em 144 DPI
+real, com navegacao pelos botoes do menu lateral.
+
+| Cenario | Evidencia | Resultado |
+|---|---|---|
+| Botoes normal, topo | [topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-015-144-top.png) | `FAIL`: titulo/subtitulo visualmente colidem e o lado direito de `Ghost`, `Grande` e acoes icon-only e cortado pelo viewport. |
+| Botoes normal, meio | [meio](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-015-144-middle.png) | `FAIL`: clipping horizontal persiste; sem faixa preta. |
+| Botoes normal, fim | [fim](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-015-144-bottom.png) | `FAIL`: clipping horizontal persiste; sem faixa preta. |
+| Botoes 520x560, topo | [520 topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-015-144-520-top.png) | `FAIL`: titulo, subtitulo, `Secundario`, `Alerta` e `Transparente` terminam fora da borda direita. |
+| Botoes 520x560, meio | [520 meio](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-015-144-520-middle.png) | `FAIL`: controles continuam cortados; o ultimo conteudo nao possui acesso horizontal. |
+| Botoes 520x560, fim | [520 fim](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-015-144-520-bottom.png) | `FAIL`: clipping horizontal permanece no fim vertical; sem artefato preto. |
+| Navegacao Charts | [Charts](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-015-144-charts.png) | `PASS` local: o botao Charts abriu a pagina e os graficos ficaram integrais na largura normal. |
+
+## Resultado por gate
+
+- VIS-01: `FAIL` - texto e acoes cortados nas larguras normal e 520x560.
+- VIS-02: `FAIL` - overflow horizontal sem meio de acesso ao conteudo oculto.
+- VIS-03: `PASS` - nao houve area preta, buraco de paint ou pixel residual nas
+  seis capturas de Botoes.
+- VIS-04: `FAIL` - a ausencia de caminho horizontal deixa acoes/hit areas fora
+  do viewport.
+- VIS-05: `FAIL` - titulo e subtitulo da pagina Botoes continuam sem separacao
+  visual suficiente no topo normal.
+- VIS-06: `FAIL` - resize 520x560 nao reflowa todos os controles dentro da
+  area disponivel.
+- VIS-07: `PASS` - a Demo permaneceu responsiva, titulo e handle validos apos
+  scroll, menu, Charts e resize.
+
+## Reproducao
+
+1. Abrir `Build\\EXE\\Win32\\Debug\\Demo.exe` em 144 DPI e selecionar
+   `Botoes` no menu lateral.
+2. Observar o topo normal: o subtitulo encosta/sobrepoe o titulo e os itens da
+   direita saem da janela.
+3. Redimensionar a janela para 520x560: o lado direito de texto e botoes fica
+   inacessivel; o container disponibiliza somente rolagem vertical.
+
+O PID 21056 criado pela QA foi encerrado. Nenhum fonte, DFM, package, projeto,
+branch, commit ou PR foi alterado por este agente.
+
+---
+
+# Revalidacao VIS - layout encadeado e grids por ultimo filho
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Decisao: `CHANGES_REQUESTED`.
+
+## Execucao
+
+Demo e Interaction foram recompilados com Delphi Win32 32.0, ambos com
+`Build succeeded`, `0 Warning(s)` e `0 Error(s)`. O Interaction terminado em
+2443 ms retornou exit code `0`, stdout `DACComponentsInteraction: PASS` e
+stderr vazio. A suite agora verifica os filhos visiveis de cada grid contra o
+`ClientRect` e o layout encadeado, mas essa verificacao nao substituiu a
+evidencia visual do framebuffer desktop.
+
+## Sete capturas reais em 144 DPI
+
+| Cenario | Evidencia | Resultado |
+|---|---|---|
+| Botoes normal, topo | [topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-016-144-top.png) | `FAIL`: titulo/subtitulo ja nao se sobrepoem, mas `Ghost`, `Grande` e acoes icon-only continuam cortados na borda direita. |
+| Botoes normal, meio | [meio](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-016-144-middle.png) | `FAIL`: clipping horizontal persiste nos grids 1, 2 e 3. |
+| Botoes normal, fim | [fim](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-016-144-bottom.png) | `FAIL`: clipping horizontal persiste; sem area preta. |
+| Charts pelo menu | [Charts](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-016-144-charts.png) | `PASS` local: navegacao funcionou e charts ficaram integrais na largura normal. |
+| Botoes 520x560, topo | [520 topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-016-144-520-top.png) | `FAIL`: titulo/subtitulo e botoes da direita excedem a borda fisica. |
+| Botoes 520x560, meio | [520 meio](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-016-144-520-middle.png) | `FAIL`: controles e titulos de secao permanecem cortados no lado direito. |
+| Botoes 520x560, fim | [520 fim](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-016-144-520-bottom.png) | `FAIL`: clipping horizontal continua no fim vertical; sem area preta. |
+
+## Wheel, viewport e gates
+
+A roda enviada ao filho `btnKindPrimary` moveu o viewport de posicao 0 para
+24, confirmando encaminhamento de wheel. A janela manteve `Responding=True`,
+handle 12519610 e titulo valido durante nav, scroll, wheel e resize.
+
+- VIS-01, VIS-02, VIS-04 e VIS-06: `FAIL` por conteudo/hit areas a direita
+  fora do viewport, sem barra horizontal ou alternativa de acesso.
+- VIS-03: `PASS`; nenhuma das capturas exibiu area preta/residuo de paint.
+- VIS-05: `PASS` para o espaco vertical titulo/subtitulo nesta versao.
+- VIS-07: `PASS`; ciclo de vida, nav, wheel e responsividade preservados.
+
+Reproducao: abrir a Demo em 144 DPI, selecionar `Botoes` e observar os itens
+da terceira coluna e acoes icon-only cortados ja na largura normal; redimensionar
+para 520x560 confirma o mesmo defeito em todos os niveis da rolagem vertical.
+O PID 14600 criado pela QA foi encerrado. Nenhum fonte, DFM, package, projeto,
+branch, commit ou PR foi alterado por este agente.
+
+---
+
+# Correcao de harness DPI e revalidacao fisica
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Decisao: `CHANGES_REQUESTED` somente para truncamento real em resize estreito.
+
+## Correcao da premissa anterior
+
+O `PrintWindow` usado em VIS-016 era uma evidência invalida para julgar
+clipping: em monitor de 144 DPI, a janela possui retangulo fisico
+`(369,175,2191,1353)`, ou `1822x1178`, mas o seu conteudo no buffer continuava
+na composicao logica e terminava perto de 1200 px. A captura do framebuffer
+desktop no mesmo retangulo fisico mostra a janela integral e todos os itens da
+direita; portanto os FAILs VIS-01/02/04/06 de VIS-016, baseados apenas nesse
+`PrintWindow`, foram falsos positivos e estao substituidos por esta evidencia.
+
+Arquivos de comparacao:
+
+- [framebuffer fisico](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-017-desktop-physical.png) - 1822x1178, evidencia valida.
+- [PrintWindow divergente](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-017-printwindow-physical.png) - mesmo buffer externo, composicao interna truncada; nao usar para decisao visual.
+
+## Sete capturas de framebuffer desktop em 144 DPI
+
+| Cenario | Evidencia | Resultado |
+|---|---|---|
+| Botoes normal, topo | [topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-017-desktop-physical.png) | `PASS`: janela e todos os botoes completos; titulo/subtitulo separados. |
+| Botoes normal, meio | [meio](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-017-desktop-normal-middle.png) | `PASS`: sem overflow, corte, area preta ou invasao de scrollbar. |
+| Botoes normal, fim | [fim](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-017-desktop-normal-bottom.png) | `PASS`: ultimo grupo de acoes acessivel; scroll vertical funciona. |
+| Charts pelo menu | [Charts](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-017-desktop-charts.png) | `PASS`: navegacao abriu Charts e nao houve clipping/z-order incorreto. |
+| Botoes 520x560, topo | [520 topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-017-desktop-520-top.png) | `FAIL`: titulo quebra mas termina em `DACComponer...`; o texto nao permanece integral. |
+| Botoes 520x560, meio | [520 meio](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-017-desktop-520-middle.png) | `PASS` para bounds/scroll; todos os filhos visiveis cabem no card. |
+| Botoes 520x560, fim | [520 fim](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-017-desktop-520-bottom.png) | `FAIL`: captions das acoes `Split: executar acao` e `Enviar arquivo` ficam truncadas (`Split: execu...`, `Enviar arqui...`). |
+
+## Resultado tecnico
+
+- Wheel sobre `btnKindPrimary`: posicao vertical 0 para 24; encaminhamento
+  confirmado.
+- Menu, scroll, Charts, handle e responsividade: `PASS`.
+- `DACComponentsInteraction.exe`: exit code 0, `DACComponentsInteraction: PASS`,
+  stderr vazio, 2478 ms.
+- VIS-01: `FAIL` apenas para texto truncado em 520x560.
+- VIS-02, VIS-03, VIS-04, VIS-05 e VIS-07: `PASS` nas imagens fisicas
+  aplicaveis.
+- VIS-06: `FAIL`, pois o resize 520x560 nao preserva as captions integrais.
+
+O PID 28632 criado pela QA foi encerrado. Nenhum fonte, DFM, package, projeto,
+branch, commit ou PR foi alterado por este agente.
+
+---
+
+# QA fisica final - menu colapsado e minimo de botoes
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Decisao: `CHANGES_REQUESTED`.
+
+## Build e execucao
+
+Demo e Interaction recompilaram em Delphi Win32 32.0 com `0 Warning(s)` e
+`0 Error(s)`. O Interaction terminou em 2900 ms, exit code `0`, stdout
+`DACComponentsInteraction: PASS` e stderr vazio.
+
+## Sete capturas de framebuffer fisico, 144 DPI
+
+| Cenario | Evidencia | Resultado |
+|---|---|---|
+| Botoes normal, topo | [topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-018-desktop-normal-top.png) | `PASS`: menu expandido, titulo/subtitulo, botoes e bordas integrais. |
+| Botoes normal, meio | [meio](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-018-desktop-normal-middle.png) | `PASS`: sem overflow, area preta ou invasao de scrollbar. |
+| Botoes normal, fim | [fim](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-018-desktop-normal-bottom.png) | `PASS`: ultima secao acessivel e sem clipping. |
+| Charts pelo menu | [Charts](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-018-desktop-charts.png) | `PASS`: navegacao e graficos integrais. |
+| Botoes 520x560, topo | [520 topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-018-desktop-520-top.png) | `PASS`: menu colapsado, titulo/subtitulo completos e primeira grade refluida. |
+| Botoes 520x560, meio | [520 meio](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-018-desktop-520-middle.png) | `FAIL`: `Pequ...`, `Gr...`, `Raio...` e `TabSto...` revelam captions truncadas. |
+| Botoes 520x560, fim | [520 fim](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-018-desktop-520-bottom.png) | `FAIL`: `Passe...`, `Tab p...`, `Pressi...`, `Carre...`, `Desa...`, `Split: executa...` e `Remo...` revelam truncamento/ellipsis em acoes e estados. |
+
+## Gate e reproducao
+
+- Menu: `PASS`; visivel no tamanho normal e `Visible=False` em 520x560.
+- Wheel sobre `btnKindPrimary`: posicao 0 para 24; `PASS`.
+- Scroll, Charts, handle/titulo/responsividade e ausencia de artefato preto:
+  `PASS`.
+- VIS-01 e VIS-06: `FAIL`, pois o modo estreito ainda corta texto em controles
+  que permanecem visiveis. A ausencia de overflow do card nao torna a caption
+  truncada aceitavel sob o gate solicitado.
+
+Reproducao: abrir a Demo em 144 DPI, redimensionar para 520x560 e rolar ate as
+secoes 2, 4 e 5; captions inteiras passam a aparecer com reticencias.
+O PID 18256 criado pela QA foi encerrado. Nenhum fonte, DFM, package, projeto,
+branch, commit ou PR foi alterado por este agente.
+
+---
+
+# QA fisica - captions corrigidas (snapshot compilado)
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Decisao para o snapshot compilado: `APPROVED_FOR_COMMIT_PR`.
+
+## Evidencia
+
+Demo e Interaction foram recompilados em Win32 sem warnings/erros. O
+`DACComponentsInteraction.exe` terminou em 3278 ms, exit code `0`, stdout
+`DACComponentsInteraction: PASS` e stderr vazio.
+
+As sete capturas do framebuffer fisico em 144 DPI passaram sem ellipsis,
+truncamento, overflow, area preta, sobreposicao ou invasao de scrollbar:
+
+| Cenario | Evidencia | Resultado |
+|---|---|---|
+| Botoes normal, topo | [topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-019-normal-top.png) | `PASS` |
+| Botoes normal, meio | [meio](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-019-normal-middle.png) | `PASS` |
+| Botoes normal, fim | [fim](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-019-normal-bottom.png) | `PASS` |
+| Charts pelo menu | [Charts](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-019-charts.png) | `PASS` |
+| Botoes 520x560, topo | [520 topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-019-520-top.png) | `PASS` |
+| Botoes 520x560, meio | [520 meio](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-019-520-middle.png) | `PASS` |
+| Botoes 520x560, fim | [520 fim](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-019-520-bottom.png) | `PASS` |
+
+Menu expandido normal e menu colapsado estreito foram confirmados. Wheel no
+filho passou de posicao 0 para 24; Charts abriu pelo menu; a Demo permaneceu
+responsiva e o PID 25692 foi encerrado ao final. Se houver qualquer alteracao
+posterior ao build deste snapshot (inclusive cobertura de teste), esta aprovacao
+deve ser reexecutada sobre o novo binario antes de commit/PR.
+
+---
+
+# QA fisica final - binario pos-cobertura
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Binario avaliado: `Build\\Exe\\Win32\\Debug\\Demo.exe` (18499598 bytes).
+Decisao: `CHANGES_REQUESTED`.
+
+## Execucao e interacao
+
+O handoff informou builds Demo/Interaction com `0 Warning(s)` e `0 Error(s)`.
+Nesta QA, o `Build\\Tests\\Win32\\Debug\\DACComponentsInteraction.exe` atual
+terminou com exit code `0`, stdout `DACComponentsInteraction: PASS` e stderr
+vazio. A roda do mouse encaminhada para o filho `btnKindPrimary` moveu a
+posicao vertical de `0` para `24`. A Demo permaneceu responsiva durante a
+navegacao e o PID 11364 iniciado pela QA foi encerrado ao fim.
+
+## Sete capturas de framebuffer fisico, 144 DPI
+
+| Cenario | Evidencia | Resultado |
+|---|---|---|
+| Botoes normal, topo | [topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-020-normal-top.png) | `PASS`: captions completas, sem clipping/ellipsis ou sobreposicao. |
+| Botoes normal, meio | [meio](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-020-normal-middle.png) | `PASS`: scroll e layout permanecem integrais. |
+| Botoes normal, fim | [fim](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-020-normal-bottom.png) | `PASS`: ultima secao acessivel, sem invasao da scrollbar. |
+| Charts pelo menu | [Charts](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-020-charts.png) | `FAIL`: ha artefatos pretos triangulares/retangulares nos cantos inferiores direitos dos dois paineis de graficos. |
+| Botoes 520x560, topo | [520 topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-020-520-top.png) | `PASS`: menu colapsado e caption integral. |
+| Botoes 520x560, meio | [520 meio](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-020-520-middle.png) | `PASS`: captions longas completas; sem ellipsis. |
+| Botoes 520x560, fim | [520 fim](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-020-520-bottom.png) | `PASS`: acoes e estados completos; sem ellipsis. |
+
+## Gate
+
+- Menu normal visivel e menu 520x560 colapsado: `PASS`.
+- Captions longas, scroll, wheel, foco/handle e responsividade: `PASS`.
+- VIS-04 (Charts): `FAIL`. O artefato preto e visivel em framebuffer fisico,
+  portanto nao e aceito como sombra, corte de captura ou diferenca de DPI.
+
+Nao autorizar commit/PR deste binario ate corrigir o paint/z-order dos paineis
+de Charts e repetir o gate fisico. Nenhum fonte, DFM, package, projeto, branch,
+commit ou PR foi alterado por este agente.
+
+---
+
+# QA fisica final - Charts limpo, binario recompilado
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Decisao: `APPROVED_FOR_COMMIT_PR`.
+
+## Build e interacao
+
+`demo\\Demo.dproj` e `Tests\\DACComponentsInteraction.dproj` foram
+recompilados em Delphi Win32 32.0, ambos com `0 Warning(s)` e `0 Error(s)`.
+O `DACComponentsInteraction.exe` atual terminou em 2798 ms, exit code `0`,
+stdout `DACComponentsInteraction: PASS` e stderr vazio. O teste inclui os
+cantos dos charts de barras e donut.
+
+## Sete capturas de framebuffer fisico, 144 DPI
+
+| Cenario | Evidencia | Resultado |
+|---|---|---|
+| Botoes normal, topo | [topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-021-normal-top.png) | `PASS`: caption, card e bordas integrais. |
+| Botoes normal, meio | [meio](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-021-normal-middle.png) | `PASS`: scroll sem clipping ou sobreposicao. |
+| Botoes normal, fim | [fim](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-021-normal-bottom.png) | `PASS`: ultima secao acessivel. |
+| Charts pelo menu | [Charts](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-021-charts.png) | `PASS`: os dois paineis estao limpos; zero artefato preto nos cantos ou no canvas. |
+| Botoes 520x560, topo | [520 topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-021-520-top.png) | `PASS`: menu colapsado e texto completo. |
+| Botoes 520x560, meio | [520 meio](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-021-520-middle.png) | `PASS`: captions longas sem ellipsis. |
+| Botoes 520x560, fim | [520 fim](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-021-520-bottom.png) | `PASS`: acoes/estados completos, sem overflow. |
+
+## Gate
+
+- Menu expandido normal e colapsado em 520x560: `PASS`.
+- Wheel encaminhada ao filho: posicao vertical `0` para `24`; `PASS`.
+- Foco, scroll, captions, responsividade e ausencia de clipping/ellipsis:
+  `PASS`.
+- VIS-01 a VIS-07: `PASS`; em especial, a correcao de clear, erase e
+  geometria removeu integralmente os artefatos pretos de Charts.
+
+As instancias de Demo usadas na QA foram encerradas. Nenhum fonte, DFM,
+package, projeto, branch, commit ou PR foi alterado por este agente.
+
+# QA fisica Dashboard - reflow e surface dark
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Decisao: `CHANGES_REQUESTED`.
+
+## Build e interacao
+
+`demo\\Demo.dproj` e `Tests\\DACComponentsInteraction.dproj` foram
+recompilados em Delphi Win32 32.0, ambos com `0 Warning(s)` e `0 Error(s)`.
+O Interaction concluiu em 3084 ms, exit code `0`, stdout
+`DACComponentsInteraction: PASS` e stderr vazio. Ele confirmou a acao do menu
+Dashboard, aba ativa, tokens da KPI/painel, range vertical do canvas e os
+cantos dos charts.
+
+## Evidencia fisica, 144 DPI
+
+| Cenario | Evidencia | Resultado |
+|---|---|---|
+| Dashboard normal | [normal](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-dashboard-vis-001-normal.png) | `FAIL`: `Bem-vi...` e `24 de maio de 2...` usam ellipsis; faixas `#FFFFFF` aparecem entre os botoes de Acoes rapidas. |
+| Dashboard 520x560, topo | [estreito](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-dashboard-vis-002-520-top.png) | `FAIL`: titulo e data truncados; o nome verde e a data vazam/ficam sobrepostos na largura estreita. |
+| Dashboard, roda antes/depois | [antes](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-dashboard-vis-003-wheel-before.png), [depois](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-dashboard-vis-003-wheel-after.png) | `PASS`: o conteudo do KPI avancou materialmente apos 12 eventos de roda enviados ao contêiner Dashboard visivel. |
+
+## Transparencia, navegacao e acoes
+
+- O menu `Dashboard` abriu a aba correta, ficou ativo e a Demo permaneceu
+  responsiva; o click de uma acao rapida foi entregue sem excecao.
+- A transparencia das superficies KPI/panel e real no framebuffer: canvas
+  escuro `#08130D` e interior do card composto `#0D1D13`, coerente com a
+  surface alpha tokenizada sobre o fundo escuro.
+- Isso nao limpa o gate de transparencia: a area entre botoes em Acoes rapidas
+  tem pixel fisico `#FFFFFF`, visivel na captura normal, e nao pertence a
+  nenhuma surface dark. E um artefato de pintura/background.
+
+## Gate
+
+- VIS-01: `FAIL` por captions com ellipsis no tamanho normal e estreito.
+- VIS-02/VIS-06: `FAIL` por ausencia de reflow e overflow/sobreposicao no
+  520x560.
+- VIS-04: `FAIL` por faixas brancas no painel Acoes rapidas.
+- VIS-05 (roda/scroll) e VIS-07 (menu/aba/acao sem excecao): `PASS`.
+
+Nao autorizar commit/PR enquanto titulo/data forem responsivos e o fundo da
+grade de acoes for restaurado a uma surface escura/transparente sem faixas.
+Nenhum fonte, DFM, package, projeto, branch, commit ou PR foi alterado por este
+agente.
+
+---
+
+# QA fisica Dashboard - binario recompilado, correcao parcial
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Decisao: `CHANGES_REQUESTED`.
+
+## Build e interacao
+
+`demo\\Demo.dproj` e `Tests\\DACComponentsInteraction.dproj` recompilaram em
+Delphi Win32 32.0 com `0 Warning(s)` e `0 Error(s)`. O Interaction atual
+terminou em 3160 ms, exit code `0`, stdout `DACComponentsInteraction: PASS` e
+stderr vazio.
+
+## Evidencia fisica, 144 DPI
+
+| Cenario | Evidencia | Resultado |
+|---|---|---|
+| Dashboard normal | [normal](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-dashboard-vis-004-normal.png) | `FAIL`: `Bem-vindo,` continua clipado fisicamente, restando apenas `Bem` antes de `Administrador`. Data, cards e acoes agora estao completos. |
+| Charts | [Charts](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-dashboard-vis-004-charts.png) | `PASS`: bar e donut sem artefatos pretos. |
+| Dashboard 520x560, topo | [520 topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-dashboard-vis-004-520-top.png) | `PASS`: titulo, nome, data e KPIs refluem sem ellipsis, clipping ou sobreposicao. |
+| Dashboard 520x560, apos roda | [520 wheel](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-dashboard-vis-004-520-wheel.png) | `PASS`: a roda desloca materialmente os KPIs no contêiner visivel. |
+
+## Transparencia e interacao
+
+- Canvas fisico: `#08130D`; interior KPI composto: `#0D1D13`; painel:
+  `#0E1F15`. As surfaces escuras/translucidas sao reais e nao fundos brancos
+  disfarçados.
+- A grade Acoes rapidas nao possui mais as faixas brancas anteriores.
+- Menu Dashboard e Charts, acionamento de uma acao rapida e responsividade:
+  `PASS`.
+
+## Gate
+
+- VIS-02 a VIS-07 e transparencia: `PASS` no escopo Dashboard/Charts
+  reexecutado.
+- VIS-01: `FAIL`, porque a captura fisica normal ainda perde parte da caption
+  `Bem-vindo,`. A ausencia de reticencias nao torna o clipping aceitavel.
+
+Nao autorizar commit/PR ate o texto de boas-vindas ficar integral tambem no
+tamanho normal. Nenhum fonte, DFM, package, projeto, branch, commit ou PR foi
+alterado por este agente.
+
+---
+
+# QA fisica final Dashboard - DFM corrigido
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Decisao: `APPROVED_FOR_COMMIT_PR`.
+
+## Execucao e DFM
+
+O binario atual iniciou a Demo e carregou a Dashboard DFM sem excecao. O
+`DACComponentsInteraction.exe` atual terminou em 3650 ms, exit code `0`,
+stdout `DACComponentsInteraction: PASS` e stderr vazio; ele instancia a Form
+e valida a aba/controles Dashboard materializados pelo DFM. Esta QA nao abriu
+o form no IDE do Delphi; a evidencia DFM-safe aqui e o streaming runtime e o
+teste de interacao executado com sucesso.
+
+## Evidencia fisica, 144 DPI
+
+| Cenario | Evidencia | Resultado |
+|---|---|---|
+| Dashboard normal | [normal](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-dashboard-vis-006-normal.png) | `PASS`: `Bem-vindo,` integral; gap correto antes de `Administrador`; sem ellipsis, clipping ou sobreposicao. |
+| Charts | [Charts](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-dashboard-vis-006-charts.png) | `PASS`: bar e donut limpos, sem area preta/artefato. |
+| Dashboard 520x560, topo | [520 topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-dashboard-vis-006-520-top.png) | `PASS`: saudacao, nome, subtitulo, data e KPIs completos e refluídos. |
+| Dashboard 520x560, roda | [520 wheel](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-dashboard-vis-006-520-wheel.png) | `PASS`: conteudo deslocado pela roda, sem branco, clipping ou sobreposicao. |
+
+## Transparencia e interacao
+
+- Amostragem no framebuffer: canvas `#08130D`, interior KPI `#0D1D13` e
+  painel `#0E1F15`; as surfaces permanecem visivelmente translucidas e
+  distintas do fundo, sem faixas brancas na grade Acoes rapidas.
+- Menu Dashboard/Charts, click de acao rapida e responsividade: `PASS`.
+- VIS-01 a VIS-07 aplicaveis, transparencia, menu, acao, scroll/wheel e
+  Charts: `PASS`.
+
+As instancias Demo iniciadas pela QA foram encerradas. Nenhum fonte, DFM,
+package, projeto, branch, commit ou PR foi alterado por este agente.
+
+---
+
+# QA fisica - Dashboard agricola redesenhado
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Decisao: `CHANGES_REQUESTED`.
+
+## Build e teste estrutural
+
+`demo\\Demo.dproj` e `Tests\\DACComponentsInteraction.dproj` recompilaram em
+Delphi Win32 32.0, ambos com `0 Warning(s)` e `0 Error(s)`. O Interaction
+terminou em 3588 ms, exit code `0`, stdout `DACComponentsInteraction: PASS` e
+stderr vazio.
+
+## Evidencia fisica, 144 DPI
+
+| Cenario | Evidencia | Resultado |
+|---|---|---|
+| Dashboard normal | [normal](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-dashboard-design-vis-001-normal.png) | `FAIL`: o framebuffer fisico contem somente o wallpaper do desktop; sidebar, marca, topbar, status e Dashboard nao estao visiveis. |
+| Dashboard 520x560/topo | [520 topo](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-dashboard-design-vis-001-520-top.png) | `FAIL`: mesma ausencia completa de composicao fisica. |
+| Dashboard apos roda | [520 wheel](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-dashboard-design-vis-001-520-wheel.png) | `FAIL`: impossivel validar movimento, pois a janela nao pinta conteudo fisico. |
+| Retorno a galeria | [galeria](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-dashboard-design-vis-001-gallery.png) | `FAIL`: nao e possivel provar o retorno do header da galeria no framebuffer. |
+
+## Diagnostico
+
+Mesmo com a janela `DAC Componentes - Demo` visivel, restaurada e trazida ao
+primeiro plano (retangulo fisico 369,175 a 2191,1353), o framebuffer continuou
+mostrando apenas o wallpaper: [captura fisica](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-dashboard-design-vis-002-foreground.png).
+
+`PrintWindow` diagnosticou que o conteudo off-screen existe (shell agricola,
+sidebar, topbar, KPIs, agenda, atividades, grafico, modulos e status):
+[diagnostico PrintWindow](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-dashboard-design-vis-003-printwindow-diagnostic.png).
+Essa imagem nao e evidencia de aprovacao: neste aplicativo o `PrintWindow` e
+inseguro sob DPI e diverge do framebuffer fisico. O contraste demonstra uma
+falha de composicao/pintura em tela (provavel camada/estilo transparente), nao
+uma ausencia de controles no DFM.
+
+Nao e possivel validar comparacao visual com `assets/componentes dashboard.png`
+e `assets/dashboarrd.png`, alpha, densidade, interacoes ou header da galeria
+enquanto a composicao fisica for invisivel. Nenhum fonte, DFM, package,
+projeto, branch, commit ou PR foi alterado por este agente.
+
+---
+
+# QA fisica final - binario corrigido, presenca em tela
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Decisao: `CHANGES_REQUESTED`.
+
+## Precondicao obrigatoria
+
+A QA foi reiniciada sobre o binario novo antes de qualquer validacao de
+Dashboard. A Demo foi iniciada, restaurada e trazida ao primeiro plano; ainda
+assim, o framebuffer desktop fisico em 144 DPI mostra somente o wallpaper,
+sem moldura, shell, sidebar, topbar ou controles da Demo:
+[presenca fisica](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-dashboard-physical-vis-002-presence.png).
+
+Portanto a precondicao "Demo visivel no framebuffer real" falha. Dashboard
+normal/520, roda, retorno a galeria, comparacao com as referencias e alpha nao
+podem ser validados de forma honesta. Nao usar `PrintWindow` para contornar
+este bloqueio: ele ja divergiu do framebuffer nesta aplicacao sob DPI. Nenhum
+fonte, DFM, package, projeto, branch, commit ou PR foi alterado por este agente.
+
+---
+
+# QA estrutural - contrato GalleryTabs/Dashboard corrigido
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Decisao: `APPROVED` para o contrato estrutural solicitado.
+
+## Build e automacao runtime
+
+`demo\\Demo.dproj` e `Tests\\DACComponentsInteraction.dproj` recompilaram em
+Delphi Win32 32.0 com `0 Warning(s)` e `0 Error(s)`. O Interaction atual
+terminou em 5775 ms, exit code `0`, stdout `DACComponentsInteraction: PASS` e
+stderr vazio.
+
+O teste automatizado instancia a Form/DFM e confirmou:
+
+- `demoNavDashboard` abre `tsDashboard`, fica `mbkPrimary` e a navegacao da
+  galeria permanece visivel ao lado de `GalleryTabs`;
+- `scrDashboard.Parent = tsDashboard` e o painel agricola permanece filho de
+  `scrDashboard`;
+- 520x560 nao sobrepoe saudacao, nome, subtitulo e data; o card de data cabe;
+- `demoNavCharts` abre `tsCharts`, mantem navegacao visivel e os dois charts
+  passam a verificacao de surface;
+- `demoNavButtons.OnClick` e executado apos Charts; os asserts subsequentes da
+  pagina Buttons passam, comprovando o retorno ao fluxo normal da galeria.
+
+## Hierarquia e ausencia de reparenting do Dashboard
+
+O DFM declara `GalleryTabs.ActivePage = tsDashboard`, `tsDashboard` como
+pagina normal e `scrDashboard` como seu filho alinhado a `alClient`. Em runtime
+`BuildDashboard` apenas recupera referencias por `FindComponent`; nao atribui
+`Parent` a Dashboard, viewport, cards ou paineis. As unicas atribuicoes
+`Parent :=` nessa unit criam a navegacao da galeria como sibling do Form e os
+seus controles filhos, sem reparentear conteudo do Dashboard.
+
+## Limitacao visual conhecida
+
+O framebuffer desktop desta sessao continua indisponivel para a Demo: as
+capturas fisicas retornam wallpaper sem janela para Botões, Charts e Dashboard.
+Esta limitacao nao bloqueia a aprovacao estrutural pedida neste gate, mas
+continua impedindo uma aprovacao visual/final baseada em pixels. Nenhum fonte,
+DFM, package, projeto, branch, commit ou PR foi alterado por este agente.
+
+---
+
+# QA final - Grid, Tabs, Inputs e lifecycle DataLink
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Decisao: `APPROVED` para o contrato runtime/estrutural. Aprovacao visual por
+pixels: indisponivel nesta sessao.
+
+## Build e execucao
+
+`demo\\Demo.dproj` e `Tests\\DACComponentsInteraction.dproj` foram recompilados
+em Delphi Win32 32.0, ambos com `0 Warning(s)` e `0 Error(s)`. A suite
+`Build\\Tests\\Win32\\Debug\\DACComponentsInteraction.exe` terminou em 4992 ms,
+exit code `0`, stdout `DACComponentsInteraction: PASS` e stderr vazio.
+
+## Cobertura de interacao validada
+
+- Grid com fonte ativa, pelo menos 30 registros e 7 colunas; selecao por
+  teclado, clique de mouse e roda vertical preservam o foco e atualizam o
+  registro; `Redraw` tambem preserva o cursor do dataset.
+- Atualizacoes externas por `Next` e `Edit/Post` avancam `ChromeRevision`.
+- A fonte do grid e trocada para um `TDataSource`/dataset substituto e volta
+  para a fonte original. Em seguida, uma notificacao pendente do HWND antigo e
+  simulada antes de `RecreateWnd`; o `Next` posterior atualiza o grid. Assim,
+  o DataLink continua funcional depois de reassignment e recriacao do handle.
+- Tabs horizontal e vertical selecionam paginas secundarias/terciarias e o
+  texto do conteudo permanece disponivel.
+- Os quatro inputs de demonstracao mantem altura 64 e o editor nativo
+  centralizado; o titulo de navegacao possui altura minima 28, evitando corte.
+- Os asserts de resize/viewport e o redimensionamento das tabs passam no
+  contrato de runtime. A inexistencia do framebuffer impede a conclusao sobre
+  flicker perceptivel pelo usuario.
+
+## Limite da verificacao visual real
+
+O processo final abriu com titulo `DAC Componentes - Demo` e handle valido,
+mas a copia fisica da area desse handle trouxe a superficie de outro
+aplicativo, nao a Demo: [captura de presenca final](C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-components-final-vis-001-presence.png).
+Logo nao ha evidencia confiavel, nesta sessao, para afirmar por pixels foco
+visivel, legibilidade, clipping ou flicker. `PrintWindow` nao foi usado como
+substituto de aceitacao visual, pois ja demonstrou divergencia sob DPI nesta
+aplicacao. Nenhum fonte, DFM, package, projeto, branch, commit ou PR foi
+alterado por este agente.
+
+---
+
+# Contrato bloqueante de QA visual - entrega atual
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Status inicial: `BLOCKED` ate que a Demo seja capturada com conteudo verdadeiro
+do framebuffer durante interacao real.
+
+## Regra de decisao
+
+Build, inspecao estrutural e `DACComponentsInteraction` isolado sao evidencias
+complementares, mas nao autorizam `APPROVED`. Para qualquer entrega, este
+agente deve iniciar `Demo.exe`, navegar por clique real e capturar screenshots
+reais de cada cenario. Os cenarios devem exercitar clique, teclado, foco,
+wheel, selecao e resize; cada imagem deve ser inspecionada quanto a design,
+layout, texto, cortes, estados e foco. Os artefatos ficam em
+`Build\\VisualValidation` ou em `visualizations`, com caminho e resultado
+registrados aqui.
+
+Se a captura produzir wallpaper, outro aplicativo, imagem vazia, conteudo de
+`PrintWindow` ou qualquer superficie que nao seja comprovadamente a janela
+visivel da Demo, o resultado obrigatorio e `BLOCKED` ou `CHANGES_REQUESTED`.
+Nunca declarar `APPROVED` estrutural nesse caso.
+
+## Checklist obrigatorio: Tabs
+
+- Screenshot inicial de tabs horizontais: header, caption, tab selecionada,
+  tabs nao selecionadas e conteudo correspondente.
+- Clique em cada tab horizontal; screenshot apos cada transicao e verificacao
+  de estado selected, foco e caption sem recorte.
+- Navegacao por teclado (Tab, setas e Enter/Espaco quando aplicavel), com foco
+  claramente visivel no screenshot.
+- Estado disabled: tentativa de clique/tecla nao troca a pagina; screenshot
+  prova caption, contraste e ausencia de selecao indevida.
+- Tabs verticais: capturas de estado inicial, selecionado, foco por teclado e
+  resize estreito/alto, verificando captions, alinhamento e conteudo.
+
+## Checklist obrigatorio: Inputs
+
+- Para cada input da Demo, screenshot de label e texto/placeholder, verificando
+  que label nao sobrepoe nem corta o texto.
+- Clique, digitacao, selecao por teclado e navegacao entre campos; screenshot
+  de foco, caret/selecao e borda/estado de foco.
+- Validar centralizacao vertical em altura normal e apos resize/DPI disponivel;
+  conferir combo/date/button-edit quando presentes.
+- Validar disabled/read-only quando expostos, com texto legivel e estado nao
+  dependente apenas de cor.
+
+## Checklist obrigatorio: Grid e flicker
+
+- Capturar grid inicial, apos clique em linha, teclado, wheel e resize,
+  comprovando selecao, foco, colunas/captions e ausencia de recortes.
+- Reatribuir datasource e recriar handle pelo cenario da Demo/teste, depois
+  navegar e capturar a grade atualizada; nenhum estado preso, vazio indevido ou
+  perda de foco e aceitavel.
+- Capturar inicio e fim de scroll/resize (e, quando o mecanismo permitir,
+  sequencia curta) para inspecionar flicker, residuos de pintura e invalidacao
+  incompleta. Sem pixels verdadeiros, este item permanece bloqueante.
+
+Nenhum fonte, DFM, package, projeto, branch, commit ou PR foi alterado por
+este agente neste registro.
+
+---
+
+# Gate visual final - binario z-order
+
+Data: 2026-07-21
+Branch: `codex/fix-demo-visual-regressions`
+Decisao: `BLOCKED`.
+
+O gate foi iniciado pelo mecanismo Windows Computer Use, unico metodo aceito
+para obter screenshots reais com a janela possivelmente ocluida. A recuperacao
+limpa do helper listou nenhuma janela `DAC Componentes - Demo`. A chamada
+seguinte para iniciar `Build\\EXE\\Win32\\Debug\\Demo.exe` por `sky.launch_app`
+ficou bloqueada por mais de 252 segundos e foi interrompida sem retornar uma
+janela, screenshot ou estado de interacao.
+
+Nao existe PNG novo valido para Tabs, Inputs ou Grid. A imagem anterior que
+mostra superficie de outro aplicativo nao foi usada, pois nao comprova a Demo.
+Consequentemente nao foi possivel executar nem evidenciar: captions verticais
+em 160 px, estados selected/disabled/focus e conteudo de tabs H/V; labels
+nativas acima dos inputs e alinhamento vertical; ou selecao/wheel/flicker da
+grid em tamanho normal e resize. Pelo contrato bloqueante, ausencia de pixels
+verdadeiros exige `BLOCKED`, nunca `APPROVED` estrutural.
+
+Nenhum fonte, DFM, package, projeto, branch, commit ou PR foi alterado por
+este agente neste gate.
+
+---
+
+# Auditoria de cobertura QA - testes e Demo
+
+Data: 2026-07-21
+Escopo: somente leitura de `Tests\\DACComponentsSmoke.dpr`,
+`Tests\\DACComponentsInteraction.dpr` e `demo\\Demo.Principal.dfm/.pas`.
+Decisao: nenhum dos itens abaixo autoriza aprovacao visual sem execucao da
+Demo e PNG real da janela visivel.
+
+## Evidencia executavel existente
+
+`DACComponentsSmoke` cobre somente escala DPI e resolucao de colunas do grid:
+`Tests\\DACComponentsSmoke.dpr:27-58`. `DACComponentsInteraction` cria e exibe
+a Demo (`:615-621`), confere as 16 paginas/familias e referencias da galeria
+(`:623-657`), e executa asserts de runtime. Isto e cobertura de contrato VCL,
+nao de pixels apresentados ao usuario.
+
+| Familia | Cobertura atual (arquivo:linhas) | Lacuna que impede aceitacao visual |
+| --- | --- | --- |
+| 1 Botoes | layout/resize/scroll `Interaction:775-887`; Enter e Tab `:894-900` | nao ha clique fisico nem screenshot de normal/hover/foco/disabled |
+| 2 Inputs | altura, label, z-order e centro do editor `:663-688` | nao digita, seleciona, usa clipboard/undo ou captura label/texto/foco |
+| 3 Seletores | combo/button-edit/date-time existem e compartilham geometria `:628-680` | sem abrir combo, navegar teclas ou mudar data em janela real |
+| 4 Check/radio/toggle/slider | checkbox Space e slider setas `:903-918` | radio/toggle nao recebem interacao; nenhum estado e visivel em PNG |
+| 5 Tabs | captions, disabled, headers, selecao programatica H/V `:920-964` | nao ha clique/teclado real no header, nem screenshot selected/disabled/foco/conteudo |
+| 6 Cards | `demoSummaryCard` existe `:633`; blend/dashboard interno `:449-547`, `:718-755` | sem verificacao de design por pixels ou resize fisico da familia |
+| 7 Data grid | dataset/colunas/DataLink `:968-1035`; seta, clique, scroll/repaint `:1036-1060` | entradas sao `Perform`; nao ha wheel fisico, sequencia visual nem evidencia de ausencia de flicker |
+| 8 Status bar | apenas componente requerido `:634` | sem estado/mensagem/resize/screenshot |
+| 9 Progresso | apenas componente requerido `:635` | sem valores, animacao ou screenshot |
+| 10 Badge/chip/tag/pill | badge requerido e visivel `:636`, `:1093` | chip/tag/pill nao sao exercitados; sem estados visuais |
+| 11 Toast/tooltip/modal | tooltip show/hide, toast visivel e Escape no modal `:1062-1085` | acionamento programatico, sem hover/clique real nem screenshot |
+| 12 Paginacao | limite de `PageIndex` `:1087-1091` | sem clique em paginas/combobox nem PNG |
+| 13 Loading/spinner/dots/skeleton | somente `demoLoading` requerido `:639` | sem lifecycle/animacao/pixels |
+| 14 Charts | bar requerido `:641`; amostras `PrintWindow`/blend `:409-547`, `:767-770` | `PrintWindow` diverge do framebuffer nesta sessao; sem mouse/tooltip e screenshots de barras/linha/area/donut |
+| 15 Report viewer | somente componente requerido `:642` | sem pagina, zoom, vazio ou screenshot |
+
+## Foco, teclado, roda, design-time e captura
+
+- Foco/teclado: ha `SetFocus` e mensagens sinteticas para botao, checkbox,
+  slider, tabs e grid (`Interaction:155-160`, `:894-964`, `:1036-1060`), mas
+  nao ha evidencia de anel de foco real.
+- Roda: scroll da galeria e testado via `WM_MOUSEWHEEL`/`WM_VSCROLL`
+  (`:854-887`); no grid o teste usa `WM_VSCROLL` (`:1050-1059`), logo nao
+  comprova roda fisica sobre linha selecionada.
+- Design-time: nao existe projeto/teste automatizado que abra o DFM no IDE. Os
+  guards `csDesigning` em `Demo.Principal.pas:153-166`, `:589-600` e `:727-745`
+  sao somente protecoes de codigo, nao prova de streaming/designer.
+- Captura visual: `Interaction:345-407` e `:409-447` usam `PrintWindow`; a
+  experiencia desta QA demonstrou que ele pode divergir do framebuffer. Nao ha
+  PNG real versionado nem rotina de screenshot de usuario.
+
+## Contrato de validacao obrigatorio proposto
+
+1. Compilar e executar Smoke + Interaction; falha bloqueia o gate, mas PASS
+   apenas libera a etapa visual.
+2. Iniciar o `Demo.exe` definitivo no desktop e controlar a janela real por
+   clique, teclado, foco, wheel, selecao e resize. Nenhum `Perform` ou
+   `PrintWindow` substitui essa etapa.
+3. Arquivar PNGs verdadeiros em `Build\\VisualValidation\\<sha>` (ou
+   `visualizations`) para cada familia aplicavel e para 96/120/144/192 DPI
+   quando o ambiente permitir. Cada print deve mostrar titulo/janela Demo e
+   ser inspecionado por layout, tokens, texto, clipping, foco e estados.
+4. Para Tabs/Inputs/Grid, exigir os cenarios detalhados no checklist anterior:
+   H/V selected-disabled-foco-conteudo; label>=editor/caret/alinhamento; e
+   selecao-wheel-datasource-recreate-resize sem flicker/residuo.
+5. Registrar em cada gate comando, SHA, caminho dos PNGs, cenarios aprovados e
+   limitacoes. Sem PNG que mostre comprovadamente o conteudo da Demo, decisao
+   exclusiva `BLOCKED`/`CHANGES_REQUESTED`; nunca `APPROVED` estrutural.
+
+Nenhum fonte, DFM, package, projeto, branch, commit ou PR foi alterado nesta
+auditoria; apenas este registro de memoria QA foi acrescentado.
+
+---
+
+# Gate visual real - tentativa de retomada
+
+Data: 2026-07-22
+Decisao: `BLOCKED`.
+
+O QA foi retomado exclusivamente pelo Windows Computer Use. A listagem inicial
+nao encontrou janela `DAC Componentes - Demo`. A tentativa de iniciar
+`Build\\EXE\\Win32\\Debug\\Demo.exe` por `sky.launch_app` nao retornou; mesmo uma
+espera protegida por timeout no cliente ficou bloqueada ate a interrupcao do
+turno. Logo nao houve janela confirmada, interacao, screenshot ou PNG real.
+
+A verificacao posterior confirmou que nao restou processo `Demo.exe`; portanto
+nenhuma instancia desta QA bloqueia a recompilacao. Nao foram reutilizadas
+capturas antigas e nenhum cenario de Dashboard, Inputs, Tabs ou Grid foi
+marcado como validado. Pelo contrato visual, o resultado permanece `BLOCKED`
+ate que Computer Use consiga abrir/capturar uma superficie comprovadamente da
+Demo.
+
+---
+
+# Gate visual real - Demo iniciada pelo orquestrador
+
+Data: 2026-07-22
+Decisao: `BLOCKED`.
+
+A sessao CUA foi reiniciada. `sky.list_apps()` encontrou exatamente uma janela
+da Demo atual: titulo `DAC Componentes - Demo`, app
+`process:M:\\Delphi Componentes\\DAC-DelphiComponents\\Build\\EXE\\Win32\\Debug\\Demo.exe`,
+window id `9112720`. `sky.get_window` retornou essa mesma janela corretamente.
+
+Porem `sky.get_window_state` com `include_screenshot: true` nao retornou e foi
+interrompido apos aproximadamente 425 s. Conforme a recuperacao prescrita, a
+sessao foi reiniciada, a unica janela foi localizada outra vez e a chamada mais
+leve `sky.get_window_state({ include_screenshot: false, include_text: true })`
+tambem nao retornou; foi interrompida apos aproximadamente 121 s. Nao houve
+objeto de erro retornado pela API: o erro observavel e a ausencia de resposta
+do helper ate a interrupcao do turno.
+
+Assim, nao existem PNGs, texto de acessibilidade, clique, teclado, wheel ou
+evidencia de Dashboard/Inputs/Tabs/Grid. A listagem da janela nao e prova
+visual e nao foi usada para aprovacao. Sem captura verdadeira, este gate fica
+`BLOCKED`; nenhum fonte, DFM, package, projeto, branch, commit ou PR foi
+alterado por este agente.
+
+---
+
+# Gate visual real - instancia externa PID 25376
+
+Data: 2026-07-22
+Decisao: `BLOCKED`.
+
+Em sessao CUA limpa da versao `26.715.72359`, `sky.list_apps` nao retornou
+nenhuma janela com titulo `DAC Componentes - Demo`, apesar da instancia externa
+informada como PID 25376. Para descartar divergencia de catalogo, a chamada
+leve `sky.list_windows` tambem retornou lista vazia para titulos `Demo`,
+`DAC Componentes` ou app sob `DAC-DelphiComponents`.
+
+Como a API nao retornou um objeto `Window`, nao foi chamado `get_window_state`
+nem enviada entrada fisica: coordenadas/handles inferidos seriam invalidos pelo
+contrato do controlador. Nao ha screenshot, PNG, estado de Dashboard/Inputs/
+Tabs/Grid ou defeito visual novo. O gate continua `BLOCKED` ate que a janela
+seja exposta pelo CUA; nenhum fonte, DFM, package, projeto, branch, commit ou
+PR foi alterado por este agente.
+
+---
+
+# Diagnostico complementar - processo vivo, sessao CUA isolada
+
+Data: 2026-07-22
+
+Evidencia adicional do orquestrador: `Demo.exe` iniciado por `ProcessStartInfo`
+permaneceu vivo por mais de cinco segundos e criou `MainWindowHandle=1117116`.
+Isso elimina a hipotese de crash de startup como explicacao para a ausencia da
+janela no CUA. O binario inicia e cria janela; a falha observada e de exposicao
+da sessao de desktop para o controlador CUA.
+
+Esta evidencia nao cria prova visual: nao ha PNG, screenshot, clique, teclado,
+wheel ou inspecao da superficie da Demo. Portanto o gate visual permanece
+`BLOCKED`, sem atribuir ao produto um defeito de runtime que nao foi observado.
+
+---
+
+# QA visual das capturas recentes - Buttons, 520 e Charts
+
+Data: 2026-07-22
+Decisao do gate: `CHANGES_REQUESTED`.
+
+## Evidencias inspecionadas
+
+- `Build\\VisualValidation\\latest\\normal-top.png` e
+  `C:\\Users\\Diogo Cardoso\\.codex\\visualizations\\2026\\07\\21\\019f81fc-da44-7773-988c-d5d3c41fb4b4\\dac-demo-vis-021-normal-top.png`:
+  viewport desktop real da pagina Buttons.
+- `dac-demo-vis-021-normal-middle.png` e `dac-demo-vis-021-normal-bottom.png`:
+  continuidade do scroll, sem invasao lateral do conteudo e com scrollbar
+  vertical aparente.
+- `Build\\VisualValidation\\latest\\narrow-top.png` e
+  `dac-demo-vis-021-520-top.png`, `-520-middle.png`, `-520-bottom.png`:
+  viewport estreito de 520 px.
+- `Build\\VisualValidation\\latest\\charts.png` e
+  `dac-demo-vis-021-charts.png`: pagina Charts em viewport desktop.
+
+## Resultado visual que possui evidencia
+
+`PASS` parcial para Buttons responsivos: em desktop as grades, bordas claras,
+icones, textos e botões permanecem dentro do viewport; nas tres capturas de
+520 px a navegacao lateral colapsa, as colunas refluem para duas/uma coluna e
+nao ha clipping horizontal, texto truncado ou sobreposicao observavel. A
+rolagem esta visualmente indicada e as capturas de meio/fim mostram continuidade
+do conteudo.
+
+`PASS` parcial para Charts: barras, linhas de grade, donut, cards e bordas sao
+visiveis sem fundo preto, artefato de alpha ou corte nas bordas; a navegacao
+marca Charts como ativa.
+
+## Achado bloqueante para aceite final
+
+Em `normal-top.png` e `normal-middle.png`, os textos dos estados
+`Carregando` e `Desabilitado` ficam quase imperceptiveis sobre as respectivas
+superficies claras. O icone ajuda a semantica, mas o contraste do texto nao
+atinge legibilidade visual aceitavel. Corrigir os tokens de texto/superficie do
+estado disabled/loading e recapturar o estado e o foco por teclado.
+
+## Cobertura ausente (nao aprovada)
+
+Nao ha captura de Inputs (labels nativos, memo e texto editavel), Tabs H/V
+(captions, selected, disabled, foco e conteudo), Grid (selecao, wheel, viewport
+e flicker) ou Dashboard (tab integrada, cards/transparencia e responsividade).
+Tambem nao ha frame de foco/teclado ou sequencia de scroll que permita afirmar
+ausencia de flicker. Esses cenarios ficam sem decisao visual, nao aprovados.
+
+O `DACComponentsInteraction` atual cobre seus contratos de runtime: labels e
+separacao de Memo (`Tests\\DACComponentsInteraction.dpr:852-890`), tabs e
+inset vertical (`:1127-1200`), DataLink/handle/seleção (`:1207-1302`), scroll
+e roda sintetica (`:1059-1088`) e Dashboard/resize (`:907-970`). Essa cobertura
+nao substitui os PNGs ausentes e nao elimina o achado de contraste.
+
+Nenhum fonte, DFM, package, projeto, branch, commit ou PR foi alterado por
+este agente.
+
+---
+
+# QA fisica apos MEM-DEL-064 - Inputs, Tabs, Grid e Dashboard
+
+Data: 2026-07-22
+Decisao: `CHANGES_REQUESTED`.
+
+## Evidencia valida de framebuffer fisico
+
+- `Build\\VisualValidation\\latest\\mem-del-064-presence.png`: Dashboard real.
+  A aba Dashboard e a navegacao da galeria estao visiveis; cards escuros,
+  transparencias, KPI, agenda, atividades, grafico, modulos e footer foram
+  efetivamente pintados. A imagem `dac-dashboard-bisect-004-dashboard.png`
+  foi descartada: contem desktop/wallpaper, nao a Demo.
+- `Build\\VisualValidation\\latest\\mem-del-064-inputs.png` e
+  `mem-del-064-inputs-520.png`: Inputs em desktop e em 520x560.
+- `Build\\VisualValidation\\latest\\mem-del-064-tabs.png`: Tabs H/V.
+- `Build\\VisualValidation\\latest\\mem-del-064-grid-selected.png` e
+  `mem-del-064-grid-wheel.png`: Grid com selecao e roda fisica.
+
+Nenhuma evidencia desta secao usa `PrintWindow`; todas as imagens mostram a
+janela titulada `DAC Componentes - Demo` no framebuffer fisico.
+
+## Defeitos visuais observados
+
+1. `Inputs` - bloqueante. A legenda `Pesquisa e selecao` se sobrepoe ao texto
+   `clipboard e rolagem nativos.` tanto no desktop quanto no viewport 520. A
+   legenda/texto vira uma unica linha ilegivel. Em 520 tambem se ve o cabecalho
+   da pagina recortado imediatamente sob a galeria.
+2. `Tabs` - bloqueante. O DFM determina o texto horizontal
+   `Geral: resumo ativo com foco, acoes e dados distintos.`, mas o painel
+   horizontal ativo aparece vazio em `mem-del-064-tabs.png`. O texto vertical,
+   declarado como `Geral vertical: painel ativo e navegavel.`, e exibido como
+   `Geral vertical: painel ativo e navega...`; esta truncado. Captions H/V e a
+   selecao Geral aparecem, mas conteudo e legibilidade nao atendem o contrato.
+3. `Grid` - titulo/subtitulo da pagina ficam recortados pela faixa superior da
+   galeria. O componente em si passa no recorte: linha 1003 selecionada no
+   primeiro frame e 1006 apos roda fisica; colunas, badges, icones, footer e
+   scrollbar continuam sem residuos de pintura. A sequencia nao e suficiente
+   para aprovar ausencia de flicker, apenas confirma que nao houve artefato no
+   frame final.
+
+## Escopo que pode ser aceito nesta rodada
+
+Dashboard passa somente no estado desktop capturado: cards, bordas,
+transparencia e alinhamento interno estao visualmente coerentes. Nao ha
+dashboard estreito nem estado de interacao, portanto eles nao sao aprovados.
+Inputs, Tabs e Grid nao sao aprovados devido aos defeitos listados. Nenhuma
+fonte, DFM, package, projeto, branch, commit ou PR foi alterado por este
+agente.
+
+---
+
+# QA fisica MEM-DEL-065 - binario recompilado
+
+Data: 2026-07-22
+Decisao: `CHANGES_REQUESTED`.
+
+## Artefatos validos em `Build\\VisualValidation\\latest`
+
+- `mem-del-065-dashboard.png`: Dashboard desktop real; cards, superficies,
+  grafico, modulos e footer inteiros.
+- `mem-del-065-inputs-focus.png`: Inputs apos clique e Tab fisicos.
+- `mem-del-065-inputs-520.png`: Inputs em 520x560 apos resize fisico.
+- `mem-del-065-tabs-selected.png`: Tabs H/V, com Details vertical selecionada.
+- `mem-del-065-tabs-horizontal-details.png`: Details horizontal selecionada.
+- `mem-del-065-grid-wheel.png`: Grid apos clique/seleção e roda fisica.
+- `mem-del-065-buttons-states.png`: estados Loading e Disabled visiveis.
+- `mem-del-065-after-resize.png`: frame final apos retornar de 520x560 para
+  1200x760.
+
+Todas mostram a janela `DAC Componentes - Demo`; nenhum wallpaper, desktop ou
+`PrintWindow` foi usado como evidencia.
+
+## Resultado por cenario
+
+- Dashboard: `PASS` no viewport desktop. Proporcao, cards, bordas, superficie
+  dark/translucida, grafico, modulos e footer estao integrais.
+- Grid: `PASS` no frame final de selecao/roda. A linha 1005 permanece marcada,
+  colunas, badges, acoes, footer e scrollbar estao coerentes e sem residuo de
+  pintura. O frame apos resize tambem nao retem artefatos. Nao ha gravacao em
+  video/sequencia de frames para certificar ausencia de flicker transitorio.
+- Loading/Disabled: `PASS` para contraste nesta versao. `Carregando` tem texto
+  branco sobre verde escuro; `Desabilitado` usa texto/icone azul-acinzentado
+  legivel sobre superficie neutra, sem depender apenas de cor.
+- Inputs: `FAIL` bloqueante. `Pesquisa e selecao` continua sobreposta ao texto
+  auxiliar `clipboard e rolagem nativos.` no desktop e em 520x560. O estado de
+  foco apos clique/Tab tambem nao apresenta um indicador visual inequivoco.
+- Tabs: `FAIL` bloqueante. A selecao fisica funciona para Details horizontal e
+  vertical, mas seus textos aparecem com ellipsis/truncamento: `Detalhes:
+  conteudo independente para navegacao horiz...` e `Geral vertical: painel
+  ativo...`. O requisito e conteudo integral, sem truncar/vazar.
+
+O MEM-DEL-065 corrigiu o recorte do titulo/subtitulo sob a galeria, observado
+em MEM-DEL-064. Ainda assim, os dois `FAIL` acima impedem `APPROVED`. Nenhum
+fonte, DFM, package, projeto, branch, commit ou PR foi alterado por este agente.
+
+## QA fisica MEM-DEL-066 - binario recompilado
+
+### Rastreabilidade e metodo
+
+- Executavel validado: `Build\\EXE\\Win32\\Debug\\Demo.exe`, gravado em
+  `22/07/2026 22:24:38`, 4.013.739 bytes. A fonte mais nova em `demo` era
+  `demo\\Demo.Principal.pas` em `22/07/2026 22:20:07`; portanto o binario nao
+  e anterior a fonte usada para a validacao.
+- A janela foi iniciada a partir desse executavel atual. As interacoes foram
+  fisicas, DPI PMv2: clique no sidebar/conteudo, `Tab`, roda e resize real da
+  janela. Os PNGs foram produzidos por framebuffer (`CopyFromScreen`) somente
+  dentro da janela `DAC Componentes - Demo`; nao foi usado `PrintWindow`,
+  wallpaper ou composicao externa.
+- Evidencias em `Build\\VisualValidation\\latest`:
+  `mem-del-066-dashboard.png`, `mem-del-066-inputs-focus.png`,
+  `mem-del-066-inputs-resize-t0.png`, `mem-del-066-inputs-resize-t120.png`,
+  `mem-del-066-inputs-520.png`, `mem-del-066-tabs-before.png`,
+  `mem-del-066-tabs-h-t0.png`, `mem-del-066-tabs-h-after.png`,
+  `mem-del-066-tabs-v-after.png`, `mem-del-066-grid-wheel.png`,
+  `mem-del-066-grid-resize-t0.png`, `mem-del-066-grid-resize-after.png` e
+  `mem-del-066-buttons-states.png`.
+
+### Resultado por cenario
+
+- Dashboard desktop: `PASS`. Cards, agenda, atividades, grafico, modulos e
+  footer permanecem inteiros na captura fisica.
+- Tabs H/V: `PASS`. O clique seleciona `Detalhes` nas abas horizontal e
+  vertical; os paineis exibem `Detalhes: painel independente.` e
+  `Detalhes: selecionavel.` integralmente, sem ellipsis nem vazamento.
+- Grid - selecao e roda: `PASS`. Depois de clique e roda, a linha 1008 esta
+  marcada; colunas, badges, acoes, footer e barra de rolagem permanecem
+  coerentes em `mem-del-066-grid-wheel.png`.
+- Loading/Disabled: `PASS`. `Carregando` mantem alto contraste (branco sobre
+  verde escuro) e `Desabilitado` tem texto e icone azul-acinzentados legiveis
+  sobre fundo neutro.
+- Inputs desktop, foco e Tab: `FAIL` bloqueante. Em
+  `mem-del-066-inputs-focus.png`, apos clique fisico seguido de `Tab`, os
+  rotulos/descricao se sobrepoem (`Nome completo`, `Pesquisa e selecao` e
+  textos auxiliares), comprometendo leitura; tambem nao ha indicador de foco
+  inequivoco no controle nativo. Em 520x560 o frame estabilizado fica limpo,
+  mas isso nao repara o estado desktop/focado exigido.
+- Resize e ausencia de flicker: `FAIL` bloqueante. A sequencia real do
+  harness registra o estado durante a transicao: `mem-del-066-inputs-resize-t0.png`
+  exibe textos e controles duplicados/sobrepostos, enquanto `...-t120.png` e
+  `...-520.png` estabilizam. O grid tambem apresenta quadro transitorio
+  corrompido em `mem-del-066-grid-resize-t0.png` (cabecalhos/colunas
+  duplicados ou cortados), antes do `...-after.png`. Assim, os frames
+  antes/durante/depois provam que ainda ha flicker/repintura residual; nao e
+  possivel aprovar esse requisito por capturas finais limpas.
+
+### Decisao do gate
+
+`CHANGES_REQUESTED`. MEM-DEL-066 resolve a truncagem das Tabs observada no
+MEM-DEL-065 e preserva Dashboard, Grid em desktop e contraste dos estados,
+mas as sobreposicoes apos foco/Tab e os artefatos fisicos durante resize ainda
+violam os criterios de interface. Nenhum fonte, DFM, package, projeto, branch,
+commit ou PR foi alterado por este agente.
+
+## QA fisica MEM-DEL-067 - binario recompilado
+
+### Rastreabilidade e metodo
+
+- Executavel validado: `Build\\EXE\\Win32\\Debug\\Demo.exe`, gravado em
+  `22/07/2026 22:38:29`, 4.015.900 bytes. A fonte mais nova em `demo` era
+  `demo\\Demo.Principal.pas` em `22/07/2026 22:37:54`; o binario e posterior
+  a todas as fontes verificadas.
+- A validacao definitiva foi feita no handle da janela `DAC Componentes - Demo`
+  e considerou DPI 150%: coordenadas de clique/roda foram convertidas para o
+  espaco virtual e o framebuffer foi capturado no retangulo fisico exato da
+  janela. Somente os arquivos abaixo sao evidencia. Tentativas preliminares
+  com coordenadas nao ajustadas ao DPI foram descartadas, pois navegavam para
+  telas erradas e nao representam o produto sob teste.
+- Foram usados clique fisico, `Tab`, roda e `SetWindowPos` real. Os PNGs sao
+  `CopyFromScreen` da janela Demo, sem `PrintWindow`, wallpaper ou composicao
+  externa.
+- Evidencias em `Build\\VisualValidation\\latest`: `mem-del-067-dashboard.png`,
+  `mem-del-067-inputs-focus.png`, `mem-del-067-inputs-resize-t0.png`,
+  `mem-del-067-inputs-resize-t120.png`, `mem-del-067-inputs-520.png`,
+  `mem-del-067-tabs-before.png`, `mem-del-067-tabs-h-t0.png`,
+  `mem-del-067-tabs-h-after.png`, `mem-del-067-tabs-v-t0.png`,
+  `mem-del-067-tabs-v-after.png`, `mem-del-067-grid-wheel.png`,
+  `mem-del-067-grid-resize-t0.png`, `mem-del-067-grid-resize-t120.png`,
+  `mem-del-067-grid-resize-after.png` e `mem-del-067-buttons-states.png`.
+
+### Resultado por cenario
+
+- Dashboard desktop: `PASS`. Superficie dark, cards, agenda, atividades,
+  grafico, modulos e footer foram renderizados integralmente.
+- Tabs H/V e transicao: `PASS`. Os frames antes/durante/depois mostram a
+  selecao de `Detalhes` em ambas as orientacoes, com
+  `Detalhes: painel independente.` e `Detalhes: selecionavel.` integrais, sem
+  ellipsis, overdraw ou frame transitorio corrompido.
+- Grid: `PASS`. A roda e o clique selecionam a linha 1011 em
+  `mem-del-067-grid-wheel.png`; os frames `t0`, `t120` e final apos resize
+  mantem linhas e cabecalhos coerentes, sem duplicacao ou pintura residual.
+- Loading/Disabled: `PASS`. `Carregando` preserva texto branco em verde escuro
+  e `Desabilitado` mantem rotulo/icone azul-acinzentado legiveis em fundo
+  neutro.
+- Inputs, foco e resize: `FAIL` bloqueante. Em
+  `mem-del-067-inputs-focus.png`, apos clique fisico e `Tab`, o rotulo
+  `Pesquisar cadastro` se sobrepoe ao texto auxiliar
+  `...selecao, clipboard e rolagem nativos.`; nao ha indicador de foco
+  inequivoco no editor. O defeito tambem e visivel em 520px e nos frames
+  `inputs-resize-t0`, `inputs-resize-t120` e `inputs-520`, logo nao e apenas
+  uma amostra transitoria de resize.
+
+### Decisao do gate
+
+`CHANGES_REQUESTED`. MEM-DEL-067 eliminou os quadros transitorios corrompidos
+do resize observados em MEM-DEL-066 e mantem os demais cenarios aprovados,
+mas a colisao de texto e o foco ambiguo dos Inputs ainda violam os criterios
+obrigatorios. Nenhum fonte, DFM, package, projeto, branch, commit ou PR foi
+alterado por este agente.
+
+## QA fisica decisiva MEM-DEL-068 - binario recompilado
+
+### Rastreabilidade e metodo
+
+- Executavel validado: `Build\\EXE\\Win32\\Debug\\Demo.exe`, gravado em
+  `22/07/2026 22:53:54`, 4.015.963 bytes. A fonte mais nova foi
+  `demo\\Demo.Principal.pas`, em `22/07/2026 22:53:09`; o binario e posterior.
+- O harness usou a janela fisica `DAC Componentes - Demo`, corrigindo as
+  coordenadas de interacao para DPI 150%. As capturas sao `CopyFromScreen` do
+  retangulo real dessa janela, depois de clique, `Tab`, roda e resize real;
+  nao ha `PrintWindow`, wallpaper ou composicao externa como evidencia.
+- Evidencias em `Build\\VisualValidation\\latest`: `mem-del-068-dashboard.png`,
+  `mem-del-068-inputs-focus.png`, `mem-del-068-inputs-resize-t0.png`,
+  `mem-del-068-inputs-resize-t120.png`, `mem-del-068-inputs-resize-after.png`,
+  `mem-del-068-tabs-before.png`, `mem-del-068-tabs-h-t0.png`,
+  `mem-del-068-tabs-h-after.png`, `mem-del-068-tabs-v-t0.png`,
+  `mem-del-068-tabs-v-after.png`, `mem-del-068-grid-wheel.png`,
+  `mem-del-068-grid-resize-t0.png`, `mem-del-068-grid-resize-t120.png`,
+  `mem-del-068-grid-resize-after.png` e `mem-del-068-buttons-states.png`.
+
+### Resultado decisivo
+
+- Dashboard: `PASS` no smoke desktop; composicao, cards, agenda, grafico e
+  footer sem regressao visual observavel.
+- Tabs H/V: `PASS`; `Detalhes` horizontal/vertical e seus textos integrais
+  permanecem sem ellipsis, ghost ou frame de transicao corrompido.
+- Grid: `PASS`; clique/roda mantem a linha 1011 selecionada e os frames de
+  resize `t0`/`t120`/final estao coerentes, sem duplicacao de colunas ou
+  overdraw.
+- Loading/Disabled: `PASS`; contraste de `Carregando` e `Desabilitado`
+  permanece legivel.
+- Inputs e foco: `FAIL` bloqueante. Em `mem-del-068-inputs-focus.png`, apos
+  clique fisico e `Tab`, `Pesquisar cadastro` se mistura ao auxiliar
+  `...selecao, clipboard e rolagem nativos.`. O segundo editor tambem nao tem
+  foco visual inequivoco. O ghost e reproduzivel nos tres estados de resize
+  exigidos (`inputs-resize-t0`, `inputs-resize-t120` e
+  `inputs-resize-after`), inclusive no viewport de 520px; portanto nao e
+  aceitavel como transicao breve.
+
+### Decisao do gate
+
+`CHANGES_REQUESTED`. O binario de 22:53 preserva os cenarios previamente
+aprovados, mas nao corrige o defeito obrigatorio de Inputs/foco. Nenhum fonte,
+DFM, package, projeto, branch, commit ou PR foi alterado por este agente.
+
+## QA fisica MEM-DEL-069 - binario recompilado
+
+### Rastreabilidade e metodo
+
+- Executavel validado: `Build\\EXE\\Win32\\Debug\\Demo.exe`, gravado em
+  `22/07/2026 22:58:48`, 4.015.963 bytes. A fonte `demo\\Demo.Principal.pas`
+  mais recente estava em `22/07/2026 22:53:09`; logo o binario e novo.
+- O QA usou apenas a janela fisica `DAC Componentes - Demo`. O harness corrige
+  clique e roda para DPI 150%, envia `Tab`, aplica resize real e usa
+  `CopyFromScreen` no retangulo da janela. Nao foi usado `PrintWindow`,
+  wallpaper ou uma captura de desktop como evidencia.
+- Evidencias em `Build\\VisualValidation\\latest`: `mem-del-069-dashboard.png`,
+  `mem-del-069-inputs-focus.png`, `mem-del-069-inputs-resize-t0.png`,
+  `mem-del-069-inputs-resize-t120.png`, `mem-del-069-inputs-resize-after.png`,
+  `mem-del-069-tabs-before.png`, `mem-del-069-tabs-h-t0.png`,
+  `mem-del-069-tabs-h-after.png`, `mem-del-069-tabs-v-t0.png`,
+  `mem-del-069-tabs-v-after.png`, `mem-del-069-grid-wheel.png`,
+  `mem-del-069-grid-resize-t0.png`, `mem-del-069-grid-resize-t120.png`,
+  `mem-del-069-grid-resize-after.png` e `mem-del-069-buttons-states.png`.
+
+### Resultado por cenario
+
+- Inputs desktop, click+Tab e 520px: `PASS`. `Nome completo` e
+  `Pesquisar cadastro` ficam em linhas independentes, sem o antigo texto
+  auxiliar sobreposto. O segundo editor recebe o `Tab` e mostra chrome de foco
+  azul-claro distinto do editor inativo. Os frames `t0`, `t120` e final em
+  520px nao contem ghost, overdraw ou duplicacao de texto/controles.
+- Dashboard: `PASS` no smoke desktop, sem regressao em cards, agenda, grafico
+  ou footer.
+- Tabs H/V: `PASS`. `Detalhes` horizontal e vertical possuem texto integral e
+  os frames de transicao nao apresentam ellipsis, vazamento ou pintura residual.
+- Grid: `PASS`. Clique e roda deixam a linha 1011 selecionada; resize `t0`,
+  `t120` e final mantem cabecalhos/linhas coerentes, sem duplicacao.
+- Loading/Disabled: `PASS`. Contraste e legibilidade permanecem adequados.
+
+### Decisao do gate
+
+`APPROVED`. MEM-DEL-069 elimina o ghost de Inputs que bloqueava MEM-DEL-068 e
+nao introduz regressao nos cenarios de smoke. Nenhum fonte, DFM, package,
+projeto, branch, commit ou PR foi alterado por este agente.
+
+## QA fisica MEM-DEL-070 - PENDENTE por limitacao externa de framebuffer
+
+- Binario observado: `Build\\EXE\\Win32\\Debug\\Demo.exe`, gravado em
+  `22/07/2026 23:52:40`, posterior a fonte `demo\\Demo.Principal.pas` mais
+  recente (`22/07/2026 22:53:09`).
+- Nenhuma captura `mem-del-070-*` produzida nesta tentativa e valida como
+  evidencia do Demo. As primeiras execucoes iniciavam antes da janela estar
+  pronta; depois de aproximadamente 10 segundos o processo passou a informar
+  o titulo `DAC Componentes - Demo`, mas `CopyFromScreen` devolveu janelas
+  externas (Chrome, Codex e IDE Delphi), nao a janela alvo. Essas imagens foram
+  descartadas e nao sustentam PASS nem FAIL.
+- O controle de aplicativos tambem nao encontrou uma janela Demo exposta na
+  sessao visual. Uma tentativa de lancamento por esse canal foi interrompida
+  externamente antes de devolver o alvo.
+- Gate: `PENDENTE`, sem veredito de produto. Proxima tentativa segura: usuario
+  deixar `DAC Componentes - Demo` em primeiro plano na sessao visual e repetir
+  a captura fisica, validando imediatamente foreground HWND/titulo e client
+  rect antes de cada `CopyFromScreen`. Nao usar `PrintWindow` como substituto.
+
+## QA fisica MEM-DEL-074 - PENDENTE por foreground externo
+
+- Binario atual localizado em `Build\\EXE\\Win32\\Debug\\Demo.exe`, gravado em
+  `23/07/2026 01:06:38`.
+- Apos aguardar 12 segundos, o processo apresentou a janela titulada
+  `DAC Componentes - Demo` (HWND `0x1360B58`) e client rect valido de
+  `1810x1140`. Contudo, o foreground HWND era `0x100DA`, sem titulo, portanto
+  diferente da janela Demo. Uma segunda tentativa com `ShowWindow(SW_RESTORE)`,
+  `SetWindowPos` para `0,0,1816,1176`, topmost temporario,
+  `BringWindowToTop` e `SetForegroundWindow` tambem falhou: Demo
+  `0x1370B58`, foreground ainda `0x100DA`.
+- Nenhuma imagem `mem-del-074-*` foi capturada, pois a regra exige confirmar
+  HWND/titulo/foreground/client rect imediatamente antes do framebuffer. Nao
+  foi usado `PrintWindow` e nao ha resultado de produto a inferir.
+- Gate: `PENDENTE`. Para retomar, o usuario deve deixar `DAC Componentes - Demo`
+  efetivamente em primeiro plano na sessao visual; em seguida, repetir a
+  confirmacao de foreground e a validacao dos dois temas, Tabs e Inputs.
+
+## QA fisica MEM-DEL-075 - reteste de foreground, contraste e navegacao
+
+### Rastreabilidade e metodo
+
+- Executavel validado: `Build\\EXE\\Win32\\Debug\\Demo.exe`, gravado em
+  `23/07/2026 05:48:58`.
+- A janela fisica `DAC Componentes - Demo` foi posta em primeiro plano e o
+  harness confirmou, imediatamente antes de cada `CopyFromScreen`, que o
+  foreground HWND era o HWND da Demo. O client rect usado foi `1804x1138`, com
+  origem de cliente `6,32`. Assim, os PNGs abaixo sao evidencias do framebuffer
+  real da Demo, nao `PrintWindow` nem captura de outra aplicacao.
+- Evidencias em `Build\\VisualValidation\\latest`:
+  `mem-del-075-dashboard.png`, `mem-del-075-buttons-states.png`,
+  `mem-del-075-inputs-edit-focus.png`, `mem-del-075-inputs-520-t0.png`,
+  `mem-del-075-inputs-520-after.png`, `mem-del-075-selectors-top.png`,
+  `mem-del-075-controls-radio-toggle.png`, `mem-del-075-tabs-horizontal.png`,
+  `mem-del-075-tabs-keyboard.png`, `mem-del-075-tabs-vertical.png`,
+  `mem-del-075-tabs-520-t0.png`, `mem-del-075-tabs-520-after.png`,
+  `mem-del-075-grid-wheel-select.png`, `mem-del-075-grid-520-t0.png` e
+  `mem-del-075-grid-520-after.png`.
+
+### Resultado por cenario
+
+- Dashboard: `PASS` no smoke desktop. Cards, agenda, atividades, grafico,
+  modulos e footer renderizaram sem clipping material.
+- Buttons/estados: `FAIL`. No tema escuro, cabecalhos, subtitulos e textos
+  explicativos da pagina sao pretos sobre superficie verde-escura; ficam quase
+  ilegiveis. Os rotulos internos dos botoes continuam visiveis, mas nao anulam
+  a falha de contraste da pagina.
+- Inputs/foco: `FAIL` visual, `PASS` funcional. Clique, digitacao e `Tab`
+  chegaram aos editores (inclusive `Q` no segundo campo), sem ghost ou
+  sobreposicao nos snapshots de 520px. Porem os rotulos como `Nome completo`,
+  `Pesquisar cadastro` e `Observacoes` sao pretos sobre wrappers verde-escuros,
+  portanto nao atendem legibilidade no tema aplicado.
+- Selectors: `PARTIAL`. O estado inicial foi capturado. Ao abrir o ComboBox, a
+  lista nativa assumiu um HWND de popup e deixou de ter o HWND da Demo como
+  foreground; o harness interrompeu antes de capturar para nao registrar uma
+  imagem sem cadeia de evidencia. DateTime/Hora e popup do ComboBox permanecem
+  sem veredito nesta rodada.
+- Radio/Toggle: `PARTIAL`. Selecao do radio e alternancia do toggle funcionam.
+  O rotulo do toggle aparece truncado (`Toggle s...`), indicando clipping de
+  largura nesse estado.
+- Tabs horizontal, vertical, teclado e 520px: `FAIL`. A selecao e alterada por
+  teclado e clique, mas o ativo continua desenhado como um retangulo interno,
+  menor que toda a area clicavel da tab. Alem disso, os textos do painel
+  (`Detalhes`, `Historico`, `Geral`) sao verde muito claro/branco sobre fundo
+  branco e ficam praticamente invisiveis. O problema ocorre nos dois eixos e
+  persiste no viewport de 520px; nao houve ghost na transicao.
+- Grid: `PASS`. Clique e roda selecionaram a linha 1011; os snapshots inicial
+  e final em 520px preservam cabecalhos e linhas sem duplicacao nem pintura
+  residual.
+
+### Decisao do gate
+
+`CHANGES_REQUESTED`. A navegacao e os controles essenciais respondem, mas a
+regressao de contraste no tema escuro e a semantica/legibilidade das Tabs sao
+bloqueantes para aprovacao visual. A cobertura de popups de selector/data/hora
+permanece pendente por troca de HWND no popup nativo. Nenhum fonte, DFM,
+package, projeto, branch, commit ou PR foi alterado por este agente.
+
+## QA fisica MEM-DEL-101 - PENDENTE por encerramento antes da UI
+
+- Executavel informado para recaptura: `Build\\EXE\\Win32\\Debug\\Demo.exe`,
+  gravado em `23/07/2026 07:06:11` (PID inicialmente informado: `23508`).
+- A PID informada foi encontrada sem janela principal (`HWND 0`), portanto nao
+  era elegivel para framebuffer fisico. Ela foi encerrada somente para relancar
+  o binario da QA.
+- O novo processo criado pelo executavel recebeu um HWND inicialmente, mas sem
+  titulo; encerrou antes de completar a inicializacao e nunca expôs a janela
+  `DAC Componentes - Demo`. A segunda confirmacao, dez segundos depois, ja nao
+  encontrava o processo.
+- Nenhuma imagem `mem-del-101-*` foi gerada e nenhum frame anterior foi
+  reutilizado: nao houve Demo persistente cujo foreground, client rect e titulo
+  pudessem ser confirmados. Assim, contraste, Tabs, Grid, rolagem e popups
+  ComboBox/DateTime nao receberam veredito nesta tentativa.
+- Gate: `PENDENTE`. E necessario relancar a Demo de modo que sua janela fisica
+  permaneça aberta; depois, retomar com a mesma regra de foreground para a Demo
+  e, nos selectors, para o HWND do popup nativo. Nenhum fonte, DFM, package,
+  projeto, branch, commit ou PR foi alterado por este agente.
+
+## Contrato de QA visual MEM-DEL-102 - heranca de tema e superficies mistas
+
+### Motivo da ampliacao
+
+O escape detectado pelo usuario demonstra que validar apenas a aparencia global
+Dark ou Light nao cobre um componente cujo header e o conteudo pertencem a
+superficies de temas diferentes. A partir deste registro, o gate visual de Tabs,
+Inputs e Selectors inclui obrigatoriamente o modo `Mixed`: header das Tabs em
+Dark e `TTabSheet`/parent de conteudo em Light (branco).
+
+MEM-DEL-075 nao cobriu este contrato porque:
+
+- capturou predominantemente a aplicacao em Dark e nao estabeleceu tres
+  matrizes independentes `Light`, `Dark` e `Mixed`;
+- nao comprovou que filhos `dtmInherit` resolviam o tema efetivo a partir do
+  parent Light quando a aplicacao/header permanecia Dark;
+- avaliou o frame completo por inspecao visual, mas nao amostrou o seam
+  header/content nem as quatro bordas do parent para detectar faixa estranha;
+- encontrou contraste ruim e Tabs incorretas, mas nao mediu luminancia/razao de
+  contraste por par foreground/background;
+- o ComboBox mudou o foreground para um popup separado e a rodada foi
+  interrompida antes de concluir os popups.
+
+MEM-DEL-101 tambem nao cobriu este contrato: o processo encerrou antes de expor
+`DAC Componentes - Demo`; portanto nao existiu framebuffer elegivel, nem
+qualquer screenshot Light, Dark ou Mixed.
+
+### Matriz obrigatoria e rastreabilidade
+
+Cada novo binario candidato deve produzir, no minimo:
+
+| ID | Superficie | Estado obrigatorio |
+|---|---|---|
+| THEME-LIGHT | aplicacao, Tabs, `TTabSheet` e filhos Light | mouse, teclado e frame estabilizado |
+| THEME-DARK | aplicacao, Tabs, `TTabSheet` e filhos Dark | mouse, teclado e frame estabilizado |
+| THEME-MIXED | header Tabs Dark; `TTabSheet`/parent branco Light; filhos `dtmInherit` | mouse, teclado, troca H/V e frame estabilizado |
+| THEME-520 | os tres modos acima em viewport externo `520x560` | `t0`, frame estabilizado e apos interacao/rolagem |
+
+Todo PNG deve registrar no nome `light`, `dark` ou `mixed`, controle, interacao e
+viewport. Antes de cada `CopyFromScreen`, o harness deve confirmar:
+
+1. processo/caminho do binario candidato;
+2. titulo `DAC Componentes - Demo`;
+3. `GetForegroundWindow() = HWND` da Demo;
+4. retangulo de janela e client rect nao vazios;
+5. captura feita do retangulo fisico atual, sem `PrintWindow`.
+
+Popup nativo e uma excecao controlada: depois do clique, enumerar o novo HWND,
+confirmar que ele e visivel, pertence ao processo da Demo e e o foreground;
+capturar a uniao do popup com a area relevante da Demo ou dois PNGs correlatos.
+Se o foreground pertencer a outro processo, o frame deve ser descartado.
+
+### Resolucao obrigatoria de `dtmInherit`
+
+No modo `Mixed`, a fonte de verdade do filho `dtmInherit` e o parent visual mais
+proximo que define Light, nao o modo global Dark e nao o header vizinho. O gate
+exige simultaneamente:
+
+- parent/`TTabSheet` com background Light;
+- labels, texto de edit, memo, placeholder, borda, foco e popup resolvidos com
+  tokens Light compatíveis com esse parent;
+- ausencia de wrapper Dark residual em torno de filho Light;
+- alternar a tab por mouse e teclado nao pode mudar a resolucao efetiva;
+- resize para 520px e retorno ao desktop nao podem reutilizar cache de tokens do
+  tema anterior.
+
+Quando houver um teste runtime de introspeccao, registrar para cada filho:
+`ThemeMode=dtmInherit`, parent tematico esperado e modo efetivo resolvido
+`dtmLight`. A introspeccao complementa, mas nao substitui, os pixels.
+
+### Checagem mensuravel de bordas e seam
+
+Para o retangulo conhecido do `TTabSheet`/parent, inspecionar quatro faixas
+internas (topo, direita, inferior e esquerda) e o seam entre header e content:
+
+- amostrar uma linha a cada 4 pixels ao longo de cada borda, nas profundidades
+  de 1, 2, 3 e 4 pixels;
+- comparar cada amostra com a cor esperada da superficie usando distancia RGB
+  `sqrt((dr)^2 + (dg)^2 + (db)^2)`; pixels com distancia `<= 12` pertencem ao
+  mesmo cluster de cor;
+- `FAIL` se uma cor branca ou Dark nao prevista formar faixa continua com
+  espessura `>= 2 px` por `>= 25%` do comprimento de qualquer borda;
+- `FAIL` se `>= 10%` das amostras de qualquer uma das quatro bordas pertencerem
+  a um cluster de superficie incorreto, descontando somente cantos arredondados
+  e bordas explicitamente previstas pelo token;
+- no seam header/content, `FAIL` para buraco branco, faixa Dark residual,
+  double-border ou descontinuidade nao prevista com espessura `>= 2 px` e
+  comprimento `>= 32 px`;
+- repetir a medicao no frame estabilizado desktop, imediatamente apos selecao e
+  nos frames `t0`/estabilizado de `520x560`, pois artefato transitorio tambem e
+  defeito se permanecer em duas capturas consecutivas separadas por 120 ms.
+
+As cores esperadas e os retangulos medidos devem ser anotados junto do resultado
+(coordenadas, RGB mediano da superficie e maior faixa divergente encontrada).
+
+### Checagem mensuravel de contraste e texto
+
+Para cada label, caption, texto editavel, memo, placeholder e texto de painel,
+parear pixels internos representativos do glifo com pixels adjacentes do parent.
+Calcular luminancia relativa sRGB e
+`contraste = (L_mais_claro + 0.05) / (L_mais_escuro + 0.05)`.
+
+- texto normal e labels: minimo `4.5:1`;
+- texto grande (>= 18 pt regular ou >= 14 pt bold): minimo `3:1`;
+- contorno de foco, borda de input e indicador de selecao: minimo `3:1` contra
+  as cores adjacentes;
+- placeholder/auxiliar que comunica informacao: minimo `4.5:1`;
+- `FAIL` imediato para texto que herda a mesma familia de cor do parent e fica
+  visualmente indistinguivel, mesmo se OCR ainda reconhecer parte do glifo.
+
+Para reduzir erro por antialias, usar a mediana de pelo menos cinco pixels do
+nucleo do glifo e cinco pixels limpos do background, sem borda suavizada. O
+relatorio deve guardar foreground RGB, background RGB, razao calculada e o
+limite aplicavel para cada achado.
+
+### Interacao e gate final
+
+Nos tres modos, executar Tabs H/V por mouse e teclado (`Tab`, setas,
+`Space`/`Enter` quando aplicavel), confirmar foco visivel, conteudo selecionado e
+retorno de foco. Em Inputs/Selectors, validar click, `Tab`/`Shift+Tab`, caret,
+digitacao, memo, abertura/fechamento por mouse/teclado e retorno de foco. Repetir
+em `520x560`, com scroll wheel e frames antes/durante/depois do resize.
+
+O gate so pode ser `APPROVED` se Light, Dark e Mixed passarem juntos. Um PASS em
+Dark nao compensa falha de heranca no Mixed; teste runtime sem screenshot nao
+compensa falha de pixels; ausencia de captura de uma borda, seam ou popup deixa
+o item `PENDENTE`. Este contrato entra em vigor para o proximo rebuild. Ate o
+handoff do desenvolvimento, o estado e `AGUARDANDO_FIX`. Nenhum fonte, DFM,
+package, projeto, branch, commit ou PR foi alterado por este agente.
+
+## Execucao MEM-DEL-102 - PARTIAL por ausencia de HWND fisico
+
+### Artefato e alvo recebidos
+
+- Executavel: `Build\\EXE\\Win32\\Debug\\Demo.exe`, 4.060.049 bytes, gravado em
+  `23/07/2026 08:34:07`.
+- Alvo informado pelo orquestrador: PID `2932`, HWND decimal `5966770`.
+- A PID permanece viva e `Responding=True` na sessao 1, mas apresenta
+  `MainWindowHandle=0`, titulo vazio e somente thread em espera.
+
+### Validacao de elegibilidade do framebuffer
+
+- `IsWindow(5966770)=False`;
+- `GetWindowThreadProcessId(5966770)=0`, portanto o HWND nao pertence mais a
+  PID 2932;
+- `GetForegroundWindow()=0` durante o checkpoint;
+- `EnumWindows` nao encontrou qualquer janela top-level, visivel ou invisivel,
+  pertencente a PID 2932;
+- nova consulta dez segundos depois preservou `MainWindowHandle=0`, titulo
+  vazio e ausencia de janela enumeravel.
+
+Por isso nenhuma imagem `mem-del-102-*` foi criada. Capturar o desktop, um HWND
+extinto ou reutilizar PNGs MEM-DEL-075 violaria o contrato de foreground e nao
+seria evidencia do rebuild atual.
+
+### Cobertura e decisao
+
+`PARTIAL` somente para rastreabilidade do artefato/processo; cobertura visual
+`PENDENTE`. Light, Dark, Mixed, heranca `dtmInherit`, seam/quatro bordas, razao
+de contraste, Tabs H/V, Inputs/Memo/Combo/Date/ButtonEdit/SystemText, DBGrid,
+Dashboard, scroll e popups nao receberam PASS nem FAIL nesta execucao.
+
+Retomar somente quando a Demo expuser uma janela top-level persistente com
+titulo `DAC Componentes - Demo`, HWND atual associado a PID do binario e
+foreground confirmavel. Nenhum fonte, DFM, package, projeto, branch, commit ou
+PR foi alterado por este agente.
+
+## Fechamento MEM-DEL-102 pos-fix - tecnico APPROVED, fisico PENDENTE
+
+### Candidato corrigido
+
+- Executavel preparado pelo desenvolvimento:
+  `Build\\Diagnostics\\MEM102DarkFix\\Demo.exe`.
+- Handoff informou build da Demo em `23/07/2026 09:02:34`, com
+  `0 Warning(s), 0 Error(s)`, e janela `DAC Componentes - Demo`.
+- A tentativa de captura pelo Computer Use no desktop interativo expirou
+  aguardando aprovacao/ativacao do controlador. A chamada nao devolveu
+  screenshot, screenshot id, path ou estado visual confiavel.
+- Por ordem do orquestrador, a automacao nao foi repetida nesta rodada. Nenhuma
+  imagem anterior, captura incompleta ou screenshot de outra instancia foi
+  reutilizado.
+
+### O que esta aprovado tecnicamente
+
+Conforme o handoff do desenvolvedor MEM-DEL-105 e a revisao MEM-102
+`APPROVED`:
+
+- `ResolveForSurface` percorre os pais visuais do mais proximo para o mais
+  distante; override local vence, superficie DAC opaca define Light/Dark,
+  superficies transparentes nao interrompem a busca e `TTabSheet`/global ficam
+  como fallback;
+- o Dashboard aplica ao `TTabSheet` a cor exata do filho direto `alClient`
+  escuro, eliminando por contrato a moldura branca;
+- a grade transparente de Quick Actions e ignorada como fonte, fazendo os
+  botoes herdarem o container dark visualmente mais proximo;
+- paginas Mixed sem superficie escura permanecem Light, preservando Inputs
+  Light sob header/global Dark, e `ContentColor` explicito continua prioritario;
+- Runtime, Design e Demo compilaram com zero warnings/erros; Smoke retornou
+  `PASS`; Interaction retornou `PASS (clean teardown)`;
+- Interaction cobre cor exata da pagina do Dashboard, grid transparente, Quick
+  Actions Dark, override local Light, Inputs Light, mouse/teclado e viewport
+  compacto 520px.
+
+Esses itens aprovam implementacao, precedencia, ciclo de vida e regressao
+automatizada. Eles nao equivalem a aprovacao por framebuffer.
+
+### O que segue pendente fisicamente
+
+Sem screenshot pos-fix valido, permanecem `PENDENTE`:
+
+- Dashboard Dark sem moldura/faixa branca no seam e nas quatro bordas;
+- Quick Actions sem retangulo branco dentro do card Dark;
+- medicao RGB conforme MEM-DEL-102 (amostras nas quatro bordas e seam);
+- contraste WCAG real de labels, captions e botoes sobre a superficie mais
+  proxima;
+- Inputs Mixed, Tabs H/V, mouse, teclado e resize 520px no framebuffer;
+- popups ComboBox/DateTime com HWND do popup confirmado.
+
+### Decisao
+
+`PARTIAL`: `APPROVED` tecnico e `PENDENTE` fisico. Nao ha evidencia suficiente
+para promover o gate visual a `APPROVED`, mas tambem nao ha FAIL visual
+pos-fix, pois nenhum frame do candidato corrigido foi recebido. Proxima rodada:
+capturar diretamente a janela unica do app
+`process:M:\\Delphi Componentes\\DAC-DelphiComponents\\Build\\Diagnostics\\MEM102DarkFix\\Demo.exe`
+e executar somente os checkpoints fisicos pendentes. Nenhum fonte, DFM,
+package, projeto, branch, commit ou PR foi alterado por este agente.
+
+---
+
+ID: MEM-UI-002
+Data: 2026-07-24
+Demanda: gate fisico de Tabs, Input, ButtonEdit e DateTimePicker
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+Evidencia: `Build\VisualValidation\mem-del-106`
+
+## Correcao do metodo de QA
+
+- O clique antigo do Input usava `Y=184` e atingia uma area fora do editor.
+  A enumeracao real de HWND confirmou o `TMaskEdit` em `Y=193..217`; o gate
+  passou a clicar no centro, `Y=205`, e exige que a classe focada seja
+  exatamente `TMaskEdit` antes da captura. Isto elimina o falso positivo em
+  que o header `Inputs` recebia o foco.
+- A matriz fisica nao altera texto por `SetWindowText` nem aceita leitura de
+  HWND sem repaint como prova visual. Digitar, selecionar, copiar e colar sao
+  validados dentro do processo por `DACComponentsInteraction`; a matriz externa
+  comprova pixels, foco/caret e os demais comportamentos por mouse/teclado.
+- Capturas usam o framebuffer fisico da janela e incluem o HWND de popup quando
+  necessario. `PrintWindow` nao e a evidencia canonica deste gate.
+
+## Resultado visual
+
+- Tabs: `PASS`; ativo ocupa toda a area da tab horizontal e vertical, sem
+  retangulo interno menor, borda branca residual ou ghost de pagina.
+- Input: `PASS`; label e caption mantem a fonte reduzida, o texto/caret ficam
+  centralizados verticalmente e o foco chega ao editor nativo.
+- ButtonEdit: `PASS`; botao de acao nao cobre a borda externa e o conjunto
+  permanece alinhado ao Input.
+- DateTimePicker: `PASS`; valor e icone ficam alinhados, o HWND nativo nao vaza
+  em repouso, calendario abre limpo e nao duplica a legenda.
+- Matriz: `PASS MATRIX` em `1200x760` e `520x560`, Dark e Light solicitado,
+  incluindo scroll wheel, Tabs, ComboBox, DateTime popup, grid e teclado.
+
+Capturas principais:
+
+- `1200x760\dark\inputs-after-focus.png`
+- `1200x760\dark\06-tabs-t0.png`
+- `1200x760\dark\selectors-date-open.png`
+- `1200x760\light-requested\06-tabs-t0.png`
+
+Decisao: `APPROVED` para os quatro defeitos desta demanda. Aprovacao limitada
+ao binario e matriz acima; qualquer novo SHA ou rebuild de fontes reinicia o
+gate.
+
+---
+
+ID: MEM-QA-114
+Data: 2026-07-24
+Demanda: QA visual e de interacao final das Tabs no binario novo
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+Status: BLOCKED
+
+Fato: O `sky.launch_app` obrigatorio para iniciar o binario novo permaneceu
+pendente por aproximadamente 376 segundos e a turn foi interrompida
+(`turn_aborted`), deixando o resultado do lancamento desconhecido.
+Decisao: Aplicar somente a recuperacao prevista pela skill `computer-use`.
+`sky.list_windows()` respondeu, mas retornou apenas ChatGPT, Explorer e Spotify;
+nenhuma janela com titulo exato `DAC Componentes - Demo` foi localizada.
+Evidencia: zero candidatos para `DAC Componentes - Demo`; nenhuma captura,
+clique, teclado, resize ou interacao de Tabs foi executada.
+Impacto: O gate visual do binario novo nao esta liberado. Nao reutilizar
+screenshot antigo, captura de outro binario ou coordenadas de observacao
+anterior como evidencia deste candidato.
+Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, arquitetura,
+usuario
+Handoff: O usuario deve abrir manualmente
+`Build\EXE\Win32\Debug\Demo.exe` e manter a janela
+`DAC Componentes - Demo` exposta. Depois, o especialista de testes deve
+retomar o gate visual a partir de uma nova observacao do `sky`, sem reutilizar
+estado ou screenshot anterior.
+
+---
+
+ID: MEM-QA-118
+Data: 2026-07-24
+Demanda: QA fisico interativo integral do executavel canonico
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256 informado no handoff:
+`9795B81AAC42B80D98E5DE805C02E9CE071F975EBFF196490189A3604C8BCB4D`
+Status: BLOCKED
+
+Fato: A listagem inicial do Computer Use encontrou exatamente uma janela
+canonica com titulo `DAC Componentes - Demo`, app
+`process:M:\Delphi Componentes\DAC-DelphiComponents\Build\EXE\Win32\Debug\Demo.exe`
+e window id `11667010`.
+Evidencia: A chamada subsequente com `get_window`, `activate_window` e
+`get_window_state` permaneceu pendente por aproximadamente 174,9 segundos e
+foi abortada. O resultado de ativacao/captura ficou desconhecido. Na unica
+recuperacao permitida, `sky.list_windows()` respondeu, mas retornou zero
+janelas com titulo exato `DAC Componentes - Demo`.
+Decisao: Nenhum screenshot, clique, teclado, foco, wheel, popup, resize ou
+comparacao visual foi executado de forma confirmavel. Nao existe aprovacao
+parcial ou final para Inputs, Selectors, DateTimePicker, Tabs, ButtonEdit,
+Grid, temas ou viewport compacto neste candidato.
+Impacto: O gate fisico integral permanece bloqueado por indisponibilidade do
+helper Computer Use, sem atribuir defeito visual ao produto e sem promover
+MEM-QA-118 a `UI_APPROVED`.
+Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, arquitetura,
+usuario
+Handoff: Reiniciar o helper Computer Use em novo turno e repetir a matriz
+integral desde a selecao da janela canonica. Nao reutilizar capturas antigas,
+coordenadas, screenshot ids, handles ou observacoes anteriores como evidencia
+do MEM-QA-118.
+
+---
+
+ID: MEM-QA-121
+Data: 2026-07-24
+Demanda: QA fisico Dark/Light, 15 paginas e scrollbars do binario MEM-DEL-121
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+Status: BLOCKED
+
+Fato: A identidade do executavel canonico foi confirmada antes da GUI pelo
+SHA-256
+`9C5970A4F81D31CBCCDB85910316AC1110489674B6327FB25ED95FF1DBC013EC`,
+exatamente igual a MEM-DEL-121 e MEM-REV-121. A sessao Computer Use foi
+reinicializada sem reutilizar handles ou observacoes anteriores.
+Decisao: O `sky.launch_app` do caminho canonico foi executado uma unica vez e,
+apos aproximadamente 344,7 segundos, retornou o erro exato
+`Computer Use app approval timed out`. Nenhuma entrada ou tentativa de
+lancamento foi repetida.
+Evidencia: A unica recuperacao permitida aguardou dois segundos e executou
+`sky.list_windows()`, que retornou zero janelas com titulo exato
+`DAC Componentes - Demo`. Nenhum screenshot, clique, teclado, wheel,
+scrollbar, troca de tema, visita de pagina, resize ou interacao foi executado.
+Os relatorios estao em
+`Build\VisualValidation\mem-qa-121\summary.txt` e
+`Build\VisualValidation\mem-qa-121\steps.txt`.
+Impacto: O gate fisico de MEM-QA-121 permanece bloqueado por infraestrutura.
+Nenhum defeito visual foi atribuido ao produto e nenhuma aprovacao parcial,
+`CONFIRMED` ou `UI_APPROVED` foi emitida.
+Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, arquitetura,
+usuario
+Handoff: O usuario deve abrir manualmente o Demo canonico
+`Build\EXE\Win32\Debug\Demo.exe`. Em novo turno, reiniciar o helper Computer
+Use e repetir integralmente a matriz fisica, sem reutilizar capturas, handles,
+coordenadas, screenshot ids ou observacoes anteriores.
+
+---
+
+ID: MEM-QA-122
+Data: 2026-07-24
+Demanda: retomada do QA fisico Dark/Light, 15 paginas e scrollbars do binario
+MEM-DEL-121
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`9C5970A4F81D31CBCCDB85910316AC1110489674B6327FB25ED95FF1DBC013EC`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: A sessao Computer Use foi reinicializada integralmente, sem reutilizar
+handles, coordenadas, screenshot IDs ou capturas anteriores. Antes de qualquer
+input, `sky.list_windows()` retornou exatamente uma janela pertencente ao
+processo do executavel canonico, mas ela tinha o titulo `Application Error`, e
+nao `DAC Componentes - Demo`.
+Evidencia: A captura fisica e a arvore de acessibilidade confirmaram o erro
+exato `Exception EListError in module vcl250.bpl at 00098FCA. Failed to delete
+tab at index 0.`. A imagem valida esta em
+`Build\VisualValidation\mem-qa-121-resume\startup-application-error.jpg`; os
+relatorios estao em `summary.txt` e `steps.txt` no mesmo diretorio.
+Impacto: P1 de inicializacao. A janela principal nao e materializada, logo a
+matriz Light, Dark, 15 paginas, paginas ocultas sem flash, scrollbars, ciclos de
+tema, regressao de Dashboard/Fields/Tabs/Grid, resize compacto e comparacao com
+as referencias nao pode ser executada. O gate fisico fica bloqueado por defeito
+observavel do produto, nao por indisponibilidade do helper.
+Handoff: Corrigir a exclusao invalida da tab durante a inicializacao, gerar novo
+executavel e reiniciar todo o gate em novo SHA. `UI_APPROVED` nao foi emitido.
+Nenhum arquivo de codigo, DFM, package, projeto, branch, commit ou PR foi
+alterado por este especialista.
+
+---
+
+ID: MEM-QA-126
+Data: 2026-07-24
+Demanda: QA fisico canonico apos MEM-REV-125
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`BDC2EE4274DC08220F8789002D4B7C66018262668AFDE1221D49E8D69288E443`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-125 estava `APPROVED_FOR_UI_TEST`. Em sessao Computer Use nova,
+o executavel canonico abriu exatamente uma janela `DAC Componentes - Demo`,
+sem `Application Error`, `EListError`, modal ou splash bloqueante. O Dashboard
+Dark inicial, o Dashboard Light e o topo de Botoes Light materializaram
+fisicamente.
+Defeito: A pagina Inputs Light apresenta P2 reproduzivel no viewport desktop
+fisico de 1824x1197. A faixa inferior de ButtonEdit/Memo possui labels fundidas
+e sobrepostas, inclusive `ButtonEdit / SucMemo / Loading`; captions e editores
+ficam truncados e o bloco Memo/Loading invade a linha dos ButtonEdit. Uma
+segunda captura sem novo input confirmou o mesmo estado estabilizado.
+Evidencia: `Build\VisualValidation\mem-qa-126\03-light-inputs.jpg` e
+`03-light-inputs-defect-confirmed.jpg`. `summary.txt` e `steps.txt` no mesmo
+diretorio registram SHA, reproducao, passos e cobertura.
+Decisao: A matriz foi interrompida imediatamente pelo criterio P1/P2. As
+paginas restantes em Light, todo o percurso Dark, dez alternancias, scrollbars,
+estados, popups, grid, foco e resize compacto nao receberam PASS.
+`UI_APPROVED` nao foi emitido.
+Fechamento: A Demo foi fechada normalmente; a listagem posterior confirmou
+zero janelas do processo canonico.
+Handoff: Corrigir o layout declarativo da faixa inferior de Inputs, gerar novo
+executavel e reiniciar integralmente o gate fisico em novo SHA.
+Nenhum codigo, DFM, package, projeto, branch, commit ou PR foi alterado.
+
+---
+
+ID: MEM-QA-DB-012
+Data: 2026-07-29
+Demanda: decima segunda QA fisica Data-Aware apos MEM-REV-DB-018
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`5603F9C49138FBF75113B024726C0F8155E0A9EEF16869BD85D9D1247F204D9D`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-018 estava `APPROVED_FOR_UI_TEST`. O pre-gate confirmou os
+hashes aprovados e Runtime BPLs identicos. `startlifecycle` passou com uma
+unica TForm1 canonica: PID=24548, HWND=1051778, client=1204x760,
+TargetCount=1, Modal=0, StableMs=10360, tres WM_NULL, WM_CLOSE e ExitCode=0,
+sem stdout/stderr/WER. Nao havia processo Demo antes ou depois do pre-gate.
+Sessao: Computer Use abriu exatamente uma janela canonica, id/HWND 6425040.
+Data-Aware Dark materializou em 1824x1197 e entrou em Edit.
+Regressoes prioritarias: PASS. Lookup -> Down `Maquinas` -> Tab materializou
+`Maquinas`, focou Date e F4 abriu o calendario. Lookup reaberto -> Shift+Tab
+focou DBCombo. Com `01/05/2025`, F4 -> `Limpar` fechou o popup e produziu
+vazio/null estavel, nunca `30/12/1899`, mantendo Edit; Cancel restaurou Browse,
+data e Lookup. Delete no Date tambem produziu vazio/null sem sentinela.
+Defeito: P2 no retorno de null para valor valido. A partir do vazio produzido
+por Delete, o calendario foi aberto pelo icone; o dia 15/05/2025 foi
+selecionado fisicamente e ficou destacado. O clique em OK fechou o popup, mas
+o campo permaneceu vazio/null em Edit. Uma captura sem novo input confirmou a
+pos-condicao estavel.
+Decisao: `CHANGES_REQUESTED`. A matriz parou no primeiro P2. Null externo,
+AllowNull=False, Light/Dark completo, demais TDACDB*, Insert/Post, read-only/
+required/falha de conversao/alteracao externa, Navigator/Grid, viewports,
+wheel, clipping/flicker, caret/clipboard/undo/IME e dez temas nao receberam
+PASS. `UI_APPROVED` nao foi emitido.
+Evidencia:
+`Build\VisualValidation\mem-qa-db-012\05-lookup-tab-maquinas-date-focus.jpg`,
+`06-date-popup-dark.jpg`, `07-date-clear-empty-dark.jpg`,
+`08-date-clear-empty-dark-stable.jpg`,
+`09-lookup-shifttab-dbcombo-focus.jpg`,
+`10-cancel-restores-date-and-lookup.jpg`, `11-date-delete-empty-dark.jpg`,
+`12-candidate-date-valid-from-null-stays-empty-stable.jpg`,
+`13-cancel-rollback-after-date-valid-fail.jpg`, `summary.txt`, `steps.txt` e
+`pre-gate-lifecycle\lifecycle.log`.
+Fechamento: Cancel restaurou Browse e `01/05/2025`; Demo fechada normalmente
+pelo X via Computer Use; zero janelas e processos Demo.
+Handoff: corrigir o retorno de null para data valida pelo calendario DB sem
+perder a selecao no fechamento por OK; preservar Lookup e limpeza aprovados;
+gerar novo artefato e reiniciar a matriz integral em novo SHA.
+Nenhum codigo, DFM, package, projeto, branch, stage, commit, push ou PR foi
+alterado por este especialista.
+
+---
+
+ID: MEM-QA-DB-009
+Data: 2026-07-29
+Demanda: nona QA fisica Data-Aware apos MEM-REV-DB-015
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`B3133CAB2102A8938E3B7005A1E4F37365C25A1F34EF3FFE6E077FB4E8054B80`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-015 estava `APPROVED_FOR_UI_TEST`. O pre-gate
+`startlifecycle` confirmou uma unica TForm1 canonica: PID=9556,
+HWND=21759176, client=1204x760, TargetCount=1, Modal=0, StableMs=10375,
+tres WM_NULL, WM_CLOSE e ExitCode=0, sem stdout/stderr/WER. Demo e Runtime BPL
+tinham os hashes aprovados; os dois Runtime BPL eram identicos.
+Sessao: Computer Use abriu exatamente uma janela canonica, id/HWND 18681572.
+Data-Aware Dark materializou em 1824x1197 e entrou em Edit.
+Revalidacao: popup Lookup Dark permaneceu legivel; Down moveu a selecao
+provisoria de `Fertilizantes` para `Maquinas`; Tab fechou visualmente o popup.
+Defeito: P2 de comportamento/foco no caminho fisico do TPopupDataList HWND.
+Tab nao materializou `Maquinas` no campo fechado nem transferiu foco ao Date.
+F4 imediatamente apos Tab reabriu o popup Lookup com `Fertilizantes`
+selecionado, em vez do calendario Date. Uma captura estabilizada sem novo input
+preservou o estado. A correcao aprovada em MEM-REV-DB-015 nao mudou a regressao
+observada em MEM-QA-DB-007 e MEM-QA-DB-008.
+Decisao: `CHANGES_REQUESTED`. Pelo stop no primeiro P1/P2, Shift+Tab, scroll,
+Light/Dark, Date, dataset, navegacao, demais componentes, viewports menores,
+Grid/Navigator, foco/caret/IME, dez temas e resize nao receberam PASS.
+`UI_APPROVED` nao foi emitido.
+Evidencia:
+`Build\VisualValidation\mem-qa-db-009\03-lookup-popup-dark.jpg`,
+`04-lookup-down-maquinas-dark.jpg`, `05-lookup-tab-closed-date-focus.jpg`,
+`06-tab-focus-f4-date-popup.jpg`,
+`07-blocker-p2-tab-f4-reopens-lookup-stable.jpg`,
+`08-popup-closed-before-rollback.jpg`, `09-cancel-rollback-browse.jpg`,
+`summary.txt`, `steps.txt` e `pre-gate-lifecycle\lifecycle.log`.
+Fechamento: Esc/Cancel restauraram Browse e valores originais; Demo fechada
+normalmente pelo X via Computer Use; zero processos Demo.
+Handoff: Corrigir o caminho fisico do TPopupDataList para que Lookup -> Down ->
+Tab materialize `Maquinas`, transfira foco ao Date e F4 abra o calendario Date;
+gerar novo executavel e reiniciar a matriz integral em novo SHA.
+Nenhum codigo, DFM, package, projeto, branch, commit ou PR foi alterado.
+
+---
+
+ID: MEM-QA-DB-005
+Data: 2026-07-29
+Demanda: quinta QA fisica Data-Aware apos MEM-REV-DB-011
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`F0D3328D7979A7DD49FD5E76A9942FD6D5DC95A7D8C4BE4EF73B4FB8FA9AA461`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-011 estava `APPROVED_FOR_UI_TEST`. O pre-gate
+`startlifecycle` confirmou uma unica janela por PID + classe `TForm1` +
+caption exata + visible + enabled + client valido: PID=22760, HWND=8000278,
+client=1204x760, TargetCount=1, Modal=0, StableMs=10360. Tres probes
+responderam; WM_CLOSE encerrou com ExitCode=0, sem stdout/stderr/WER.
+Sessao: Computer Use abriu exatamente uma janela do caminho canonico e caption
+esperada, id/HWND 24907926. Data-Aware Dark materializou em 1824x1197.
+Regressoes fechadas: o Date desfocado exibiu `01/05/2025` nitido em first,
+estavel e burst, sem ghost, franjas RGB ou sobreposicao. Segmentos, caret,
+F4/Esc e 16 ciclos validos foco/desfoco passaram. Titulo, Combo DB e header do
+Grid permaneceram corretos. DBEdit, DBMemo Unicode, DBCheckBox, DBToggle e
+DBTrack responderam em Edit, com propagacao do binding.
+Defeito: P2 visual. O popup do `TDACDBLookupEdit` abriu com fundo branco nativo
+na pagina Dark; `Sementes` e `Maquinas` ficaram quase ilegíveis por baixo
+contraste. Uma captura estabilizada reproduziu o estado. O Combo DB adjacente
+abriu corretamente escuro, isolando o desvio ao Lookup.
+Decisao: `CHANGES_REQUESTED`. Pelo criterio de parada no primeiro P1/P2,
+Insert/Post/Cancel funcional, navegacao, operacao externa, Light, 1200x760,
+520x560, scroll H/V, dez toggles e resize roundtrip nao receberam PASS.
+`UI_APPROVED` nao foi emitido.
+Evidencia:
+`Build\VisualValidation\mem-qa-db-005\01-data-aware-dark-date-unfocused-first.jpg`,
+`02-data-aware-dark-date-unfocused-stable.jpg`,
+`03-data-aware-dark-date-unfocused-burst-a.jpg`,
+`04-data-aware-dark-date-unfocused-burst-b.jpg`,
+`11-valid-cycle-01..16-date-blurred/focused.jpg`,
+`25-matrix-1824x1197-dark-lookup-open.jpg`,
+`26-blocker-p2-dark-lookup-popup-light-stable.jpg`, `summary.txt`, `steps.txt`
+e `pre-gate-lifecycle\lifecycle.log`.
+Fechamento: Esc fechou o popup, Cancel restaurou Browse e os valores originais;
+a Demo foi fechada normalmente pelo X via Computer Use. Verificacao final:
+zero processos Demo. A serie preliminar `10-cycle-*` foi removida; somente
+`11-valid-cycle-*` e autoritativa.
+Handoff: Corrigir a tematizacao/StyleHook do popup do TDACDBLookupEdit no Dark,
+incluindo fundo, texto, selecao e scrollbar, gerar novo executavel e reiniciar
+a matriz integral em novo SHA.
+Nenhum codigo, DFM, package, projeto, branch, commit ou PR foi alterado.
+
+---
+
+ID: MEM-QA-129
+Data: 2026-07-24
+Demanda: QA fisico canonico apos MEM-REV-128
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`0A42964A09A0375D0F5113FF8140361789373CD5271664CF8707B6523612E2FC`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-128 estava `APPROVED_FOR_UI_TEST`. Em sessao Computer Use nova,
+o executavel abriu exatamente uma janela `DAC Componentes - Demo`, sem
+`Application Error`, `EListError`, modal ou splash. Dashboard Dark inicial,
+Dashboard Light e Botoes Light materializaram fisicamente.
+Regressao MEM-QA-126: Inputs Light em 1824x1197 passou visualmente para os 21
+estados. Edit, Memo e ButtonEdit ficaram em linhas/colunas distintas, com
+labels e captions legiveis, sem a colisao anterior. Topo, meio e fim foram
+capturados; Input/Default mostrou foco e caret nativos.
+Defeito: P2 comportamental no Memo/Default. Depois de focar o Memo e inserir
+conteudo longo com overflow, wheel-up fisico dentro do Memo manteve seu
+conteudo visivel no trecho final `Repeticao vinte e um ... trinta.`, mas moveu
+materialmente o scrollbar externo de Inputs. O foco permaneceu no mesmo
+elemento nativo (`176 editar ID: 28379168`). Recaptura sem novo input confirmou
+o estado estabilizado.
+Evidencia:
+`Build\VisualValidation\mem-qa-129\08b-light-memo-overflow.jpg`,
+`09-light-memo-after-wheel-up.jpg` e
+`09b-light-memo-wheel-defect-confirmed.jpg`; `summary.txt` e `steps.txt` no
+mesmo diretorio registram reproducao e cobertura.
+Decisao: `CHANGES_REQUESTED`, pois o contrato exige wheel interno do Memo sem
+mover o outer scroll. A matriz foi interrompida no primeiro P2; 1200x760,
+520x560, paginas restantes, Dark, dez alternancias e demais interacoes nao
+receberam PASS. `UI_APPROVED` nao foi emitido.
+Fechamento: A Demo foi fechada normalmente e a listagem posterior confirmou
+zero janelas do processo canonico.
+Handoff: Corrigir o roteamento de `WM_MOUSEWHEEL` do Memo para que o editor
+nativo consuma sua propria rolagem sem propagar ao `scrInputs`; gerar novo
+executavel e reiniciar integralmente o gate em novo SHA.
+Nenhum codigo, DFM, package, projeto, branch, commit ou PR foi alterado.
+
+---
+
+ID: MEM-QA-130
+Data: 2026-07-24
+Demanda: QA fisico canonico apos MEM-REV-129
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`A4F3972437B349D67783A4093E13CC387AF4696CA09723027FC4E6BA9CFC46D4`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-129 estava `APPROVED_FOR_UI_TEST`. Em sessao Computer Use nova,
+o executavel canonico abriu exatamente uma janela `DAC Componentes - Demo`,
+sem `Application Error`, `EListError`, modal ou splash. Dashboard Dark inicial,
+Dashboard Light e Inputs Light 1824x1197 materializaram fisicamente; os 21
+estados permaneceram sem o overlap de MEM-QA-126.
+Defeito: P2 comportamental no roteamento do wheel. Com outer scroll no meio,
+Memo/Default focado, caret visivel, conteudo com overflow e ponteiro dentro do
+Memo, dois deltas `-60` nao moveram Memo nem outer. Um passo isolado `-120`
+manteve o Memo no mesmo trecho final `trinta e um ... quarenta`, mas moveu o
+outer para cima: o topo visivel mudou de `ButtonEdit` para `Memo` e o thumb
+externo subiu. O foco permaneceu no mesmo editor nativo
+`133 editar ID: 24643340`.
+Evidencia:
+`Build\VisualValidation\mem-qa-130\08-light-memo-refocused.jpg`,
+`09-light-memo-partial-up-1.jpg`, `10-light-memo-partial-up-2.jpg`,
+`11-light-memo-wheel-up-120.jpg` e
+`12-light-memo-wheel-defect-confirmed.jpg`; `summary.txt` e `steps.txt`
+registram reproducao, SHA e cobertura.
+Decisao: `CHANGES_REQUESTED`. O evento fisico padrao sobre Memo rolavel foi
+consumido pelo ancestral sem mover o editor nativo, violando a posse
+direcional solicitada. A matriz foi interrompida no primeiro P2; viewports
+restantes, Light completo, Dark, dez ciclos e demais interacoes nao receberam
+PASS. `UI_APPROVED` nao foi emitido.
+Fechamento: A Demo fechou normalmente e a listagem posterior confirmou zero
+janelas do processo canonico.
+Handoff: Reconciliar o roteamento de `CMMouseWheel` com a configuracao real do
+Memo da Demo, garantindo consumo interno quando ha capacidade direcional;
+gerar novo executavel e reiniciar todo o gate em novo SHA.
+Nenhum codigo, DFM, package, projeto, branch, commit ou PR foi alterado.
+
+---
+
+ID: MEM-QA-132
+Data: 2026-07-24
+Demanda: QA fisico canonico apos MEM-REV-131
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`E578FA39FE86954DE1B0BE3000C394294EC0D4EC3D511C6DE325EB401BE3E84E`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-131 estava `APPROVED_FOR_UI_TEST`. Em sessao Computer Use nova,
+a listagem inicial confirmou ausencia de janela Demo antiga. O primeiro
+`sky.launch_app` do executavel canonico retornou sem erro, mas, apos 1,2
+segundo, `sky.list_windows()` e `sky.list_apps()` mostraram zero janela e zero
+processo do caminho canonico.
+Recuperacao: Foi executada uma unica recuperacao permitida: espera de dois
+segundos, novo launch explicito e espera de 1,2 segundo. O resultado permaneceu
+zero janela/processo. Nenhum `Application Error`, `EListError`, modal, splash
+ou screenshot foi exposto; a janela principal nao se materializou.
+Decisao: P1 de startup reproduzivel em dois lancamentos, portanto
+`CHANGES_REQUESTED`. Inputs, Memo, viewports, Light/Dark, paginas, toggles e
+interacoes nao foram iniciados e nao receberam PASS. `UI_APPROVED` nao foi
+emitido.
+Evidencia: `Build\VisualValidation\mem-qa-132\summary.txt` e `steps.txt`.
+Nao existe screenshot valido porque nenhuma superficie foi criada.
+Fechamento: Nao havia janela ou processo Demo para fechar; a verificacao final
+continuou retornando zero app/janela do caminho canonico.
+Handoff: Diagnosticar o encerramento imediato antes da criacao da janela,
+gerar novo executavel e reiniciar integralmente o gate em novo SHA.
+Nenhum codigo, DFM, package, projeto, branch, commit ou PR foi alterado.
+
+---
+
+ID: MEM-QA-133
+Data: 2026-07-24
+Demanda: retomada do QA fisico apos MEM-REV-132
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`34644433DED2D11DD8670FA5DA9AAE40CCE4C83A5320E7BE3181374715CE7E33`
+Status: BLOCKED
+Decisao: BLOCKED_BY_COMPUTER_USE_INFRASTRUCTURE
+
+Fato: MEM-REV-132 estava `APPROVED_FOR_UI_TEST`. O pre-gate startlifecycle
+passou usando exclusivamente PID + classe `TForm1` + caption exata
+`DAC Componentes - Demo` + visible + enabled + client rect valido. O primeiro
+ciclo confirmou PID=15756, HWND=12257532, client=1204x760, TargetCount=1,
+Modal=0, responsividade, estabilidade de 11000 ms e encerramento limpo por
+WM_CLOSE com ExitCode=0.
+Bloqueio: Em sessao Computer Use nova, a ponte nao retornou a janela alvo.
+Isso foi correlacionado enquanto um novo ciclo comprovava simultaneamente
+PID=22748, HWND=789354, classe `TForm1`, caption exata, visible/enabled,
+client=1204x760, TargetCount=1, Modal=0 e respostas WM_NULL. Nesse mesmo
+intervalo, `sky.list_windows()` retornou apenas Android Studio e ChatGPT, e
+`sky.get_window` recusou o HWND verificado com
+`window id 789354 was not found`.
+Interpretacao: A ausencia em listagem nao foi tratada como ausencia da Demo.
+Os logs provam que a TForm1 existia e estava responsiva; o bloqueio pertence a
+ponte Computer Use da sessao. Nao ha evidencia de defeito de produto nem base
+para aprovacao.
+Cobertura: O gate de wheel de Inputs nao recebeu qualquer input e nao foi
+iniciado. Memo, deltas -60/-60 e -120, edge/next, viewports, 16 paginas
+Light/Dark, dez toggles, foco, popups, grid, resize e flicker nao receberam
+PASS. `CHANGES_REQUESTED` e `UI_APPROVED` nao foram emitidos.
+Evidencia: `Build\VisualValidation\mem-qa-133\summary.txt`, `steps.txt`,
+`computer-use-selection.txt` e os logs em `pre-gate-lifecycle`, `cu-probe` e
+`cu-direct-probe`.
+Fechamento: Todas as TForm1 comprovadas foram fechadas por WM_CLOSE e terminaram
+com ExitCode=0. Quatro processos sem TForm1 targetavel, criados nas tentativas
+de lancamento, foram removidos exclusivamente como limpeza de infraestrutura
+com a marcacao `NOT_A_GATE_SUCCESS`; isso nao foi usado como sucesso, correcao
+ou gate. Verificacao final: zero processos Demo.
+Handoff: Restaurar a exposicao da TForm1 pela ponte Computer Use e reiniciar
+integralmente o QA fisico em sessao nova, sem reutilizar handles, screenshot IDs
+ou coordenadas.
+Nenhum codigo, DFM, package, projeto, branch, commit ou PR foi alterado.
+
+---
+
+ID: MEM-QA-DB-001
+Data: 2026-07-28
+Demanda: QA fisico completo da suite Data-Aware apos MEM-REV-DB-003
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`6A28D57635D6536A7454F3170AA361409910540A3F449B99F79AD5B398A223E6`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-003 estava `APPROVED_FOR_UI_TEST`. O pre-gate
+`startlifecycle` selecionou uma unica janela por PID + classe `TForm1` +
+caption exata `DAC Componentes - Demo` + visible + enabled + client valido:
+PID=13420, HWND=2167296, client=1204x760, TargetCount=1, Modal=0,
+StableMs=10328. Tres probes responderam e o fechamento por WM_CLOSE terminou
+com ExitCode=0, sem stdout/stderr/WER.
+Sessao: Computer Use abriu o binario canonico e retornou exatamente uma janela
+do caminho e caption esperados, id/HWND 1118606. A arvore acessivel confirmou
+as 17 paginas, incluindo Data-Aware. Dashboard Dark e Data-Aware Dark
+materializaram em 1824x1197.
+Defeito: P2 visual reproduzido em duas capturas estabilizadas. O titulo
+`Binding VCL nativo com chrome Skia localizado` aparece preto sobre fundo
+verde-escuro; DB ComboBox e DB DateTimePicker permanecem com superficie branca
+incompativel com o tema Dark; fragmentos de chrome ficam recortados acima do
+header `ID` do DataGrid. A recaptura sem novo input preservou o mesmo estado.
+Decisao: `CHANGES_REQUESTED`. Pelo criterio de parada no primeiro P1/P2, Light,
+1200x760, 520x560, scroll ate Navigator/Grid, operacoes de dataset, wrappers,
+Lookup, Navigator, DataGrid, foco/caret/IME, estados, dez toggles e resize
+roundtrip nao receberam PASS. `UI_APPROVED` nao foi emitido.
+Evidencia:
+`Build\VisualValidation\mem-qa-db-001\00-startup-dark-1824x1197.jpg`,
+`01-data-aware-dark-1824x1197-first.jpg`,
+`02-data-aware-dark-1824x1197-stable-p2.jpg`, `summary.txt`, `steps.txt` e
+`pre-gate-lifecycle\lifecycle.log`.
+Fechamento: A Demo foi fechada normalmente por Alt+F4 via Computer Use, sem
+alteracao pendente de dataset; a listagem posterior retornou zero janelas e a
+verificacao final confirmou zero processos canonicos.
+Handoff: Corrigir tokens/StyleHooks Dark dos controles Data-Aware e o recorte
+do chrome no topo do DataGrid; gerar novo executavel e reiniciar integralmente
+o QA em novo SHA.
+Nenhum codigo, DFM, package, projeto, branch, commit ou PR foi alterado.
+
+---
+
+ID: MEM-QA-DB-002
+Data: 2026-07-29
+Demanda: QA fisico completo da suite Data-Aware apos MEM-REV-DB-006
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`C171B65EB2FE1F2A5C9A0228699476FC05A3CCDB1827ACBCA37E320090751924`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-006 estava `APPROVED_FOR_UI_TEST`. O pre-gate
+`startlifecycle` confirmou uma unica janela por PID + classe `TForm1` +
+caption exata + visible + enabled + client valido: PID=12460, HWND=1774294,
+client=1204x760, TargetCount=1, Modal=0, StableMs=10391. Tres probes
+responderam; WM_CLOSE encerrou com ExitCode=0, sem stdout/stderr/WER.
+Sessao: Computer Use abriu exatamente uma janela do caminho canonico e caption
+esperada, id/HWND 4722564. Dashboard Dark e Data-Aware Dark materializaram em
+1824x1197.
+Regressoes fechadas: o titulo Data-Aware aparece claro e legivel; Combo DB e
+Lookup DB apresentam superficies escuras; nenhum fragmento/chrome fica
+recortado acima do header `ID` do DataGrid.
+Defeito: P2 visual. O DB DateTimePicker desfocado continua com client branco e
+texto escuro (`01/05/2025`) sobre a pagina Dark. Uma segunda captura
+estabilizada, sem novo input, reproduziu o mesmo estado.
+Decisao: `CHANGES_REQUESTED`. Pelo criterio de parada no primeiro P1/P2, o Date
+focado/segmento, F4/Esc, Light/Dark final, viewports menores, scroll, dataset,
+wrappers, Lookup, Navigator, Grid, foco/caret/IME, estados, dez toggles e resize
+roundtrip nao receberam PASS. `UI_APPROVED` nao foi emitido.
+Evidencia:
+`Build\VisualValidation\mem-qa-db-002\00-startup-dark-1824x1197.jpg`,
+`01-data-aware-dark-1824x1197-first.jpg`,
+`02-data-aware-dark-1824x1197-stable-date-p2.jpg`, `summary.txt`, `steps.txt`
+e `pre-gate-lifecycle\lifecycle.log`.
+Fechamento: A Demo foi fechada normalmente por Alt+F4 via Computer Use antes de
+qualquer alteracao do dataset; a listagem posterior retornou zero janelas e a
+verificacao final confirmou zero processos canonicos.
+Handoff: Corrigir o client efetivo do DB DateTimePicker no Dark desfocado sem
+substituir texto, foco ou selecao segmentada; gerar novo executavel e reiniciar
+integralmente o QA em novo SHA.
+Nenhum codigo, DFM, package, projeto, branch, commit ou PR foi alterado.
+
+---
+
+ID: MEM-QA-DB-003
+Data: 2026-07-29
+Demanda: terceira QA fisica Data-Aware apos MEM-REV-DB-009
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`F7A6A1B3EB4613B9CA7FB10CA17A59DC8BB6E5B46006F8CAF7F0BA4E00716913`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-009 estava `APPROVED_FOR_UI_TEST`. O pre-gate
+`startlifecycle` confirmou uma unica janela por PID + classe `TForm1` +
+caption exata + visible + enabled + client valido: PID=26520, HWND=14420924,
+client=1204x760, TargetCount=1, Modal=0, StableMs=10391. Tres probes
+responderam; WM_CLOSE encerrou com ExitCode=0, sem stdout/stderr/WER.
+Sessao: Computer Use abriu exatamente uma janela do caminho canonico e caption
+esperada, id/HWND 8458328. Dashboard Dark e Data-Aware Dark materializaram em
+1824x1197.
+Regressoes fechadas: titulo, Combo DB, Lookup DB e header ID do DataGrid
+permanecem corretos. O client central do DB DateTimePicker desfocado agora usa
+superficie escura coerente.
+Defeito: P2 visual. O texto `01/05/2025` do Date desfocado aparece
+sobreposto/duplicado, com glifos corrompidos e legibilidade insuficiente. A
+captura estabilizada e dois frames adicionais de burst reproduziram o mesmo
+estado, descartando flash transitorio isolado.
+Decisao: `CHANGES_REQUESTED`. Pelo criterio de parada no primeiro P1/P2, Date
+focado/segmento, F4/Esc, Light/Dark final, viewports menores, scroll, dataset,
+wrappers, Lookup, Navigator, Grid, foco/caret/IME, estados, dez toggles e resize
+roundtrip nao receberam PASS. `UI_APPROVED` nao foi emitido.
+Evidencia:
+`Build\VisualValidation\mem-qa-db-003\01-data-aware-dark-date-unfocused-first.jpg`,
+`02-data-aware-dark-date-unfocused-stable-p2.jpg`,
+`03-date-unfocused-burst-a.jpg`, `04-date-unfocused-burst-b.jpg`,
+`summary.txt`, `steps.txt` e `pre-gate-lifecycle\lifecycle.log`.
+Fechamento: A Demo foi fechada normalmente por Alt+F4 via Computer Use antes de
+qualquer alteracao do dataset; a listagem posterior retornou zero janelas e a
+verificacao final confirmou zero processos canonicos.
+Handoff: Corrigir a composicao do texto do DB DateTimePicker Dark desfocado sem
+perder fundo tokenizado, selecao segmentada ou autoridade do common control;
+gerar novo executavel e reiniciar integralmente o QA em novo SHA.
+Nenhum codigo, DFM, package, projeto, branch, commit ou PR foi alterado.
+
+---
+
+ID: MEM-QA-DB-004
+Data: 2026-07-29
+Demanda: quarta QA fisica Data-Aware apos MEM-REV-DB-010
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`C7652317B1704DCC8540AB6E51645BC60B66511A882C97FD5F43239CEEA1221E`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-010 estava `APPROVED_FOR_UI_TEST`. O pre-gate
+`startlifecycle` confirmou uma unica janela por PID + classe `TForm1` +
+caption exata + visible + enabled + client valido: PID=21836, HWND=9441474,
+client=1204x760, TargetCount=1, Modal=0, StableMs=10343. Tres probes
+responderam; WM_CLOSE encerrou com ExitCode=0, sem stdout/stderr/WER.
+Sessao: Computer Use abriu exatamente uma janela do caminho canonico e caption
+esperada, id/HWND 19926710. Dashboard Dark e Data-Aware Dark materializaram em
+1824x1197.
+Regressoes fechadas: titulo, Combo DB, Lookup DB e header ID do DataGrid
+permanecem corretos. O client central do DB DateTimePicker desfocado permanece
+escuro.
+Defeito: P2 visual. O texto `01/05/2025` continua
+sobreposto/corrompido e sem nitidez, reproduzindo MEM-QA-DB-003. First,
+captura estabilizada e dois frames de burst repetiram o mesmo estado; nao e
+flash transitorio isolado.
+Decisao: `CHANGES_REQUESTED`. O baseline desfocado ja falhou, portanto os 16
+ciclos foco/desfoco, Date focado/segmento, F4/Esc e toda a matriz restante nao
+foram iniciados. `UI_APPROVED` nao foi emitido.
+Evidencia:
+`Build\VisualValidation\mem-qa-db-004\01-data-aware-dark-date-unfocused-first.jpg`,
+`02-data-aware-dark-date-unfocused-stable-p2.jpg`,
+`03-date-unfocused-burst-a.jpg`, `04-date-unfocused-burst-b.jpg`,
+`summary.txt`, `steps.txt` e `pre-gate-lifecycle\lifecycle.log`.
+Fechamento: A Demo foi fechada normalmente por Alt+F4 via Computer Use antes de
+qualquer alteracao do dataset; a listagem posterior retornou zero janelas e a
+verificacao final confirmou zero processos canonicos.
+Handoff: Corrigir a composicao perceptual do texto do DB DateTimePicker Dark
+desfocado e alinhar o gate automatico ao frame fisico observado; gerar novo
+executavel e reiniciar integralmente o QA em novo SHA.
+Nenhum codigo, DFM, package, projeto, branch, commit ou PR foi alterado.
+
+---
+
+ID: MEM-QA-DB-006
+Data: 2026-07-29
+Demanda: sexta QA fisica Data-Aware apos MEM-REV-DB-012
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`146131F41089F15FE879C3D6320EE04B3D56A81C072AE41415CF42E7F8AE9402`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-012 estava `APPROVED_FOR_UI_TEST`. O pre-gate
+`startlifecycle` confirmou uma unica janela por PID + classe `TForm1` +
+caption exata + visible + enabled + client valido: PID=21608, HWND=10555694,
+client=1204x760, TargetCount=1, Modal=0, StableMs=10391. Tres probes
+responderam; WM_CLOSE encerrou com ExitCode=0, sem stdout/stderr/WER.
+Sessao: Computer Use abriu exatamente uma janela do caminho canonico e caption
+esperada, id/HWND 15797890. Data-Aware Dark materializou em 1824x1197.
+Regressao fechada: o popup Lookup Dark abriu com fundo escuro, textos normais
+legiveis e selecao distinta em first/stable. Segundo clique fechou; Down moveu
+a selecao; Esc fechou sem commit; Down + Enter confirmou `Maquinas`.
+Defeito: P2 de comportamento/foco. Tab com o popup aberto fechou a lista, mas
+manteve foco e borda verde no proprio TDACDBLookupEdit; o proximo controle nao
+recebeu foco. Uma captura estabilizada preservou o estado.
+Decisao: `CHANGES_REQUESTED`. Pelo criterio de parada no primeiro P1/P2,
+scroll do popup, Light/Dark, Date, dataset, navegacao, viewports menores,
+Grid/Navigator, foco/caret/IME, dez temas e resize nao receberam PASS.
+`UI_APPROVED` nao foi emitido.
+Evidencia:
+`Build\VisualValidation\mem-qa-db-006\03-lookup-dark-first.jpg`,
+`04-lookup-dark-stable.jpg`, `05-lookup-dark-second-click-closed.jpg`,
+`06-lookup-dark-down-selection.jpg`, `07-lookup-dark-esc-no-commit.jpg`,
+`08-lookup-dark-down-enter-commit.jpg`,
+`09-lookup-dark-tab-close-focus-next.jpg`,
+`10-blocker-p2-lookup-tab-retains-focus-stable.jpg`, `summary.txt`,
+`steps.txt` e `pre-gate-lifecycle\lifecycle.log`.
+Fechamento: Cancel restaurou Browse e `Fertilizantes`; a Demo foi fechada
+normalmente pelo X via Computer Use. Verificacao final: zero processos Demo.
+Handoff: Corrigir Tab para fechar o popup Lookup e transferir foco nativamente
+ao proximo controle, preservando paleta, Down/Enter/Esc e segundo clique;
+gerar novo executavel e reiniciar a matriz integral em novo SHA.
+Nenhum codigo, DFM, package, projeto, branch, commit ou PR foi alterado.
+
+---
+
+ID: MEM-QA-DB-007
+Data: 2026-07-29
+Demanda: setima QA fisica Data-Aware apos MEM-REV-DB-013
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`86CAA1EEBDBF45E77BFADE7BC6ADF6F6ED4AB24FEAB3493A2C2F75A9468F6FD9`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-013 estava `APPROVED_FOR_UI_TEST`. O pre-gate
+`startlifecycle` confirmou uma unica janela por PID + classe `TForm1` +
+caption exata + visible + enabled + client valido: PID=10320, HWND=18023624,
+client=1204x760, TargetCount=1, Modal=0, StableMs=10360. Tres probes
+responderam; WM_CLOSE encerrou com ExitCode=0, sem stdout/stderr/WER.
+Sessao: Computer Use abriu exatamente uma janela do caminho canonico e caption
+esperada, id/HWND 12259652. Data-Aware Dark materializou em 1824x1197.
+Revalidacao: popup Lookup Dark permaneceu visualmente correto e Down moveu a
+selecao provisoria para `Maquinas`. Tab fechou visualmente o popup.
+Defeito: P2 de comportamento/foco. Logo apos Tab, F4 reabriu o proprio popup
+Lookup, prova de que o foco nao foi transferido ao Date seguinte. Uma captura
+estabilizada sem novo input preservou o popup reaberto. MEM-QA-DB-006 foi
+reproduzido apesar da aprovacao estatica.
+Decisao: `CHANGES_REQUESTED`. Pelo criterio de parada no primeiro P1/P2,
+Shift+Tab, scroll, Light/Dark, Date, dataset, navegacao, viewports menores,
+Grid/Navigator, foco/caret/IME, dez temas e resize nao receberam PASS.
+`UI_APPROVED` nao foi emitido.
+Evidencia:
+`Build\VisualValidation\mem-qa-db-007\03-lookup-dark-open.jpg`,
+`04-lookup-dark-down.jpg`, `05-lookup-dark-tab-next.jpg`,
+`06-tab-focus-probe-f4.jpg`,
+`07-blocker-p2-tab-retains-focus-f4-reopens-lookup-stable.jpg`,
+`08-cleanup-cancel-rollback.jpg`, `summary.txt`, `steps.txt` e
+`pre-gate-lifecycle\lifecycle.log`.
+Fechamento: Esc fechou o popup, Cancel restaurou Browse e os valores originais;
+a Demo foi fechada normalmente pelo X via Computer Use. Verificacao final:
+zero processos Demo.
+Handoff: Corrigir a navegacao Tab no caminho real do Demo e provar que, apos
+Tab, F4 abre o calendario do Date seguinte em vez de reabrir o Lookup; gerar
+novo executavel e reiniciar a matriz integral em novo SHA.
+Nenhum codigo, DFM, package, projeto, branch, commit ou PR foi alterado.
+
+---
+
+ID: MEM-QA-DB-008
+Data: 2026-07-29
+Demanda: oitava QA fisica Data-Aware apos MEM-REV-DB-014
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`020B889FF3F41A39ABB342569D18C74F2B6E2B9645F77905CBD2552A36FE3CF5`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-014 estava `APPROVED_FOR_UI_TEST`. O pre-gate
+`startlifecycle` confirmou uma unica TForm1 canonica: PID=13384,
+HWND=29430120, client=1204x760, TargetCount=1, Modal=0, StableMs=10422,
+tres WM_NULL, WM_CLOSE e ExitCode=0, sem stdout/stderr/WER.
+Sessao: Computer Use abriu exatamente uma janela canonica, id/HWND 12783758.
+Data-Aware Dark materializou em 1824x1197.
+Revalidacao: popup Lookup Dark permaneceu legivel; Down moveu a selecao para
+`Maquinas`; Tab fechou visualmente o popup.
+Defeito: P2 de comportamento/foco. F4 imediatamente apos Tab reabriu o popup
+Lookup, em vez do calendario Date, provando foco retido. Uma captura
+estabilizada preservou o estado. MEM-QA-DB-007 foi reproduzido no SHA novo.
+Decisao: `CHANGES_REQUESTED`. Pelo stop no primeiro P1/P2, Shift+Tab, scroll,
+Light/Dark, Date, dataset, navegacao, viewports menores, Grid/Navigator,
+foco/caret/IME, dez temas e resize nao receberam PASS. `UI_APPROVED` nao saiu.
+Evidencia:
+`Build\VisualValidation\mem-qa-db-008\03-lookup-dark-open.jpg`,
+`04-lookup-dark-down.jpg`, `05-lookup-tab-to-date.jpg`,
+`06-tab-focus-probe-f4.jpg`,
+`07-blocker-p2-tab-f4-reopens-lookup-stable.jpg`,
+`08-cleanup-cancel-rollback.jpg`, `summary.txt`, `steps.txt` e
+`pre-gate-lifecycle\lifecycle.log`.
+Fechamento: Esc/Cancel restauraram Browse e valores originais; Demo fechada
+normalmente pelo X via Computer Use; zero processos Demo.
+Handoff: Corrigir Tab no caminho real e provar Lookup -> Down -> Tab -> F4
+abrindo Date sem reabrir Lookup; gerar novo executavel e reiniciar em novo SHA.
+Nenhum codigo, DFM, package, projeto, branch, commit ou PR foi alterado.
+
+---
+
+ID: MEM-QA-DB-010
+Data: 2026-07-29
+Demanda: decima QA fisica Data-Aware apos MEM-REV-DB-016
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`C71567D00289E68740B2DB26C78AD7FF59F057A9A2C24AB80665D468D1AF8864`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-016 estava `APPROVED_FOR_UI_TEST`. O pre-gate
+`startlifecycle` confirmou uma unica TForm1 canonica: PID=22044,
+HWND=11538610, client=1204x760, TargetCount=1, Modal=0, StableMs=10359,
+tres WM_NULL, WM_CLOSE e ExitCode=0, sem stdout/stderr/WER. Demo e Runtime BPL
+tinham os hashes aprovados; os dois Runtime BPL eram identicos.
+Sessao: Computer Use abriu exatamente uma janela canonica, id/HWND 33689260.
+Data-Aware Dark materializou em 1824x1197 e entrou em Edit.
+Revalidacao: popup Lookup Dark permaneceu legivel; Down moveu a selecao
+provisoria de `Fertilizantes` para `Maquinas`; Tab fechou visualmente o popup.
+Defeito: P2 de comportamento/foco. Tab nao materializou `Maquinas` no campo
+fechado nem transferiu foco ao Date. F4 imediatamente apos Tab reabriu o popup
+Lookup com `Fertilizantes`, em vez do calendario Date. Uma captura estabilizada
+sem novo input preservou o estado. A negociacao WM_GETDLGCODE/DLGC_WANTTAB
+aprovada em MEM-REV-DB-016 nao mudou o resultado fisico das rodadas anteriores.
+Decisao: `CHANGES_REQUESTED`. Pelo stop no primeiro P1/P2, Shift+Tab, scroll,
+Light/Dark, Date, dataset, navegacao, demais componentes, viewports menores,
+Grid/Navigator, foco/caret/IME, dez temas e resize nao receberam PASS.
+`UI_APPROVED` nao foi emitido.
+Evidencia:
+`Build\VisualValidation\mem-qa-db-010\03-lookup-popup-dark.jpg`,
+`04-lookup-down-maquinas-dark.jpg`, `05-lookup-tab-maquinas-date-focus.jpg`,
+`06-tab-focus-f4-probe.jpg`,
+`07-blocker-p2-tab-f4-reopens-lookup-stable.jpg`,
+`08-popup-closed-before-rollback.jpg`, `09-cancel-rollback-browse.jpg`,
+`summary.txt`, `steps.txt` e `pre-gate-lifecycle\lifecycle.log`.
+Fechamento: Esc/Cancel restauraram Browse e valores originais; Demo fechada
+normalmente pelo X via Computer Use; zero processos Demo.
+Handoff: Corrigir o caminho fisico para que Lookup -> Down -> Tab materialize
+`Maquinas`, transfira foco ao Date e F4 abra o calendario Date; gerar novo
+executavel e reiniciar a matriz integral em novo SHA.
+Nenhum codigo, DFM, package, projeto, branch, commit ou PR foi alterado.
+
+---
+
+ID: MEM-QA-DB-011
+Data: 2026-07-29
+Demanda: decima primeira QA fisica Data-Aware apos MEM-REV-DB-017
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`517CB491ED8A1AC7FBC92790B2072E8E180593C70412A0DE364807025129E821`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-017 estava `APPROVED_FOR_UI_TEST`. O pre-gate
+`startlifecycle` confirmou uma unica TForm1 canonica: PID=5940,
+HWND=22155256, client=1204x760, TargetCount=1, Modal=0, StableMs=10390,
+tres WM_NULL, WM_CLOSE e ExitCode=0, sem stdout/stderr/WER. Demo e Runtime BPL
+tinham os hashes aprovados; os dois Runtime BPL eram identicos.
+Sessao: Computer Use abriu exatamente uma janela canonica, id/HWND 23728282.
+Data-Aware Dark materializou em 1824x1197 e entrou em Edit.
+Lookup critico: PASS. Down selecionou `Maquinas`; Tab fechou, materializou o
+valor e focou Date; F4 abriu calendario; Shift+Tab a partir do Lookup focou
+DBCombo e F4 abriu `Ativo/Pendente`. Clique/segundo clique, Esc e focus-out
+rollback, scroll, Enter e popup Light/Dark passaram.
+Defeito: P2 em Date/null/limpeza. Com `01/05/2025`, F4 abriu o calendario Dark.
+O clique em `Limpar` fechou o popup, mas exibiu `30/12/1899` no campo, expondo
+o zero/sentinela TDateTime em vez de vazio/null. Uma captura estabilizada sem
+novo input preservou o valor incorreto.
+Decisao: `CHANGES_REQUESTED`. A matriz parou no primeiro P2 apos o bloco
+Lookup. Demais TDACDB*, dataset, Navigator/Grid, viewports, caret/clipboard/
+undo/IME, dez temas e resize nao receberam PASS. `UI_APPROVED` nao foi emitido.
+Evidencia:
+`Build\VisualValidation\mem-qa-db-011\05-lookup-tab-maquinas-date-focus.jpg`,
+`06-tab-focus-f4-date-popup.jpg`, `09-lookup-shifttab-dbcombo-focus.jpg`,
+`10-shifttab-focus-f4-dbcombo-popup.jpg`,
+`16-lookup-esc-rollback-maquinas.jpg`,
+`19-lookup-focusout-rollback-maquinas.jpg`, `21-lookup-scroll-up-dark.jpg`,
+`22-lookup-scroll-down-dark.jpg`, `24-lookup-enter-accepted-fertilizantes.jpg`,
+`26-lookup-popup-light.jpg`, `27-lookup-focusout-theme-dark.jpg`,
+`29-date-popup-dark-reconfirmed.jpg`, `30-date-clear-null-dark.jpg`,
+`31-blocker-p2-date-clear-shows-1899-stable.jpg`,
+`32-cancel-rollback-browse-original.jpg`, `summary.txt`, `steps.txt` e
+`pre-gate-lifecycle\lifecycle.log`.
+Fechamento: Cancel retornou Browse e restaurou a data `01/05/2025`; Demo
+fechada normalmente pelo X via Computer Use; zero processos Demo.
+Handoff: Corrigir null/limpeza do TDACDBDateTimePicker para `Limpar` produzir
+campo vazio e dataset null, nunca `30/12/1899`; preservar o Lookup aprovado e
+reiniciar a matriz integral em novo SHA.
+Nenhum codigo, DFM, package, projeto, branch, commit ou PR foi alterado.
+
+---
+
+ID: MEM-QA-DB-013
+Data: 2026-07-29
+Demanda: decima terceira QA fisica Data-Aware apos MEM-REV-DB-019
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`0779DB783E602A4D0A06CE35682DD595632ED1A7849CE49BF6E23BC7137696D8`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-019 estava `APPROVED_FOR_UI_TEST`. O pre-gate
+`startlifecycle` confirmou uma unica TForm1 canonica: PID=18372,
+HWND=3018118, client=1204x760, TargetCount=1, Modal=0, StableMs=10421,
+tres WM_NULL, WM_CLOSE e ExitCode=0, sem stdout/stderr/WER. Demo e Runtime BPL
+tinham os hashes aprovados; os dois Runtime BPL eram identicos.
+Sessao: Computer Use abriu exatamente uma janela canonica, id/HWND 2428022.
+Data-Aware Dark materializou em 1824x1197.
+Regressoes criticas: PASS. Lookup Down + Tab materializou `Maquinas`, focou
+Date e F4 abriu o calendario; Shift+Tab focou DBCombo. Date `Limpar` e Delete
+produziram vazio/null, sem `30/12/1899`. Null -> selecionar dia 15 -> OK exibiu
+`15/05/2025` e manteve Edit. Esc e clique externo preservaram null. Cancel
+restaurou `01/05/2025`. Light/Dark preservaram null. Teclado Up no segmento dia
+produziu `02/05/2025` e Cancel restaurou o valor original.
+Defeito: P2 de layout/foco ao navegar o dataset. Em Browse, um clique fisico
+unico na linha ID 1002 sincronizou o segundo registro, mas auto-rolou o
+ScrollBox externo horizontalmente para a direita. A faixa esquerda do
+formulario ficou oculta/cortada atras do menu lateral, incluindo titulos,
+campos e parte dos botoes de acao/navegador. A acao foi somente clique em
+x=1450,y=351; nao houve drag nem scroll.
+Decisao: `CHANGES_REQUESTED`. Pelo criterio de parada no primeiro P2, demais
+TDACDB*, Grid/Navigator, viewports menores, caret/clipboard/undo/IME, dez temas
+e resize nao receberam PASS. `UI_APPROVED` nao foi emitido.
+Evidencia:
+`Build\VisualValidation\mem-qa-db-013\03-lookup-tab-maquinas-date-focus.jpg`,
+`04-lookup-shifttab-dbcombo-focus.jpg`, `05-date-clear-empty-dark.jpg`,
+`07-date-null-day15-selected-before-ok.jpg`,
+`09-date-null-day15-ok-shows-valid-stable.jpg`,
+`11-date-null-day15-esc-preserves-null.jpg`, `13-date-null-light.jpg`,
+`14-date-null-dark-return.jpg`, `15-date-keyboard-up-day02.jpg`,
+`16-P2-grid-row-horizontal-autoscroll-clips-form.jpg`, `summary.txt`,
+`steps.txt` e `pre-gate-lifecycle\lifecycle.log`.
+Fechamento: o dataset ja estava em Browse; Demo fechada normalmente pelo X via
+Computer Use; zero processos Demo.
+Handoff: impedir que foco/selecao no grid desloque o ScrollBox externo; manter
+o formulario ancorado e totalmente visivel ao trocar o registro; gerar novo
+artefato e reiniciar a matriz integral em novo SHA.
+Nenhum codigo, DFM, package, projeto, branch, commit, push ou PR foi alterado.
+
+---
+
+ID: MEM-QA-DB-014
+Data: 2026-07-29
+Demanda: decima quarta QA fisica Data-Aware apos MEM-REV-DB-021
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`157C2AE42F511BE9EF33C84FFE01AC9FDFDAC5F28B6577D845C9463F64D64DA6`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-021 estava `APPROVED_FOR_UI_TEST`. O pre-gate
+`startlifecycle` confirmou uma unica TForm1 canonica: PID=13536,
+HWND=33949536, client=1204x760, TargetCount=1, Modal=0, StableMs=10375,
+tres WM_NULL, WM_CLOSE e ExitCode=0, sem stdout/stderr/WER. Demo e Runtime BPL
+tinham os hashes aprovados; os dois Runtime BPL eram identicos.
+Sessao: Computer Use abriu exatamente uma janela canonica, id/HWND 7211482.
+Regressoes criticas verdes: Lookup Down + Tab materializou `Maquinas`, focou
+Date e F4 abriu o calendario; Date Delete produziu vazio/null, dia 15 + OK
+exibiu `15/05/2025` e Cancel restaurou `01/05/2025`.
+MEM-QA-DB-013 corrigido: com outer H=0, clique unico na linha ID 1002
+sincronizou todo o registro sem deslocar a faixa esquerda/menu; com outer H
+intencional maior que zero, clique na linha ID 1003 preservou a posicao
+horizontal externa. Grid own wheel vertical sincronizou o registro 8 sem
+deslocar a pagina; scrollbar horizontal proprio moveu somente as colunas.
+Defeito P2: no registro ID 1008 e Estado Edit, a celula CLIENTE foi clicada
+fisicamente e o foco acessivel permaneceu no painel do Grid ID 7014766. F2 nao
+abriu editor visivel; digitar `X` nao alterou a celula, nao exibiu caret/editor
+e nao materializou texto. Cancel restaurou Browse e o valor original.
+Defeito P2 adicional: o X da janela, acionado por Computer Use, removeu a
+janela, mas Demo.exe PID 28176 permaneceu vivo com MainWindowHandle=0,
+Responding=True e CPU acumulada 00:06:18.5468750. O PID residual foi finalizado
+somente para higiene; verificacao final confirmou zero processos Demo.
+Decisao: `CHANGES_REQUESTED`. Pelo criterio de parada no primeiro P2, a matriz
+restante nao recebeu PASS e `UI_APPROVED` nao foi emitido.
+Evidencia:
+`Build\VisualValidation\mem-qa-db-014\05-id1002-outer-h0-preserved.jpg`,
+`06-grid-focus-preserves-outer-h-intentional.jpg`,
+`07-grid-own-wheel-vertical-record8.jpg`,
+`08-grid-own-horizontal-right-column.jpg`,
+`09-p2-grid-f2-no-editor-input.jpg`, `summary.txt`, `steps.txt` e
+`pre-gate-lifecycle\lifecycle.log`.
+Handoff: tornar a edicao F2 fisicamente utilizavel no TDACDBGrid, com editor
+visivel, caret e entrada de texto; corrigir o encerramento da sessao
+interativa para o processo terminar normalmente. Gerar novo artefato e
+reiniciar a matriz integral em novo SHA.
+Nenhum codigo, DFM, package, projeto, branch, stage, commit, push ou PR foi
+alterado.
+
+ID: MEM-QA-DB-015
+Data: 2026-07-29
+Demanda: decima quinta QA fisica Data-Aware apos MEM-REV-DB-026
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`65DD169BF934C9466F368A168EB244CAF5E9AEF563F9DA8CFD7A994EE58BE24C`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-026 estava `APPROVED_FOR_UI_TEST`. O pre-gate
+`startlifecycle` confirmou uma unica TForm1 canonica: PID=15784,
+HWND=3740630, client=1204x760, TargetCount=1, Modal=0, StableMs=10391,
+tres WM_NULL, WM_CLOSE e ExitCode=0, sem stdout/stderr/WER,
+CURRENT_0EEDFADE=False e cleanup residual0. Demo e Runtime BPL tinham os hashes
+aprovados; os dois Runtime BPL eram identicos.
+Regressao F2 corrigida: no ID 1008, Editar -> CLIENTE -> F2 abriu editor VCL
+nativo visivel com caret; digitar `X` alterou visualmente para
+`Cliente demonstracao 8X`; Cancelar restaurou Browse e o valor original.
+Encerramento corrigido: tanto o X da janela quanto Alt+F4/SC_CLOSE apos uma
+sequencia Date popup/Grid encerraram na primeira amostra bounded, com janela
+ausente e zero processos Demo.
+Defeito P2: em Browse, clicar a celula ID da linha 1008 manteve as dez linhas
+visiveis e sincronizou o registro. Clicar em seguida a celula CLIENTE da mesma
+linha deslocou o scrollbar horizontal proprio do TDACDBGrid e apagou
+visualmente todas as linhas. Restaram somente cabecalho `CLIENTE`,
+`Total: 30 registros` e a barra horizontal.
+Decisao: `CHANGES_REQUESTED`. A matriz parou imediatamente no primeiro P2;
+TDACDB restante, Navigator, Grid restante, Light/Dark completo, viewports,
+mouse wheel, clipping/flicker/fundos, foco/Tab/caret/clipboard/undo/IME,
+dez temas e design/layout nao receberam PASS. `UI_APPROVED` nao foi emitido.
+Evidencia:
+`Build\VisualValidation\mem-qa-db-015\03-grid-f2-native-editor.jpg`,
+`04-grid-f2-input-X.jpg`, `05-grid-cancel-restores-record8.jpg`,
+`06-sc-close-date-popup-open.jpg`, `07-sc-close-sequence-restored.jpg`,
+`08-grid-row8-id-selected.jpg`, `09-grid-row8-cliente-selected.jpg`,
+`summary.txt`, `steps.txt` e `pre-gate-lifecycle\lifecycle.log`.
+Fechamento: o bloqueador ocorreu em Browse; Demo fechada fisicamente por
+Alt+F4; janela ausente, zero processos Demo e zero controladores.
+Handoff: corrigir a renderizacao/posicionamento horizontal do TDACDBGrid para
+que selecionar a coluna CLIENTE preserve todas as linhas visiveis e o registro
+selecionado; gerar novo artefato e reiniciar a matriz integral em novo SHA.
+Nenhum codigo, DFM, package, projeto, branch, stage, commit, push ou PR foi
+alterado.
+
+---
+
+ID: MEM-QA-DB-016
+Data: 2026-07-29
+Demanda: decima sexta QA fisica Data-Aware apos MEM-REV-DB-027
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`14BA63D9C943ED4E19CC38DCD7A66D9B8EEAD4EFA28D0B8447AFC610DB8F6A27`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-027 estava `APPROVED_FOR_UI_TEST`. O pre-gate
+`startlifecycle` confirmou uma unica TForm1 canonica: PID=4420,
+HWND=11933114, client=1204x760, TargetCount=1, Modal=0, StableMs=10406,
+tres WM_NULL, WM_CLOSE e ExitCode=0, sem stdout/stderr/WER,
+CURRENT_0EEDFADE=False e cleanup residual0. Demo e Runtime BPL tinham os hashes
+aprovados; os dois Runtime BPL eram identicos.
+MEM-QA-DB-015 corrigido: no ID 1008, clicar ID e depois CLIENTE preservou as
+dez linhas, o registro e o scrollbar H proprio. A ida pela seta direita exibiu
+CLIENTE com todas as rows, e a volta pela seta esquerda restaurou ID/CLIENTE
+sem deslocar formulario ou pagina externa.
+Defeito P2: um wheel vertical fisico sobre o Grid sincronizou o formulario e o
+dataset do registro 8 para o 13 (`Cliente demonstracao 13`, `Busca 13`,
+`Fertilizantes`, `13/05/2025`, progresso 30%), mas o corpo do Grid continuou
+desenhando IDs 1001 a 1010 e manteve o contorno visual no 1008. O 1013 nao
+apareceu. A divergencia persistiu apos 600 ms sem novo input.
+Decisao: `CHANGES_REQUESTED`. A matriz parou imediatamente no primeiro P2;
+coluna parcial, F2 apos scroll, TDACDB restante, Navigator, Grid restante,
+Light/Dark completo, viewports, mouse wheel restante, clipping/flicker/fundos,
+foco/Tab/caret/clipboard/undo/IME, dez temas e design/layout nao receberam
+PASS. `UI_APPROVED` nao foi emitido.
+Evidencia:
+`Build\VisualValidation\mem-qa-db-016\02-id1008-column-id-lines-present.jpg`,
+`03-id1008-column-cliente-lines-preserved.jpg`,
+`04-grid-own-horizontal-right-partial.jpg`,
+`05-grid-own-horizontal-return.jpg`,
+`08-grid-own-vertical-scroll-sync.jpg`,
+`09-p2-grid-vscroll-stale-rows-stable.jpg`, `summary.txt`, `steps.txt` e
+`pre-gate-lifecycle\lifecycle.log`.
+Fechamento: o bloqueador ocorreu em Browse; Demo fechada fisicamente por
+Alt+F4; janela ausente, zero processos Demo e zero controladores.
+Handoff: corrigir pintura/posicao vertical para wheel sincronizar dataset,
+pagina de rows, registro selecionado e contorno visual; gerar novo artefato e
+reiniciar a matriz integral em novo SHA.
+Nenhum codigo, DFM, package, projeto, branch, stage, commit, push ou PR foi
+alterado.
+
+---
+
+ID: MEM-QA-DB-017
+Data: 2026-07-29
+Demanda: decima setima QA fisica Data-Aware apos MEM-REV-DB-028
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`886E78D5D63BAB2C8173ABD6BFF1542812E3EB92E805E0006DE6406E9EAFEFE8`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-028 estava `APPROVED_FOR_UI_TEST`. O pre-gate
+`startlifecycle` confirmou uma unica TForm1 canonica: PID=27532,
+HWND=4524288, client=1204x760, TargetCount=1, Modal=0, StableMs=10453,
+tres WM_NULL, WM_CLOSE e ExitCode=0, sem stdout/stderr/WER,
+CURRENT_0EEDFADE=False e cleanup residual0. Demo e Runtime BPL tinham os hashes
+aprovados; os dois Runtime BPL eram identicos.
+Retomada: a primeira tentativa fisica foi interrompida por Escape antes de
+qualquer captura e nao deixou processo ou evidencia parcial. A rodada retomou
+no primeiro passo fisico sem repetir o pre-gate.
+Defeito P2: a partir do ID 1008, wheel vertical fisico sobre o Grid sincronizou
+o formulario/dataset para `Cliente demonstracao 13`, `Busca 13`,
+`Fertilizantes`, `13/05/2025` e progresso 30%, mas o corpo do Grid continuou
+desenhando 1001 a 1010 e manteve contorno no 1008. O 1013 nao apareceu. A
+divergencia persistiu apos 750 ms sem input e nova captura/repaint.
+Decisao: `CHANGES_REQUESTED`. MEM-QA-DB-016 foi reproduzido no novo SHA e a
+matriz parou imediatamente. H-scroll seguinte, retorno1008, F2/regressoes,
+TDACDB restante, Navigator, Grid restante, Light/Dark, viewports, mouse wheel,
+clipping/flicker/fundos, foco/Tab/caret/clipboard/undo/IME, dez temas e
+design/layout nao receberam PASS. `UI_APPROVED` nao foi emitido.
+Evidencia:
+`Build\VisualValidation\mem-qa-db-017\02-id1008-selected-before-vscroll.jpg`,
+`03-wheel-v-record13-immediate.jpg`,
+`04-p2-wheel-v-record13-stale-after750ms.jpg`, `summary.txt`, `steps.txt` e
+`pre-gate-lifecycle\lifecycle.log`.
+Fechamento: o bloqueador ocorreu em Browse; Demo fechada fisicamente por
+Alt+F4; janela ausente, zero processos Demo e zero controladores.
+Handoff: corrigir a rota fisica de wheel vertical para o Grid pintar o frame
+do registro atual, conter/destacar 1013 e permanecer sincronizado apos
+estabilizacao/repaint; gerar novo artefato e reiniciar a matriz integral.
+Nenhum codigo, DFM, package, projeto, branch, stage, commit, push ou PR foi
+alterado.
+
+---
+
+ID: MEM-QA-DB-018
+Data: 2026-07-29
+Demanda: decima oitava QA fisica Data-Aware apos MEM-REV-DB-029
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`FDF1CC95474E32BDBDF471DA36842470AB1E0ED7CFD0C68DA90B84398D0CD13D`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-029 estava `APPROVED_FOR_UI_TEST`. O pre-gate
+`startlifecycle` confirmou uma unica TForm1 canonica: PID=19600,
+HWND=18025702, client=1204x760, TargetCount=1, Modal=0, StableMs=10375,
+tres WM_NULL, WM_CLOSE e ExitCode=0, sem stdout/stderr/WER,
+CURRENT_0EEDFADE=False e cleanup residual0. Demo e os dois Runtime BPL
+correspondiam aos hashes aprovados; os Runtime BPL eram identicos.
+Defeito P2: a partir do ID 1008, wheel vertical fisico sobre o corpo do Grid
+sincronizou o formulario/dataset para `Cliente demonstracao 13`, `Busca 13`,
+`Observacao vinculada ao registro 13`, `Fertilizantes`, `13/05/2025` e
+progresso 30%, mas o corpo do Grid continuou desenhando 1001 a 1010, manteve
+contorno/destaque no 1008 e nao mostrou o 1013. A divergencia persistiu apos
+900 ms sem novo input e nova captura/repaint.
+Decisao: `CHANGES_REQUESTED`. MEM-QA-DB-017 foi reproduzido no artefato
+aprovado por MEM-REV-DB-029 e a matriz parou imediatamente. H-scroll
+ida/volta, wheel adicional, retorno externo 1008, F2/close/outer, TDACDB
+restante, Navigator, Grid restante, Light/Dark, viewports 1200x760/520x560,
+mouse wheel, clipping/flicker/fundos, foco/Tab/caret/clipboard/undo/IME, dez
+temas, layout e assets nao receberam PASS. `UI_APPROVED` nao foi emitido.
+Evidencia:
+`Build\VisualValidation\mem-qa-db-018\02-id1008-selected-before-wheel.jpg`,
+`03-wheel-v-record13-immediate.jpg`,
+`04-p2-wheel-v-record13-stale-after900ms.jpg`, `summary.txt`, `steps.txt` e
+`pre-gate-lifecycle\lifecycle.log`.
+Fechamento: o bloqueador ocorreu em Browse/Dark; Demo fechada fisicamente por
+Alt+F4; janela ausente, zero processos Demo e zero controladores.
+Handoff: corrigir a rota fisica de wheel vertical para o Grid pintar a janela
+do registro atual, conter/destacar 1013 e permanecer sincronizado apos
+estabilizacao/repaint; gerar novo artefato e reiniciar a matriz integral.
+Nenhum codigo, DFM, package, projeto, branch, stage, commit, push ou PR foi
+alterado.
+
+---
+
+ID: MEM-QA-DB-019
+Data: 2026-07-29
+Demanda: decima nona QA fisica Data-Aware apos MEM-REV-DB-033
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`8470E6C8D9658D5476887EFF1A78BF771926128F99A08A70DF5B45A9289948C5`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-033 estava `APPROVED_FOR_UI_TEST`. Os cinco hashes de fontes
+do handoff foram confirmados antes e depois da sessao. O pre-gate
+`startlifecycle` confirmou uma unica TForm1 canonica: PID=29632,
+HWND=7080114, client=1204x760, TargetCount=1, Modal=0, StableMs=10531,
+tres WM_NULL, WM_CLOSE e ExitCode=0, sem stdout/stderr/WER,
+CURRENT_0EEDFADE=False e cleanup residual0. Demo final e os dois Runtime BPL
+correspondiam aos hashes aprovados; os Runtime BPL eram identicos.
+Passes fisicos em Data-Aware/Dark: selecao do ID 1008; wheel sincronizado e
+repintado no registro 13; footer inerte; F2/digitacao/Cancel; DBEdit externo
+com selecao, copia, colagem, undo, Post e restauracao do valor original; e
+Navigator First/Next/Prior/Last/Refresh nos registros 1/2/1/30/30.
+Defeito P2: partindo do registro 30/Browse, clique fisico em Insert do
+DBNavigator mudou para Estado Insert e deixou os campos null/vazios, mas,
+imediatamente e antes de qualquer preenchimento, abriu o modal
+`Invalid argument to date encode.`. A evidencia primaria e
+`23-navigator-insert-null-state.jpg`. O modal foi fechado, Cancel restaurou
+registro 30/Browse e a Demo foi encerrada fisicamente por Alt+F4.
+Decisao: `CHANGES_REQUESTED`. Insert/null/DateTime e o restante da matriz
+TDACDB, Delete, dataset vazio/inativo/somente leitura, Light/Dark completo,
+viewports, scroll restante, gallery, dez temas, layout, foco/Tab/IME e
+acessibilidade ficaram bloqueados ou nao executados. `UI_APPROVED` nao foi
+emitido.
+Evidencia:
+`Build\VisualValidation\mem-qa-db-019\23-navigator-insert-null-state.jpg`,
+`24-insert-error-dismissed-state-insert.jpg`,
+`25-insert-cancel-restores-record30.jpg`, `summary.txt`, `steps.txt`,
+`hashes-final.txt`, `processes-final.txt`, `wer-final.txt` e
+`pre-gate-lifecycle\lifecycle.log`.
+Fechamento: janela ausente; zero processos Demo/DemoComponentes/controller;
+zero WER 1000/1001 correspondente; hashes finais sem alteracao.
+Handoff: corrigir a inicializacao/representacao da data nula no caminho de
+Insert para impedir date encode invalido antes do preenchimento; gerar novo
+artefato, revisar o novo SHA e reiniciar a matriz fisica. Commit, push e PR
+permanecem bloqueados. Nenhum codigo, DFM, teste, package, projeto, branch,
+stage, commit, push ou PR foi alterado.
+
+---
+
+ID: MEM-QA-DB-020
+Data: 2026-07-29
+Demanda: vigesima QA fisica/visual Data-Aware apos MEM-REV-DB-034
+Artefato: `Build\EXE\Win32\Debug\Demo.exe`
+SHA-256:
+`507C70F6FD4484196BAA4EDAFD1529EC2F5051ADD56A5DD2C399009DB3AD3405`
+Status: CONFIRMED
+Decisao: CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-034 estava `APPROVED_FOR_UI_TEST`. Os 13 hashes autorizados
+foram confirmados antes e depois da sessao. O bloqueador MEM-QA-DB-019 foi
+resolvido fisicamente: Last -> Insert deixou todos os campos nulos/vazios sem
+modal imediato nem apos 1000 ms. Tambem passaram Insert preenchido/Post,
+ButtonEdit independente, Date Clear/Post/null, Edit/Cancel, clipboard/undo/
+caret, Delete com confirmacao, Navigator completo e Grid com selecao, wheel
+vertical, footer inerte e F2/editor/Escape. As 17 tabs foram visitadas em
+Light e Dark e houve resize real.
+Defeitos P2: clique no tab superior muda pagina/underline mas deixa o menu
+lateral selecionado na pagina anterior, enquanto clique lateral sincroniza
+ambos; Dark usa texto preto ou quase preto sobre fundo escuro em varias
+paginas; Seletores apresenta linhas/retangulos nativos sobrepostos e labels
+colididas nos dois temas; Grid/Data-Aware exibem scrollbars nativas brancas e
+Tabs bordas brancas intensas em Dark.
+Decisao: `CHANGES_REQUESTED`. `UI_APPROVED` nao foi emitido. H-scroll completo
+e ScrollBox externo, IME e matriz aprofundada de foco das 17 paginas nao
+receberam PASS apos os bloqueadores visuais.
+Evidencia: `Build\VisualValidation\mem-qa-db-020\summary.txt`,
+`steps.txt`, `hashes-final.txt`, `processes-final.txt`, `wer-final.txt`,
+`20-dark-botoes.jpg`, `21-dark-inputs.jpg`, `22-dark-seletores.jpg`,
+`26-dark-grid.jpg`, `36-light-sidebar-botoes-navigation.jpg`,
+`37-light-top-inputs-side-stale.jpg`, `39-light-seletores.jpg`,
+`47-light-data-aware.jpg` e `55-light-resize-restored-charts.jpg`.
+Fechamento: Demo encerrada fisicamente por Alt+F4; janela ausente; zero
+processos e WER correspondente; residual0. Nenhum codigo, DFM, teste,
+package, projeto, branch, stage, commit, push ou PR foi alterado. Commit e PR
+permanecem bloqueados ate nova correcao, review e QA fisica integral.
+
+---
+
+ID: MEM-QA-DB-049
+Data: 2026-08-02
+Demanda: Etapa 10, QA fisica/visual apos MEM-REV-DB-048
+Branch: codex/data-aware-suite
+Git HEAD: d038a51a97d7b44b8157e1c05b264aa83d15ea01
+Candidate SHA-256:
+`F7E6B156D0C0A466344791A4F3D3113D2EB21F7977896C531BC0A1394DBFFB52`
+Manifest original SHA-256:
+`5C5A0AB93FBEFC93E9C21157B85F9624D21EC6C98C53D7C4BD0E5CC0D435E54B`
+Status: CONFIRMED
+Decisao: UI_CHANGES_REQUESTED
+
+Fato: MEM-REV-DB-048 estava `APPROVED_FOR_UI_TEST`; 116/116 entradas do
+manifest foram recalculadas com zero mismatch. O pre-gate fisico
+`startlifecycle` confirmou TForm1 unica, client 1204x760, TargetCount=1,
+Modal=0, tres WM_NULL, WM_CLOSE, ExitCode=0, WER vazio e residual0.
+Findings P2: em Data-Aware Dark/desktop, os controles nativos de texto, memo,
+combo, lookup e data mantem superficies brancas, enquanto DBText e captions
+de Check/Radio/Toggle ficam pretos ou quase invisiveis; Grid/ScrollContainer
+mantem barras brancas. Em 520x560, nos dois temas, as labels das 17 paginas
+se sobrepoem, o seletor de tema cobre o header, a sidebar reduz excessivamente
+o conteudo, Data-Aware fica cortado e os botoes de acao aparecem parcialmente
+fora do viewport. Dashboard Dark inicial tambem mostrou `Suite DAC` com
+contraste muito baixo e header elidido; apos navegacao/theme round-trip o
+titulo repintou em branco, caracterizando estado inicial inconsistente.
+Decisao: `UI_CHANGES_REQUESTED`; `UI_APPROVED` nao foi emitido. A matriz
+funcional aprofundada dos 13 componentes, 17 paginas, IME, dataset
+vazio/inativo e demais interacoes nao recebeu PASS depois dos bloqueadores.
+Evidencia: `Build\VisualValidation\MEM-QA-DB-049\summary.txt`,
+`steps.txt`, `manifest.txt`, `processes-final.txt`, `wer-final.txt`,
+`pre-gate-lifecycle\lifecycle.log` e screenshots nomeadas `01` a `05`.
+Fechamento: Demo encerrada fisicamente por Alt+F4; zero processos e WER;
+candidate final inalterado e residual0. Nenhum codigo, DFM, package, teste,
+branch, stage, commit, push ou PR foi alterado. Publicacao permanece bloqueada
+ate correcao, nova revisao integral e nova QA fisica.
+---
+
+ID: MEM-QA-DB-060
+Data: 2026-08-03
+Demanda: Etapa 10, QA fisica/visual apos MEM-REV-DB-059
+Branch: codex/data-aware-suite
+Git HEAD: d038a51a97d7b44b8157e1c05b264aa83d15ea01
+Candidate SHA-256:
+`CD0BDB53D422134B6E635A83A746C25B225E42A54CDBA8AA4066EDB022250CAC`
+Status: BLOCKED_WINDOWS_SESSION_LOCKED
+Decisao: NOT_EMITTED
+
+Fato: os hashes exatos de MEM-DEL-DB-058 e MEM-REV-DB-059 foram confirmados;
+o manifest do revisor foi recalculado em 117/117 fontes e 67/67 artefatos com
+zero mismatch. O pre-gate `startlifecycle` passou com TForm1 unica, client
+1204x760, Modal=0, tres WM_NULL, WM_CLOSE, ExitCode=0, stdout/stderr/WER
+vazios e residual0. Computer Use foi inicializado e abriu a Demo aprovada,
+identificando HWND novo 2689560 e a arvore acessivel completa com as 17 paginas.
+Entretanto, as capturas fisicas mostraram somente a tela de bloqueio do Windows,
+sem pixels da aplicacao. Uma unica tentativa segura com Return, sem credenciais,
+falhou ao ativar a janela e a observacao seguinte continuou bloqueada.
+
+Decisao: nenhuma. Nao houve cobertura visual valida, P0/P1/P2, UI_APPROVED ou
+UI_REJECTED. O bloqueio e operacional e nao e finding do produto. A Demo PID
+65440 permanece aberta/respondendo para retomada apos desbloqueio da sessao.
+Evidencia: `Build\VisualValidation\MEM-QA-DB-060\summary.txt`, `steps.txt`,
+`manifest.txt`, `processes-current.txt`, `screenshots\01-windows-session-locked.png`
+e `pre-gate-lifecycle\lifecycle.log`. Nenhum codigo, DFM, teste, package,
+projeto, branch, stage, commit, push ou PR foi alterado.
+
+---
+
+Atualizacao: MEM-QA-DB-060 / CONTINUACAO-01
+Data: 2026-08-03
+Status final: UI_REJECTED
+
+Fato: apos o usuario desbloquear a sessao Windows, Computer Use reutilizou a
+Demo PID 65440 / HWND 2689560 e produziu capturas validas da aplicacao. O
+Dashboard/Dark em desktop estava legivel e com header/menu sincronizados. Na
+primeira inspecao obrigatoria de Data-Aware/Dark foi reproduzido finding P2:
+Edit, Memo, Combo, Lookup e Date mantem superficies nativas brancas; o texto de
+Edit/Memo fica quase branco sobre branco e praticamente invisivel; as barras
+vertical/horizontal de Grid/ScrollContainer tambem permanecem brancas. E a
+inconsistencia material de tema Dark ja observada em MEM-QA-DB-049.
+
+Decisao: `UI_REJECTED` para o candidate
+`CD0BDB53D422134B6E635A83A746C25B225E42A54CDBA8AA4066EDB022250CAC`.
+Pela regra de parada no primeiro P2, a matriz restante nao foi executada. A
+Demo foi encerrada fisicamente por Alt+F4; Computer Use nao listou mais a
+aplicacao, residual0, WER atribuido0 e hashes finais 117/117 fontes e 67/67
+artefatos com zero mismatch. Evidencia primaria:
+`Build\VisualValidation\MEM-QA-DB-060\screenshots\03-data-aware-dark-desktop-p2-native-white-surfaces.png`;
+apoio em `02-dashboard-dark-desktop.png`, `summary.txt`, `steps.txt`,
+`hashes-final.txt`, `processes-final.txt`, `wer-final.txt` e
+`pre-gate-lifecycle\lifecycle.log`. Nenhum codigo, DFM, teste, package,
+projeto ou Git foi alterado. Handoff: corrigir o tema/StyleHook das superficies,
+texto e scrollbars Data-Aware em Dark; gerar novo candidate, revisar e reiniciar
+a Etapa 10 integral.
+SHA-256 da evidencia primaria:
+`2DAE1370278AF22862C4D2943BCD73F6E64D282E6F3234D105EDCF5E60871765`.

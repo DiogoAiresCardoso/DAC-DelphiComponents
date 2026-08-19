@@ -3,10 +3,7 @@
         <ProjectGuid>{27D279D8-7B84-4414-A5FD-FDA65B69ED76}</ProjectGuid>
     </PropertyGroup>
     <ItemGroup>
-        <Projects Include="..\Package\DACSkiaComponentsRuntime.dproj">
-            <Dependencies/>
-        </Projects>
-        <Projects Include="..\Package\DACSkiaComponentsDesign.dproj">
+        <Projects Include="..\Package\DACSkiaComponents.dproj">
             <Dependencies/>
         </Projects>
         <Projects Include="Demo.dproj">
@@ -20,23 +17,14 @@
             <Default.Personality/>
         </BorlandProject>
     </ProjectExtensions>
-    <Target Name="DACSkiaComponentsRuntime">
-        <MSBuild Projects="..\Package\DACSkiaComponentsRuntime.dproj"/>
+    <Target Name="DACSkiaComponents">
+        <MSBuild Projects="..\Package\DACSkiaComponents.dproj"/>
     </Target>
-    <Target Name="DACSkiaComponentsRuntime:Clean">
-        <MSBuild Projects="..\Package\DACSkiaComponentsRuntime.dproj" Targets="Clean"/>
+    <Target Name="DACSkiaComponents:Clean">
+        <MSBuild Projects="..\Package\DACSkiaComponents.dproj" Targets="Clean"/>
     </Target>
-    <Target Name="DACSkiaComponentsRuntime:Make">
-        <MSBuild Projects="..\Package\DACSkiaComponentsRuntime.dproj" Targets="Make"/>
-    </Target>
-    <Target Name="DACSkiaComponentsDesign">
-        <MSBuild Projects="..\Package\DACSkiaComponentsDesign.dproj"/>
-    </Target>
-    <Target Name="DACSkiaComponentsDesign:Clean">
-        <MSBuild Projects="..\Package\DACSkiaComponentsDesign.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="DACSkiaComponentsDesign:Make">
-        <MSBuild Projects="..\Package\DACSkiaComponentsDesign.dproj" Targets="Make"/>
+    <Target Name="DACSkiaComponents:Make">
+        <MSBuild Projects="..\Package\DACSkiaComponents.dproj" Targets="Make"/>
     </Target>
     <Target Name="Demo">
         <MSBuild Projects="Demo.dproj"/>
@@ -48,13 +36,13 @@
         <MSBuild Projects="Demo.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="DACSkiaComponentsRuntime;DACSkiaComponentsDesign;Demo"/>
+        <CallTarget Targets="DACSkiaComponents;Demo"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="DACSkiaComponentsRuntime:Clean;DACSkiaComponentsDesign:Clean;Demo:Clean"/>
+        <CallTarget Targets="DACSkiaComponents:Clean;Demo:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="DACSkiaComponentsRuntime:Make;DACSkiaComponentsDesign:Make;Demo:Make"/>
+        <CallTarget Targets="DACSkiaComponents:Make;Demo:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

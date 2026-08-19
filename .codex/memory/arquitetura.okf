@@ -1,0 +1,983 @@
+# Auditoria final de arquitetura e design-time
+
+Data: 2026-07-22  
+Escopo: inspeção estática do checkout `codex/fix-demo-visual-regressions` em `d038a51`. Não substitui a aprovação visual/física da demo.
+
+## Reauditoria do estado atual
+
+### Decisão arquitetural vigente
+
+O artefato de entrega é VCL e é composto por `DACSkiaComponentsRuntime` mais `DACSkiaComponentsDesign`. A demo deve consumir o runtime por DCP/BPL, e não compilar as units da suíte por `Source`. Todos os produtos atuais devem ser gravados sob `Build`; a cópia do BPL runtime junto de `Demo.exe` é implantação deliberada da demo, não um segundo produto.
+
+### Lacunas comprovadas no estado atual
+
+#### ARC-20260722-04 — `Build` ainda mistura artefatos canônicos e legados
+
+- Prioridade: P2
+- Evidência: há 73 entradas legadas ou temporárias sob `Build`, incluindo `BplTemp`, `DcpTemp`, `TempBpl`, `TempDcp`, `MaxxRuralSkiaComponents*` e `DACSkiaComponents*.bpl.__old`. Os manifests de proveniência também declaram `legacyArtifacts=preserved`.
+- Estado atual preservado: o conjunto canônico atual está coerente e concentrado em `Build`: runtime BPL/DCP, design BPL/DCP, `Demo.exe` e o BPL copiado para `Build\Exe\Win32\Debug` foram produzidos entre 21:28:55 e 21:29:01 de 2026-07-22.
+- Decisão: a saída dos projetos já é exclusiva de `Build`, porém o diretório não é exclusivo ao conjunto de entrega atual. Antes de uma distribuição, definir política explícita de retenção ou limpeza controlada que separe os legados do conjunto publicável.
+- Handoff: automação de build; o revisor deve exigir que o relatório de entrega aponte somente os caminhos canônicos em `Build\Packages` e `Build\Exe`.
+
+#### ARC-20260722-05 — `Demo.dproj` mantém uma configuração FMX obsoleta, embora inativa
+
+- Prioridade: P2
+- Evidência: o primeiro `PropertyGroup` para `Base_Win32` ainda declara uma lista antiga de `DCC_UsePackage`, com `Skia.Package.FMX`, `fmx`, `fmxFireDAC`, `FMXTee`, `fmxobj` e `bindcompfmx`. Mais abaixo, outro `PropertyGroup` para a mesma condição e os grupos Debug/Release Win32 redefinem efetivamente a propriedade para `rtl;vcl;vcldb;vclimg;Skia.Package.RTL;Skia.Package.VCL;DACSkiaComponentsRuntime`.
+- Impacto: a configuração efetiva atual é VCL e não injeta FMX no build, mas a duplicidade torna o arquivo de projeto enganoso e propenso a reintroduzir dependências do ambiente local numa alteração futura.
+- Decisão: não tratar como falha da entrega atual; remover a propriedade morta na próxima manutenção de configuração, preservando a lista VCL canônica já efetiva.
+- Handoff: implementação Delphi; revisão de configuração deve confirmar a ausência de qualquer ocorrência FMX em `DCC_UsePackage` da demo após a limpeza.
+
+### Itens revalidados e sem lacuna aberta
+
+- `Package/DACSkiaComponentsRuntime.dpk` e `.dproj` têm 55 units idênticas: zero ausentes e zero extras no manifesto.
+- O runtime requer somente `rtl`, `vcl`, `vcldb`, `vclimg`, `Skia.Package.RTL` e `Skia.Package.VCL`; a busca em `Source/Core`, `DesignSystem`, `Skia`, `Controls`, `Hooks` e no `.dpk` não encontrou FMX, `DesignIntf`, `DesignEditors` nem `ToolsAPI`.
+- O pacote design requer `rtl`, `designide` e `DACSkiaComponentsRuntime`; `DesignIntf` permanece apenas na unit de registro design-time.
+- A demo referencia o DCP em `Build\Packages\$(Platform)\$(Config)\Dcp` e consome explicitamente `DACSkiaComponentsRuntime`; o BPL resultante é copiado para a pasta do executável.
+- As 30 classes `TDAC*` presentes no DFM da demo possuem `RegisterClass`. A única classe do DFM fora da paleta é `TDACSystemText`, um `TGraphicControl` de infraestrutura, mas ela possui registro de streaming; não há falha de desserialização demonstrada.
+- Há 30 registros e 30 remoções de StyleHook, todos centralizados nas classes DAC.
+
+### Histórico encerrado nesta reauditoria
+
+- ARC-20260722-01: resolvido — a demo agora usa `DACSkiaComponentsRuntime` por package/DCP.
+- ARC-20260722-02: resolvido no valor efetivo — a lista ativa da demo é VCL; a configuração morta remanescente é acompanhada por ARC-20260722-05.
+- ARC-20260722-03: resolvido — manifests runtime `.dpk` e `.dproj` foram sincronizados.
+
+### Limite desta evidência
+
+Esta auditoria é somente estática. Não confirma instalação na IDE, execução do BPL, comportamento visual ou interação da demo; essas aprovações pertencem ao especialista de Delphi e ao especialista de testes de interface.
+
+## MEM-DEL-070 — Tabs de área ativa total e tipografia de Inputs
+
+Status: decisão de arquitetura antes do desenvolvimento. Nenhuma fonte de produção foi alterada.
+
+### Tabs
+
+- Ponto correto: `TDACTabHeaderControl.PaintBoxDraw` em `Source/Controls/DAC.Components.Controls.Tabs.pas`. `TabRectByOrdinal` já é a geometria única de hit-test usada por `TabAt`; ela não deve ser alterada.
+- Decisão: preservar `LHitRect = TabRectByOrdinal(...)` sem `Inflate` para o preenchimento de hover/seleção, tanto em `mtaPills` como na aparência padrão e nas orientações horizontal/vertical. Criar um `LTextRect` separado e aplicar somente nele o padding de texto atual. O foco deve usar o mesmo contorno de hit, sem reintroduzir uma moldura interna.
+- O underline interno de `mtaStandard` não deve continuar como a única seleção, nem ser encurtado por `+/- 8`; a seleção ativa é o preenchimento Skia de toda a área clicável. Cores e raio permanecem nos tokens já resolvidos por `TDACComponentColors`; não criar um renderer ou métrica DPI nova para esta mudança geométrica.
+- Métricas: `Pixels` continua identidade e `TabRectByOrdinal` mantém tamanhos, gutters, `HeaderExtent`, `ContentInset`, DFM e contrato design-time. Portanto a alteração não modifica bounds, streaming, nem o viewport das pages.
+
+### Inputs
+
+- Ponto correto: criar no design system uma única redução semântica de tipografia de input (delta fixa de 2 pontos, sem DPI), exposta por `TDACComponentStyle`. Cada controle aplica esse delta sobre sua base atual; não usar `Pixels`, `ScaleFactor`, `CurrentPPI` ou alterar alturas de chrome.
+- Motivo: `TDACEdit`, `TDACComboBox` e `TDACDateTimePicker` têm bases atuais diferentes por tamanho/controle. Aplicar diretamente `CaptionSize` alteraria alguns deles em mais de dois pontos. A redução central preserva exatamente `base - 2` para editor e label acima do campo.
+- Aplicação: `TDACEdit` (e, por composição, `TDACButtonEdit`), `TDACComboBox`, `TDACDateTimePicker` e `TDACMemo` devem usar o mesmo delta para o texto nativo editável e seu label. Helper/counter não deve ser reduzido por acidente: manter sua semântica própria ou expor token separado se necessário.
+- Preservação: o texto editável e label continuam VCL nativos (`TMaskEdit`, `TComboBox`, `TDateTimePicker`, `TMemo`, `TLabel`); Skia continua responsável apenas por chrome, borda, foco, ícones e superfícies. `ChromeTop = 24`, alturas DFM e centralização do editor permanecem fixos.
+
+### DFM, packages e design-time
+
+- Não há propriedade publicada, nome de classe, registro, unit, `.dpk`, `.dproj` ou DFM a alterar. A mudança é de defaults runtime e renderer; os registros de streaming/design-time existentes permanecem válidos.
+
+### Asserts físicos e automatizados obrigatórios
+
+- Em `Tests/DACComponentsInteraction.dpr`, para tabs horizontal e vertical: ativar cada página por clique, foco e teclado; capturar o header e validar pixels estáveis próximos às quatro bordas internas de `TabRectByOrdinal`, comprovando o preenchimento ativo até a área clicável e a ausência dos antigos strips de 5/8 px. Repetir após resize e troca de página.
+- Para Inputs: afirmar que `Font.Size` do editor nativo e do `NativeLabel` é exatamente a base anterior menos 2, que label/editor continuam sem sobreposição em `ChromeTop`, e que foco, caret, digitação, seleção e teclado seguem nativos. Cobrir Edit, ButtonEdit, ComboBox, DateTimePicker e Memo que possuam label.
+- Manter `RequireFixedPixelMetrics`: a implementação não pode introduzir APIs de escala/DPI proibidas, nem mudar as alturas de 64 px e a centralização já testadas.
+
+## MEM-DEL-071 — Mapa agrícola para Button e Inputs, e contrato de tema
+
+Status: análise estática e visual; nenhuma fonte de produção foi alterada.
+
+### Evidências de referência
+
+- Os seis PNGs de componente são a referência específica mais recente para Button, ButtonEdit, DateTimePicker (fechado e aberto), ComboBox e Input. O DOCX declara que seus valores globais foram reconstruídos visualmente; por isso, quando houver conflito, o token específico do PNG do componente prevalece para esses cinco controles.
+- `assets/fonts/Inter.ttf` é Inter Regular, versão `4.001;git-66647c0bb`, com tabelas de fonte variável (`fvar`, `STAT` e `gvar`). O contrato visual pede Regular e Semibold; o uso atual do mesmo typeface carregado para qualquer peso não garante Semibold real no Skia.
+- O DOCX confirma a base: superfícies agrícolas escuras, Inter, espaçamento múltiplo de 4, borda de 1 px, focus externo de 2 px, estados sem mudança de dimensão e contraste mínimo 4.5:1.
+
+### Mapa de tokens central proposto
+
+Criar `DAC.Components.DesignSystem.ControlTokens.pas`, incorporado em `TDACDesignTokens`, com grupos `Button`, `Input`, `ComboBox`, `DateTimePicker` e `Popup`. Não manter essas decisões em `ButtonPalette` ou em condicionais locais de controle.
+
+| Papel | Dark agrícola | Light | Métrica/estado |
+| --- | --- | --- | --- |
+| Superfície de input | `#0F1813` (DateTime pode usar a variante `#0F1511` se a comparação física exigir) | `#FFFFFF` | borda 1 px |
+| Texto / placeholder / helper | `#E6F1EA` / `#9AA790` / `#88A093` | texto escuro / cinzas equivalentes | Inter Regular; helper é papel separado |
+| Borda | default `#2A3E2F`, hover `#3A5D41`, focus `#4CD964` | neutro claro / verde de focus | anel externo `#4CD964`, 2 px |
+| Semântico | error `#FF5E5E`, success `#4CD964`, disabled bg `#0B120E`, disabled text `#6F7C74` | equivalentes contrastados | disabled sem interação |
+| Button primário | default `#4DAA33`, hover `#43982D`, pressed `#367A23`, texto branco | mesma semântica | radius 12, borda 1, focus externo 2 |
+| Button secundário/ghost | secundário com borda/label verde; ghost com verde a 12% | borda e texto verdes sobre branco | sem alterar altura nos estados |
+| Button tonal/destrutivo/sucesso/link | tonal `#DFF0D6` + `#245B1E`; destrutivo `#D9514E`; sucesso `#1F8B4C`; link verde | mesmo papel com contraste | icon-only é composição, não cor independente |
+| Opacidade | ghost hover 12%, hover de superfície 8–12%, disabled 40–50%, borda neutra 10–12% | mesmas relações | não codificar bytes nos controles |
+| Espaço | `4, 8, 12, 16, 20, 24, 32, 40` | igual | label-campo 6, campo-helper 6, grupos 16, toolbar 8 |
+| Forma | Button/Input/ButtonEdit 12; ComboBox/DateTimePicker 8; pill 999 | igual | divisores de ButtonEdit e popup seguem borda 1 |
+| Tamanho | SM `32/12/16/13`, MD `40/16/18/14`, LG `48/20/20/15` (altura/padding H/ícone/texto nos PNGs) | igual | representar em métricas lógicas; não igualar automaticamente px de prancha a `TFont.Size` em pt |
+
+DateTimePicker acrescenta ícones de data/hora de 18 px, gap entre ícones de 8 px e popup com superfície, cabeçalho, dia selecionado/hoje, intervalo, disabled, navegação e ações `Hoje/Limpar/OK`. ComboBox acrescenta item de dropdown de 36–40 px, check no selecionado, hover/selected distintos e largura igual à do campo. ButtonEdit acrescenta ação direita de 18 px, gap texto-ícone de 8 px, divisor interno, clear opcional e a regra de não usar duas ações competitivas.
+
+### Contrato de tema seletável
+
+1. Em `Theme.pas`, declarar `TDACThemeMode = (dtmInherit, dtmDark, dtmLight)` e uma interface/gerenciador runtime que resolva Dark e Light, mantenha o default da aplicação e notifique controles inscritos.
+2. Em `ComponentStyle.pas`, substituir a resolução implícita de `FTheme` por `Resolve(const AMode: TDACThemeMode): IDACComponentsTheme` e expor palettes/metrics tipados dos controles. A troca global deve invalidar Skia e atualizar as janelas VCL filhas/popup sem recriar DFM.
+3. Publicar `ThemeMode` nos cinco controles, com default `dtmInherit`. Por ser enum publicada, o Object Inspector e o streaming DFM funcionam sem `DesignIntf` no runtime. `dtmDark`/`dtmLight` dão preview design-time determinístico; `dtmInherit` recebe o tema runtime.
+4. Os painters e renderer recebem a palette já resolvida; `TDACComponentColors` não pode continuar retornando `TDACColorTokens.Default` para os controles temáveis. O texto editável continua VCL nativo; Skia pinta somente chrome, ícones e popup composto.
+
+### Divergências comprovadas no código atual
+
+- `IDACComponentsTheme` só possui a implementação Default e `TDACComponentStyle.CurrentTheme` não tem setter/seleção. Além disso, `TDACComponentColors` chama `TDACColorTokens.Default` diretamente. Logo, não há tema runtime/design-time efetivo hoje.
+- `ColorTokens` atual usa a paleta Ancoragem (`Primary #3DB82A`, controles claros por padrão, raio genérico), diferente da paleta específica dos PNGs (`#4DAA33`, superfícies de campo escuras e focus `#4CD964`).
+- `OpacityTokens` não representa ghost 12%, disabled 40–50% e os estados de popup; `SpacingTokens` não possui S20; `RadiusTokens` não possui R12 nem pill; `Metrics` não descreve os três tamanhos de Button/Input, icon/action/gaps nem popup.
+- `TDACButton.ButtonPalette` contém cores e opacidades locais, não cobre Tonal, Success ou Link, e seus defaults de raio/padding/ícone não equivalem ao mapa. Novos valores de enum devem ser acrescentados ao fim para preservar ordinais gravados em DFM.
+- Edit, ComboBox e DateTimePicker resolvem cores por `ResolveParentSurface`, não por tema explícito. ComboBox ainda possui cores, alpha e tipografia hard-coded no dropdown.
+- `TDACDateTimePicker.ShowCalendarPopup` envia `CDtmDropdown` ao controle nativo. Esse calendário não pode atender ao popup Skia dark/light, intervalos, ações e estados documentados; é necessária uma popup própria no runtime.
+- `Fonts.pas` instala Inter e `Renderer.pas` reutiliza o typeface Inter carregado para pesos; para Semibold visualmente fiel, selecionar a instância 500 da fonte variável ou incluir recurso estático Semibold, sem falsificar o peso em todos os textos.
+
+### Unidades exatas a corrigir
+
+Fundação: `DAC.Components.DesignSystem.ControlTokens.pas` (nova), `Tokens.pas`, `ColorTokens.pas`, `OpacityTokens.pas`, `SpacingTokens.pas`, `RadiusTokens.pas`, `Metrics.pas`, `TypographyTokens.pas`, `Theme.pas`, `DefaultTheme.pas`, `ComponentStyle.pas`, `Fonts.pas` e `DAC.Components.Skia.Renderer.pas`.
+
+Controles: `DAC.Components.Controls.Button.pas`, `ButtonEdit.pas`, `Edit.pas`, `ComboBox.pas`, `DateTimePicker.pas` e `DateTimePickerPopup.pas` (nova popup Skia). `ButtonEdit` deve receber a palette segmentada, sem expor o botão genérico como decisão visual final. `ComboBox` deve usar tokens no campo e dropdown. `DateTimePicker` deve encaminhar teclado/foco para a popup própria e não para `CDtmDropdown`.
+
+Integração: `Package/DACSkiaComponentsRuntime.dpk`, `Package/DACSkiaComponentsRuntime.dproj` (nova unit); `demo/Demo.Principal.dfm` e `.pas` (casos Dark/Light e popup); `Tests/DACComponentsInteraction.dpr` e `DACComponentsSmoke.dpr` (palettes, streaming de `ThemeMode`, foco, teclado, clique externo/Esc e contraste). `Design.Register.pas` não exige alteração para o enum publicado; só muda se for criado editor de propriedade customizado.
+
+### Ordem segura de desenvolvimento
+
+1. Tokens, modos e resolver; 2. tema Dark/Light + propagação; 3. renderer/fonte; 4. Button; 5. Edit e ButtonEdit; 6. ComboBox/dropdown; 7. DateTimePicker/popup; 8. DFM/testes e revisão física clara/escura. Não mover a lógica essencial para a demo e não introduzir `DesignIntf` no runtime.
+
+### Limitação da análise
+
+O renderizador do DOCX não foi executado: o carregamento das dependências de workspace não retornou e a extração visual do media embutido foi bloqueada pelo sandbox. O XML completo do DOCX, os seis PNGs e a metadata da fonte foram inspecionados; o próprio DOCX orienta validar as cores reconstruídas em protótipos e contraste físico.
+
+## Registro histórico substituído pela reauditoria acima
+
+### ARC-20260722-01 — A demo não consome o produto runtime como pacote
+
+- Prioridade: P1
+- Evidência: `demo/Demo.dproj` declara os diretórios de `Source` em `DCC_UnitSearchPath`, mas a sua lista `DCC_UsePackage` não contém `DACSkiaComponentsRuntime`.
+- Impacto: a demo pode compilar as units da suíte diretamente, sem exercitar o carregamento, a ligação e a compatibilidade binária do BPL runtime que será entregue. Assim, uma demo compilada não é evidência suficiente de que o pacote runtime instalado funciona.
+- Direção de correção: tornar a demo consumidora explícita de `DACSkiaComponentsRuntime` (ou manter um alvo separado e nomeado como teste por fontes). O alvo de entrega não deve misturar as duas responsabilidades.
+- Handoff: implementação Delphi deve ajustar somente a configuração do projeto e confirmar o build do grupo; revisão deve conferir que não restaram units da suíte vinculadas por fonte no alvo de pacote.
+
+### ARC-20260722-02 — Projeto VCL da demo declara dependências FMX e pacotes alheios
+
+- Prioridade: P1
+- Evidência: `demo/Demo.dproj` é `FrameworkType=VCL`, porém `DCC_UsePackage` inclui, entre outros, `Skia.Package.FMX`, `fmx`, `fmxFireDAC`, `FMXTee`, `fmxobj` e `bindcompfmx`, além de uma lista extensa de pacotes não pertencentes à suíte.
+- Impacto: a compilação depende do ambiente local e carrega uma fronteira VCL/FMX que não existe no runtime da DAC, tornando a reprodução e a distribuição da demo frágeis.
+- Direção de correção: reduzir `DCC_UsePackage` ao conjunto VCL realmente necessário, incluindo o runtime DAC quando aplicada a correção ARC-20260722-01. A remoção deve ser validada com build limpo do alvo VCL.
+- Handoff: implementação Delphi; revisão deve rejeitar a presença de pacotes FMX no projeto VCL sem justificativa técnica documentada.
+
+### ARC-20260722-03 — Manifesto do `.dproj` runtime diverge do manifesto do `.dpk`
+
+- Prioridade: P1
+- Evidência: `Package/DACSkiaComponentsRuntime.dpk` contém units sem `DCCReference` correspondente em `Package/DACSkiaComponentsRuntime.dproj`: `DashboardTokens`, `SemanticColors`, `ComponentStyle`, `ScrollContainer`, `GridContainer`, `DataAware`, `Charts`, `Feedback`, `StatusBar` e `ReportViewer`.
+- Impacto: embora o `contains` do `.dpk` seja a fonte efetiva do pacote, o projeto da IDE fica incompleto para manutenção, navegação e builds reproduzíveis, permitindo regressões invisíveis no arquivo de projeto.
+- Direção de correção: sincronizar as referências do `.dproj` com o `contains` do `.dpk`, sem duplicar nem remover units do manifesto canônico.
+- Handoff: implementação Delphi; revisão deve comparar automaticamente os dois manifestos após a alteração.
+
+### ARC-20260722-04 — Diretório `Build` não tem proveniência atômica nem saída exclusiva atual
+
+- Prioridade: P2
+- Evidência: `Build` contém artefatos legados `MaxxRuralSkiaComponents*`, diretórios `BplTemp`/`DcpTemp` e cópias `DACSkiaComponents*.bpl.__old`. Além disso, os DCUs e executáveis DAC são de 2026-07-22, enquanto `DACSkiaComponentsRuntime.bpl` e `.dcp` são de 2026-07-21.
+- Impacto: não é possível atribuir o conjunto de binários a uma única compilação do checkout atual; validação, instalação e diagnóstico podem selecionar artefatos antigos.
+- Direção de correção: definir limpeza controlada dos artefatos da suíte antes do build e publicar um único conjunto datado/coerente em `Build`, preservando somente o que tiver política explícita de retenção.
+- Handoff: implementação/automação de build; testes de interface só podem usar o executável cuja proveniência esteja registrada no relatório de build.
+
+## Checagens concluídas sem lacuna registrada
+
+Os ancestrais públicos permanecem na hierarquia VCL apropriada; o runtime não introduz dependências FMX/DesignIntf; o pacote design depende apenas de `designide` e do runtime; os componentes `TDAC*` usados no DFM da demo têm registro de streaming; e os hooks registrados são locais aos controles DAC, com pares de remoção correspondentes. Tabs, DataGrid e Pagination usam desenho Skia no estado atual. Esses itens não dispensam a QA física solicitada ao especialista de interface.
+
+## MEM-DEL-072 - Auditoria de conclusao: ReportViewer, Tabs e DataGrid
+
+Status: auditoria estatica de fontes atuais em 2026-07-23. Nenhuma fonte de producao foi alterada. Esta secao substitui inferencias anteriores para estes tres componentes.
+
+### Fundacao de tema que ja esta concluida
+
+- `TDACThemeManager` ja possui API publica suficiente para o modo global: `ApplicationMode`, `ResolveMode`, `SetApplicationMode`, `RegisterListener` e `UnregisterListener`. A troca global exige thread de UI e notifica listeners; `dtmInherit` resolve para o modo da aplicacao (Dark por padrao).
+- `TDACComponentStyle.Resolve(AMode)` ja devolve os temas Dark/Light tipados. O provider de `TDACComponentColors` foi ligado a `TDACComponentStyle.Tokens`, portanto uma leitura global acompanha o modo da aplicacao, mas nao representa um override local de controle.
+- `TDACControlTokens` ja declara os grupos de Report (`ReportRadius`, `ReportBorderWidth`, `ReportToolbarHeight`, `ReportPageWidth`, `ReportPageTop`, `ReportPageBottomInset`, `ReportPageRadius`, `ReportTextInset`, `ReportRowHeight`) e Tabs (`TabsHeaderRadius`, `TabsPillRadius`, `TabsUnderlineRadius`, `TabsUnderlineThickness`, `TabsCaptionInset`, `TabsFocusRadius`). Seus valores base sao, respectivamente, `8/1/42/300/62/18/4/24/24` e `10/20/2/3/10/6`.
+
+### ReportViewer - API e literais remanescentes
+
+`TDACReportViewer` esta inscrito no manager, publica `ThemeMode`, resolve seu background local e redesenha em `dtmInherit`; isto e evidencia estatica positiva para o contrato basico de tema.
+
+Mesmo assim, `PaintBoxDraw` ainda ignora diretamente todos os tokens de metrica Report. O inventario exato e:
+
+- linhas 124-127: raio externo `8` e largura de borda `1`;
+- linhas 129-137: altura/clip da toolbar `42`, raio `8`, pagina em `x=24`, `y=26`, fonte `11`, largura `80`, e zoom em `right-72`, largura `56`;
+- linhas 138-141: largura de pagina `300`, topo `62`, inset inferior `18`, raio de pagina `4` e borda `1`;
+- linhas 142-158: inset `24`, offsets verticais `34/56/86`, fonte de titulo `16`, corpo `9`, largura disponivel `-48`, offsets de coluna `34/-112`, baselines `16/48` e larguras `80/120/90`;
+- linhas 140 e 149: alpha `255` e raio/cabecalho `0` continuam literais de renderer. Alpha opaco pode ser centralizado no renderer; os raios e dimensoes precisam usar tokens.
+
+Os quatro textos e valores nas linhas 142-158 sao dados de preview (`Relatorio de Vendas`, periodo, produto e valor), nao tokens visuais. Eles comprovam outro limite funcional: `PageIndex`, `PageCount` e `ZoomPercent` so alteram labels/estado; nao existe fonte de documento, pagina renderizada, comandos de toolbar ou hit-test. O limite `ZoomPercent` de `10..400` (linhas 196-199) e regra comportamental, nao metrica de pintura.
+
+Lacuna de API publica: nenhuma para selecionar o tema; falta definir se este controle e deliberadamente um preview ou expor um contrato de documento/renderizacao. Antes de chama-lo ReportViewer de produto, deve existir uma interface de fonte/renderizacao e comandos acessiveis de pagina/zoom. Nao se deve usar os textos de exemplo como estado publico persistente.
+
+### Tabs - tokens ignorados e API publica sem efeito
+
+`TDACTabs` publica `ThemeMode`, registra listener, usa `ResolvedTokens` por instancia e faz hit-test no mesmo `TabRect` empregado para a selecao. O teste atual tambem confirma o retangulo clicavel horizontal/vertical e o ciclo de visibilidade do header.
+
+Os tokens Tabs existentes ainda sao bypassados por literais no painter:
+
+- linhas 186-191: `TabsHeaderRadius=10` e `ContainerBorderWidth=1` estao escritos como `10` e `1`;
+- linhas 211-218: `TabsPillRadius=20` e borda `1`;
+- linhas 223-249: raio de aba underline `8`, espessura `3`, inset do underline `8` e raio `2`; somente os dois ultimos possuem tokens proprios (`TabsUnderlineThickness` e `TabsUnderlineRadius`);
+- linhas 263-270: inset de caption `10`, raio de foco `6` e largura do foco `2`; os dois primeiros possuem token, enquanto a largura do anel precisa de token ou do `FocusRingWidth` global;
+- linhas 371-379: minimo vertical `48`, minimo horizontal `104` e gutters do `TabRect` `1/4`; linhas 481-499: extensoes de header `160/64` e insets `24/4`;
+- linhas 512 e 575-601: `ContentGutter=24` e todos os calculos de reposicionamento de filhos dependem desse literal; linha 770 repete o gutter horizontal `4`.
+
+Portanto, alem de substituir as referencias ja existentes por `ResolvedTokens`, o grupo precisa de metricas novas para minimos de item, gutters externos, header horizontal/vertical, inset de conteudo e gutter de pagina. Nao duplicar esses numeros em `Metrics.pas` nem introduzir escala DPI: `Pixels` permanece identidade pelo contrato atual.
+
+Tres propriedades publicadas nao possuem efeito visual completo na fonte atual: `CornerRadius` e `ShowContentBorder` sao apenas gravadas/invalidam (nao sao lidas pelo painter), e `ContentColor` e atualizado mas o painter usa `ResolvedTokens.ContainerSuiteBackground` em vez de `FContentColor`. A implementacao deve escolher explicitamente entre remover/depreciar essas propriedades com compatibilidade de DFM, ou faze-las controlar os pixels sem quebrar `dtmInherit`. O override local de `ThemeMode` deve continuar tendo precedencia sobre o modo global; uma cor customizada deve ter precedencia documentada sobre ambos.
+
+### DataGrid - maior lacuna de tema e inventario exato
+
+`TDACDataGrid` nao declara `ThemeMode`, nao se registra no `TDACThemeManager` e nao reaplica `Color`, `FixedColor`, `Font` e `TitleFont` quando o tema global muda. A provider global faz novas leituras de `TDACComponentColors` seguirem o tema da aplicacao somente no proximo paint; ela nao cria override local nem atualiza propriedades VCL nativas ja materializadas. Este e o unico bloqueio P1 de API para estes tres componentes.
+
+Globais restantes, todos em `DataGrid.pas`, sao:
+
+- linhas 290-301: `White`, `GridHeaderColor`, `ControlText`, e `White` para o comportamento nativo;
+- linhas 398-418: `Alpha(253,235,233)`, `Alpha(232,247,228)`, `ControlBorder`, `Danger`, `PrimaryDark`, alpha `255` e inset de icone `3`;
+- linhas 427-527: `White`, `ControlBorder`, `GridHeaderColor`, `Alpha(250,252,250)`, `Alpha(222,242,218)`, `PrimaryDark`, `Alpha(232,247,228)`, `ControlText`, `PrimaryLight` e `White`;
+- linhas 547-586 (preview sem dataset): repete `Alpha(250,252,250)`, `ControlText`, `Alpha(232,247,228)`, `PrimaryDark`, `White`, `ControlBorder`, `GridHeaderColor` e `White`.
+
+Esses globais nao sao cores hex locais, mas sao leitura global e portanto impedem `ThemeMode=dtmDark/dtmLight` por instancia. Os quatro `Alpha(r,g,b)` sao literais visuais e devem virar cores semanticas do DataGrid: acao destrutiva, acao positiva, linha alternada, linha selecionada e badge de status. Borda, texto, cabecalho, hover e icones tambem devem receber papeis DataGrid em `TDACControlTokens`, nao aliases genericos de `White`/`PrimaryDark`.
+
+Metricas visuais restantes no DataGrid:
+
+- linhas 254-285: gap de acao `5`, inset `6`, tamanho `18`; linhas 398-418: raio de acao `5`, borda `1`, inset de icone `3`;
+- linhas 299-312: altura de linha nativa `46` e titulo `48`; o token existente `GridContainerRowHeight=64` nao e usado e nao corresponde ao componente;
+- linhas 430-527: footer `34`, borda externa `1`, raio selecionado `4`, largura de borda selecionada `2`, inset de texto/status `6`, raio de status `9`, inset de hover `1`, footer x `14`, largura reservada `24`, valor alinhado em `120/14/2`;
+- linhas 547-586: o preview tem outra especificacao: linha `40`, header `44`, offsets `8/7/31`, fontes `11/10`, raio de status `9`, inicio de linhas `45`, footer `36`, texto em `14/12/11`, razoes `0.65/0.7` e insets `14/2`. Ele diverge do caminho com dataset (`46/48/34`) e nao pode ser a referencia de metricas de producao.
+
+O proximo conjunto de tokens deve conter ao menos `DataGridSurface/Border/Header/RowAlternate/RowSelected/SelectionBorder/HoverBorder/Status/ActionPositive/ActionDestructive/Footer`, mais `DataGridHeaderHeight`, `DataGridRowHeight`, `DataGridFooterHeight`, `DataGridCellInset`, `DataGridActionSize/Gap/Inset/IconInset/Radius`, `DataGridStatusInset/Radius`, `DataGridSelectionInset/Radius/BorderWidth` e `DataGridFooterValueWidth`. A preview deve consumir o mesmo conjunto ou ser claramente marcada como layout de design-time sem prometer paridade pixel a pixel.
+
+### Evidencia necessaria para encerrar o objetivo
+
+1. Estatica: os tres painters devem ler uma unica `TDACControlTokens` resolvida pela instancia. A busca nos tres fontes nao pode deixar `TDACComponentColors.Alpha`, `TDACComponentColors.White/Primary*/Danger/Control*`, ou numeros visuais que ja possuam token. Excecoes devem ser somente regras comportamentais documentadas (por exemplo `ZoomPercent 10..400`, indices e limites de dataset).
+2. API/DFM: compilar runtime, design package, demo e Interaction; streamar `ThemeMode=dtmInherit/dtmDark/dtmLight` dos tres componentes. DataGrid deve publicar `ThemeMode`, registrar/desregistrar listener e reaplicar tambem as propriedades VCL nativas ao trocar tema. Exercitar cada propriedade publicada de Tabs e comprovar pixel/geometry observavel ou deprecia-la sem alterar ordinais/DFMs existentes.
+3. Tema: com tres instancias de cada controle, alternar global Dark->Light->Dark; confirmar que `dtmInherit` atualiza, `dtmDark` fica Dark e `dtmLight` fica Light. Para DataGrid, validar tanto preview quanto dataset ativo depois de `PumpMessages`, incluindo `Color`, `FixedColor`, `Font` e o chrome Skia.
+4. Interface/foco: capturas Dark/Light de ReportViewer, Tabs horizontal/vertical e DataGrid preview/dataset; validar pixels de superficie, borda, selecao, hover, foco e texto. Repetir Tabs com teclado, mouse e resize; DataGrid com seta, clique, roda, hover e acoes; ReportViewer com foco/tab order e os limites de pagina/zoom. Nenhum build ou assert de token substitui essa QA fisica.
+5. Regressao: manter os asserts atuais de `TabRect` e lifecycle do header, mas acrescentar asserts que o painter realmente usa os valores de `ControlTokens` (o assert atual em `DACComponentsInteraction.dpr` linhas 1578-1581 somente confirma que os campos existem). Registrar SHA, configuracao, executavel e screenshots usados antes da revisao e PR.
+
+## MEM-DEL-073 - Auditoria estatica integral de Controls e DesignSystem
+
+Status: leitura estatica integral das 46 units Pascal sob `Source/Controls` e `Source/DesignSystem`, em 2026-07-23. Sem alteracao de codigo. Esta secao prevalece sobre MEM-DEL-072 quando houver conflito: `TDACDataGrid` agora publica `ThemeMode`, registra listener e consome os tokens `DataGrid*`; ele deixou de ser o bloqueio P1 anterior.
+
+### Criterio, escopo e exclusoes corretas
+
+- Procurou-se cor/alpha/fonte/metrica visual fora de `TDACDesignTokens`/`TDACControlTokens`, resolucao que vaze o tema global num componente com override local, fonte que nao seja Inter e DPI/`ChangeScale`.
+- Literais de dados ou conteudo nao foram classificados como token visual: preview de grid (`DataGrid.pas:573-575`), series/categorias iniciais de chart (`Charts.pas:161-162`), textos do preview de relatorio (`ReportViewer.pas:142-158`), rotulos de acao do popup de data/hora e parametros de dominio como pagina, valor, intervalos, teclas, WM constants e indices de arrays.
+- Largura/altura inicial de componentes tambem nao entra como metrica de pintura nesta auditoria. Ela deve ser reavaliada separadamente se o produto exigir tamanhos de designer tokenizados. Em contraste, padding, raio, borda, baseline, tamanho de fonte, alpha, dimensao de icone e geometria desenhada sao metricas visuais e entram nos achados.
+
+### P0 - nenhum achado estatico
+
+Nao ha cor hex direta nos painters de Controls, nem DPI/`ChangeScale`/`CurrentPPI`/`ScaleForPPI`/`ScaleValue`/`ScaleBy` sob os dois escopos. Os valores de paleta encontrados em `ColorTokens`, `ControlTokens`, `InteractionTokens`, `ChartPalette`, `SemanticColors` e `DashboardTokens` estao no DesignSystem, que e o local permitido para definicao de token. Tambem nao foi encontrada familia de fonte literal em painter/control; todas as atribuicoes internas de fonte passam por `TDACComponentStyle.FontFamily`/`TDACComponentFontInstaller`.
+
+### P1 - quebra do contrato de tema ou tokenizacao em familias visuais
+
+1. **Memo nao participa do tema local/global e conserva paleta/metricas locais.**
+   - Arquivo/linhas: `DAC.Components.Controls.Memo.pas:25-120` nao declara `FThemeMode`, propriedade `ThemeMode`, listener ou `ResolvedTokens`; `:183-215` usa alphas `130/255/215/210/185` e `TDACComponentColors` globais; `:349-412` fixa chrome `24`, label baseline `15`, alpha opaco, bordas `1/1.5` e usa a superficie do parent; `:562-565` fixa padding `8`.
+   - Escopo funcional: `TDACMemo` pinta superficie/borda Skia e atualiza o HWND nativo `TMemo`, portanto um host claro/escuro ou uma instancia `dtmDark/dtmLight` nao tem contrato equivalente a Edit/Combo/DateTime. `TDACDBMemo` herda esta lacuna via `DataAware`.
+   - Direcao: adicionar o mesmo `ThemeMode`/listener de `TDACEdit`, resolver `TDACControlTokens` uma vez por paint/update native e introduzir tokens de alpha de borda, chrome de label, padding, largura de borda/foco e raio de memo. Nao reintroduzir `ResolveParentSurface` como fonte de paleta para o override local.
+
+2. **A familia Button/Edit/ComboBox/DateTimePicker ainda tem alphas, bordas e layout visual espalhados.**
+   - `Button.pas:187-329` fixa `Alpha`/`BorderAlpha` em `0/140/190/255`, usa `TDACComponentColors.Transparent` e `White` fora da instancia de `ATokens`; `:756-769` fixa largura de borda `1`, divisor em `TDACComponentColors.ControlBorder`, alpha `255`, fonte `11` e inset de caption `8`.
+   - `Edit.pas:209-243` fixa chrome `24`, alturas `32/40/48` e alturas de editor `22/24/28`; `:314-334` fixa alphas `130/185/190/210/215/220/255`; `:579-607` fixa borda `1/1.5`, sublinhado, colunas de icone `30/16/14`, alpha opaco; `:620/629`, `:727-786` e `:927-930` ainda fixam baseline/helper `18`, espaco de suporte `24`, padding `12` e reserva direita `38`.
+   - `ComboBox.pas:245-265` fixa a mesma escala de alpha; `:390-435` fixa snap/insets `0.5/1/12/14/16/28/34`, fonte `13`, borda `0.5`, alphas `42/80/130/255`; `:639-695`, `:754-788`, `:902`, `:941-946` repetem borda, colunas de icone, helper e popup offset locais.
+   - `DateTimePicker.pas:217-223` fixa alpha `180/255/100`; `:458-488` fixa snap `1`, inset `0.5`, bordas `1/1.5` e alpha opaco. O construtor tambem mantem `FCornerRadius := 8` em `:161` apesar de haver tokens de input/date-time.
+   - Escopo funcional: todos ja expoem `ThemeMode`, mas esses valores sao parte do mesmo contrato visual e impedem uma troca coerente de densidade/estado via tema. Isto tambem cria divergencia entre os quatro campos e o `TDACButtonEdit`, que compoe `TDACEdit`.
+   - Direcao: centralizar os valores em `TDACControlTokens`: alpha por estado de input/button, `InputChromeTop`, alturas/editor, `InputBorderWidth/FocusWidth`, support gap, text/icon insets, combo row/selection/divider/check metrics e input-action divider. Em Button, `White`/`Transparent` e a borda do divisor devem vir de `ATokens.Colors`/papel de controle, nunca da facade global.
+
+3. **`TDACSkiaControl` tem superficie visual, mas nao oferece o contrato `ThemeMode` local/inherit.**
+   - Arquivo/linhas: `DAC.Components.Controls.SkiaControl.pas:21-65` expoe somente `Theme: IDACComponentsTheme`; `:80` e `:190` materializam `TDACDefaultComponentsTheme.New` (Dark), sem listener do `TDACThemeManager`.
+   - Escopo funcional: a base pinta panel/borda em `DrawContent` (`:104-110`). Qualquer descendente que a use recebe um tema escuro fixo ou uma interface imperativa nao streamavel em DFM; nao acompanha `SetApplicationMode` nem permite `dtmInherit`.
+   - Direcao: publicar `ThemeMode` e manter `Theme` apenas como extensao documentada, ou tornar a classe estritamente interna/abstrata. A prioridade e que nenhum componente de superficie publico tenha dois mecanismos de tema contraditorios.
+
+4. **Charts vaza a paleta global para uma instancia com tema local.**
+   - Arquivo/linhas: `DAC.Components.Controls.Charts.pas:335` usa `TDACComponentStyle.ChartPalette`, que resolve o tema global, em vez de `TDACComponentStyle.Resolve(FThemeMode).ChartPalette`. `DAC.Components.DesignSystem.DefaultTheme.pas:28-32` sempre atribui `TDACChartPalette.Default`, inclusive para `dtmLight`.
+   - Escopo funcional: frame, grid, linha e barra respeitam `FThemeMode`, mas as fatias do doughnut podem usar a paleta do application mode. Portanto um chart `dtmDark` dentro de app Light (ou inverso) e inconsistente.
+   - Direcao: obter a palette pelo tema resolvido da instancia e fornecer uma paleta Light real ou declarar explicitamente tokens de chart que sejam identicos nos dois modos. A paleta em si pode conter literais somente no DesignSystem; o defeito e a resolucao global.
+
+5. **Inter nao e exclusivo em `TDACSystemText`.**
+   - Arquivo/linhas: `DAC.Components.Controls.SystemText.pas:31`, `:43`, `:66` publicam `FontFamily`; `:220-226` aceita qualquer string e a envia a GDI em `:183-192`.
+   - Escopo funcional: o default e Inter (`:99`), mas DFM/codigo consumidor pode escolher outra familia, contrariando o objetivo de Inter exclusivo e invalidando a consistencia visual de labels, titulos e textos da demo.
+   - Direcao: remover/ocultar a propriedade, restringi-la a `Inter`, ou renomea-la como API avancada explicitamente fora do design system. `FontSize` e `TextColor` customizados sao overrides do consumidor, nao literais internos; devem ter precedencia documentada sobre `ThemeMode` se forem mantidos.
+
+### P2 - limpeza necessaria para a regra literal estrita
+
+1. **Opacidade opaca/transparente ainda e escrita nos painters.** Mesmo quando semantica seja somente "completamente opaco", a regra do objetivo exige que `255`/`0` nao carreguem decisao visual local. Exemplos por arquivo: `Badges.pas:410/450`, `Button.pas:187-329/764`, `Charts.pas:349-351`, `ComboBox.pas:259/393-395/428/655/677`, `Container.pas:326-336`, `DataGrid.pas:430/489`, `DateTimePicker.pas:221/472/488`, `Edit.pas:328/595/607`, `Feedback.pas:207`, `GridContainer.pas:319-321`, `Loading.pas:271`, `Memo.pas:188/403`, `Progress.pas:45/225`, `ReportViewer.pas:125/127/130/140-141/150`, `ScrollContainer.pas:258-260`, `Selectors.pas:397/431/434/440/760/765` e `StatusBar.pas:120-122`.
+   - Escopo funcional: nao sao cores hex, mas sao alpha de superficies, bordas, icones e foco. A correcao de baixo risco e um alpha opaco/transparente definido pelo renderer ou em `OpacityTokens`, e os estados especiais na propria familia de tokens. Nao tokenizar resultados de mensagens Windows (`AMessage.Result := 0/1`) ou numeros de dominio.
+
+2. **Fallbacks brancos de VCL permanecem fora do tema.** `Color := clWhite` existe em `Button.pas:440`, `Edit.pas:256`, `ComboBox.pas:185`, `DateTimePicker.pas:160`, `Memo.pas:139` e `Charts.pas:149`. Os controles Skia normalmente cobrem a area, mas esse fallback pode aparecer em criacao, erase ou filho nativo e contradiz a superficie Dark. `Container.pas:154-155` e `GridContainer.pas:311/380`, `ScrollContainer.pas:244/328`, `Pagination.pas:275`, `Feedback.pas:385` usam transparentes literais; substituir por `TDACComponentColors.Transparent` ou papel de transparência no token melhora a regra e a leitura.
+
+3. **Tokens existentes ainda sao bypassados em pontos menores.** `StatusBar.pas:120-122` usa raio `0` em vez de um papel explicitamente angular; `Container.pas:154-155` cria `TAlphaColor($00000000)`; e `DateTimePickerPopup.pas:76-87` inicializa largura/altura/time-step com `Resolve(dtmInherit)` antes de receber o modo do dono. `ShowFor` recalcula as dimensoes por `FThemeMode` (`:349-359`), portanto o popup nao e P1 hoje, mas deve inicializar apos o modo efetivo ou documentar que as metricas sao invariantes entre temas.
+
+4. **DesignSystem central, mas ainda incompleto como fonte unica de semantica local.** `SemanticColors.pas:45-90` cria soft backgrounds/borders por `TDACComponentColors.Alpha(...)` global e nao esta contido em `TDACDesignTokens`; `ComponentStyle.Semantic` (`ComponentStyle.pas:181-184`) portanto nao recebe um modo. `InteractionTokens.Default` e `ChartPalette.Default` sao centralizados e aceitaveis como token, mas `TDACDesignTokens.Light` reaproveita `Dark` antes de substituir somente `Controls` (`Tokens.pas:51-65`). Enquanto nao houver consumidor com override local de `Semantic`, o impacto e preventivo; antes de usar esta API em surfaces temaveis, mover os papeis para os tokens Dark/Light ou passar `ThemeMode` explicitamente.
+
+### Evidencias positivas e limite da auditoria
+
+- Todas as demais unidades visuais de superficie localizadas pelo scan (`Button`, `Badges`, `Charts`, `Container`, `DataGrid`, `DateTimePickerPopup`, `Edit`, `ComboBox`, `Feedback`, `GridContainer`, `Loading`, `Pagination`, `Progress`, `ReportViewer`, `ScrollContainer`, `Selectors`, `StatusBar`, `SummaryCard`, `SystemText` e `Tabs`) ja possuem `ThemeMode` ou recebem o modo do controle dono. `DataGrid` agora esta neste conjunto e seus `DataGrid*` tokens cobrem cores/metricas antes locais.
+- `DateTimePickerPopup` nao publica `ThemeMode` por ser janela interna; recebe o modo do `TDACDateTimePicker` por `ShowFor`, o que e aceitavel quando o popup nao e componente de designer independente.
+- As units puramente de infraestrutura/registro/dados (`DataGridColumns`, `DataAware`, `Register`) nao desenham superficie e nao devem ganhar `ThemeMode`.
+- A ausencia de APIs DPI e ChangeScale e uma comprovacao estatica apenas. Esta auditoria nao prova build, streaming DFM, troca real de tema, foco, IME, clipping, screenshot ou contraste. Os achados P1/P2 devem voltar ao especialista Delphi; depois, revisor confere a eliminacao por busca e o especialista de interface executa a matriz Dark/Light, foco e teclado.
+
+## MEM-DEL-094 - Reauditoria final pos MEM-091/092/093
+
+Status: leitura estatica de todas as units visuais em `Source/Controls` e de `Source/DesignSystem`, em 2026-07-23. Nenhuma unit de producao foi alterada nesta auditoria. Esta secao prevalece sobre MEM-DEL-073 quando houver conflito.
+
+### Resultado objetivo
+
+- Nao ha P0 estatico. Nao foram encontradas APIs de DPI ou escala (`ChangeScale`, `CurrentPPI`, `ScaleForPPI`, `ScaleValue`, `ScaleBy`, `PixelsPerInch`, `GetDpiFor*`, `GetDeviceCaps/LOGPIXELS`) em Controls ou DesignSystem.
+- Todas as superficies Skia publicas localizadas possuem `ThemeMode` ou recebem o modo do dono interno e possuem listener quando sao controles independentes. Isto inclui Memo, DataGrid, Charts, ReportViewer, Tabs, SkiaControl, inputs e familias de container. `DateTimePickerPopup` e interno ao DateTimePicker e recebe o modo em `ShowFor`.
+- Edit, ComboBox, DateTimePicker e Memo resolvem `TDACControlTokens` pela instancia; ButtonEdit propaga `ThemeMode` aos filhos Edit e Button. Nao ha lacuna atual de ThemeMode ou fonte nessa familia.
+- Inter esta efetivamente exclusiva no desenho de `TDACSystemText`: a propriedade `FontFamily` permanece por compatibilidade, mas `ApplyCanvasFont` e `SetFontFamily` usam `TDACComponentStyle.FontFamily` (`SystemText.pas:181-224`).
+- O demo possui `demoCheck`, `demoRadio`, `demoToggle` e `demoSlider` (`demo/Demo.Principal.dfm:1273-1303`). Conteudo de preview, captions, datas, valores, indices, teclas, limites de dominio e navegacao nao sao tokens visuais.
+
+### P0 - nenhum
+
+Nao ha defeito estatico que impeca compilacao, streaming, propagacao basica de tema por instancia ou que reintroduza DPI proibido.
+
+### P1 - tokenizacao estrita ainda quebrada no Button
+
+1. **TDACButton ainda decide papeis visuais fora de `TDACControlTokens`.**
+   - Evidencia: `Source/Controls/DAC.Components.Controls.Button.pas:187-329` fixa opacidades `0/140/190/255` e usa `TDACComponentColors.Transparent` e `White`; `:440-441` materializa fallback VCL branco e raio `12`; `:756-769` fixa largura de borda `1`, divisor `ControlBorder`, alpha `0/255`, fonte `11` e inset `8`.
+   - Impacto: o controle tem `ThemeMode`, mas ghost, link, input-action, borda/divisor, texto branco e estados hover/pressed/disabled nao podem ser definidos integralmente por Dark/Light. A familia central de botoes pode divergir dos PNGs mesmo com o restante correto.
+   - Direcao: adicionar ao grupo Button/InputAction dos `TDACControlTokens` papeis de cor (transparente, texto sobre preenchimento e divisor), alpha por estado, largura de borda/divisor, raio, fonte e inset. O painter recebe somente a palette resolvida pela instancia. Preservar ordinais de enums e DFM existente.
+   - Aceite estatico: nao deixar em `Button.pas` `TDACComponentColors.White/Transparent`, alpha de estado, largura/inset/tamanho de fonte de pintura com significado visual; permitir apenas algoritmo, estado e mensagens Windows documentadas.
+
+### P2 - limpeza para fechar literalmente "todo valor visual e token"
+
+1. **Alpha opaco ainda se repete em painters ja temaveis.**
+   - Evidencia: `Charts.pas:354-356`, `DataGrid.pas:430,489`, `Feedback.pas:207`, `GridContainer.pas:319-321`, `ReportViewer.pas:124-150`, `ScrollContainer.pas:258-260`, `Selectors.pas:431,440`, `StatusBar.pas:120`; `Container.pas:326-336` decide `0/255` para background/borda.
+   - Impacto: hoje nao quebra Dark/Light pois cor/metrica principal ja vem dos tokens, mas viola a regra literal de que alpha visual tem dono semantico. `Opaque`/`Transparent` pode ficar no renderer/OpacityTokens; estados especiais pertencem ao token da familia.
+   - Aceite: busca nos painters nao deixa alpha literal de superficie, borda, icone, foco ou selecao. Nao tokenizar `AMessage.Result`, teclas, indices ou constantes de fluxo.
+
+2. **Transparencia literal e fallback de superficie precisam ser semanticos.**
+   - Evidencia: `Container.pas:154-155`, `GridContainer.pas:311,380`, `ScrollContainer.pas:244,328`, `Feedback.pas:385` e `Pagination.pas:275` usam `TAlphaColor($00000000)`; em Grid/Scroll ela tambem significa "usar superficie pai".
+   - Impacto/direcao: a sentinela e regra de composicao, nao cor de dominio. Nomear helper/valor de transparencia-fallback para separar este caso de uma cor visual fixa.
+   - Aceite: ao criar, redimensionar e trocar Dark/Light, a superficie nao pode piscar branco e deve manter o fallback correto do pai.
+
+3. **ButtonEdit ainda possui metricas de seam na composicao, embora ja esteja temavel.**
+   - Evidencia: `ButtonEdit.pas:163,181,399,411,571-584` fixa largura default `48`, `CornerRadius := 0`, gap/inset `0` e minimo `34` do botao composto.
+   - Impacto/direcao: nao e lacuna de ThemeMode ou foco; sao regras de uniao entre editor e acao direita. Sob a regra estrita, raio zero, largura e seam devem ter tokens ButtonEdit ou regra central declarada invariante.
+   - Aceite: Dark/Light e SM/MD/LG preservam borda externa unica, sem dupla curvatura, fresta, sobreposicao, corte de icone ou reducao do campo editavel; a acao fica clicavel sem roubar indevidamente o foco do texto.
+
+4. **Cobertura do DFM de selectors esta incompleta, apesar de o demo estar correto.**
+   - Evidencia: o DFM declara Check/Radio/Toggle/Slider (`Demo.Principal.dfm:1273-1303`), mas o smoke exige somente `demoCheck` e `demoSlider` (`Tests/DACComponentsInteraction.dpr:1318-1324`).
+   - Impacto/direcao: exigir tambem `demoRadio: TDACRadioButton` e `demoToggle: TDACToggleSwitch`, e exercitar os quatro exemplos reais da demo.
+   - Aceite: clique, Tab/Shift+Tab, Space, setas do radio group, toggle e arraste/teclado do slider, com screenshots de foco, hover, disabled e selecao em Dark/Light.
+
+### Exclusoes e matriz de QA fisica
+
+- Nao tokenizar dados de preview (`ReportViewer.pas:142-158`, series do chart, exemplos de grid) nem regras de dominio (`PageIndex/PageCount`, zoom `10..400`, intervalos data/hora, `TimeStepMinutes`, codigos VK/WM, indices).
+- `TDACDashboardTokens` e `TDACSemanticColors` sao DesignSystem central. `Semantic` e exercitado apenas por teste; antes de usa-lo em superficie com override local, deve receber o modo resolvido ou migrar papeis para `TDACDesignTokens` Dark/Light.
+- Na QA, alternar Light -> Dark -> Light com instancias `dtmInherit`, `dtmLight` e `dtmDark`; conferir que o override local nao segue a troca global. Cobrir Button/ButtonEdit e todos os inputs com foco, hover, pressed, disabled, popup, Esc/Enter, clique externo, IME quando disponivel, clipping e contraste.
+- Construir runtime, design package, Demo e Interaction antes da QA e registrar SHA, configuracao, executavel e screenshots. Build e assert estatico nao aprovam foco, contraste, clipping ou comportamento de tela.
+
+## MEM-DEL-095 - Inventario completo de hardcodes visuais remanescentes
+
+Status: reauditoria estatica posterior a implementacao do Button, em 2026-07-23. Escopo: todas as units de `Source/Controls` e `Source/DesignSystem`. Nenhuma fonte de producao foi alterada. Esta secao prevalece sobre MEM-DEL-094 para o inventario de hardcodes.
+
+### Resultado e classificacao
+
+- O P1 anterior de `TDACButton` foi encerrado: `ControlTokens.pas:29-76,787-812` agora declara e inicializa cores, alphas, raio, borda, divisor, fonte e inset da familia; `Button.pas` nao conserva os antigos `White/Transparent`, alpha de estado, borda, fonte ou inset locais.
+- Nao ha P0. Ainda ha P1 de aderencia ao objetivo estrito: pixels ativos abaixo usam alpha, borda, raio ou fallback fora dos tokens. P2 cobre defaults de designer, contratos publicos sem efeito, codigo morto e cobertura de Demo/Interaction.
+- Um valor e **seguro** quando esta em `TDACControlTokens`/paleta de tema, ou quando e uma constante matematica de rasterizacao/algoritmo. Um literal nao se torna seguro apenas por estar centralizado em um controle.
+
+### P1 - hardcodes visuais ativos a eliminar
+
+| Familia | Arquivo e linhas | Hardcode ativo | Plano de eliminacao |
+| --- | --- | --- | --- |
+| Badges | `Badges.pas:159,410,451` | raio default `10`, alpha opaco `255`, inset do close `2` | usar `BadgeRadius`; criar `AlphaOpaque` central e `BadgeCloseInset`. |
+| Charts | `Charts.pas:152,354,356` | fallback VCL `clWhite`; alpha opaco de fill/stroke | fallback deve vir do tema resolvido; usar alpha central. Os `0.5` de `:353` sao snap seguro. |
+| Container | `Container.pas:154-155,326-336` | transparente literal e alpha `0/255` | nomear sentinela `TransparentSurfaceFallback`; usar alpha central nos styles. A enum `mcaTransparent` e regra de composicao, nao paleta. |
+| DataGrid | `DataGrid.pas:430,489` | alpha de icone e selecao `255` | adicionar `DataGridIconAlpha`/usar `AlphaOpaque`. Os raios, cores e demais metricas ja sao `DataGrid*` tokens. |
+| Feedback | `Feedback.pas:207,385` | alpha do toast e clear transparente literal | `ToastAlpha`/`AlphaOpaque`; `TooltipCanvasBackground` ou helper de canvas transparente. |
+| GridContainer | `GridContainer.pas:319-321` | alpha `255`, largura de borda `1` | usar `AlphaOpaque` e o existente `GridContainerBorderWidth`. `:311,380` sao a sentinela de superficie pai a nomear. |
+| Loading | `Loading.pas:271` | alpha opaco de pintura | usar alpha central; alphas de skeleton/dots/disabled ja possuem tokens proprios. |
+| Progress | `Progress.pas:45,225` | default de API e variavel local com alpha `255` | remover default visual da assinatura ou apontar para alpha central; resolver o alpha uma vez por paint. |
+| ReportViewer | `ReportViewer.pas:125,127,130,140-141,150` | seis fills/strokes opacos | usar alpha central. Raios, bordas, texto e geometria Report ja estao tokenizados. |
+| ScrollContainer | `ScrollContainer.pas:258-260` | alpha `255`, largura de borda `1` | usar `AlphaOpaque` e `ScrollContainerBorderWidth`. `:244,328` sao sentinela de fallback do pai. |
+| Selectors | `Selectors.pas:43,141,397,431,434,440,760,765` | defaults `AStrokeWidth=1/AAlpha=255` e `255` nos estados enabled/hover/icon/slider | criar `SelectorAlphaOpaque` ou usar alpha central; defaults de `DrawCircle` devem vir de caller/tokens. Stroke ja possui `SelectorStrokeWidth` e `SelectorCheckedBorderWidth`. |
+| StatusBar | `StatusBar.pas:120-122` | raio quadrado `0` e alpha `255` | criar `StatusBarRadius` (valor inicial zero) e usar alpha central. |
+| SummaryCard | `SummaryCard.pas:261` | alpha opaco | usar alpha central; alphas disabled/border/badge ja existem nos tokens. |
+| Tabs | `Tabs.pas:186-192,396` | painter usa `FCornerRadius` cujo default local e `8` | criar `TabsContentRadius` e inicializar a propriedade pelo token, preservando override publicado. `0.5` de snap e `TabWidth/TabHeight=1` sao geometria VCL, nao raio de design. |
+| ButtonEdit | `ButtonEdit.pas:157-163,181,399,411,496-497,571-584` | width/height `300/38`, action `48`, minimo `34`, seam/raio `0`, altura rotulada `60`, gap/inset `0` | criar grupo `ButtonEdit*`: default width/height, labeled height, action width/minimum, action corner radius e seam/gap/inset. A regra de raio zero pode permanecer, mas apenas nomeada no token de composicao. |
+
+### P2 - visual, mas fora do painter ou contrato ainda incompleto
+
+1. **Helper morto de Edit conserva a especificacao antiga.** `Edit.pas:216-252` declara `DACInputChromeTop`, `DACInputControlHeight` e `DACInputEditorHeight` com `24`, `32/40/48` e `22/24/28`; a busca atual encontra apenas declaracao/implementacao, sem chamadas. Remover os helpers ou delegar integralmente aos `Input*` tokens para impedir reuso acidental.
+
+2. **Defaults de tamanho do designer ainda sao literais.** Se tamanho inicial faz parte do contrato visual, migrar para `DesignDefaultWidth/Height` por familia; se for apenas conveniencia de Object Inspector, documenta-lo como excecao nao-temavel. Inventario completo:
+
+| Arquivo | Linhas | Defaults locais |
+| --- | --- | --- |
+| `Badges.pas` | 150-151 | `92 x 28` |
+| `ButtonEdit.pas` | 157-158 | `300 x 38` |
+| `Charts.pas` | 148-149 | `260 x 170` |
+| `Container.pas` | 166-167 | `460 x 200` |
+| `DataGrid.pas` | 217-218 | `760 x 170` |
+| `Feedback.pas` | 157-158, 295-296, 315-316 | Toast `260 x 72`, Modal `320 x 180`, Tooltip `220 x 36` |
+| `GridContainer.pas` | 105-106 | `640 x 320` |
+| `Loading.pas` | 97-98 | `160 x 48` |
+| `Pagination.pas` | 125-126 | `520 x 40` |
+| `Progress.pas` | 112-113 | `260 x 28` |
+| `ReportViewer.pas` | 75-76 | `720 x 360` |
+| `ScrollContainer.pas` | 107-108 | `360 x 220` |
+| `Selectors.pas` | 222-223, 586-587, 594-595 | selector `180 x 28`, radio/toggle `190 x 30`, slider `260 x 36` |
+| `SkiaControl.pas` | 82-83 | `280 x 160` |
+| `StatusBar.pas` | 71 | width `620` (a altura ja vem de token) |
+| `SummaryCard.pas` | 117-118 | `150 x 116` |
+| `Tabs.pas` | 388-389 | `420 x 180` |
+
+3. **Limites de layout com aspecto visual precisam ter dono.** `GridContainer.pas:248` usa minimo `48`; `:454` usa row-height minimo `24`; `:419` limita colunas a `12`. Os dois primeiros sao metricas de layout e devem ser tokens/contrato de GridContainer. O maximo `12` e regra de grid/colecao, nao token de cor ou tema. `ButtonEdit.pas:399` pertence ao token de minimo de acao, conforme P1.
+
+4. **Contrato publicado nao acompanha o painter em dois pontos.** `DataGrid.pas:122,219` publica/atribui `CornerRadius=8`, mas o paint usa `LTokens.DataGridRadius` (`:447-451`), portanto a propriedade nao controla os pixels. Escolher entre conectar o override ao painter ou depreciar sem quebrar DFM. `Tabs.pas:106,396` e visualmente efetivo, por isso esta no P1.
+
+5. **Demo e Interaction cobrem as classes, nao as instancias do DFM.** O DFM tem `demoRadio` e `demoToggle` (`Demo.Principal.dfm:1281-1295`); Interaction so exige `demoCheck` e `demoSlider` (`DACComponentsInteraction.dpr:1318-1324`). Os testes criam Radio/Toggle separadamente e exercitam Space (`:2199-2235`), o que e positivo, mas nao protege o streaming/layout da galeria. Exigir os dois componentes do DFM e testar foco, Tab/Shift+Tab, Space, setas do radio group, toggle, slider por teclado/arraste, disabled e screenshots Dark/Light.
+
+### Tokens e sentinelas seguros - nao classificar como hardcode de controle
+
+- **Seeds de tema permitidos:** hex/alpha em `ColorTokens.pas:159-203`, `ChartPalette.pas:46-86`, `CardTokens.pas:32-34`, `InteractionTokens.pas:24-27` e os blocos Dark/Light de `ControlTokens.pas:768-1228,1239-1448,1477-1686`. Sao a fonte central, nao literais espalhados em painter.
+- **Transparencia ja tokenizada:** `ButtonTransparent` (`ControlTokens.pas:1264,1502`), `ComboBoxPopupCanvasBackground` (`:1386,1624`) e `DateTimePopupCanvasBackground` (`:1409,1647`) sao corretos. Os controles que ainda usam `TAlphaColor($00000000)` diretamente devem convergir para o mesmo padrao semantico.
+- **Geometria matematica segura:** `0.5` em `SnapRect`/borda, `LScale := 1` onde o renderer nao aplica DPI, centralizacao por `/2`, e angulos completos de arco (`-90/360` em Charts/Progress/Loading) sao regras de rasterizacao ou de algoritmo, nao spacing/radius de design. Nao introduzir DPI para "corrigi-los".
+- **Dominio/comportamento seguro:** page sizes `10/25/50/100`, page button count `5`, limites `Minimum/Maximum`, `ZoomPercent`, teclas/WM, indices de arrays, `Timer.Interval=120`, fases de animacao e dados de preview nao sao tokens de tema. Podem merecer configuracao funcional, mas nao devem ser tratados como paleta/spacing visual.
+- **Central, mas nao pronta para override local:** `SemanticColors.pas:45-91` e `DashboardTokens.pas:40-120` armazenam valores no DesignSystem, portanto nao sao hardcodes de painter. `SemanticColors` ainda resolve pela facade global e `DashboardTokens` nao e usado pelos Controls; antes de um consumo em superficie com `ThemeMode`, passar o modo resolvido ou mover os papeis para `TDACDesignTokens` Dark/Light.
+
+### Ordem de eliminacao e aceite
+
+1. Criar `AlphaOpaque`/`TransparentSurfaceFallback` e substituir P1 de alpha/transparencia, primeiro em Grid/Scroll/Container/Feedback/Pagination para impedir flashes de superficie.
+2. Conectar tokens ja existentes (Grid/Scroll border width, BadgeRadius, Tabs content radius) e criar apenas os papeis ausentes (`BadgeCloseInset`, `StatusBarRadius`, grupo ButtonEdit).
+3. Remover helpers mortos de Edit; resolver DataGrid `CornerRadius`; decidir/documentar defaults de designer e limites de layout.
+4. Fortalecer Interaction para `demoRadio`/`demoToggle`, depois executar QA fisica: global Light->Dark->Light com `dtmInherit/dtmLight/dtmDark`, foco, hover, pressed, disabled, popup, teclado, clipping e screenshots. Nenhuma troca pode introduzir branco transitivo, fresta no seam ButtonEdit, duplo raio ou perda de caret/foco.
+
+## MEM-094A - Pendente de re-review: designer safety de TDACButton
+
+Status: **pendente**, informado pela revisao independente em 2026-07-23. MEM-DEL-094/095 nao pode ser tratado como aprovacao final do `TDACButton` ate nova leitura estatica e teste no designer VCL.
+
+- Escopo: `Source/Controls/DAC.Components.Controls.Button.pas`, com foco no caminho `TDACButton.Redraw` e nos metodos por ele alcancados durante criacao, streaming, resize e setters.
+- Evidencia a revalidar: `Redraw` esta em `:821-830`; `Resize` chama `UpdatePaintBoxBounds`, `UpdateZOrder`, `UpdateLabel` e `Redraw` em `:832-839`; `UpdatePaintBoxBounds` pode chamar `FPaintBox.SetBounds` em `:1003-1022` e `UpdateZOrder` usa APIs de z-order em `:1025+`.
+- Criterio de bloqueio: em `csDesigning`, sem `Parent`, sem handle do proprio controle ou sem handle do pai, nenhum caminho pode acessar `ClientWidth/ClientHeight`, forcar `CreateWnd`, chamar `SetBounds` em filho Skia, `SendToBack`/`BringToFront`, `Redraw` de filho ou API que exija parent window. A protecao deve ser validada no caminho completo, nao somente na guarda direta de `Redraw`.
+- Aceite para liberar MEM-094A: revisor confirma guardas de ciclo de vida em todos os chamadores; especialista Delphi abre a demo/form no designer, cria o componente sem Parent, streama DFM e redimensiona antes/depois de parenting sem `Control '' has no parent window`; especialista de interface confirma que o runtime preserva layout, foco e pintura apos a correcao. Somente entao mudar este registro para aprovado.
+
+## MEM-DEL-096 - Contrato preventivo e re-review do Lote 2
+
+Status: orientacao estatica preventiva para o Lote 2 de MEM-DEL-095: `Container`, `GridContainer`, `ScrollContainer`, `Feedback` e `Pagination`. Nenhuma fonte foi alterada. Este contrato deve ser aplicado pelo desenvolvedor e usado pelo revisor antes de liberar o lote.
+
+### Invariantes de transparencia e fallback
+
+1. Existem tres semanticas diferentes que nao podem ser representadas por um `TAlphaColor($00000000)` anonimo:
+   - **Canvas transparente de overlay:** Tooltip (`Feedback.pas:385`) e Pagination (`Pagination.pas:275`) precisam limpar o canvas sem pintar um retangulo; a transparencia deve vir de token/helper de canvas, nao de fallback do pai.
+   - **Superficie transparente que herda o pai:** Container em `mcaTransparent` (`Container.pas:152-158,322-337`) e o background customizado transparente de Grid/Scroll (`GridContainer.pas:311-314,374-385`; `ScrollContainer.pas:244-247,322-333`) devem significar `UseParentSurface`, nunca uma cor preta/branca transitiva. Nomear a sentinela e manter a comparacao somente no caminho de fallback.
+   - **Cor com alpha visual:** alpha de fill/borda deve ser lido de token; nao usar a sentinela de fallback para representar hover, disabled ou overlay.
+2. Para `UseParentSurface`, a cor materializada pela VCL (`Color`) e a pintura Skia devem resolver a mesma superficie efetiva. Em uma troca de tema, nao pode existir um frame com `Color` claro e canvas Skia escuro, ou o inverso. Se o contrato decidir usar a cor do pai real, deve faze-lo de forma segura; se decidir usar papel tematico do container, esse papel deve ser o mesmo em `ParentSurfaceColor` e no `Color` nativo.
+3. O estado customizado tem precedencia: em Container, `FCustom*` precisa sobreviver a `ThemeChanged` (`Container.pas:397-420`); em Grid/Scroll, custom background/border sobrevive (`GridContainer.pas:405-413`; `ScrollContainer.pas:352-363`). A sentinela transparente tambem e um override semantico e deve continuar fallback apos Dark/Light.
+
+### Invariantes de ThemeMode local/inherit
+
+- `dtmInherit`: a troca global Light -> Dark -> Light atualiza tokens, `Color`, chrome Skia, labels/filhos internos e, quando houver, popup. Nenhum custom override e apagado.
+- `dtmDark` e `dtmLight`: respondem imediatamente ao setter local e permanecem pixel-identicos quando o tema global alterna. E aceitavel que o listener execute, mas ele deve resolver pelo `FThemeMode` local e nao vazar o modo global.
+- Container propaga o modo aos `TDACSystemText` internos (`Container.pas:417-420`). Pagination deve propagar a todos os Buttons e Combo internos tanto no setter como no listener (`Pagination.pas:459-483`). Toast/Tooltip devem apenas redesenhar/reposicionar quando necessario, sem mudar Parent, visibilidade manual ou TargetControl durante uma troca de tema.
+- ScrollContainer deve preservar o defer de tema em tab inativa: `FPendingThemeRedraw` so pode recriar a superficie apos pagina ativa (`ScrollContainer.pas:352-383`), sem trocar `ScrollBar.Position`, range ou z-order dos filhos.
+
+### Invariantes de clipping, scroll e composicao
+
+| Superficie | Invariante que nao pode regredir |
+| --- | --- |
+| Container | `AdjustClientRect` preserva borda, padding, header e labels; `FPaintBox` permanece atras dos filhos e nao encobre titulo/subtitulo. `mcaTransparent` nao pinta borda/fundo mas ainda mantem area cliente e hit testing previsiveis. |
+| GridContainer | `ArrangeChildren` ignora `FPaintBox` (`GridContainer.pas:186-202`), nao produz bounds negativos e nao entra em loop de Resize/Align. Padding, gutter, coluna/spans e clipping permanecem coerentes quando a largura diminui. |
+| ScrollContainer | Chrome Skia nunca entra no auto-range do `TScrollBox`, nao desloca filhos nem altera `Horz/VertScrollBar.Position`. Durante roda, drag de barra, WM_SIZE e pixels descobertos, `WM_ERASEBKGND` usa a mesma superficie efetiva e nao deixa flash preto/branco (`ScrollContainer.pas:424-455`). |
+| Feedback | Tooltip limpa somente o seu canvas, ancora abaixo do target, nao fica atras do target e nao tenta reparent/BringToFront no designer ou sem handles (`Feedback.pas:449-471`). Toast e Tooltip mantem bordas arredondadas sem retangulo opaco externo. |
+| Pagination | O chrome fica atras dos Buttons/Combo; `RefreshChildren` conserva PageIndex/PageCount/PageSize, estado enabled e `OnChange` uma vez por acao. Resize/ShowPageSize nao corta botao, combo ou foco. |
+
+### Pontos obrigatorios para o reviewer
+
+1. **Designer safety bloqueante.** Aplicar a regra de MEM-094A tambem ao Lote 2. No estado lido, estes metodos ainda chamam `FPaintBox.SetBounds` antes de uma guarda completa de `csDesigning`, Parent e handles:
+   - `Container.pas:345-359,620-636`;
+   - `GridContainer.pas:351-356,459-468`;
+   - `ScrollContainer.pas:315-320,409-421`;
+   - `Feedback.pas:281-285,497-512`;
+   - `Pagination.pas:323-347,666-680`.
+   O revisor deve exigir que Create/Resize/Loaded/setters possam ocorrer sem Parent e em `csDesigning` sem `SetBounds` de filho Skia, `ClientWidth/ClientHeight`, SendToBack/BringToFront ou Redraw dependente de HWND. Guardar somente o metodo `Redraw` nao basta se o chamador faz layout antes.
+2. **Separacao de semantica.** Procurar `TAlphaColor($00000000)` nos cinco arquivos; depois do lote ele deve existir apenas se encapsulado pelo helper/token correspondente a overlay ou fallback. Nenhum `clWhite`, `clBlack`, `clNone` ou conversao VCL pode contradizer a superficie resolvida.
+3. **Tokens efetivamente consumidos.** Grid e Scroll devem usar seus `GridContainerBorderWidth`/`ScrollContainerBorderWidth`; qualquer novo `AlphaOpaque`, `TransparentSurfaceFallback`, `TooltipCanvasBackground` ou equivalente precisa ser resolvido de `TDACComponentStyle.Resolve(FThemeMode).Tokens.Controls`, nao de um global sem modo.
+4. **Filhos e lifecycle.** Confirmar pares Register/Unregister listener, `FreeNotification` do target Tooltip, exclusao do `FPaintBox` no layout/scroll, e que nenhuma chamada de `ThemeChanged` duplica listeners, altera Parent ou dispara evento de pagina.
+5. **Sem mudanca de regra de dominio.** Page bounds, page sizes, `OnChange`, ScrollBarMode, wheel behavior, `AutoLayout`, Appearance e custom colors devem manter assinatura, defaults e semantics existentes.
+
+### Matriz de aceite da QA fisica
+
+1. Para cada uma das cinco superficies: tres instancias `dtmInherit/dtmDark/dtmLight`; alternar global Light -> Dark -> Light, com e sem override de Background/Border e com fallback transparente. Capturar antes/durante/depois da troca para detectar flash.
+2. Container/Grid: resize minimo/maximo, child controls com focus, spans 1/varios, header ligado/desligado, Appearance suite/dark/transparent. Verificar borda, clipping e bounds de filhos.
+3. Scroll: conteudo maior que viewport, roda, teclado, drag das duas barras, tab inativa->ativa e troca de tema durante scroll. Confirmar posicao/range, superficie descoberta e ausencia de sobreposicao do paintbox.
+4. Feedback: Tooltip alvo em bordas do form, alvo destruido, hover manual/automatico, ThemeMode local e foco do target; Toast nos estados. Validar que nao ha retangulo transparente/opaque indevido nem z-order errado.
+5. Pagination: PageCount 1, 2, 5 e maior que 5; primeira/ultima pagina, ShowPageSize, resize estreito, Tab/Shift+Tab/Enter/Space e troca de tema. Confirmar uma emissao de OnChange por gesto e nenhum corte de controle.
+
+## MEM-DEL-097 - Contrato preventivo e re-review do Lote 3
+
+Status: orientacao estatica preventiva para Badges, Charts, DataGrid, Loading, Progress, ReportViewer, Selectors, StatusBar, SummaryCard e Tabs. Nenhuma fonte foi alterada. O revisor deve aplicar estes invariantes alem da eliminacao de hardcodes de MEM-DEL-095.
+
+### Tokenizacao e ThemeMode
+
+1. Cada paint resolve uma unica palette local por `TDACComponentStyle.Resolve(FThemeMode).Tokens.Controls`; cor, alpha, raio, largura, padding, tipografia e fallback VCL devem sair dela. `AlphaOpaque`, raio de StatusBar/Tabs, BadgeCloseInset e campos especificos acrescentados no Lote 1 nao podem ser substituidos por `255`, `0`, `1`, `8`, `10` ou `clWhite` no painter.
+2. `dtmInherit` acompanha a troca global; `dtmDark`/`dtmLight` ficam estaveis sob troca global. Custom `Background/Border/Accent/CornerRadius` deve ter precedencia documentada e sobreviver a `ThemeChanged`. Atenção especial a Charts (`Charts.pas:585-601`): nao sobrescrever uma cor explicitamente fornecida pelo consumidor ao receber notificacao global.
+3. Inter continua a unica familia interna. Font size/peso/baseline e largura de texto devem vir do token; dados de preview (series de chart, report, valores de card, labels de grid) nao sao tokens visuais.
+4. `ChartPalette` deve ser resolvida pela instancia (`ResolvedChartPalette`), nunca pelo application mode global. Badge/Status/Summary/Progress/Loading usam papeis semanticos do tema, nao aliases globais de `TDACComponentColors`.
+
+### Invariantes de comportamento por familia
+
+| Familia | Invariante de produto/revisao |
+| --- | --- |
+| Badges | Close usa hit-test do icone, nao fecha ao clicar no restante; hover do close nao muda status/caption; disabled nao recebe click e reduz alpha pelos tokens. Pill/soft/outline preservam padding, icone e texto sem clipping. |
+| Charts | `ValuesText` invalido nao levanta excecao; vazio/zero nao divide por zero; Line/Area/Bar/Doughnut preservam ShowGrid/ShowValue/ShowFrame. Angulos `-90/360` e parse de dados sao algoritmo, nao token. |
+| DataGrid | Preservar input nativo de `TDBGrid` (dataset, selecao, teclado, roda, scroll, edicao). Skia so desenha chrome; hover e `OnActionClick` devem disparar somente na acao acertada, sem transformar clique de celula em acao. Preview e dataset ativo usam os mesmos papeis visuais; footer/status/cell bounds nao podem cortar. |
+| Loading | `Active` controla timer; destruir/desativar interrompe animacao. Trocar tema nao reinicia fase, nao multiplica timer/listener e nao deixa superficie antiga. |
+| Progress | Clamp de `Value/Maximum`, linear/circular e texto percentual permanecem; disabled nao se apresenta como interativo. Percentual e angulos de arco sao regra matematica. |
+| ReportViewer | PageIndex/PageCount/Zoom e textos de preview continuam regras de dominio; tokens alteram somente chrome. Toolbar/page nao podem vazar ou cortar em resize. |
+| Selectors | Check/Toggle alternam por clique/Space; Radio preserva exclusividade do grupo; Slider respeita Minimum/Maximum, setas, drag e disabled. Hit area, foco visivel e desenho usam o mesmo retangulo logico; mouse no paintbox e no host nao pode duplicar a acao. |
+| StatusBar | Superficie deliberadamente quadrada deve usar `StatusBarRadius=0` token; textos esquerdo/direito nao colidem, nao cortam e acompanham tema. |
+| SummaryCard | Status define accent/footer sem apagar overrides customizados; icon/title/value/footer respeitam bounds e disabled reduz o conjunto inteiro de forma consistente. |
+| Tabs | Selecao e hit-test usam exatamente `TabRectByOrdinal`/`TabRectForPage`; caption padding nao expande area clicavel. Horizontal/vertical, disabled, hover/focus, ActiveIndex e visibilidade de pagina permanecem sincronizados. `RefreshContentLayout` preserva bounds relativos dos filhos, sem clipping, loop de layout ou foco perdido. |
+
+### Designer safety - bloqueio P1 comum ao lote
+
+O padrao de MEM-094A tambem se aplica aqui. No estado lido, os seguintes caminhos chamam `SetBounds` de `TSkPaintBox` antes de prova completa de Parent/handles/designer: `Badges.pas:612+`; `Charts.pas:612-617`; `DataGrid.pas:889-903`; `Loading.pas:356+`; `Progress.pas:374+`; `ReportViewer.pas:215-219`; `Selectors.pas:541+` e `:912+`; `StatusBar.pas:193-197`; `SummaryCard.pas:438+`. Tabs exige a mesma analise para `UpdateHeaderBounds` (`Tabs.pas:736+`) e realinhamento de filhos (`:526-616`).
+
+Antes de `CreateWnd`, em `csDesigning`, sem Parent ou sem handle do pai, Create/Loaded/Resize/setter nao pode acessar ClientWidth/ClientHeight, chamar SetBounds em filho Skia, SendToBack/BringToFront, `Redraw` de filho ou mutar a hierarquia. Usar Width/Height apenas para calculo inerte e adiar layout de filho ate o ciclo seguro. O revisor deve testar o componente sem Parent e streaming/resize no designer, nao somente build runtime.
+
+### Pontos obrigatorios para o reviewer
+
+1. Busca final nos dez controles: nao aceitar literais visuais ativos identificados em MEM-095; confirmar que os tokens novos sao consumidos pelos pixels, inclusive os alphas enabled/hover de Selectors e fills de Chart/Report/DataGrid.
+2. Validar Register/Unregister listener pareado e que `ThemeChanged` nao duplica timer, DataLink, paintbox ou eventos. No DataGrid, manter `QueueChromeRedraw`/mensagens sem acessar dataset destruido.
+3. Revisar z-order: paintbox fica atras de labels/filhos nativos; em DataGrid nao bloqueia scroll/editor; no header Tabs nao cobre a pagina nem recebe clique fora de TabRect.
+4. Propriedades publicadas precisam surtir efeito ou ser depreciadas de forma compativel: DataGrid CornerRadius, Tabs ContentColor/ShowContentBorder/CornerRadius, Badges CornerRadius e overrides de Chart/Summary.
+
+### Aceite fisico minimo
+
+Executar Light -> Dark -> Light em `dtmInherit/dtmDark/dtmLight`, com screenshots de hover/focus/pressed/disabled. Exercitar grid com dataset e preview, navegacao/acao/roda; Tabs horizontal/vertical com resize e filhos focados; Check/Radio/Toggle/Slider por mouse e teclado; close de Badge; timer Loading; Progress linear/circular; quatro Charts; Report resize/page/zoom. Nenhum estado pode introduzir white flash, clipping, troca indevida de tema local, perda de foco, acao duplicada ou `Control '' has no parent window`.
+
+## MEM-DEL-098 - Contrato preventivo do Lote 4: ButtonEdit, Edit e selectors da Demo
+
+Status: orientacao estatica para o Lote 4 de MEM-DEL-095. Nenhuma fonte foi alterada.
+
+### ButtonEdit: seam, tema e ciclo de vida
+
+1. `TDACButtonEdit` e um unico campo de formulario, nao dois controles navegaveis: o host recebe Tab, `WM_SETFOCUS` entrega o caret a `FEdit` (`ButtonEdit.pas:484-490`), e `FEdit/FButton.TabStop=False` devem permanecer. Clique na acao executa somente `OnButtonClick`; clique/texto/selecoes no editor preservam `OnChange`, OnEnter/OnExit, undo/redo, clipboard, atalhos, IME, mascara, password e acessibilidade da janela nativa.
+2. O seam e regra visual de composicao: `FEdit` desenha a borda externa; a acao direita se alinha ao chrome do editor e usa raio interno zero. Os futuros tokens `ButtonEditDefaultWidth/Height`, `LabeledHeight`, `ActionWidth`, `ActionMinimumWidth`, `ActionCornerRadius`, `SeamGap/Inset` substituem `300/38/60/48/34/0` de `ButtonEdit.pas:157-163,181,399,411,496-497,571-584`. Nao usar tokens do Button generico para decidir a uniao do campo.
+3. `SetThemeMode` deve propagar o mesmo modo a ambos os filhos (`:542-550`). Em `dtmInherit`, filhos acompanham global; em `dtmDark/dtmLight`, ambos ficam no override local. Mudanca de tema nao pode recriar `TMaskEdit`, perder texto, selecao/caret, mask/password, nem gerar `OnChange`/OnEnter/OnExit.
+4. Guard/lifecycle bloqueante: `CreateWnd/Loaded/Resize` chamam `UpdateChildBounds` (`:213-217,363-373`) e este faz `FEdit.SetBounds`, `FButton.SetBounds` e `FButton.Redraw` sem prova completa (`:558-586`). Em designer, sem Parent ou handles, nao executar bounds/redraw de filho Skia/nativo. `SetBounds` tambem chama Redraw dos filhos (`:450-481`). Usar apenas calculo inerte com Width/Height ate parent seguro; depois fazer layout e z-order runtime. Este e o mesmo bloqueio MEM-094A.
+5. Nao alterar o protocolo anti-flicker de `SetBounds` sem prova: WM_SETREDRAW, invalidação da regiao anterior/atual e Redraw apos layout existem para evitar retangulo residual. QA deve cobrir resize rapido, label/helper/counter aparecendo e desaparecendo, e troca de tema durante digitacao.
+
+### Edit e helpers mortos
+
+- `Edit.pas:216-252` contem `DACInputChromeTop`, `DACInputControlHeight` e `DACInputEditorHeight` com numeros antigos, sem chamadores. Remover os tres ou transformá-los em adaptadores de `ResolvedTokens`; nao manter uma segunda especificacao de `Input*`.
+- A implementacao viva ja depende de `ResolvedTokens` para chrome, padding, altura nativa, borda, label/helper e fonte (`Edit.pas:956-1078`). Nenhuma limpeza pode trocar `TMaskEdit` por texto Skia nem quebrar caret, IME, `TextHint`, mask numeric/date/time, password, CharCase, ReadOnly e Enabled.
+- Revisor deve conferir que `UpdateChildBounds`, `UpdatePaintBoxBounds` (`Edit.pas:956-1025`) e `UpdateZOrder` (`:1027-1041`) continuam seguros no designer e que `ThemeChanged` (`:909-921`) atualiza chrome e janela nativa com o mesmo token.
+
+### Matriz Interaction e Demo para Radio/Toggle
+
+1. Streaming: alem de `demoCheck`/`demoSlider`, exigir `demoRadio: TDACRadioButton` e `demoToggle: TDACToggleSwitch` no DFM. Hoje o DFM os declara (`Demo.Principal.dfm:1281-1295`) mas Interaction exige somente Check/Slider (`DACComponentsInteraction.dpr:1610-1615` na revisao atual).
+2. Instancias reais da Demo: obter os quatro controles do form depois de streaming; verificar Parent, Visible, Enabled, ThemeMode e bounds nao vazios. O teste atual de instancias criadas isoladamente/Space continua complementar, nao substituto da galeria.
+3. Comportamento: Tab/Shift+Tab em ordem; Space em Check/Toggle/Radio; exclusividade de dois radios do mesmo grupo; slider por Left/Right, clique e drag; disabled nao muda estado. Mouse entregue pelo paintbox e host deve produzir exatamente uma troca/evento.
+4. Tema/QA: matriz `dtmInherit/dtmDark/dtmLight`, troca global Light->Dark->Light, foco visivel, hover, pressed, selected, disabled, texto Inter, clipping em largura minima e screenshots. Confirmar que Radio/Toggle do DFM nao desaparecem nem ficam atras do chrome.
+
+### Aceite do revisor
+
+- Busca nao deixa os valores seam/default antigos em `ButtonEdit` nem os helpers mortos em `Edit`; excecoes comportamentais sao documentadas, nao numerais visuais.
+- Nenhuma chamada de layout/redraw de filho ocorre sem Parent/handles ou em `csDesigning`; teste explicito sem Parent e designer VCL nao produz `Control '' has no parent window`.
+- Digitar, selecionar, colar, desfazer/refazer, IME, mask/password, Tab e acao direita funcionam apos resize e troca de tema. O commit so segue para QA depois de Interaction cobrir as instancias reais `demoRadio` e `demoToggle`.
+
+## MEM-DEL-099 - Auditoria estatica final pos MEM-095/098
+
+Status: varredura estatica do estado atual em 2026-07-23. Nenhuma fonte foi alterada. Esta e a referencia final provisoria: ainda exige re-review e builds reais.
+
+### P0 - nenhum achado estatico
+
+- Nao ha hex/`TAlphaColor($...)`, `TDACComponentColors.White/Transparent/Alpha`, `clWhite`, alpha `255` ou fonte literal espalhados nos painters de Controls. `TAlphaColor($00000000)` tambem nao resta em Controls.
+- Nao foram encontradas APIs DPI/escala proibidas em Controls/DesignSystem.
+- Inter esta estaticamente centralizada: os controles nativos usam `TDACComponentStyle.FontFamily`/`TDACComponentFontInstaller`, e `SystemText` fixa a familia central (`SystemText.pas:184,222,290`). A fonte/tamanho de Edit, Combo, Date, Memo, Grid e Chart sao tokenizados ou derivados de `ComponentStyle`.
+- O scan de superficies Skia nao encontrou controle visual publico sem `ThemeMode`/modo do dono. Inputs, popup interno, containers, feedback, grid, charts, report, selectors, tabs e cards resolvem tokens pelo `FThemeMode`.
+
+### P1 - ainda viola literalmente "nenhum tamanho/raio visual hardcoded"
+
+1. **Defaults de tamanho de designer ainda sao locais.** Mesmo sem contaminarem o painter, sao tamanhos visuais iniciais e violam o objetivo se ele for estrito. Arquivos/linhas: `Badges.pas:150-151` (`92x28`), `Charts.pas:148-149` (`260x170`), `Container.pas:166-167` (`460x200`), `DataGrid.pas:217-218` (`760x170`), `Feedback.pas:157-158,298-299,318-319`, `GridContainer.pas:105-106`, `Loading.pas:97-98`, `Pagination.pas:125-126`, `Progress.pas:112-113`, `ReportViewer.pas:75-76`, `ScrollContainer.pas:107-108`, `Selectors.pas:222-223,591-592,599-600`, `SkiaControl.pas:82-83`, `StatusBar.pas:71`, `SummaryCard.pas:117-118` e `Tabs.pas:390-391`. Migrar para `DesignDefaultWidth/Height` por familia ou declarar formalmente uma excecao de Object Inspector; nao deixar ambiguidade.
+2. **Raio ativo de Badge/Tabs nao vem de token.** `Badges.pas:159` inicializa `FCornerRadius=10`, que o painter usa; `Tabs.pas:398` inicializa `FCornerRadius=8`, tambem usado no header. Resolver por `BadgeRadius` e `TabsContentRadius` e preservar override publicado.
+3. **Designer safety ainda bloqueia Button.** `Button.pas:1003-1023` faz `FPaintBox.SetBounds` sem guarda de `csDesigning`, Parent e handles; `Resize` o chama. MEM-094A continua pendente ate proteger o caminho completo e provar designer/streaming sem `Control '' has no parent window`.
+
+### P2 - contratos/validacoes ainda pendentes
+
+- `DataGrid.pas:122,219,807` ainda publica/guarda `CornerRadius=8`, enquanto o painter usa token DataGrid; conectar ou depreciar a propriedade.
+- `GridContainer.pas:462` mantem minimo visual `24` de RowHeight; converter em token/contrato de layout. Valores `0.5`, `/2`, angulos de arco, limites de pagina/zoom/slider, teclas/WM, timer e dados de preview sao matematica ou dominio, nao tokens de tema.
+- `Container.pas:385,438` usa `clNone` exclusivamente para o contrato de superficie transparente; e sentinela VCL aceitavel se o Skia e `Color` resolverem o mesmo fallback. Revisor deve confirmar que nao e usado para estado visual comum.
+- Interaction ainda nao exige as instancias DFM `demoRadio` e `demoToggle` (busca atual encontra apenas `demoCheck`/`demoSlider` em `Tests/DACComponentsInteraction.dpr:1610-1615`). Os testes isolados nao substituem streaming/layout da Demo.
+- Builds reais nao foram executados nesta auditoria. Estatica de package: runtime nao referencia FMX/DesignIntf; design requer `designide` e `DACSkiaComponentsRuntime` (`Package/DACSkiaComponentsDesign.dpk:7`; `.dproj:37,60`); runtime inclui ControlTokens, ButtonEdit e DateTimePickerPopup (`Runtime.dpk:27,50-51`; `Runtime.dproj:99`). Compilar runtime, design package, Demo e Interaction antes de aprovar.
+
+### Sentinelas e contratos tecnicos seguros
+
+- Seeds hex/alpha em `ColorTokens`, `ControlTokens`, `ChartPalette`, `CardTokens` e `InteractionTokens` sao tokens permitidos, nao hardcodes de controle.
+- Transparencia de canvas/fallback encapsulada em token/helper e `clNone` apenas para `mcaTransparent` sao tecnicos; nao os substituir por cor de tema nem reintroduzir alpha literal em painter.
+- Pixels de snap (`0.5`), centralizacao por `/2`, limites de algoritmo e `Max(0, ...)` nao sao spacing/radius de design. Nao introduzir DPI para altera-los.
+
+### Fechamento necessario
+
+1. Resolver os tres P1; 2. adicionar Radio/Toggle reais ao Interaction; 3. re-review do Button e dos contracts P2; 4. build runtime/design/Demo/Interaction; 5. QA fisica Dark/Light/local-inherit, designer, foco/IME, grid/tabs/selectors, clipping e scroll. Ate entao a conformidade e estatica parcial, nao aprovacao de entrega.
+
+## MEM-DEL-100 - DBGrid e revalidacao visual de ButtonEdit/ComboBox/DateTimePicker
+
+Status: leitura visual de `assets/DBGrid.png` (23/07/2026 07:17) e das versoes atuais de `ButtonEdit.png`, `Combobox.png`, `DateTimepicker.png` e `DateTimepickerAberto.png`. Nenhuma fonte foi alterada. Os assets mais novos prevalecem sobre inferencias anteriores quando houver conflito.
+
+### DBGrid - contrato extraido do asset
+
+- Densidade: **SM** linha 32/header 36/fonte 12; **MD** linha 36/header 40/fonte 13 (padrao); **LG** linha 44/header 44/fonte 14. Grid base 8, padding de celula H12/V8, gap toolbar-grid 12 e margem de bloco 16. Borda 1; raio externo 0--4 conforme container; icones de acao centralizados em 16.
+- Anatomia: indicador de selecao, cabecalho com titulo/ordenacao/filtro, celula, zebra, hover, linha selecionada, celula editando, acoes, scrollbar horizontal, footer/status e paginacao opcional. Textos sao esquerda por padrao, numeros direita, datas centralizadas; cabecalho permanece visivel; usar zebra para escaneabilidade; nao sobrecarregar com linhas fortes.
+- Estados: default, hover da linha, focus da celula, selected da linha, ativo editando, success, error de linha/celula, disabled, loading e vazio. Estados devem ter forma/icone/texto alem de cor.
+- Paleta dark declarada no asset: header `#0F1F16`, row base `#13261C`, zebra `#182C21`, hover `#1E3627`, selected `#1F4D33`, borda `#274233`, texto `#E6F2EA`, secundario `#A6B7AE`, disabled `#5E6E63`, success `#2ECC71`, warning `#F5B528`, error `#E74C3C`, focus outline `#3DE184`, scrollbar `#2C3F34`. As superficies claras aplicam os mesmos papeis, nao o mesmo hex.
+
+### De/para DBGrid -> ControlTokens/DataGrid/Interaction
+
+| Referencia DBGrid | Estado atual / acao necessaria |
+| --- | --- |
+| SM/MD/LG | `TDACControlTokens` hoje tem um unico `DataGridHeaderHeight=48`, `DataGridRowHeight=46`, texto/preview separados (`ControlTokens.pas:1039-1053,1086`), divergentes do MD 40/36 do asset. Criar `TDACDataGridDensity` ou records SM/MD/LG para header, row, font, padding e action size; MD deve ser default. |
+| Paleta e estados | Manter papeis existentes `DataGridHeader/Background/RowAlternate/Selection/Hover/Status/Action/Footer`, mas completar `DataGridRowBase`, `DataGridFocusOutline`, `DataGridDisabledText`, `DataGridScrollbar`, `DataGridWarning/Error/Success` e, se necessario, cores de editor ativo. Preencher Dark/Light nos tokens, nao em `DataGrid.pas`. |
+| Layout | Substituir `DataGridCellInset=14` pelo par H12/V8; separar `DataGridHeaderCellPadding`, `DataGridCellPaddingHorizontal/Vertical`, `DataGridActionIconSize=16` e `DataGridGridUnit=8`. Footer/status/paginacao devem compartilhar os mesmos gaps. |
+| Comportamento | `TDACDataGrid` continua `TDBGrid`: dataset, editacao, teclado, roda, selecao e acessibilidade nativos. Skia pinta somente chrome, hover, status e acoes; action hit-test nao pode capturar clique da celula/editacao. |
+| Interaction | Cobrir densidades SM/MD/LG em preview e dataset, zebra, hover, cell focus, selected, editor ativo, footer, horizontal scroll, loading/vazio, erro/success, ordenacao/filtro e acao. Capturas Dark/Light e assert de `ThemeMode` local/inherit. |
+
+### Campos atuais - especificacao visual consolidada
+
+**ButtonEdit.** Campo composto com border 1, raio externo 12, focus ring verde externo 2; label->campo 6 e campo->helper 6; grid 8. SM/MD/LG: altura 32/40/48, padding H12/16/20, texto 13/14/15, icone de acao 16/18/20. A acao fica a direita, texto verticalmente centrado, divisor interno, clear opcional e gap icone-texto 8. Nao combinar dois icones competitivos sem hierarquia. O asset estabelece MD 40; `ButtonEditDefaultHeight` atual em `ControlTokens.pas:832` e o uso no construtor devem ser comparados a esse valor (na leitura atual ainda e 38). Multi-acao, lookup, quantidade e read-only exigem a mesma borda externa unica.
+
+**ComboBox.** SM/MD/LG sao 32/40/48, H12/16/20, icone 16/18/20 e texto 13/14/15; MD tem V10, raio 8, borda 1, focus externo 2 e trigger 18. Icone lider e opcional, trigger sempre a direita, gap icone-texto 8. Dropdown alinha na largura do campo, item selecionado possui check, hover/selected distintos e scroll quando necessario. Roles dark visiveis: fundo `#0F1813`, borda default/hover, texto principal/secundario, placeholder/helper, popup, hover option, selected option, disabled, error, success e focus; manter os valores concretos no bloco Dark/Light dos `ComboBox*` tokens, nao em popup/control.
+
+**DateTimePicker.** MD 40 e mesmas escalas SM/MD/LG 32/40/48; raio 8, borda 1, focus externo 2, padding H16/V10 no MD. Icones calendario e relogio sao 18 no MD (16/20 SM/LG), gap entre icones 8; trigger a direita; clear opcional somente com valor; nao duplicar icones concorrentes. Roles incluem fundo DateTime, borda default/hover/focus, texto/placeholder/helper, disabled, error/success e popup. `DateTimepickerAberto.png` acrescenta popup com cabecalho mes/ano, navegacao, dias da semana, dia selecionado, hoje, intervalo, hora/minuto/segundos, acoes Hoje/Limpar/OK, foco, invalido/futuro/passado/bloqueado e responsividade. Todos ja possuem campos `DateTime*`/`DateTimePopup*` em `ControlTokens.pas:574-663`; validar consumo, nao criar paleta paralela.
+
+### ThemeMode, Inter e QA
+
+- ButtonEdit deve propagar o modo aos filhos; ComboBox/DateTime e popup resolvem tokens pela instancia/dono. Em global Light->Dark->Light, `dtmInherit` muda e `dtmDark/dtmLight` permanecem; popup aberto acompanha somente o dono correto sem recriar/perder foco.
+- Inter: fonte 13/14/15 e 12/13/14 do grid sao tamanhos visuais de token; os editores continuam nativos para caret/IME/hinting. Verificar Inter em header/celula/footer, labels, helper e popup.
+- Interaction: ButtonEdit com texto, clear, acao, lookup/multi-acao, Tab/IME/clipboard; Combo dropdown keyboard/mouse, check, scroll e click externo/Esc; Date popup Enter/Esc/Tab/setas/PageUp/PageDown, intervalo, hora e clear/OK. Nenhum caso pode cortar botoes, duplicar icones, roubar foco do editor ou deixar popup em tema diferente.
+
+## MEM-DEL-101 - Resolucao de tema por ancestral/superficie para Tabs e campos
+
+Status: contrato arquitetural para o bloqueio visual reportado: `TDACTabs`/conteudo branco ganha borda indevida e filhos `dtmInherit` permanecem Dark sobre `TTabSheet` claro. Nenhuma fonte foi alterada.
+
+### Regra de precedencia (obrigatoria)
+
+1. `ThemeMode=dtmDark` ou `dtmLight` publicado no proprio controle vence sempre. Nenhum pai claro, luminancia ou tema global pode reescrever esse modo.
+2. Para `dtmInherit`, resolver nesta ordem: (a) override explicito de superficie do proprio componente; (b) superficie efetiva do ancestral hospedeiro mais proximo; (c) modo explicito de um ancestral DAC que realmente hospeda a superficie; (d) tema global da aplicacao.
+3. A resolucao por superficie nao muda a propriedade publicada `ThemeMode`: ela devolve um **modo efetivo** para painter, janela nativa e popup. Assim, se o `TTabSheet` troca de claro para escuro, os filhos `dtmInherit` acompanham sem streaming DFM artificial e sem converter-se em override local.
+
+### Resolver unico proposto
+
+Centralizar em DesignSystem, por exemplo `TDACThemeManager.ResolveForSurface(AControl, ARequestedMode)`. O algoritmo deve subir somente a cadeia de `Parent` de controles que possam ser superficie (`TCustomControl`, `TWinControl`, `TTabSheet`, containers DAC), nunca ler cor de label/edit filho como se fosse fundo.
+
+- Primeiro reconhecer papeis conhecidos do token: `Input/Popup/Container/Tab content` claros e escuros retornam diretamente o modo correspondente.
+- Para cor VCL customizada desconhecida, obter a cor efetiva respeitando `ParentColor`/`clNone` e calcular luminancia relativa. Usar limiares com zona neutra (por exemplo claro >= 0.60, escuro <= 0.40); na faixa ambigua manter o modo resolvido do ancestral/global. Os limiares sao regra semantica de superficie, nao DPI e nao tamanho visual.
+- Um ancestral DAC com `ThemeMode` explicito e superficie opaca e uma fonte forte. Um `TTabSheet.Color=clWhite`/fundo claro imediatamente hospedeiro e fonte ainda mais especifica para seus filhos `dtmInherit`.
+- Cachear o resultado efetivo por controle e invalidar somente quando mudarem Parent, `Color`/`ParentColor`, ThemeMode, Appearance/ContentColor, pagina ativa ou tema global. A funcao e somente leitura: nunca chama `SetThemeMode`, nao escreve `Color` do ancestral, nao notifica o manager e nao altera DPI.
+
+### Contrato especifico de Tabs/TTabSheet
+
+- Header e conteudo sao duas superficies diferentes. `TDACTabs.ThemeMode=dtmDark` explicitamente configurado mantem header/pills/focus Dark, mesmo quando a pagina ativa e branca. Nao usar a cor do `TTabSheet` para recalcular o header explicitamente dark.
+- Para filhos da pagina ativa, `dtmInherit` resolve contra o `TTabSheet` claro/escuro. Edit, Memo, Combo, DateTimePicker, ButtonEdit e demais campos passam a usar Light quando o conteudo efetivo e branco, preservando caret/IME e popup no mesmo modo da pagina.
+- O fundo do content pertence ao `TTabSheet`; o header nao deve preencher ou bordear a area de conteudo por padrao. `ShowContentBorder=False` ou ContentSurface=inherit/transparente significa desenhar somente header. Se uma borda de conteudo for explicitamente solicitada, ela usa token da superficie efetiva e nao cria aro escuro em pagina branca.
+- `ContentColor` explicita continua tendo precedencia para a superficie da pagina; se for transparente/`clNone`, herda do `TTabSheet`/ancestral. `TabsContentRadius` e `ShowContentBorder` nao podem introduzir fill branco ou borda apenas por trocar o tema global.
+
+### Antiloop e lifecycle
+
+- `ThemeChanged` global apenas invalida o cache dos controles `dtmInherit`; controles com modo explicito podem ignorar a mudanca depois de verificar filhos/popup necessarios.
+- `CM_PARENTCHANGED`, `CM_COLORCHANGED`, `CM_VISIBLECHANGED`, troca de pagina e setters de Appearance/ContentColor invalidam cache local e chamam uma unica atualizacao de chrome. Proteger com flag de reentrancia (`FResolvingSurfaceTheme`) e comparar modo efetivo anterior/novo antes de `Redraw`.
+- Nunca criar handle, chamar `SetBounds`, `SendToBack` ou `Redraw` de filho durante a consulta do ancestral. O fluxo deve continuar obedecendo as guardas de designer safety MEM-094A/096/097.
+
+### Matriz de aceite
+
+1. Tabs `dtmDark` com header dark e `TTabSheet.Color=clWhite`: header permanece dark; content nao ganha borda/fill indevido; Edit/Memo/ButtonEdit/Combo/Date `dtmInherit` ficam Light; caret, texto, label/helper e popup ficam legiveis.
+2. Mesma pagina branca com filho `dtmDark`: filho fica Dark. Em pagina dark com filho `dtmLight`: filho fica Light. Esses overrides nao mudam apos global Light->Dark->Light.
+3. Tabs `dtmInherit`: trocar cor da pagina clara/dark e tema global, alternar paginas e redimensionar; verificar que somente filhos afetados redesenham, sem loop, flicker, perda de foco, borda fantasma ou popup com tema errado.
+4. Conteudo com `ContentColor` explicita clara/escura/transparente e `ShowContentBorder` ligado/desligado; confirmar precedencia, clipping e que a luminancia nunca consulta cor de texto/icone.
+5. Streaming DFM e designer: abrir Tabs sem parent, atribuir cor/ThemeMode e criar paginas antes/depois de parent sem excecao. Registrar screenshots Dark-header/Light-content e Light-header/Dark-content.
+
+## MEM-DEL-103 - Auditoria final estrita pos DBGrid/MEM-102
+
+Status: auditoria estatica do checkout compartilhado em 2026-07-23, sem alterar fontes. Resultado arquitetural: **nao conforme** com o objetivo literal de zero hardcode visual e `ThemeMode` por superficie em toda a suite. Nao ha P0 estatico nem evidencia de quebra do build corrente, mas os P1 abaixo impedem aprovacao final.
+
+### P0 - nenhum achado
+
+- Ha artefatos Debug atuais posteriores as mudancas: runtime BPL `09:02:28`, design BPL `09:02:29`, Demo EXE `08:53:26`, Interaction EXE `09:00:59` e Smoke EXE `09:02:42`. Isto prova compilacao dos artefatos, nao execucao/exit code nem aprovacao visual.
+- Runtime permanece VCL/Skia sem `DesignIntf`, `DesignEditors`, `ToolsAPI` ou `FMX`; `DesignIntf` aparece somente em `Source/DesignTime/DAC.Components.Design.Register.pas:11`. O pacote design requer apenas `rtl`, `designide` e runtime e registra `TDACDataGrid`.
+- Nao restam `DAC.Components.Dpi`, `ChangeScale`, `ScaleForPPI` ou `CurrentPPI` em Source/Package/Tests. `TDACDataGrid.Pixels` e identidade (`DataGrid.pas:1097-1100`). O unico metadado DPI encontrado e `PixelsPerInch=96` do DFM da Demo (`Demo.Principal.dfm:16`), sem politica de escala no codigo.
+- Fonte esta centralizada em `DACComponentFontFamily='Inter'` (`Fonts.pas:9`). Os unicos nomes serializados na Demo tambem sao `Inter`; nenhum segundo font family foi encontrado.
+
+### P1 - bloqueios reais
+
+1. **`dtmInherit` por superficie nao e transversal.** Somente Button, ButtonEdit, Edit, ComboBox, DateTimePicker, Memo, SystemText e parte de Tabs chamam `ResolveForSurface`. Badges, Charts, Container, DataGrid, Feedback, GridContainer, Loading, Pagination, Progress, ReportViewer, ScrollContainer, Selectors, SkiaControl, StatusBar e SummaryCard continuam consumindo `Resolve(FThemeMode)` e portanto seguem o global quando `dtmInherit`, mesmo dentro de superficie oposta. Exemplo bloqueante no DBGrid: todos os tokens sao resolvidos globalmente em `DataGrid.pas:284-359,473,506,675,710,785`; o Interaction valida apenas global Light/Dark em `DACComponentsInteraction.dpr:3152-3176`, nao DataGrid herdado de `TTabSheet`/container claro.
+2. **O resolver atual nao implementa integralmente MEM-101.** `ResolveForSurface` testa `BackgroundColor` inferido antes do `ThemeMode` explicito do ancestral (`ComponentStyle.pas:234-241`), reconhece superficie generica somente para classes `TDAC*` com propriedade `BackgroundColor` (`:137-158`) ou `TTabSheet`, e usa corte binario de luminancia 128 sem zona neutra (`:105-134`). Assim, `TPanel`/outro host VCL claro nao participa, e uma cor customizada pode vencer indevidamente o modo explicito do ancestral.
+3. **Ainda existem defaults e geometrias visuais locais em producao.** Construtores usam numeros em Badges `150-151`, Charts `148-149`, Container `166-167`, DataGrid `235-237`, Feedback `157-158,298-299,318-319`, GridContainer `105-106`, Loading `97-98`, Pagination `125-126`, Progress `112-113`, ReportViewer `75-76`, ScrollContainer `107-108`, Selectors `222-223,591-592,599-600`, SkiaControl `82-83`, StatusBar `71`, SummaryCard `117-118` e Tabs `403-411`. Ha ainda `DateTimePicker.pas:422` com inset de popup `20`, `GridContainer.pas:250` com minimo `48` e `:462` com minimo de linha `24`.
+4. **Defaults publicados nao estao tokenizados por constante, salvo Button.** `TDACButton.CornerRadius` usa `DACButtonDefaultCornerRadius` e o mesmo valor alimenta `ButtonDefaultCornerRadius` (`Button.pas:130-131`; `ControlTokens.pas:11,836`). Os demais visuais continuam como literais nos directives: ButtonEdit `48/8`, Container `10/1/16/10/42`, Combo/Edit/Date/Memo/Scroll/GridContainer/DataGrid/Tabs `8`, Badge/SummaryCard `10`, GridContainer `16/24/64`. Criar constantes compile-time por contrato publicado e inicializar os tokens a partir delas; o valor do directive e o valor do construtor devem permanecer identicos.
+5. **`TDACDataGrid.CornerRadius` e propriedade publicada inerte.** Ela armazena `FCornerRadius` (`DataGrid.pas:52,138,237,1009-1012`), mas o painter usa sempre `LTokens.DataGridCornerRadius` (`:517-524,679-684,714-719`). Alterar o Object Inspector nao muda o grid. Conectar a propriedade ao painter ou removê-la/depreca-la com migracao de streaming.
+6. **Opacidade ainda possui literais fora dos tokens.** `BackgroundPainter.pas:74,80`, `BorderPainter.pas:96,101,106`, `IconPainter.pas:86` e defaults publicos do renderer `Renderer.pas:34,37` usam `255`; `BackgroundPainter.pas:108` usa `0`. Para o objetivo literal, consumir `AlphaOpaque`/`TransparentSurfaceFallback` ou constantes semanticas centrais.
+7. **Manifesto runtime DPK/DPROJ diverge.** O DPK contem 56 units, o DPROJ lista 54; faltam `DAC.Components.DesignSystem.ControlTokens` e `DAC.Components.Controls.DateTimePickerPopup` no `ItemGroup` do `.dproj`. O build atual resolve as units pelo DPK/search path, mas a fonte de verdade do projeto/IDE esta incompleta e pode quebrar manutencao, navegacao ou build tooling. Design DPK/DPROJ esta 1:1.
+8. **A Demo continua sendo uma segunda especificacao visual literal.** `Demo.Principal.dfm` serializa extensivamente Width/Height, `FontSize`, `CornerRadius`, `ContentPadding`, `Gutter` e cores numericas; exemplos concentrados em `:21-660,672-1188,1210-1633`. Layout absoluto de composicao pode ser excecao documentada, mas cores, raios, tipografia e spacing sem papeis/componentes de token contradizem o objetivo estrito e podem divergir de Light/Dark.
+
+### P2 - qualidade de prova e manutencao
+
+- Interaction tem cobertura ampla de DataGrid, tema dos campos, popup, foco/teclado e instancias `demoRadio`/`demoToggle`, mas repete os numeros do asset em assertions (`DACComponentsInteraction.dpr:3182-3189,3233-3234`) em vez de comparar exclusivamente com os tokens SM/MD/LG. Manter uma unica verificacao documental de valores e usar tokens nas provas comportamentais.
+- A suite testa `ResolveForSurface` em inputs/Tabs (`DACComponentsInteraction.dpr:1992,2023,2127,2190,2350,2462-2469`), mas nao possui matriz equivalente para todas as 15 familias P1, nem hosts VCL genericos, cor neutra, precedencia de ancestral explicito versus cor customizada ou DataGrid em pagina clara sob global dark.
+- Os EXEs/BPLs presentes nao trazem log/exit code corrente do Interaction/Smoke nesta auditoria. Antes do PR, executar runtime, design, Demo, Interaction e Smoke com captura de saida, e repetir QA fisica de designer, Light/Dark/inherit, foco/IME, clipping, scroll e DBGrid.
+
+### Assets pos DBGrid
+
+- Inventario permanece com 16 arquivos: `dashboarrd.png`, `design_system_componentes_agricolas.docx`, `botões.png`, `input.png`, `ButtonEdit.png`, `DateTimepicker.png`, `DateTimepickerAberto.png`, `Combobox.png`, `Tabs.png`, `radiobutton.png`, `checkbox.png`, `Design system griid.png`, `scrolls.png`, `Graficos.png`, `Graficos Avancados.png` e `DBGrid.png`.
+- `DBGrid.png` e o mais novo (`2026-07-23 07:17:21`). **Nenhum asset foi adicionado ou modificado depois dele.**
+
+### Ordem de saneamento
+
+1. Tornar `ResolveForSurface(Self, FThemeMode)` o caminho unico de tokens/paleta para todas as familias, corrigir precedencia/hosts/zona neutra e expandir a matriz Interaction. 2. Corrigir `TDACDataGrid.CornerRadius`. 3. Extrair construtores, directives publicados, insets/minimos e alpha para contratos tokenizados/constantes. 4. Sincronizar DPK/DPROJ. 5. Remover a segunda especificacao visual da Demo ou documentar apenas geometria de composicao como excecao. 6. Rebuild/run/QA antes de review final.
+
+## MEM-DEL-104 - Plano exato do Lote B: defaults e literais visuais
+
+Status: plano fechado sobre o worktree compartilhado de 2026-07-23 10:27, ja incluindo as alteracoes de tema/superficie do Lote A ate `Tabs.pas` 10:27. Nenhuma fonte foi alterada por esta analise. Este lote trata somente tokenizacao/defaults; nao deve reabrir tema, DPI, comportamento nativo ou assets.
+
+### Regra de classificacao
+
+- **Vai para token/constante semantica:** qualquer numero que determine tamanho inicial de componente, padding, gutter, row/header height, raio, borda, minimo visual, hit-area visual, opacidade ou baseline tipografica.
+- **Permanece no algoritmo:** origem `0,0`, limites `Max(0, ...)`, centro `/2`, indice `+1/-1`, percentual, quantidade de colunas, pagina/range/zoom, minuto/data, angulos de arco e estado sentinela. Esses valores nao escolhem a aparencia; expressam matematica, dominio ou protocolo VCL.
+- **DFM:** `Left/Top/Width/Height` da composicao da Demo sao layout concreto, nao tokens de controle. Cores, fontes, raio, padding, gutter e row height serializados sao estilo e devem desaparecer ou vir de papel semantico.
+- Valores compartilhados de geometria ficam em `ConfigureMetrics` de `ControlTokens`, uma unica vez para Light/Dark. Defaults publicados usam constantes compile-time; o campo do token deve ser inicializado pela mesma constante para impedir drift.
+
+### B1 - contratos centrais
+
+**`Source/DesignSystem/DAC.Components.DesignSystem.ControlTokens.pas`.**
+
+1. Manter os ja corretos `DACButtonDefaultCornerRadius=12` e `DACDataGridDefaultCornerRadius=8`.
+2. Adicionar constantes publicas para cada directive visual ainda literal: `DACButtonEditDefaultButtonWidth=48`, `DACButtonEditDefaultCornerRadius=8`, `DACEditDefaultCornerRadius=8`, `DACComboBoxDefaultCornerRadius=8`, `DACDateTimeDefaultCornerRadius=8`, `DACMemoDefaultCornerRadius=8`, `DACContainerDefaultRadius=10`, `DACContainerDefaultBorderWidth=1`, `DACContainerDefaultPadding=16`, `DACContainerDefaultHeaderHeight=42`, `DACGridContainerDefaultRadius=8`, `DACGridContainerDefaultGutter=16`, `DACGridContainerDefaultPadding=24`, `DACGridContainerDefaultRowHeight=64`, `DACBadgeDefaultCornerRadius=10`, `DACScrollContainerDefaultCornerRadius=8`, `DACSummaryCardDefaultCornerRadius=10` e `DACTabsDefaultCornerRadius=8`.
+3. Adicionar campos de tamanho inicial: `BadgeDefaultWidth/Height=92/28`, `ChartDefaultWidth/Height=260/170`, `ContainerDefaultWidth/Height=460/200`, `DataGridDefaultWidth/Height=760/170`, `ToastDefaultWidth/Height=260/72`, `ModalDefaultWidth/Height=320/180`, `TooltipDefaultWidth/Height=220/36`, `GridContainerDefaultWidth/Height=640/320`, `LoadingDefaultWidth/Height=160/48`, `PaginationDefaultWidth/Height=520/40`, `ProgressDefaultWidth/Height=260/28`, `ReportViewerDefaultWidth/Height=720/360`, `ScrollContainerDefaultWidth/Height=360/220`, `SelectorDefaultWidth/Height=180/28`, `ToggleDefaultWidth/Height=190/30`, `SliderDefaultWidth/Height=260/36`, `SkiaControlDefaultWidth/Height=280/160`, `StatusBarDefaultWidth=620`, `SummaryCardDefaultWidth/Height=150/116` e `TabsDefaultWidth/Height=420/180`. `StatusBarHeight` ja existe e continua sendo a altura default.
+4. Adicionar `GridContainerMinimumChildWidth=48` e `GridContainerMinimumRowHeight=24`.
+5. Fazer os campos existentes `ButtonEditDefaultButtonWidth`, `ButtonEditDefaultCornerRadius`, `InputRadius`, `ComboBoxDefaultCornerRadius`, `DateTimeDefaultCornerRadius`, `MemoCornerRadius`, `ContainerRadius/BorderWidth/Padding/HeaderHeight`, `GridContainerRadius/Gutter/Padding/RowHeight`, `BadgeRadius`, `ScrollContainerRadius`, `SummaryCardRadius` e `TabsContentRadius` receberem as novas constantes, nunca repetirem o numeral.
+
+**`Source/DesignSystem/DAC.Components.DesignSystem.OpacityTokens.pas`.**
+
+- Adicionar constantes semanticas `DACOpacityTransparent=0` e `DACOpacityOpaque=255`. `ConfigureMetrics.AlphaOpaque` e qualquer alpha full/none devem apontar para elas. O divisor 255 da composicao ARGB e aritmetica de normalizacao e pode usar a mesma constante por legibilidade, mas nao e token de tema.
+
+### B2 - defaults publicados por arquivo
+
+| Arquivo | Directive atual | Alteracao exata |
+| --- | --- | --- |
+| `ButtonEdit.pas:105,108` | `ButtonWidth default 48`; `CornerRadius default 8` | usar `DACButtonEditDefaultButtonWidth` e `DACButtonEditDefaultCornerRadius` |
+| `Edit.pas:160` | `CornerRadius default 8` | usar `DACEditDefaultCornerRadius` |
+| `ComboBox.pas:140` | `CornerRadius default 8` | usar `DACComboBoxDefaultCornerRadius` |
+| `DateTimePicker.pas:111` | `CornerRadius default 8` | usar `DACDateTimeDefaultCornerRadius` |
+| `Memo.pas:96` | `CornerRadius default 8` | usar `DACMemoDefaultCornerRadius` |
+| `Container.pas:104-111` | raio `10`, borda `1`, padding `16`, corner `10`, header `42` | usar as quatro constantes `DACContainerDefault*`; raio/corner compartilham `DACContainerDefaultRadius` |
+| `GridContainer.pas:77-85` | raio `8`, gutter `16`, padding `24`, row `64` | usar as quatro constantes `DACGridContainerDefault*` |
+| `Badges.pas:112` | `CornerRadius default 10` | usar `DACBadgeDefaultCornerRadius` |
+| `ScrollContainer.pas:82` | `CornerRadius default 8` | usar `DACScrollContainerDefaultCornerRadius` |
+| `SummaryCard.pas:82` | `CornerRadius default 10` | usar `DACSummaryCardDefaultCornerRadius` |
+| `Tabs.pas:111` | `CornerRadius default 8` | usar `DACTabsDefaultCornerRadius` |
+
+`Button.pas:130-131` e `DataGrid.pas:140-141` ja usam constantes e sao sentinelas de regressao. `IconSize default 0`, `MaxLength`, `DropDownCount`, `TimeStepMinutes`, paginas, zoom, ranges e valores nao sao dimensoes visuais resolvidas: permanecem como contrato de dominio/sentinela.
+
+### B3 - construtores e minimos por arquivo
+
+| Arquivo/linhas atuais | Literais a remover | Tokens consumidores |
+| --- | --- | --- |
+| `Badges.pas:150-151,159` | `92x28`, raio `10` | `BadgeDefaultWidth/Height`, `BadgeRadius` inicializado pela constante |
+| `Charts.pas:149-150` | `260x170` | `ChartDefaultWidth/Height` |
+| `Container.pas:167-168` | `460x200` | `ContainerDefaultWidth/Height` |
+| `DataGrid.pas:237-238` | `760x170` | `DataGridDefaultWidth/Height`; CornerRadius ja esta conectado por `PaintCornerRadius` e nao deve regredir |
+| `Feedback.pas:157-158` | Toast `260x72` | `ToastDefaultWidth/Height` |
+| `Feedback.pas:298-299` | Modal `320x180` | `ModalDefaultWidth/Height` |
+| `Feedback.pas:318-319` | Tooltip `220x36` | `TooltipDefaultWidth/Height` |
+| `GridContainer.pas:106-107,251,463` | `640x320`, child min `48`, row min `24` | defaults e `GridContainerMinimumChildWidth/MinimumRowHeight` |
+| `Loading.pas:97-98` | `160x48` | `LoadingDefaultWidth/Height` |
+| `Pagination.pas:125-126` | `520x40` | `PaginationDefaultWidth/Height`; `PageSize=10` e dominio |
+| `Progress.pas:112-113` | `260x28` | `ProgressDefaultWidth/Height`; `Maximum=100` e dominio |
+| `ReportViewer.pas:75-76` | `720x360` | `ReportViewerDefaultWidth/Height` |
+| `ScrollContainer.pas:108-109` | `360x220` | `ScrollContainerDefaultWidth/Height` |
+| `Selectors.pas:222-223` | base Check/Radio `180x28` | `SelectorDefaultWidth/Height` |
+| `Selectors.pas:591-592` | Toggle `190x30` | `ToggleDefaultWidth/Height` |
+| `Selectors.pas:599-600` | Slider `260x36` | `SliderDefaultWidth/Height` |
+| `SkiaControl.pas:82-83` | `280x160` | `SkiaControlDefaultWidth/Height` |
+| `StatusBar.pas:71` | largura `620` | `StatusBarDefaultWidth`; manter `StatusBarHeight` existente |
+| `SummaryCard.pas:118-119` | `150x116` | `SummaryCardDefaultWidth/Height` |
+| `Tabs.pas:395-396,403` | `420x180`, raio `8` | `TabsDefaultWidth/Height`, `DACTabsDefaultCornerRadius` |
+
+Button, ButtonEdit, Edit, ComboBox, DateTimePicker e Memo ja leem dimensoes iniciais de `ResolvedTokens`; nao duplicar campos nem voltar a numeros locais.
+
+### B4 - opacidade, hit area e tipografia
+
+- `Renderer.pas:34,37,269,294`: substituir alpha default/paint `255` por `DACOpacityOpaque`. `Renderer.pas:151,194` pode usar a constante como denominador tecnico. Em `:293`, eliminar o baseline `ASize*0.36`: calcular a baseline vertical com metricas reais de `ISkFont`; nao transformar uma aproximacao dependente de Inter em spacing generico.
+- `BackgroundPainter.pas:74,80,108`, `BorderPainter.pas:96,101,106` e `IconPainter.pas:86`: usar `DACOpacityOpaque/Transparent` ou o papel de opacidade do tema. Radius zero de `BackgroundPainter.pas:73` e ausencia geometrica, nao raio visual de componente; pode permanecer como zero semantico/named constant.
+- `DateTimePicker.pas:419-424`: remover coordenadas de teste `20/100/Width-20/Height-10`. Criar `SimulateFooterAction` no popup e resolver os tres hit rects com `DateTimePopupInset`, `FooterHeight`, `FooterActionWidth` e `FooterActionGap` ja existentes. O teste pede uma acao, nao simula conhecimento duplicado da geometria.
+
+### Valores deliberadamente fora de tokens
+
+- `Max(0, AValue)`, rect `0,0`, `/2`, `+1/-1`, limites de indice e `FCornerRadius:=0` em clamp/reset: invariantes matematicas.
+- `GridContainer.Columns=12`: contrato estrutural do grid, nao spacing. Pode ganhar constante tecnica `DACGridDefaultColumnCount`, mas nao campo Light/Dark.
+- `Tabs.pas:428-429`, `TabHeight/TabWidth=1`: supressao do header nativo VCL. Dar nome tecnico se desejado, mas nao token visual.
+- `Progress` `-90/360` e `Loading` `0/360/-90/32/250`: geometria/animacao angular. Permanecem no algoritmo ou em constantes tecnicas locais, nunca em `ControlTokens`.
+- Pagination `10/25/50/100`, ranges `0..100`, report page/zoom, DropDownCount, TimeStep e indices: dominio.
+- `TSkFont.Create(...,1,0)`, snap scale `1`, alpha mask `$FF` e origem de canvas: protocolo Skia/matematica.
+
+### B5 - Demo e testes
+
+- `demo/Demo.Principal.dfm`: preservar as 147 coordenadas `Left/Top` e os `Width/Height` de composicao. Remover valores de estilo serializados quando forem iguais ao default ou substitui-los por `Appearance/Status/ThemeMode`: hoje ha 26 `FontSize`, 29 `CornerRadius`, 17 `ContentPadding`, 6 `Gutter`, 6 `RowHeight`, 19 `BackgroundColor`, 19 `BorderColor` e 20 `TextColor`; concentrados em `:39-662,677,725-1125,1329-1400`. Variantes reais devem ser papeis de `DashboardTokens`/ControlTokens, nao inteiros ARGB ou spacing no DFM.
+- `Tests/DACComponentsInteraction.dpr:295-310`: comparar ButtonEdit com constantes/tokens, nao `48/8`. Em `:3356-3363,3407`, comparar SM/MD/LG do DataGrid com os campos `DataGrid*`, mantendo no maximo um teste documental que fixe o contrato do asset.
+- Adicionar `RequireDefaultGeometryTokens`: criar cada classe sem Parent, verificar Width/Height contra o token e verificar por RTTI que cada `Default` publicado coincide com sua constante. Isto tambem prova construcao segura no designer.
+- Smoke nao precisa conhecer valores visuais; continua validando dataset/colunas.
+
+### Critérios verificáveis de aceite
+
+1. `rg -n --glob '*.pas' '^\s*(Width|Height)\s*:=\s*[0-9]+;' Source/Controls` retorna vazio para os construtores listados.
+2. Busca por directives das propriedades visuais nao retorna `default <numero>`; apenas constantes `DAC*`. Button/DataGrid continuam iguais.
+3. Busca em Source/Skia nao retorna alpha visual literal `255/0` em defaults/painters/text paint; os unicos 255 permitidos sao mascara/divisor de normalizacao, preferencialmente nomeados.
+4. Nao restam `FPopup.Width - 20`, `LX := 20/100`, `Height - 10`, `Max(Pixels(48))`, `Max(24,AValue)` ou `ASize*0.36`.
+5. Todos os novos campos sao configurados em `ConfigureMetrics` antes de `Dark/Light`; nenhum numero novo e repetido nas duas paletas.
+6. Interaction valida todas as geometrias default, RTTI/defaults, minima largura/row do GridContainer e a acao do popup sem coordenada magica; Smoke permanece verde.
+7. Build Debug Win32 em ordem: runtime, design-time, Demo, Interaction, Smoke. Executar Interaction/Smoke com exit code capturado; abrir Demo e validar Light/Dark/inherit, designer sem Parent, foco/IME e ausencia de regressao visual.
+8. Nenhuma unit nova e necessaria. Se o implementador criar uma, deve sincronizar DPK/DPROJ antes do build; caso contrario, package manifests nao mudam neste lote.
+
+## Regra de continuidade
+
+Este registro é estático e deve ser revalidado após qualquer alteração de `.dpk`, `.dproj`, composição de pacotes ou política de saída. Nenhuma aprovação de interface, DPI, foco, rolagem ou clipping pode ser inferida deste arquivo.
+
+ID: MEM-ARCH-114
+Data: 2026-07-24
+Demanda/branch: tabs-asset-parity / codex/fix-demo-visual-regressions
+Fato: `assets/Tabs.png` define Line/Underline como tipo padrão, com item MD de altura 40, padding horizontal 16, padding vertical 8, fonte 14, raio 6, divisor 1 e indicador ativo 2; a demo atual serializa `mtaPills` nos exemplos horizontal e vertical, enquanto `TDACTabHeaderControl.TabRectByOrdinal` estica cada item por `Width/PageCount` ou `Height/PageCount`, produzindo na composição atual células aproximadas de 186,7 x 64 e 160 x 86,7. O painter de Pills preenche todo esse retângulo com raio 20; o header Line também usa altura 64, fonte 12, underline 3 e moldura externa arredondada, divergindo do asset.
+Decisão: Manter `TDACTabs` como `TPageControl` nativo e separar `Appearance`, `Orientation`, `Size`, layout e estado visual. Um único `BuildTabLayout` deve medir apenas páginas visíveis e fornecer os mesmos bounds para paint, hit-test e foco; Line, Filled e Pills usam largura intrínseca, e somente Segmented pode dividir igualmente o espaço. O default permanece Line/Underline horizontal MD; Vertical usa rows fixas de 40, texto alinhado à esquerda, divisor de rail e indicador lateral de 2, nunca `Height/PageCount`. O renderer deve consumir tokens semânticos exclusivos de Tabs para surface, divider, textos, hover, active, disabled, indicator e focus; hover não cria indicador, disabled domina os demais estados e Line não recebe moldura externa arredondada. `mtaUnderline` deve conservar compatibilidade DFM ao evoluir para o papel Line. Não adicionar `CurrentPPI`, `MulDiv`, `ScaleForPPI` ou escala manual; preservar unidades lógicas e as guardas de Parent/handle/design-time.
+Evidência: `assets/Tabs.png`; `Source/Controls/DAC.Components.Controls.Tabs.pas:TDACTabAppearance,TDACTabOrientation,TDACTabHeaderControl.PaintBoxDraw,TDACTabHeaderControl.TabRectByOrdinal,TDACTabHeaderControl.TabAt,TDACTabs.HeaderExtent,TDACTabs.EnsureHeader`; `Source/DesignSystem/DAC.Components.DesignSystem.ControlTokens.pas:TDACControlTokens.ConfigureMetrics,TDACControlTokens.Dark,TDACControlTokens.Light`; `Source/DesignSystem/DAC.Components.DesignSystem.TypographyTokens.pas:TDACControlTypographyTokens.Default`; `demo/Demo.Principal.dfm:demoTabs,demoVerticalTabs`; captura runtime `codex-clipboard-344caaef-748c-4ceb-a778-6aa7965619b8.png`.
+Impacto: Altera geometria, pintura, hit-test, foco e tokens de Tabs, além da demonstração DFM. A ampliação de appearance/size exige preservar nomes/defaults serializados e revisar compatibilidade de API/package. Consumidores devem validar Light/Dark, horizontal/vertical, default/hover/focus/active/disabled, páginas invisíveis/desabilitadas, overflow, teclado/Ctrl+Tab, troca de tema/orientação, designer sem criação precoce de handle e regressão Dashboard -> Tabs -> Charts -> Tabs.
+Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, testes_interface
+Status: CONFIRMED
+Handoff: MEM-DEL-114 para delphi_skia_vcl implementar em branch específica a ordem layout/estado/tokens, renderer Line/Vertical, interação/hit-test, DFM demonstrativa e testes; retornar diff, commit e validações reais ao orquestrador.
+
+ID: MEM-ARCH-116
+Data: 2026-07-24
+Demanda/branch: field-controls-runtime-parity / codex/fix-demo-visual-regressions
+Fato: A captura do DateTimePicker focado mostra chrome/foco azul interno pintado pelo `SysDateTimePick32`, embora `TDACNativeDateTimePicker.CreateParams` remova estilos de borda e `ApplyClip` recorte somente o glyph nativo. No ComboBox, `DropDownDeactivate` fecha a popup antes de `PaintBoxMouseDown` executar `ShowDropDown`, que alterna a visibilidade e a reabre no mesmo clique. Edit e ButtonEdit usam label VCL nativo, ComboBox usa outro tamanho nativo, DateTimePicker usa `TStaticText` e Memo desenha o label com Skia em tamanho 8, causando divergência visual. Os quatro controles não expõem de forma uniforme mensagem de erro, readonly e loading.
+Decisão: Skia permanece dona exclusiva do chrome, borda, ícones, superfícies e anel externo de foco; os controles VCL/Win32 nativos permanecem donos de texto, caret, seleção, teclado, clipboard, IME e acessibilidade. O DateTimePicker deve neutralizar localmente o tema/focus cue visual do `SysDateTimePick32`, sem substituir o texto ativo por Skia nem sobrepor máscara. O ComboBox deve usar estados internos explícitos Closed/Opening/Open/ClosingByOwner/ClosingExternal e um consumo único do clique do owner que causou a desativação; abertura e fechamento são idempotentes e não usam debounce temporal. Edit, ButtonEdit, ComboBox, DateTimePicker e Memo devem compartilhar um apresentador/layout nativo de label com Inter 9 pt, linha 18, gap label-campo 6 e mesma cor/alinhamento. Completar somente `HelperText`, `ErrorText`, `ReadOnly` e `Loading` onde faltam, preservando propriedades, ordinais de enums e DFMs existentes. Disponibilidade resolve na ordem Disabled, Loading, ReadOnly, Editable; validação, interação e conteúdo permanecem eixos independentes. Ficam fora deste lote intervalo de datas, data e hora combinadas, segundos, datas bloqueadas e multisseleção.
+Evidência: capturas runtime `codex-clipboard-d009eb0b-7dff-4bea-97d2-c6abf9ccc93f.png` e `codex-clipboard-bdffbbf4-8bfd-4a2c-8d57-83570534381b.png`; `assets/DateTimepicker.png`, `assets/DateTimepickerAberto.png`, `assets/Combobox.png`, `assets/input.png`; `Source/Controls/DAC.Components.Controls.DateTimePicker.pas:TDACNativeDateTimePicker.CreateParams,TDACDateTimePicker.PrepareNativePicker,TDACDateTimePicker.UpdateChildBounds`; `Source/Controls/DAC.Components.Controls.ComboBox.pas:TDACComboDropDownForm.Deactivate,TDACComboBox.PaintBoxMouseDown,TDACComboBox.ShowDropDown`; `Source/Controls/DAC.Components.Controls.Edit.pas`; `Source/Controls/DAC.Components.Controls.ButtonEdit.pas`; `Source/Controls/DAC.Components.Controls.Memo.pas`; `Source/DesignSystem/DAC.Components.DesignSystem.ControlTokens.pas`.
+Impacto: Altera pintura e foco visual do DateTimePicker, ciclo de vida e eventos da popup do ComboBox, layout/tipografia de labels, API publicada dos estados ausentes, tokens compartilhados, demo, testes e possivelmente manifests runtime DPK/DPROJ caso seja criada uma unit interna de suporte. O risco principal é a variação de `UxTheme`/comctl32 entre versões do Windows; a ausência do chrome azul exige validação física. A implementação não pode criar handles precocemente, serializar subcomponentes internos, reordenar enums ou perder seleção, caret, clipboard, IME e acessibilidade nativos.
+Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, testes_interface
+Status: CONFIRMED
+Handoff: delphi_skia_vcl deve implementar em branch específica o suporte compartilhado de label/estado, neutralização visual nativa do DateTimePicker, máquina de estados do ComboBox, matriz real de estados na Demo e testes automatizados; retornar diff, commit, manifests afetados e validações reais ao orquestrador. revisao_codigo deve exigir compatibilidade API/DFM, ausência de debounce e preservação das semânticas nativas. testes_interface deve validar Light/Dark, clique real de abrir/fechar, foco, teclado, clipboard/IME, acessibilidade, designer sem Parent e captura física do DateTimePicker no Windows.
+
+ID: MEM-ARCH-119
+Data: 2026-07-24
+Demanda/branch: full-gallery-dark-theme / codex/fix-demo-visual-regressions
+Fato: Na captura `codex-clipboard-7da3cc4d-43a1-47a4-b012-8f70ccaa14cf.png`, Dashboard, cards, textos e viewport estão escuros. Na captura `codex-clipboard-0b36c1ff-c39c-441f-a3b6-ea27c1c8999e.png`, com o mesmo shell escuro e seletor exibindo `Tema claro` como próxima ação, a página Botões mantém `TTabSheet`, `TDACScrollContainer`, `TDACGridContainer`, textos e scrollbar claros. A causa primária está em `TDACTabs.ApplyPageStyle`: quando a página não possui surface full-client explicitamente proprietária, as linhas 829-832 escolhem deliberadamente `Resolve(dtmLight).ContainerSuiteBackground`; o comentário das linhas 819-822 codifica a regra antiga de conteúdo sempre claro. A Demo também possui caminho assimétrico: `TForm1.ThemeChanged` muda somente Form/toggle e posta `WM_DEMO_APPLY_THEME`, enquanto `WMDemoApplyTheme` chama `ApplyDashboardTheme`, que altera `tsDashboard` e percorre somente `scrDashboard`. `TDACScrollContainer`, `TDACGridContainer`, `TDACContainer`, `TDACSystemText` e os demais componentes DAC já escutam `TDACThemeManager` e resolvem tokens por superfície, mas recebem uma superfície ancestral clara nas páginas da galeria. O hook localizado atual de `TDACScrollContainer` é o `TScrollBoxStyleHook` genérico, que pinta a barra com `StyleServices`, não com os tokens DAC.
+Decisão: A regra antiga de conteúdo claro fica substituída: em `dtmDark`, toda a árvore da galeria em `dtmInherit` deve usar superfícies e textos Dark; em `dtmLight`, toda a árvore deve retornar aos tokens Light. `TDACTabs` é o boundary reutilizável responsável por aplicar o tema resolvido ao próprio `TPageControl` e a todas as `TTabSheet`, ativas ou ocultas. Sem `ContentColor` custom, `ApplyPageStyle` usa `ResolvedTokens.ContainerSuiteBackground`, nunca `Resolve(dtmLight)`; custom/`ThemeMode` explícito continuam opt-outs deliberados. O page control e cada sheet devem possuir `ParentColor=False`, `ParentBackground=False` e `StyleElements=[]`, com `Color`, `Font.Name`, `Font.Size` e `Font.Color` vindos dos tokens; isto impede VCL Styles ou o erase nativo de reintroduzir branco. A mudança lógica alcança todas as pages; o repaint físico ocorre em transação `WM_SETREDRAW`/`RedrawWindow` na ativa, e páginas ocultas ficam atualizadas logicamente e recebem refresh de descendants/paint ao serem ativadas. `TDACScrollContainer`, `TDACGridContainer` e `TDACContainer` continuam proprietários de sua superfície, com `ParentColor=False` quando opacos, `StyleElements=[]`, `Color` sincronizado ao background token e `WM_ERASEBKGND` preenchendo a mesma cor; também devem publicar para filhos nativos a fonte/cor semântica resolvida. Labels nativos com `ParentFont=True` e transparentes herdam a sheet/container; panels e hosts nativos decorativos usam `ParentColor=True` e `ParentBackground=True`. Uma surface explícita deve ser um componente DAC/tokenizado, não um `Color` literal. A scrollbar de `TDACScrollContainer` deve trocar o hook genérico por `TDACScrollContainerStyleHook`, derivado de `TScrollBoxStyleHook` e registrado somente para `TDACScrollContainer`; o hook preserva hit-test, thumb, wheel e comandos nativos herdados e desenha track/thumb/hover/pressed/arrows/border por novos tokens Dark/Light, invalidando non-client com `RDW_FRAME` na troca. Nenhum hook é registrado para `TScrollBox`, `TPageControl`, `TTabSheet`, `TPanel` ou `TLabel` globais. A Demo elimina `ApplyDashboardTheme`/varredura especial e usa uma única raiz: depois de atualizar a cor tokenizada do Form, `TDACThemeManager.RefreshListener(GalleryTabs)` reaplica o boundary; `TDACThemeManager` mantém a notificação roots-to-leaves. É proibido percorrer componentes na Demo para atribuir cores/fontes literais. Não adicionar High DPI, `CurrentPPI`, `MulDiv`, `ScaleForPPI` nem escala manual.
+Evidência: capturas runtime `codex-clipboard-7da3cc4d-43a1-47a4-b012-8f70ccaa14cf.png` e `codex-clipboard-0b36c1ff-c39c-441f-a3b6-ea27c1c8999e.png`; `demo/Demo.Principal.pas:TForm1.ApplyDashboardTheme,TForm1.ThemeChanged,TForm1.WMDemoApplyTheme,TForm1.Loaded`; `demo/Demo.Principal.dfm:GalleryTabs,tsDashboard,scrDashboard,tsButtons,scrButtons,gcButtonKinds,tsInputs..tsReport`; `Source/DesignSystem/DAC.Components.DesignSystem.Theme.pas:TDACThemeManager.NotifyListeners,SetApplicationMode,RefreshListener`; `Source/DesignSystem/DAC.Components.DesignSystem.ComponentStyle.pas:TDACComponentStyle.ResolveForSurface,TryResolveSurface`; `Source/DesignSystem/DAC.Components.DesignSystem.ControlTokens.pas:ContainerSuiteBackground,ContainerTitle,ScrollContainerBackground,ScrollContainerViewportBackground,GridContainerBackground,TabsSurface`; `Source/Controls/DAC.Components.Controls.Tabs.pas:TDACTabs.ApplyPageStyle,TDACTabs.ThemeChanged,TDACTabs.Change,TDACTabs.InvalidateTabs`; `Source/Controls/DAC.Components.Controls.ScrollContainer.pas:TDACScrollContainer.ApplyAppearance,ApplyTheme,ApplyPendingTheme,WMEraseBkgnd`; `Source/Controls/DAC.Components.Controls.GridContainer.pas:TDACGridContainer.ApplyAppearance,ThemeChanged,WMEraseBkgnd`; `Source/Controls/DAC.Components.Controls.Container.pas:TDACContainer.ApplyAppearanceColors,ThemeChanged,WMEraseBkgnd`; `Source/Controls/DAC.Components.Controls.SystemText.pas:TDACSystemText.ApplySemanticStyle,ThemeChanged`; `Source/Hooks/DAC.Components.Hooks.Register.pas:RegisterDACComponentStyleHooks`; `Tests/DACComponentsInteraction.dpr:tests atuais de Tabs nas linhas 5927-5943 que exigem o fallback Light e devem ser invertidos`; `Tests/DACPhysicalQAController.dpr:CaptureAllFamilies,startthemecycle`.
+Impacto: Correção combinada de biblioteca e host. Biblioteca: alterar `Tabs.pas`, `ScrollContainer.pas`, `ControlTokens.pas`, o hook localizado e seu registro; revisar `GridContainer.pas`, `Container.pas` e `SystemText.pas` somente para garantir herança semântica/invalidation, sem duplicar palette. Demo: remover a exceção Dashboard e reaplicar tema pela raiz `GalleryTabs`, preservando os 16 `TTabSheet` declarativos e sem serializar cores. Packages DPK/DPROJ devem ser sincronizados se houver nova unit de hook. Compatibilidade DFM e ordinais permanecem; `ContentColor` custom e `ThemeMode` explícito continuam válidos. A aceitação automatizada deve cobrir Dashboard mais as 15 páginas em light -> dark -> light, incluindo page ativa e inativa, cores/fontes de `TPageControl`/`TTabSheet`, `TLabel` herdado, panel/scroll host, surfaces DAC e scrollbar; alternar tema com Botões, Inputs e Report ocultos e então ativá-los; preservar scroll position, wheel, thumb drag, resize, foco e teclado; criar Tabs/Scroll/Grid/Container com `Parent=nil`, alternar `ThemeMode` e confirmar zero handles prematuros; round-trip DFM; busca negativa por fallback `Resolve(dtmLight)` em `ApplyPageStyle`, cores literais na Demo, hooks globais e APIs DPI proibidas. A QA física deve capturar Dashboard e as 15 páginas em Dark e Light, tamanhos 1200x760 e 520x560, durante scroll/resize e nos frames imediato/estabilizado da troca, sem white seams, bordas claras, scrollbar clara, conteúdo obsoleto, flicker ou artefato de página anteriormente oculta.
+Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, testes_interface
+Status: CONFIRMED
+Handoff: delphi_skia_vcl deve implementar no branch `codex/fix-demo-visual-regressions` na ordem tokens de surfaces/scrollbar, boundary `TDACTabs`, hook localizado de scrollbar, invalidation dos containers, raiz única da Demo e testes automatizados; retornar diff, manifests, build e execução Interaction/DesignLifecycle/Smoke ao orquestrador. revisao_codigo deve bloquear fallback Light implícito, traversal/literais de tema na Demo, hooks VCL globais, repaint que crie handles em `Parent=nil`, APIs DPI proibidas e perda de `ContentColor`/`ThemeMode` explícitos. testes_interface deve executar a matriz Dashboard + 15 páginas, light -> dark -> light, ativa/inativa, scroll/resize/scrollbar/foco e comparar capturas por ausência de superfícies brancas e flicker.
+
+ID: MEM-ARCH-126
+Data: 2026-07-24
+Demanda/branch: inputs-gallery-layout-overlap / codex/fix-demo-visual-regressions
+Fato: A evidência física `Build/VisualValidation/mem-qa-126/03-light-inputs-defect-confirmed.jpg`, em Light 1824x1197, mostra a faixa ButtonEdit sobreposta pelo Memo Loading, com captions fundidas e controles truncados. O DFM confirma colisão estrutural: os sete `demoButtonEdit*` começam em `Top=496`, ocupam de `Left=24` até `Left=960`, enquanto `demoMemoLoading` também começa em `Top=496`, `Left=520`, `Width=220` e `Height=112`. Os ButtonEdit usam `Width=120`, apenas 40% do `ButtonEditDefaultWidth=300` tokenizado, insuficiente para captions como `ButtonEdit / Success` e `ButtonEdit / ReadOnly`; seus labels nativos excedem a célula. `tsInputs` hospeda diretamente 21 controles e um `TLabel`, sem `TDACScrollContainer` ou layout container. `TForm1.ConfigureTabsLayout.LayoutInputs` existe, mas não é chamado; além disso, ele conhece apenas `demoEdit`, `demoButtonEdit` e `demoMemo`, portanto não resolveria as 21 instâncias. O teste atual verifica somente que os três primeiros representantes não se cruzam, deixando as demais combinações sem cobertura.
+Decisão: A página Inputs deve ser recomposta DFM-first, sem criar, substituir ou desenhar amostras em runtime. `tsInputs` passa a conter `scrInputs: TDACScrollContainer` com `Align=alClient`, `Appearance=mscaViewport`, scroll vertical e tema herdado. Dentro dele, uma matriz DFM declarativa `gcInputStates: TDACGridContainer` hospeda o título e os 21 componentes reais, preservando nomes, estados, textos, handlers, controle nativo, TabOrder e ThemeMode. Títulos de página/família usam `TDACSystemText` e ocupam uma linha completa pelo span `Tag`; os grupos são Edit, Memo e ButtonEdit, cada um iniciado por um título full-row e seguido por Default, Filled, Error, Success, Disabled, ReadOnly e Loading. A matriz usa sete colunas quando a largura respeita a largura mínima de célula e reduz colunas automaticamente no resize, sem scroll horizontal. Para suportar esta composição de forma reutilizável, `TDACGridContainer` deve ganhar opções append-only e compatíveis para `AutoContentHeight` e row sizing por maior altura real dos filhos; nesse modo, o algoritmo preserva a altura individual de Edit/ButtonEdit 64 ou 88 e Memo 112 ou 136, calcula a altura de cada row pelo maior filho, soma gutter/padding e atualiza a própria altura sem criar handle. A largura mínima de coluna deve ser propriedade declarativa do grid ou derivada de `Constraints.MinWidth`, nunca inferida por DPI; a composição deve assegurar que o texto medido de cada label caiba na célula. Os defaults atuais fixed-row/auto-height false permanecem para não alterar outros grids. `gcInputStates` usa `Align=alTop`, margens/padding/gutter da escala 4/8 e ordem DFM; `scrInputs.AutoScroll` deriva seu range do bottom medido. Remover o helper morto `LayoutInputs` e os preferred-width fields exclusivos dele; `ConfigureTabsLayout` não reposiciona exemplos de Inputs. Não usar `FindComponent` para layout, desenho ad hoc, clones visuais, `CurrentPPI`, `MulDiv`, `ScaleForPPI`, High DPI manual ou coordenadas calculadas por fator de escala. O designer conserva a árvore real e os bounds lógicos de 96 PPI; runtime apenas executa o layout genérico do container.
+Evidência: `Build/VisualValidation/mem-qa-126/03-light-inputs-defect-confirmed.jpg`; `assets/input.png:Estados,Espaçamentos e alinhamento,Superfícies claras`; `assets/ButtonEdit.png:Tamanhos,Estados,Espaçamentos e alinhamento,Superfícies claras`; `demo/Demo.Principal.dfm:tsInputs,lblInputs,demoEdit..demoEditLoading,demoButtonEdit..demoButtonEditLoading,demoMemo..demoMemoLoading`; `demo/Demo.Principal.pas:TForm1.ConfigureTabsLayout.LayoutInputs,TForm1.ApplyDemoLayout,FInputPreferredWidth,FMemoPreferredWidth`; `Source/Controls/DAC.Components.Controls.GridContainer.pas:TDACGridContainer.EffectiveColumns,ArrangeChildren,AdjustClientRect`; `Source/Controls/DAC.Components.Controls.ScrollContainer.pas:TDACScrollContainer`; `Source/DesignSystem/DAC.Components.DesignSystem.ControlTokens.pas:InputDefaultWidth,ButtonEditDefaultWidth,MemoDefaultWidth,InputSupportGap`; `Source/DesignSystem/DAC.Components.DesignSystem.DemoTokens.pas:ContentHorizontalMargin,InputTitleToFieldGap,InputFieldToFieldGap`; `Tests/DACComponentsInteraction.dpr:verificação parcial de bounds nas linhas 5870-5872 e compact nas linhas 7072-7074`.
+Impacto: Alterar somente a composição Inputs da Demo, o layout genérico de `TDACGridContainer` necessário para medir conteúdo variável e os testes correspondentes; `TDACEdit`, `TDACMemo` e `TDACButtonEdit` não precisam de painter alternativo nem mudança de comportamento. O DFM deve manter as 21 instâncias e migrar seus Parents/TabOrder para `scrInputs/gcInputStates`. Se propriedades públicas forem adicionadas ao grid, preservar defaults, streaming e ordinais; nenhuma unit nova é necessária. Critérios automatizados: enumerar as 21 instâncias e exigir parent correto, ordem de grupos/TabOrder, zero interseções entre `BoundsRect` de controles visíveis, gap mínimo conforme DFM, label medido menor ou igual à largura disponível, filhos inteiros dentro do grid, `gcInputStates.Height` igual ao conteúdo medido e `scrInputs.VertScrollBar.Range` cobrindo o bottom mais margem. Em 1824x1197, cada grupo cabe em uma row de sete células e nenhum caption é truncado; em 1200x760 e 520x560, colunas reduzem, rows crescem, a scrollbar vertical permite alcançar o último ButtonEdit e não aparece scrollbar horizontal. No ciclo 1824 -> 1200 -> 520 -> 1824, a geometria final retorna ao mesmo resultado, sem sobreposição, stale frame ou resize oscilante. Light/Dark devem produzir bounds idênticos e somente trocar tokens. Wheel no fundo rola `scrInputs`; wheel/foco/seleção/clipboard dentro de Memo/Edit/ButtonEdit continuam nativos. DesignLifecycle deve criar Scroll/Grid/Inputs com `Parent=nil`, alternar tema, fazer round-trip textual/binário do DFM e confirmar zero handle precoce. Busca negativa deve impedir `LayoutInputs`, reposicionamento por nomes e APIs DPI proibidas. QA física deve capturar desktop, 1200x760 e compacto, topo/meio/fim do scroll, antes/depois de resize e nos dois temas, sem labels fundidos, controle cortado, faixa sobreposta ou último item inacessível.
+Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, testes_interface
+Status: CONFIRMED
+Handoff: delphi_skia_vcl deve implementar no mesmo branch `codex/fix-demo-visual-regressions`, primeiro a medição row-content/auto-height compatível de `TDACGridContainer`, depois a árvore DFM `tsInputs -> scrInputs -> gcInputStates`, remover o helper morto e ampliar Interaction/DesignLifecycle; retornar diff, build e execução real ao orquestrador. revisao_codigo deve bloquear qualquer correção por coordenada isolada, clone, layout por `FindComponent`, mudança de painter dos inputs, quebra de streaming/default ou API DPI proibida. testes_interface deve repetir MEM-QA-126 em Light/Dark, desktop/1200/compacto, resize e scroll completo e aprovar somente com todos os 21 estados legíveis e acessíveis.
+
+ID: MEM-ARCH-129
+Data: 2026-07-24
+Demanda/branch: physical-memo-wheel-routing / codex/fix-demo-visual-regressions
+Fato: MEM-QA-129 confirmou fisicamente que a recomposição dos 21 estados de Inputs está correta em Light 1824x1197, mas revelou um P2 no wheel aninhado: com `Memo / Default` focado, overflow interno real e o ponteiro dentro do editor, wheel-up manteve visível o trecho final `Repeticao vinte e um ... trinta.`, preservou o foco nativo no mesmo Memo e deslocou materialmente `scrInputs`. As capturas antes/depois mostram o thumb e o topo do viewport externo mudando, enquanto o viewport interno não muda. A causa está em `TDACScrollContainer.CMMouseWheel`: `FocusedDescendantOwnsVerticalWheel` decide pelo `GetFocus` e pelos bits `ES_MULTILINE/WS_VSCROLL`, sem usar as coordenadas screen-space de `TCMMouseWheel.Pos`, sem hit-test e sem verificar se o filho pode rolar na direção pedida; ao retornar `Result=0`, não entrega o wheel ao procedimento nativo do `TMemo`, apenas deixa sem consumo a mensagem que já chegou ao HWND externo. O VCL então permite que o outer/default path a processe. O teste anterior em `DACComponentsInteraction` chamou `MemoControl.Perform(WM_MOUSEWHEEL, ..., 0)` diretamente, sem coordenada física e sem atravessar o mesmo alvo/roteamento do Windows, por isso mascarou o defeito.
+Decisão: `TDACScrollContainer` será o único árbitro localizado do wheel vertical aninhado, sem hook global e sem acoplamento da Demo. Para cada `CM_MOUSEWHEEL`, deve obter o ponto screen-space da própria mensagem, executar `WindowFromPoint`, aceitar somente HWND descendente do container e caminhar do HWND mais profundo até o outer. O primeiro descendente visível/habilitado com scrollbar vertical real e `GetScrollInfo(SB_VERT, SIF_RANGE or SIF_PAGE or SIF_POS)` válido é o candidato; ele pode subir quando `nPos>nMin` e descer quando `nPos<nMax-Max(nPage-1,0)`. A posse é por mensagem e por direção: se o candidato pode mover antes da mensagem, somente seu procedimento de janela nativo recebe o `WM_MOUSEWHEEL` original e o outer marca `Result=1`; se já está no limite naquela direção, o candidato não recebe a mensagem e somente `TDACScrollContainer` aplica seu acumulador/scroll atual. Se a mensagem leva o filho até o limite, o handoff ocorre apenas no próximo wheel. Assim nunca há child+outer no mesmo input nem redispatch recursivo. O despacho ao filho deve chamar localmente o default window procedure do `TWinControl` encontrado para aquele HWND, por access class estritamente interna, em vez de reenviar ao `WndProc` VCL e gerar novo bubbling de `CM_MOUSEWHEEL`; depois o outer consome a mensagem. Ponteiro, não foco, define o alvo: wheel sobre Memo rola o Memo mesmo sem transferir foco; Memo focado com ponteiro fora dele não captura o wheel. Filhos scrolláveis aninhados usam o mais profundo que ainda pode mover; quando nenhum pode, o outer assume. Não chamar `SetFocus`, não alterar caret/seleção, não recriar/reparentear HWND, não criar handle para consultar estado e não executar a arbitragem em `csDesigning/csLoading/csDestroying` ou sem handles válidos. Preservar os deltas parciais e modificadores originais, a regra existente de `SPI_GETWHEELSCROLLLINES` para o outer e o hook localizado de scrollbar apenas para pintura; não adicionar hooks para `TMemo`, `TScrollBox` ou aplicação, nem APIs DPI/escala manual.
+Evidência: `Build/VisualValidation/mem-qa-129/summary.txt`; `Build/VisualValidation/mem-qa-129/steps.txt`; `Build/VisualValidation/mem-qa-129/08b-light-memo-overflow.jpg`; `Build/VisualValidation/mem-qa-129/09-light-memo-after-wheel-up.jpg`; `Build/VisualValidation/mem-qa-129/09b-light-memo-wheel-defect-confirmed.jpg`; `Source/Controls/DAC.Components.Controls.ScrollContainer.pas:TDACScrollContainer.CMMouseWheel,FocusedDescendantOwnsVerticalWheel,WndProc`; `Source/Controls/DAC.Components.Controls.Memo.pas:TDACMemo.MemoControl`; `Tests/DACComponentsInteraction.dpr:teste de wheel do Memo que usa Perform(WM_MOUSEWHEEL)`; Delphi 10.2 `Vcl.Controls.pas:TControl.WMMouseWheel,TControl.MouseWheelHandler,TControl.CMMouseWheel,TWinControl.DefaultHandler`.
+Impacto: A alteração funcional fica restrita a `DAC.Components.Controls.ScrollContainer.pas` e aos testes; `TDACMemo`, DFM, tokens, hook de pintura e packages não precisam mudar. Substituir `FocusedDescendantOwnsVerticalWheel` por helpers privados de hit-test, consulta direcional e despacho nativo; qualquer access class deve permanecer na implementation. A revisão deve bloquear decisão baseada apenas em foco/tipo `ES_MULTILINE`, `SendMessage/Perform(WM_MOUSEWHEEL)` recursivo ao filho, retorno zero como suposta entrega, movimentação dupla, criação precoce de handle, hook global, polling/timer e DPI. Interaction deve manter um teste determinístico de contrato, mas o gate principal deve usar uma janela real ativa, cursor em coordenada física e `SendInput`/rota equivalente do Windows: Memo no topo, meio e fim; up/down que o filho ainda pode consumir; up no topo e down no fim entregues imediatamente ao outer; primeira mensagem que alcança o limite ainda exclusiva do filho e mensagem seguinte exclusiva do outer; deltas `+60/+60` e `-60/-60`; ponteiro dentro com foco fora e foco dentro com ponteiro fora. Em cada passo medir antes/depois `GetScrollInfo` de filho e outer e exigir exatamente um deles alterado, além de HWND, `GetFocus`, `SelStart`, `SelLength` e caret preservados. A QA física deve repetir exatamente MEM-QA-129 em Light e Dark e somente depois retomar a matriz interrompida.
+Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, testes_interface
+Status: CONFIRMED
+Handoff: delphi_skia_vcl deve implementar no mesmo branch `codex/fix-demo-visual-regressions` a arbitragem localizada em `TDACScrollContainer`, com hit-test screen-space, consulta direcional, despacho uma vez ao default proc nativo e handoff imediato apenas quando o filho já está no limite; ampliar Interaction sem considerar o antigo `Perform` prova suficiente e retornar diff/build/testes reais ao orquestrador. revisao_codigo deve exigir um único owner por mensagem, helpers privados, nenhuma mudança em Memo/DFM/hook global/DPI e preservação de foco/caret/HWND. testes_interface deve executar a matriz física top/middle/bottom e edge handoff, registrar posições de filho/outer e repetir MEM-QA-129 antes de prosseguir.
+
+ID: MEM-ARCH-130
+Data: 2026-07-24
+Demanda/branch: native-memo-wheel-origin-and-hidden-scroll / codex/fix-demo-visual-regressions
+Fato: MEM-QA-130 reproduziu o P2 no executável canônico de hash `A4F3972437B349D67783A4093E13CC387AF4696CA09723027FC4E6BA9CFC46D4`: Inputs e seus 21 estados passaram visualmente, porém o Memo/Default focado, com cursor físico dentro e overflow real, não moveu seu viewport após dois deltas físicos `-60`; um passo isolado `-120` seguinte manteve o trecho final `trinta e um ... quarenta` e moveu somente `scrInputs`, preservando foco/caret no HWND nativo. A implementação MEM-DEL-129 foi validada apenas após o teste alterar `AMemo.ScrollBars` para `ssVertical`; a Demo real mantém o default `ssNone`, enquanto `TDACMemo` cria `FMemo: TMemo` com `BorderStyle=bsNone` e `WordWrap=True`. Logo o HWND real não possui `WS_VSCROLL`, embora o EDIT multiline continue tendo linhas visuais fora do viewport e possa rolar internamente. `CanWindowScrollVertically` rejeita esse HWND antes de consultar sua capacidade e o outer o trata como não scrollável. O caminho físico foi confirmado pelo VCL 10.2: `TControl.WMMouseWheel` chama `MouseWheelHandler`, `TControl.CMMouseWheel` propaga ao Parent e, se o resultado final continuar zero, `WMMouseWheel` chama `inherited`, chegando uma única vez ao default window procedure do EDIT. Portanto o problema não é ausência absoluta de bubbling até `TDACScrollContainer`, mas a combinação de interceptação tardia, modelo de capacidade baseado em scrollbar visível e redispatch manual que substitui a continuação nativa da mensagem original.
+Decisão: MEM-ARCH-130 substitui, para o Memo composto, o despacho proposto em MEM-ARCH-129. O ponto funcional correto é o HWND nativo de origem, antes de seu `CM_MOUSEWHEEL` subir: criar na implementation de `DAC.Components.Controls.Memo.pas` um `TDACNativeMemo = class(TMemo)` privado e instanciá-lo em `FMemo`, mantendo o campo e a propriedade pública tipados como `TMemo`, sem alteração de DFM/API. O descendente deve sobrescrever `MouseWheelHandler`, não instalar hook global nem trocar WindowProc dinamicamente. A política especial só fica ativa quando o controle já tem HWND, está visível/habilitado, o ponto screen-space da mensagem resolve por `WindowFromPoint` para esse editor, e a cadeia `Parent` materializada contém um `TDACScrollContainer` runtime válido; fora disso chama exatamente o fluxo herdado do VCL. Se o Memo pode mover na direção antes da mensagem, o override executa a semântica `DoMouseWheel` do próprio controle sem propagar ao Parent: evento tratado termina com `Result=1`; evento não tratado deixa `Result=0`, permitindo que o `TControl.WMMouseWheel` original chame o default proc nativo uma única vez. Se o Memo já está no limite pedido, chama `inherited MouseWheelHandler`; o `CM_MOUSEWHEEL` então sobe normalmente e o `TDACScrollContainer` acumula/rola o outer, retornando `1`, o que impede o default proc do Memo. Não chamar `DefaultHandler` manualmente no outer para este caso, não reenviar `WM_MOUSEWHEEL`, não mover os dois viewports e não alterar foco. O hook de `TDACScrollContainer` continua exclusivamente visual; registrar hook para `TMemo` seria global e é proibido, registrar hook para uma classe interna tornaria o comportamento dependente de VCL Styles, e `SetWindowSubclass`/troca de `WindowProc` sobre a árvore de descendentes acrescentaria risco de detach/recreate sem necessidade.
+Evidência: `Build/VisualValidation/mem-qa-130/summary.txt`; `Build/VisualValidation/mem-qa-130/steps.txt`; `Build/VisualValidation/mem-qa-130/08-light-memo-refocused.jpg`; `Build/VisualValidation/mem-qa-130/09-light-memo-partial-up-1.jpg`; `Build/VisualValidation/mem-qa-130/10-light-memo-partial-up-2.jpg`; `Build/VisualValidation/mem-qa-130/11-light-memo-wheel-up-120.jpg`; `Build/VisualValidation/mem-qa-130/12-light-memo-wheel-defect-confirmed.jpg`; `demo/Demo.Principal.dfm:demoMemo` sem `ScrollBars`; `Source/Controls/DAC.Components.Controls.Memo.pas:TDACMemo.Create,FMemo,ScrollBars`; `Source/Controls/DAC.Components.Controls.ScrollContainer.pas:CMMouseWheel,CanWindowScrollVertically,DispatchNativeMouseWheel,ResolveNestedWheelTarget`; `Tests/DACComponentsInteraction.dpr:RequirePhysicalNestedWheelRouting` que força `ssVertical` e mede somente `GetScrollInfo`; Delphi 10.2 `Vcl.Controls.pas:TControl.WMMouseWheel,TControl.MouseWheelHandler,TControl.CMMouseWheel,TWinControl.DefaultHandler`; Delphi 10.2 `Vcl.StdCtrls.pas:TCustomMemo.CreateParams` onde `ssNone` não adiciona `WS_VSCROLL`.
+Impacto: A capacidade do Memo não pode depender de `WS_VSCROLL`, `GetScrollInfo` ou borda visível. `TDACNativeMemo` deve consultar o viewport de EDIT já existente sem criar handle: `EM_GETFIRSTVISIBLELINE` define a borda superior; `EM_GETLINECOUNT`, `EM_LINEINDEX` da última linha visual, `EM_POSFROMCHAR`, `EM_GETRECT` e a altura da fonte determinam se a última linha ainda ultrapassa a área formatável. WheelDelta Win32 `>0` significa direção início/up e `<0` fim/down; os valores do Computer Use têm eixo inverso (`delta_y=-60/-120` chega como wheel-up positivo), portanto testes e logs devem registrar ambos e nunca inverter a decisão pelo sinal da ferramenta. `ScrollBars=ssNone` e `BorderStyle=bsNone` são escolhas visuais, não bordas lógicas de scroll. A posse é decidida antes do evento: uma mensagem que leva o Memo à borda ainda pertence ao Memo; somente a seguinte passa ao outer. Deltas parciais permanecem no acumulador nativo do mesmo HWND; não devem alimentar simultaneamente `FWheelDeltaRemainder` do outer. Se o toolchain provar que o EDIT não acumula `60+60`, a classe interna pode manter um remainder próprio e só liberar múltiplos inteiros de `WHEEL_DELTA` ao default proc, sempre preservando `OnMouseWheel/DoMouseWheel` e zerando/cancelando remainder na troca de sinal ou destruição; essa adaptação deve ser guiada pelo teste real, não presumida. Não chamar `SetFocus`, alterar `SelStart/SelLength`, recriar handle, reparentear, usar timer/polling, APIs DPI ou executar lógica especial em design/loading/destroying.
+Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, testes_interface
+Status: CONFIRMED
+Handoff: delphi_skia_vcl deve implementar no mesmo branch `codex/fix-demo-visual-regressions` o `TDACNativeMemo` privado e a decisão de borda por mensagens EDIT, preservando o caminho `DoMouseWheel -> default proc` quando o filho é owner e o bubbling herdado quando o outer é owner. Deve remover do teste a mutação `ScrollBars:=ssVertical` como precondição e adicionar fixture idêntica à Demo (`ssNone`, `bsNone`, `WordWrap=True`, parágrafo longo que quebra visualmente). O gate in-process deve mostrar uma janela real, focar o HWND interno, posicionar cursor dentro dele e entregar `WM_MOUSEWHEEL` ao próprio `MemoControl.Handle` com `lParam` screen-space, nunca `CM_MOUSEWHEEL` ao outer: no bottom, `+60/+60` raw (equivalentes aos `-60/-60` físicos) deixam o primeiro passo sem movimento e fazem somente o Memo mover no segundo; após reset, `+120` move somente o Memo; repetir top/middle/bottom nas duas direções, evento que alcança a borda e evento seguinte de handoff, parciais no limite acumulando somente no outer, inversão de sinal e ausência de scroll duplo. Medir filho por `EM_GETFIRSTVISIBLELINE`/linha final visível e outer por `VertScrollBar.Position`, exigindo HWND, `GetFocus`, caret, seleção, texto, IME/clipboard e eventos preservados. Em seguida executar `SendInput`/Computer Use sobre o HWND real e repetir MEM-QA-130 em Light e Dark antes de retomar a matriz.
+
+ID: MEM-ARCH-131
+Data: 2026-07-24
+Demanda/branch: native-memo-explicit-line-scroll / codex/fix-demo-visual-regressions
+Fato: MEM-DEL-130 materializou fielmente o contrato da Demo (`ssNone`, `bsNone`, `WordWrap=True`) e confirmou o limite técnico que MEM-ARCH-130 deixou condicional: após `+60/+60`, o acumulador interno consolidou corretamente o wheel original em `+120`, `DoMouseWheel` não marcou o evento como tratado e o default proc do EDIT foi alcançado uma única vez, porém `EM_GETFIRSTVISIBLELINE` permaneceu `356 -> 356` e `scrInputs` permaneceu `103 -> 103`. Logo, neste Windows/Delphi 10.2, o default proc de um EDIT multiline sem `WS_VSCROLL` não avança o viewport por `WM_MOUSEWHEEL`, ainda que as mensagens EDIT provem overflow e capacidade direcional. Repetir o default proc, reenviar wheel ou devolver o mesmo detent ao outer não corrige o contrato: respectivamente cria duplicidade, recursão ou owner ambíguo.
+Decisão: Está AUTORIZADO o avanço nativo explícito e localizado dentro de `TDACNativeMemo`, depois de `DoMouseWheel`, da acumulação e da decisão de owner, usando `EM_LINESCROLL`; `WM_VSCROLL` fica REJEITADO para esse avanço. `EM_LINESCROLL` é a mensagem específica do EDIT multiline, recebe em `lParam` uma quantidade assinada de linhas verticais, retorna sucesso para multiline e limita o movimento ao conteúdo. `WM_VSCROLL` representa comandos de uma scrollbar vertical padrão e mantém dependência semântica do artefato que a Demo deliberadamente não possui. Quando `ShouldOwnWheel` e `CanScrollInDirection` forem verdadeiros e `DoMouseWheel` não tratar, `TDACNativeMemo` acumula os deltas, consome fragmentos com `Result=1` e, para cada detent inteiro, envia somente `EM_LINESCROLL` ao próprio HWND: `wParam=0`; wheel Win32 positivo/up gera linhas negativas, wheel negativo/down gera linhas positivas. Não chamar o default proc nem propagar `CM_MOUSEWHEEL` nesse ramo. Quando o Memo já não puder mover na direção antes do input, zerar qualquer remainder do Memo e chamar o fluxo herdado para que apenas o outer acumule/role. Uma mensagem que leva o Memo à borda continua integralmente do Memo; o próximo input faz handoff. Se `EM_LINESCROLL` não alterar `EM_GETFIRSTVISIBLELINE` apesar da precondição de capacidade, o evento permanece consumido pelo Memo e o gate falha; não executar fallback do outer na mesma mensagem.
+Evidência: bloqueio técnico reportado por MEM-DEL-130 (`+60/+60 -> +120`, Memo `356 -> 356`, outer `103 -> 103`); `Source/Controls/DAC.Components.Controls.Memo.pas:TDACNativeMemo.MouseWheelHandler,CanScrollInDirection,FWheelDeltaRemainder`; `Tests/DACComponentsInteraction.dpr:RequirePhysicalNestedWheelRouting`; Microsoft Learn `EM_LINESCROLL message` (`https://learn.microsoft.com/pt-br/windows/win32/controls/em-linescroll`); Microsoft Learn `Edit Control Text Operations` (`https://learn.microsoft.com/en-us/windows/win32/controls/edit-controls-text-operations`); Microsoft Learn `SystemParametersInfo` (`https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-systemparametersinfoa`); Microsoft Learn `WM_VSCROLL message` (`https://learn.microsoft.com/en-us/windows/win32/controls/wm-vscroll`).
+Impacto: `TDACNativeMemo` deve obter `SPI_GETWHEELSCROLLLINES` sem cache persistente por handle. Se a consulta falhar, usar 3 linhas; se retornar 0, consumir o detent sem mover Memo ou outer; se retornar `WHEEL_PAGESCROLL`, calcular uma página como `Max(1, linhas visuais integralmente visíveis - 1)` pela formatting rect/altura de linha; nos demais casos usar `Min(valor, 100)` linhas por detent, multiplicadas por `Abs(notches)`. O deslocamento passado a `EM_LINESCROLL` é `-Sign(notches) * linhasPorDetent * Abs(notches)`, com clamp seguro antes de converter para `LPARAM`. O mesmo cálculo deve servir Light/Dark e `ssNone/ssVertical`; a presença visual de scrollbar não muda a política quando o Memo está aninhado. `DoMouseWheel` continua recebendo cada delta original para preservar `OnMouseWheel`, `OnMouseWheelUp/Down` e sua acumulação VCL; se retornar tratado, zerar o remainder de movimento e não enviar `EM_LINESCROLL`. Na troca de sinal, zerar o remainder anterior antes de somar o novo delta. Não modificar texto, caret, seleção, undo buffer, foco, IME, clipboard, fonte, borda, scrollbars ou handle; `EM_LINESCROLL` altera somente o viewport. Fora de um `TDACScrollContainer`, sem hit físico no HWND, em design/loading/destroying ou sem handles já materializados, executar o comportamento herdado sem lógica DAC. Permanecem proibidos hook global, `SetWindowSubclass`, troca de `WindowProc`, redispatch de `WM_MOUSEWHEEL`, chamada manual a `DefaultHandler`, timer/polling e APIs DPI.
+Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, testes_interface
+Status: CONFIRMED
+Handoff: delphi_skia_vcl deve continuar no mesmo branch e substituir somente o ramo owner do `TDACNativeMemo`: após `DoMouseWheel` e completar o remainder, calcular `SPI_GETWHEELSCROLLLINES` e enviar um único `EM_LINESCROLL(0, signedLines)` ao próprio HWND; remover a consolidação que libera `WM_MOUSEWHEEL` ao default proc. O gate in-process obrigatório deve usar fixture `ssNone/bsNone/WordWrap=True`, janela mostrada, cursor screen-space no Memo e `WM_MOUSEWHEEL` entregue ao `MemoControl.Handle`. Casos exatos: (1) bottom + raw `+60`: Memo/outer imóveis, remainder exclusivo do Memo; segundo `+60`: `FirstVisibleLine` diminui pelo número de linhas configurado e outer imóvel; (2) reset bottom + `+120`: somente Memo sobe; (3) top + `-120`: somente Memo desce; (4) middle `+120/-120`: somente Memo na direção correta; (5) top + `+120` e bottom + `-120`: somente outer; (6) uma linha antes de cada borda, primeiro detent leva somente Memo à borda e o seguinte move somente outer; (7) no limite, `+60/+60` ou `-60/-60` acumulam exclusivamente no outer; (8) `+60,-60,-60` cancela o remainder antigo e move apenas no segundo delta da nova direção; (9) `SPI=0`, fallback de falha e `WHEEL_PAGESCROLL` são testados por helper determinístico/injetável, sem alterar a configuração global do Windows; (10) `ssVertical` repete owner/handoff e atualiza a scrollbar sem mudar o contrato. Cada passo captura antes/depois `EM_GETFIRSTVISIBLELINE`, capacidade final, outer position, HWND, `GetFocus`, `SelStart`, `SelLength`, texto, `EM_CANUNDO` e contadores de eventos, proibindo child+outer simultâneos. Depois dos builds/gates, testes_interface deve repetir fisicamente `-60,-60` e `-120` isolado do MEM-QA-130 em Light/Dark antes de retomar a matriz.
+
+ID: MEM-ARCH-132
+Data: 2026-07-24
+Demanda/branch: real-demo-process-lifecycle-gate / codex/fix-demo-visual-regressions
+Fato: MEM-QA-132 registrou dois launches por Computer Use do executável canônico SHA-256 `E578FA39FE86954DE1B0BE3000C394294EC0D4EC3D511C6DE325EB401BE3E84E` sem janela/modal observável após aproximadamente 1,2 s, embora DACDemoStartup e DACComponentsDesignLifecycle passassem. A reprodução externa controlada do mesmo `Build/EXE/Win32/Debug/Demo.exe`, sem recompilar ou alterar código/git, contradisse uma falha de startup atual: após 4 s o PID 36768 permanecia vivo e responsivo; EnumWindows encontrou `TForm1`, HWND 22284744, visível/habilitado, caption `DAC Componentes - Demo` e retângulo 245,110,1461,908; `WM_CLOSE` enviado a esse HWND encerrou o processo normalmente com exit code 0. O identificador genérico `Process.MainWindowHandle`, porém, apontava para HWND 3082944, classe `UAC_InputIndicatorOverlayWnd`, caption vazia, e não para `TForm1`; também havia janelas IME/Touch e `TApplication` do mesmo PID. Isso demonstra que escolher a primeira/main window do processo pode produzir exatamente o falso negativo de janela desaparecida e até fechar o alvo errado. Não surgiu novo Application Error/WER no intervalo desse launch. Existe um APPCRASH anterior, às 17:05, com exceção Delphi `0x0eedfade` em KERNELBASE, mas ele antecede o executável atual, gravado às 20:39, e não pode ser atribuído a este SHA.
+Decisão: MEM-QA-132 fica classificado como falha física não reproduzida e forte candidato a defeito de seleção/observação da automação; não autoriza mudança funcional no Memo nem remoção de `RegisterClass/UnregisterClass`. `TDACNativeMemo` ser privado é irrelevante em runtime: a visibilidade é apenas de compilação, e o registry opera por classe/RTTI. O registro continua necessário ao round-trip do subcomponente concreto criado com `SetSubComponent(True)`. O RTL Delphi 10.2 só levanta `EFilerError(SDuplicateClass)` quando o mesmo ClassName já pertence a outro ponteiro de classe; a Demo usa `DACSkiaComponentsRuntime` uma única vez por `DCC_UsePackage`, e a BPL copiada no diretório da Demo tem o mesmo hash da BPL produzida, portanto não há evidência atual de duplicação. `UnregisterClass` roda na finalization e não explica uma janela que supostamente nunca materializou; o encerramento real com exit code 0 também prova a finalization atual. DACDemoStartup usa a mesma runtime package e cobre inicialização, style, CreateForm e pump manual, mas não chama `Application.Run`; DACComponentsDesignLifecycle liga as units de componentes diretamente e também não valida o executável empacotado. Ambos permanecem úteis, mas nenhum substitui o processo real.
+Evidência: `Build/VisualValidation/mem-qa-132/summary.txt`; `Build/VisualValidation/mem-qa-132/steps.txt`; `Build/EXE/Win32/Debug/Demo.exe` SHA-256 `E578FA39FE86954DE1B0BE3000C394294EC0D4EC3D511C6DE325EB401BE3E84E`; `Build/EXE/Win32/Debug/DACSkiaComponentsRuntime.bpl` e `Build/Packages/Win32/Debug/Bpl/DACSkiaComponentsRuntime.bpl` SHA-256 `37CAAE90A556EC9C2530856C1DD1E45DBD342C21B65F903A4B2D2C6D6E746B8A`; probe externo de 2026-07-24 com EnumWindows/PID 36768, `TForm1` HWND 22284744 e exit code 0; Event Viewer Application IDs 1000/1001, APPCRASH antigo de 17:05 com `0x0eedfade`; `demo/Demo.dpr`; `demo/Demo.dproj:DCC_UsePackage,CopySkiaRuntimeForDemo`; `Package/DACSkiaComponentsRuntime.dpk`; `Tests/DACDemoStartup.dpr:RunStartupGate`; `Tests/DACComponentsDesignLifecycle.dproj`; `Tests/DACPhysicalQAController.dpr`; `Source/Controls/DAC.Components.Controls.Memo.pas:TDACNativeMemo,SetSubComponent,initialization,finalization`; Delphi 10.2 `System.Classes.pas:TRegGroup.RegisterClass,TRegGroups.Registered`.
+Impacto: Deve ser criado ou ampliado um supervisor externo em `DACPhysicalQAController`, por exemplo `startlifecycle`, que execute exatamente o `Demo.exe` entregue com working directory explícito e retenha o HANDLE/PID do CreateProcess. O gate registra hashes de EXE/BPL, command line, diretório, timestamps, PID, exit code, stdout/stderr redirecionados mesmo que vazios e todas as janelas top-level do PID. A janela-alvo é encontrada por EnumWindows exigindo simultaneamente PID correto, classe `TForm1`, caption `DAC Componentes - Demo`, `IsWindowVisible`, `IsWindowEnabled` e client rect não vazio; é proibido usar `Process.MainWindowHandle`, primeira janela do PID ou caption vazia. Overlays de IME/UAC/Touch e a janela `TApplication` são registrados, mas nunca escolhidos como alvo. O processo deve permanecer vivo por pelo menos 5 s depois da materialização; em três instantes separados, `SendMessageTimeout(WM_NULL)` ao `TForm1` deve provar que o loop responde. Qualquer popup/modal VCL ou `#32770` visível, com owner/root no processo e área não vazia, falha o gate e é preservado para captura, nunca fechado ou aceito automaticamente. O encerramento envia `WM_CLOSE` somente ao HWND `TForm1`, aguarda o processo por até 5 s e exige desaparecimento da janela, processo finalizado e exit code 0; timeout, janela oculta sem saída ou necessidade de TerminateProcess são falhas. Se o processo terminar antes do ready, o supervisor deve anexar exit code e eventos Application Error/WER filtrados entre start e end+5 s. Para `0x0eedfade` ou exit sem diagnóstico, o próximo passo é executar sob debugger/first-chance Delphi ou habilitar WER LocalDumps temporariamente e resolver ExceptAddr pelo MAP da mesma build. `Application.OnException` cobre somente exceções despachadas pelo loop; um wrapper diagnóstico pode marcar `Application.Initialize`, TrySetStyle, CreateForm e Run e registrar/repropagar exceções síncronas, mas não captura initialization de units antes do `begin`. Nenhum handler permanente pode engolir exceção, devolver sucesso, ocultar modal ou continuar a execução.
+Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, testes_interface
+Status: CONFIRMED
+Handoff: delphi_skia_vcl deve manter `TDACNativeMemo` e seu registro como estão e implementar somente o gate externo de lifecycle real, preferencialmente como comando de `DACPhysicalQAController`, retornando log completo e prova com o SHA exato. revisao_codigo deve bloquear seleção por MainWindowHandle, sleep isolado sem prova de responsividade, TerminateProcess como caminho aprovado, handler que suprima exceção/modal e qualquer alteração especulativa no Memo. testes_interface deve repetir MEM-QA-132 apontando explicitamente para o HWND `TForm1`, confirmar janela persistente e depois fechar por automação; se Computer Use ainda não enxergar esse HWND enquanto o supervisor o prova, registrar a divergência como infraestrutura e continuar a QA física por HWND/PID, não rebaixar o binário.
+
+ID: MEM-ARCH-DB-001
+Data: 2026-07-28
+Demanda/branch: data-aware-suite / codex/data-aware-suite
+Fato: O baseline `d038a51a97d7b44b8157e1c05b264aa83d15ea01` já possui oito classes públicas em `DAC.Components.Controls.DataAware.pas`: `TDACDBEdit(TDACEdit)`, `TDACDBMemo(TDACMemo)`, `TDACDBComboBox(TDACComboBox)`, `TDACDBDateTimePicker(TDACDateTimePicker)`, `TDACDBCheckBox(TDACCheckBox)`, `TDACDBRadioButton(TDACRadioButton)`, `TDACDBToggleSwitch(TDACToggleSwitch)` e `TDACDBSlider(TDACSlider)`. Cada uma repete criação/configuração/liberação de `TFieldDataLink`, `DataSource/DataField`, `Notification`, `CM_EXIT`, DataChange e UpdateData. Há defeitos contratuais ainda não homologados: DataChange pode disparar o `OnChange` do controle e marcar o link durante refresh; combo grava apenas texto; date não representa null e mantém valor visual anterior; check/radio/toggle forçam `AsBoolean`, sem valores customizados; radio não expõe valor de opção; slider usa somente `AsInteger`; EditingChange altera diretamente `Enabled/ReadOnly` publicados. O `TDACDataGrid` já preserva `TDBGrid`/DataLink nativos, usa observer separado e desenha o client ativo por overlay Skia com `DefaultDrawing=False`, mas precisa entrar na mesma matriz comportamental. Runtime e design-time já são packages separados; o runtime requer `vcldb` e deve continuar único, sem package DB adicional. A Demo possui somente `tsGrid`; cria `TClientDataSet/TDataSource` e botões de densidade em runtime, portanto ainda não demonstra os wrappers DB em DFM. DesignLifecycle verifica binding/Notification superficial dos oito e do grid, mas não prova Edit/Post/Cancel, null, conversões, lookup, navigator, refresh externo ou eventos.
+Decisão arquitetural: Preservar integralmente os nomes, ancestrais, unit pública, propriedades `DataSource`, `DataField`, `OnChange` e DFMs dos oito componentes atuais; `TDACDataGrid` permanece descendente de `TDBGrid`. Extrair somente o mecanismo repetido para `Source/Controls/DataAware/DAC.Components.Controls.DataAware.Binding.pas`, com `TDACFieldDataLink = class(TFieldDataLink)` interno e callbacks tipados de leitura, escrita e estado de edição, sem interface ref-counted e sem dependência de painter, form, FireDAC ou design-time. O adapter mantém um guard `ReadingControl` contra recursão, faz `Edit` antes de aceitar uma mudança destinada ao field, chama `Modified` exatamente uma vez depois da mudança de usuário, chama `UpdateRecord` no `CM_EXIT` e quando o próprio dataset solicitar atualização, e nunca chama `Post`, `Cancel`, `CheckBrowseMode`, `ApplyUpdates` ou navegação. DataChange externo entra no guard, atualiza o controle e não emite `OnChange`; falha de `Edit` executa `Reset` do buffer visual sem alterar field. Exceções de `Edit`, conversão e `UpdateRecord` não são capturadas/silenciadas; devem subir ao host VCL. Troca de DataSource remove `FreeNotification` do anterior, atribui o novo link e registra `FreeNotification`; `Notification(opRemove)` zera o link. Browse/Edit/Insert/Post/Cancel e navegação continuam decisões do `TDataSet` ou do navigator acionado explicitamente. Não sobrescrever `Enabled` ou `ReadOnly` publicados durante `EditingChange`: cada visual base recebe apenas um bridge protegido append-only de capacidade efetiva de binding, usado nos caminhos de mouse/teclado/popup e na configuração do filho nativo; o valor do usuário continua preservado. Em notificações nativas de texto que ocorram após o Windows alterar o buffer, `Edit` ainda deve anteceder qualquer escrita no field; se recusado, o adapter restaura o valor pelo DataLink. Esse é o único ponto comum; serialização e API pública continuam nas classes concretas.
+Organização e novos ancestrais: Os oito tipos atuais e os novos `TDACDBButtonEdit(TDACButtonEdit)` e `TDACDBText(TDACSystemText)` permanecem em `DAC.Components.Controls.DataAware.pas`, usando o adapter compartilhado; `TDACDBText` é somente leitura, mostra `Field.DisplayText`, nunca entra em edição, não publica `OnChange` de dados e preserva `DrawText`/texto nativo. `TDACDBButtonEdit` vincula exclusivamente `Text`; `OnButtonClick` continua ação independente e não chama Edit/Modified/UpdateRecord por si só, inclusive quando o dataset está Browse/read-only. `TDACDBLookupComboBox` fica em `DAC.Components.Controls.DataAware.Lookup.pas` como wrapper `TCustomControl` com chrome/paintbox Skia e um `TDBLookupComboBox` VCL interno, publicando `DataSource`, `DataField`, `ListSource`, `KeyField`, `ListField`, `ListFieldIndex`, `DropDownRows`, `DropDownWidth` e `KeyValue` público; o controle nativo é a única autoridade dos data/list links e lookup, sem segundo `TFieldDataLink` concorrente. Chaves compostas/Variant e múltiplos ListField continuam com a semântica VCL. `TDACDBNavigator` fica em `DAC.Components.Controls.DataAware.Navigator.pas` como wrapper `TCustomControl` Skia sobre um `TDBNavigator` VCL interno; o overlay próprio desenha botões/ícones/hot/focus por tokens e encaminha cada ação ao botão nativo correspondente através de access class localizada, preservando `VisibleButtons`, `Hints`, `ConfirmDelete`, `BeforeAction`, `OnClick`, habilitação, confirmação de delete e operações First/Prior/Next/Last/Insert/Delete/Edit/Post/Cancel/Refresh. Navigator e lookup usam `Notification/FreeNotification` para DataSource/ListSource, mas não duplicam seus DataLinks internos. Helpers, access classes e paintboxes não entram na palette/registry público. `DBListBox`, `DBRadioGroup`, `DBRichEdit` e `DBImage` ficam explicitamente fora desta família.
+Contratos de valor: `TDACDBEdit`, `TDACDBMemo`, `TDACDBButtonEdit` e o combo atual mantêm a compatibilidade já observada: string vazia limpa o field e `TDACDBComboBox` grava `Text`; lookup não é incorporado a esse combo e fica na classe separada. `TDACDBDateTimePicker` ganha `AllowNull:Boolean=False`, `IsNull:Boolean` com estado não persistido como dado e método `Clear`; field null sempre aparece vazio/IsNull, enquanto `AllowNull` controla apenas se o usuário pode limpar. `Delete` com o picker focado limpa quando CanModify e AllowNull, sem abrir popup; escolher data torna IsNull false; UpdateData executa `Field.Clear` ou `Field.AsDateTime`. A base visual expõe apenas um resolver protegido de display null para manter texto nativo e chrome Skia. `TDACDBCheckBox` ganha `State:TCheckBoxState`, `ValueChecked='True'`, `ValueUnchecked='False'` e `ValueGrayed=''`: ftBoolean usa AsBoolean; campos textuais usam comparação exata aos três valores; field null aparece `cbGrayed`; grayed escreve `ValueGrayed` ou Clear quando vazio. Valor textual desconhecido aparece grayed sem mutar o dataset. `TDACDBRadioButton.Value` seleciona quando `Field.AsString=Value` e, ao marcar, grava Value; para DFMs existentes com `Value=''`, mantém-se o modo boolean legado. Desmarcação provocada por refresh/grupo não escreve. `TDACDBToggleSwitch` ganha `ValueOn='True'` e `ValueOff='False'`; ftBoolean continua AsBoolean e texto usa os valores publicados. `TDACDBSlider` mantém `Value:Integer` e ganha `ValueScale:Double` igual a 1 por padrão: fields integrais usam valor inteiro; ftFloat/ftCurrency/ftBCD/ftFMTBcd usam `Value*ValueScale`, e leitura calcula/arredonda somente depois de validar finitude, escala positiva e range. Conversão e overflow usam temporários e só então atribuem field/controle; erro propaga e não limpa nem substitui o valor anterior. Toda mudança real de usuário emite `OnChange` uma vez; refresh/rebind/Post/Cancel externo emite zero.
+Skia, hooks e lifecycle: Skia desenha somente background, borda, foco, hover, ícones, separadores e superfícies; edit/memo/button edit/date/combo/lookup mantêm texto, caret, seleção, IME, clipboard, undo/redo e popup nativos; `TDACDBText` continua a exceção deliberada de texto VCL/DrawText. Os dez descendentes de classes DAC reaproveitam o hook localizado do ancestral e testes devem provar essa resolução, sem registrar hooks globais em `TEdit`, `TMemo`, `TComboBox`, `TDBLookupComboBox`, `TDBNavigator` ou classes VCL base. Somente lookup e navigator, que são wrappers novos, recebem pares explícitos e idempotentes `RegisterStyleHook/UnRegisterStyleHook` para suas próprias classes, além de pintura direta Skia. `TDACDataGrid` mantém `TScrollingStyleHook` localizado e seu overlay. Em Create/Resize/Loaded/setters/streaming, os novos wrappers não consultam `ClientWidth/ClientHeight/ClientRect/Handle`, não fazem z-order/redraw e não materializam HWND quando `Parent=nil`, `csDesigning`, `csLoading` ou `csDestroying`; usam Width/Height lógico. Parenting/z-order só ocorre com Parent e handles já válidos. O alvo é Delphi 10.2 Win32 sem High DPI: não introduzir `CurrentPPI`, `MulDiv`, `ScaleForPPI`, `ChangeScale` ou matriz de DPI nesta demanda.
+Streaming, registro e design-time: `DACSkiaComponentsRuntime.dpk/.dproj` continua requerendo `rtl,vcl,vcldb,vclimg,Skia.Package.RTL,Skia.Package.VCL` e recebe Binding, Lookup e Navigator no mesmo package; nenhum `DesignIntf`, `DBReg` ou `designide` entra no runtime. `DAC.Components.Controls.Register` registra os quatro novos componentes, mantém os oito e o grid, e o teste compara `GetClass` com cada classe concreta. `DACSkiaComponentsDesign` continua dependente do runtime e ganha `Source/DesignTime/DAC.Components.Design.DataAware.pas`; `RegisterComponents('DAC Skia DB', ...)` passa a conter os doze wrappers DB, enquanto `TDACDataGrid` permanece na página atual para não quebrar palette/DFM. Property editors de `DataField` usam `TDataFieldProperty`/contrato equivalente do designide; lookup usa editor próprio baseado em `ListSource` para `KeyField` e `ListField`, aceitando a sintaxe múltipla nativa; esses tipos jamais vazam para o runtime. DesignLifecycle deve criar cada classe sem Parent, atribuir todas as propriedades publicadas, fazer round-trip textual e binário, attach/detach Parent, RecreateWnd repetido, destruir DataSource/ListSource antes/depois do controle e exigir zero janela/handle precoce, zero exceção assíncrona e zero leak. A alteração de layout privado da BPL exige recompilar consumidores contra o novo DCP/BPL, mas não existe migração de source/DFM para os oito atuais; novas propriedades são append-only com defaults compatíveis. A correção visível de null/date e supressão de OnChange durante refresh é intencional.
+Demo DFM-first: Adicionar `tsDataAware: TTabSheet` declarativa, sem substituir as 15 famílias existentes, contendo os oito componentes homologados, `TDACDBButtonEdit`, `TDACDBText`, `TDACDBLookupComboBox`, `TDACDBNavigator` e `TDACDataGrid`. Declarar no DFM `demoGridDataSet:TClientDataSet` e `demoGridDataSource:TDataSource` preservando esses nomes já procurados pelos testes, além de `demoLookupDataSet/demoLookupDataSource`; migrar `BuildDemoGridData` para apenas definir/abrir/popular os datasets DFM quando inativos, sem criar componentes visuais ou DataSource em runtime. O dataset principal inclui string, memo, date nullable, boolean, código textual S/N, inteiro, decimal, radio value, toggle value, lookup key, status e actions. DataSource/DataField/ListSource/KeyField/ListField de todos os controles e do grid são streamados. Botões DFM explícitos acionam Edit, Insert, Post e Cancel; um `TDACDBText` ou status nativo mostra `Browse/Edit/Insert`, e o navigator prova navegação/ações. Post/Cancel da Demo são ações do usuário, nunca automação dos componentes. A página usa `TDACScrollContainer/TDACGridContainer` para resize vertical, ordem de Tab lógica e sem sobreposição; Light/Dark altera somente tokens, não valores, foco ou bounds. Nenhuma regra de binding reside no form.
+Testes e gates obrigatórios: Criar `Tests/DACComponentsDataAware.dpr/.dproj` console com `TClientDataSet/TDataSource`, sem FireDAC, cobrindo separadamente dataset nil/inactive/empty/read-only; string vazia/null, memo multiline, date null/carregar/limpar por Delete, ftBoolean e S/N/grayed, radio Value, toggle ValueOn/ValueOff, slider ftInteger e decimal com ValueScale, combo textual, lookup key/display/rebind, ButtonEdit com ação independente e DBText DisplayText. Para cada controle provar Browse→Edit antes do field write, Modified/UpdateRecord, ausência de auto Post, Post externo, Cancel externo, navegação externa, erro de conversão propagado sem perda, OnChange uma vez, refresh zero vezes, troca/destruição de DataSource e, no lookup, ListSource. Navigator deve percorrer todas as ações nativas e emitir BeforeAction/OnClick uma vez. Homologar `TDACDataGrid` com inactive/empty/active/read-only, seleção, scroll, edição permitida quando configurada, rebinding e transições de estado sem esconder o overlay. Ampliar Interaction para registry, bridge protegido, demo DFM e contratos visuais; ampliar DesignLifecycle para os quatro novos e a matriz Parent=nil/round-trip/RecreateWnd/leaks; DemoStartup deve carregar a nova página/datasets sem modal e o gate físico do Demo real deve permanecer. Build exato Win32 Debug, nessa ordem: runtime package; teste DataAware; Interaction; DesignLifecycle; DemoStartup; PhysicalQAController; design package; Demo. Executar todos os consoles de `Build/Tests/Win32/Debug` e exigir PASS/exit 0; artefatos ficam somente sob `Build/Packages`, `Build/Tests`, `Build/EXE`, `Build/Logs` e `Build/VisualValidation`. QA física obrigatória em `Build/EXE/Win32/Debug/Demo.exe`: Light e Dark; Browse/Edit/Insert/Post/Cancel; Tab/Shift+Tab/Space/setas/Delete; foco/caret/seleção/clipboard; lookup popup mouse/teclado/Esc; navigator; grid/scroll; datasource ativo/vazio; resize desktop/compacto. Não há gate High DPI nesta demanda.
+Evidência: `IMPLEMENTATION_PLAN.md:premissas,P4 Data-aware`; `Source/Controls/DataAware/DAC.Components.Controls.DataAware.pas:18-203,211-866`; `Source/Controls/DAC.Components.Controls.DataGrid.pas:40-145,216-272,360-430,433-675,856-884,926-1060,1133-1255`; `Source/Controls/DAC.Components.Controls.ButtonEdit.pas:24-158`; `Source/Controls/DAC.Components.Controls.SystemText.pas:45-107`; `Source/Controls/DAC.Components.Controls.ComboBox.pas:32-209`; `Source/Controls/DAC.Components.Controls.DateTimePicker.pas:32-184`; `Source/Controls/DAC.Components.Controls.Selectors.pas:28-202`; `Source/Controls/DAC.Components.Controls.Register.pas`; `Source/Hooks/DAC.Components.Hooks.Register.pas`; `Source/DesignTime/DAC.Components.Design.Register.pas`; `Package/DACSkiaComponentsRuntime.dpk/.dproj`; `Package/DACSkiaComponentsDesign.dpk/.dproj`; `demo/Demo.Principal.pas:BuildDemoGridData`; `demo/Demo.Principal.dfm:tsGrid,demoDataGrid`; `Tests/DACComponentsDesignLifecycle.dpr:BuildInventory,RunDataAware`; `Tests/DACComponentsInteraction.dpr:RequireRuntimeDfmClasses,grid data-aware`; `Tests/DACComponentsSmoke.dpr`.
+Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, testes_interface
+Status: CONFIRMED
+Handoff: delphi_skia_vcl deve implementar MEM-ARCH-DB-001 somente em `codex/data-aware-suite`, preservando o worktree carregado e sem criar branch/package DB paralelo. Ordem: Binding e bridges protegidos; refatoração/homologação dos oito; quatro novos wrappers; registry/hooks/packages/design editors; Demo DFM; teste DataAware e ampliações dos gates; builds e execuções Win32 reais com outputs em Build. Retornar ao orquestrador o diff completo, APIs/defaults, evidências de cada gate e atualização da própria memória, sem commit. revisao_codigo recebe então o SHA/worktree exato e deve bloquear duplicação de DataLink, auto Post/ApplyUpdates, FireDAC, exceção silenciada, perda de API/DFM, hook VCL global, texto Skia editável, handle precoce, evento duplicado, conversão destrutiva, novo package DB ou qualquer um dos quatro componentes excluídos. Somente após `APPROVED` o testes_interface executa a matriz física; apenas se ambos aprovarem o orquestrador autoriza commit, push e PR.
+
+---
+
+ID: MEM-ARCH-DB-038
+Data: 2026-07-30
+Demanda/branch: conclusao-data-aware-etapa-1 / codex/data-aware-suite
+Status: CONFIRMED
+
+Baseline: HEAD `d038a51a97d7b44b8157e1c05b264aa83d15ea01`, worktree deliberadamente sujo e preservado. O manifesto abaixo cobre 38 fontes, DFM, packages e projetos; foi calculado sobre linhas UTF-8 ordenadas no formato `path<TAB>sha256`. SHA-256 agregado: `8c1cf49b4791d173c641ba9b3cc7d9557007339a6ad4a14fc6100fe80aa8d673`.
+
+Manifesto SHA-256:
+- Runtime/API: `DAC.Components.Controls.DataAware.pas=19cf07ff1f555a329d0d36f01c49d0358d8aace1945bb73920bd7e4d8e888f10`; `DataAware.Binding.pas=b7e8a42c09fda420effe37f82405ab5643570b2185006c33a6c43ecc3160cfdd`; `DataAware.Lookup.pas=1c6c7e7ebcd5c93ca904028932eb7660c34295abb3d87cc2ef037122445764a4`; `DataAware.Navigator.pas=8000eac3ac4132edee4f55f5f07577a2890f11025bc57cffc56d439abe72b212`; `DataGrid.pas=2f50a536fead95fbdf62f1085b20857e77efd835642ea6c4934a99b9a75d1c08`; `Edit.pas=2749a93f69c3ac0b01c493b8fdfc4c1fbff30efc42a264ee25a8defd57d6d093`; `Memo.pas=91f19d9c0bfbbcdad40eb3536b981c969769ebcc71747021686a34d617a193d0`; `ButtonEdit.pas=da328d79c2168ba800ca74a5d0fe5d455c6e220cfaa3a0a40f1d8407571b4178`; `ComboBox.pas=c790d25d2e17a295b93436a768ed015faae2b5d24d667dfdb0f2174aff14672f`; `DateTimePicker.pas=df06225ad10e1bea9dbaccaa0111e5cd7552db32fd1b72663551ac1a045ea17b`; `Selectors.pas=72d7269e7099a8463f069d00e7e358864bce84a04e19d706f48d44e2a6c1e629`; `SystemText.pas=9d8ce5af9d8091b3a4c88d5114704469494842383c73b95f31ce59e31ca13c15`; `Register.pas=3045727aba1fa7129b65f566d11314206d61bc528ec57e0fb45922b05fa23452`.
+- Hooks/design-time: `Hooks.DataAware.pas=6d3a7e2f1263f65c1ca5c2b125a39fc041ad3d136100439deb5cc871596938a5`; `Hooks.Register.pas=e407723bb73778e41c78dff7b878f6800e29e2407a2ff75e73bd3bfc474964f3`; `Design.DataAware.pas=30ae6fa70a08dba4109445ba300293c735e61c2c46dbdc11bfdfd572b5547dfd`; `Design.Register.pas=914f0ee6d230cf3c10c1c2b1ad325f975fba9ef1def4765bba86c61a6e0d5d09`.
+- Packages/Demo: `Runtime.dpk=975a792d069dcf16d2a895dfd8713b6df2dcbb43f5bc6828ff781e906ab7897f`; `Runtime.dproj=ec3b311ad25acaa0bb551d5b3a1fa69bc74e56e57acc81136b3b70fb813fe65a`; `Design.dpk=ce920cac46b78715cc093ff51202bcb8db3737069839dd62634d8d48819b79d4`; `Design.dproj=806276ed892683c1ce5b40ebdb9310d529ae774be0005fb3c40d6624bfa4c755`; `Demo.Principal.pas=3cebc6b47dd979ce54594435a31e8223859586bd01a1fbcd6d7246f816a81cbf`; `Demo.Principal.dfm=36e501f8905ea2024a4e17d945c49265cf775e2c8eb26322319945eb5a8c2952`; `Demo.dpr=b1cee980bfc6fe79554593e8f52e56f455755a38b73ba7b4b9d503b10a210b86`; `Demo.dproj=eb2acff1d7c126807f3d01248f45b46ce7b4e7cb8c3ecb1a505c358ea3ff56e1`; `DemoComponentes.groupproj=b34c953300d64f8f0a8b0e45a74fd7a5fb38b3facb6db6830b17f872873df83b`.
+- Projetos de aceite: `DataAware.dpr=41bf48efa1186494c8a051924d23d1a20372819430b1f2b7bad6a4bf7715179f`; `DataAware.dproj=159d0f45314b48a041c1de67121d798279ffc120429bd9c0a74aeba2edd5bb79`; `Interaction.dpr=caacd921b7fd33337ddd3e34f3e8dfab1e74bbc30a4a9512b228d4e15ef05564`; `Interaction.dproj=b524b87947b4bc57b7c008866580889f8521478deedd45ec87a704600f2e2937`; `DesignLifecycle.dpr=4ce4ad5abbd97c32382a99e4180523206f61a42bc99d62a1a61af34dbb0f4d0a`; `DesignLifecycle.dproj=d5da02d99e675ce381199583898c20b07f3635e6248d3109c2f935206d94b4f8`; `DemoStartup.dpr=ebf77a0b44b1f83314bd0db4cbd22e291896fe248ece57f472d40dca3ae62821`; `DemoStartup.dproj=df438c6fd79b39861a46c630646af505d07db3d11a7f7dfb01e72c9ad2650974`; `PhysicalQAController.dpr=43e46aa6dc76513fc563ff739e70763649f29e0611ee5d1aa8ddd6a8a50084f2`; `PhysicalQAController.dproj=c30f434b3c9072a6d3096b825ae8fb1d219e92d1bd652da0c72b55cc3d124117`; `Smoke.dpr=e4852bd91a9d99a849e1b8a7cfec618225944f9045d5446bb233a2200cda242b`; `Smoke.dproj=2e14c4e14378d5db700896b757e12752938f27878164a47ac03c2e8525720ded`.
+
+Inventário e mapa fixado:
+- `TDACDBEdit`: atual `TDACEdit`, destino direto `TDBEdit`. Publica `DataField`, `DataSource`, `OnChange`; deve preservar os contratos DAC `CharCase`, `CornerRadius`, `CounterText`, `EditKind`, `EditMask`, `ErrorText`, `HelperText`, `InputSize`, `LabelText`, `Loading`, `MaxLength`, `PasswordChar`, `Placeholder`, `ReadOnly`, `Required`, `Status`, `Text`, `ThemeMode`, `Variant` e eventos de teclado/foco/mouse.
+- `TDACDBMemo`: atual `TDACMemo`, destino direto `TDBMemo`. Publica `DataField`, `DataSource`, `OnChange`; deve preservar `CornerRadius`, `ErrorText`, `HelperText`, `LabelText`, `Loading`, `Lines`, `ReadOnly`, `Required`, `ScrollBars`, `Status`, `Text`, `ThemeMode`, `WordWrap` e eventos.
+- `TDACDBButtonEdit`: atual `TDACButtonEdit`, destino direto `TCustomEdit`; usa o único `TDACFieldDataLink` permitido para si. Além de `DataField`, `DataSource`, `OnChange`, preserva `ButtonCaption`, `ButtonIconKind=mikSearch`, `ButtonKind=mbkInputAction`, `ButtonWidth`, `ShowButtonIcon=True`, `OnButtonClick` e todos os contratos visuais/textuais do Edit.
+- `TDACDBComboBox`: atual `TDACComboBox`, destino direto `TDBComboBox`. Além de `DataField`, `DataSource`, `OnChange`, preserva `CornerRadius`, `CounterText`, `DropDownCount=8`, `ErrorText`, `HelperText`, `InputSize=misMedium`, `ItemIndex=-1`, `Items`, `LabelText`, `Loading=False`, `ReadOnly=False`, `Required=False`, `Status=mesNormal`, `Style=csDropDownList`, `Text`, `ThemeMode=dtmInherit`, `Variant=mivOutlined`, `OnCloseUp` e `OnDropDown`.
+- `TDACDBDateTimePicker`: atual `TDACDateTimePicker`, destino direto `TDateTimePicker`; usa `TDACFieldDataLink`. Preserva `AllowNull=False`, `IsNull` somente leitura, `Clear`, `CornerRadius`, `DateTime`, `ErrorText`, `FormatString`, `HelperText`, `LabelText`, `Loading=False`, `PickerKind=dtkDate`, `ReadOnly=False`, `Required=False`, `Status=mesNormal`, `ThemeMode=dtmInherit`, `TimeStepMinutes=5` e eventos.
+- `TDACDBCheckBox`: atual `TDACCheckBox`, destino direto `TDBCheckBox`. Preserva `State=cbUnchecked`, `ValueChecked='True'`, `ValueUnchecked='False'`, `ValueGrayed=''`, `Checked=False`, `Caption`, `ThemeMode=dtmInherit`, `OnChange` e eventos.
+- `TDACDBRadioButton`: atual `TDACRadioButton`, destino direto `TRadioButton`; usa `TDACFieldDataLink`. Preserva `DataField`, `DataSource`, `Value=''` como modo boolean legado, `Checked=False`, `Caption`, `ThemeMode=dtmInherit`, `OnChange` e eventos.
+- `TDACDBToggleSwitch`: atual `TDACToggleSwitch`, destino direto `TCheckBox`; usa `TDACFieldDataLink`. Preserva `DataField`, `DataSource`, `ValueOn='True'`, `ValueOff='False'`, `Checked=False`, `Caption`, `ThemeMode=dtmInherit`, `OnChange` e eventos.
+- `TDACDBSlider`: atual `TDACSlider`, destino direto `TTrackBar`; usa `TDACFieldDataLink`. Preserva os aliases publicados `Minimum=0`, `Maximum=100`, `Position=0`, `Value=0`, `ShowValue=True`, `ValueScale=1`, `ThemeMode=dtmInherit`, `DataField`, `DataSource`, `OnChange` e eventos. A próxima etapa adiciona `IsNull` e `Clear` sem serializar o estado transitório.
+- `TDACDBText`: atual `TDACSystemText`, destino direto `TDBText`. Preserva `DataField`, `DataSource`, `Text`, `Bold`, `FontFamily`, `FontSize`, `HorzAlign`, `MaxLines`, `Role=mtrSmall`, `TextColor`, `ThemeMode=dtmInherit`, `Tone=mttDefault`, `VertAlign` e eventos de mouse; leitura continua por `Field.DisplayText`.
+- `TDACDBLookupComboBox`: atual `TCustomControl` com `TDBLookupComboBox` interno, destino direto `TDBLookupComboBox`. Preserva `DataField`, `DataSource`, `ListSource`, `KeyField`, `ListField`, `ListFieldIndex=0`, `DropDownRows=7`, `DropDownWidth=0`, `ThemeMode=dtmInherit`, `TabStop=True`, `KeyValue` e `LookupControl`.
+- `TDACDBNavigator`: já é `TDBNavigator` e permanece. Preserva `DataSource`, `ThemeMode=dtmInherit`, `VisibleButtons`/defaults VCL, `ConfirmDelete`, `Hints`, `BeforeAction`, `OnClick`, `Flat=True`, `TabStop=True`, mais as APIs públicas `ExecuteButton`, `ButtonBounds`, `IsButtonEnabled`, `NavigatorControl`, seleção e métricas de pintura.
+- `TDACDataGrid`: já é `TDBGrid` e permanece. Preserva `DataSource`, `Density=dgdMedium`, `CornerRadius=8`, `Loading=False`, `ShowFooter=True`, `FooterText='Total: 0 registros'`, `FooterValue=''`, `StatusFieldName='STATUS'`, `ThemeMode=dtmInherit`, `ReadOnly=True`, `Options=[dgEditing,dgTitles,dgColumnResize,dgColLines,dgRowLines,dgTabs,dgConfirmDelete,dgCancelOnExit,dgTitleClick,dgTitleHotTrack]`, eventos nativos e `OnActionClick`.
+
+Enums/eventos congelados: `TDACThemeMode=(dtmInherit,dtmDark,dtmLight)`; `TDACEditKind`, `TDACEditStatus`, `TDACInputSize`, `TDACInputVariant`; `TDateTimeKind`; `TCheckBoxState`; `TDACSystemTextRole/Tone/HorzAlign/VertAlign`; `TDACDataGridDensity=(dgdSmall,dgdMedium,dgdLarge)`, `TDACDataGridWheelRoute=(dgwrNone,dgwrGridWindow,dgwrSkiaOverlay)`, `TDACDataGridActionKind=(mdgakNone,mdgakEdit,mdgakDelete,mdgakMore)`; `TNavigateBtn/TNavButtonSet`; `OnChange:TNotifyEvent`, `OnButtonClick:TNotifyEvent`, eventos VCL de foco/teclado/mouse/popup, Navigator `BeforeAction/OnClick` e Grid `OnActionClick:TDACDataGridActionClickEvent`.
+
+Streaming DFM: os nomes de classe não mudam. O DFM atual serializa, entre outros, `Role/Text` no DBText; `ButtonCaption/OnButtonClick`; `Items`; os três valores do Check; `Value` do Radio; `ValueOn/ValueOff`; `ValueScale`; `AllowNull`; todos os DataSource/DataField; lookup completo; navigator; e Grid `Options/ReadOnly`. Não é necessário conversor de DFM se cada nome, tipo e default acima for republicado exatamente e propriedades nativas compartilhadas mantiverem a semântica VCL. Remover, renomear, mudar tipo/default ou deixar de republicar qualquer contrato DAC torna o DFM incompatível.
+
+Compatibilidade explícita e riscos Delphi 10.2/Win32:
+1. Trocar ancestrais altera layout de classe/BPL/DCP: todos os consumidores precisam recompilar; compatibilidade binária não é possível, ainda que source/DFM seja preservado.
+2. Helpers públicos hoje herdados (`EditControl`, `MemoControl`, `ComboControl`, `PickerControl`, `NativeLabel`, `ButtonControl`, `RightContentReserve`) não são streamados. Alguns não podem manter a mesma semântica/tipo após herança direta, especialmente `EditControl:TMaskEdit` quando o próprio ButtonEdit passa a `TCustomEdit`. Eles exigem façade compatível real ou migração source documentada; nunca retornar proxy inerte/nil fingindo compatibilidade.
+3. `TDBEdit`, `TDBMemo`, `TDBComboBox`, `TDBCheckBox`, `TDBText`, `TDBLookupComboBox`, `TDBNavigator` e `TDBGrid` já possuem DataLink nativo. Manter o atual `FDataLink` neles criaria binding duplo, eventos/reentrância e escrita concorrente. O `TDACFieldDataLink` fica exclusivamente em ButtonEdit, DateTimePicker, RadioButton, ToggleSwitch e Slider.
+4. `OnChange`, `ReadOnly`, `Text`, `State`, `ValueChecked/Unchecked/Grayed`, `Items`, `Lines`, `DataSource/DataField` e `KeyValue` colidem ou sobrepõem contratos nativos. A implementação deve usar a autoridade nativa e republicar, não sombrear com um segundo estado.
+5. O wrapper Lookup atual possui somente o DataLink do filho nativo e não está duplicado; na migração direta o filho/overlay não pode continuar como segunda autoridade. Navigator e Grid já estão no ancestral aprovado.
+6. Delphi 10.2 exige somente APIs VCL existentes nessa versão, `vcldb` no runtime, hooks localizados em classes DAC e nenhum acesso a `strict private`. Não introduzir FireDAC, package DB separado, `CurrentPPI`, `MulDiv`, `ScaleForPPI`, `ChangeScale`, Per-Monitor DPI ou escala manual.
+
+Decisão: este registro substitui, para a conclusão por etapas, o mapa de wrappers de MEM-ARCH-DB-001. A prioridade é ancestral nativo direto e DataLink único. A compatibilidade DFM é obrigatória e viável sem conversor sob republicação exata; compatibilidade binária não é prometida. Helpers públicos não streamados incompatíveis devem ser tratados explicitamente, nunca omitidos silenciosamente.
+
+Evidência: units e manifesto acima; `demo/Demo.Principal.dfm:1680-1941`; `Source/DesignTime/DAC.Components.Design.Register.pas:73-88`; `Source/Controls/DAC.Components.Controls.Register.pas:49-61`; `Source/Hooks/DAC.Components.Hooks.Register.pas:49-139`; ausência de alteração produtiva nesta etapa. Nenhum build, teste ou executável foi iniciado.
+
+Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, testes_interface
+Handoff: delphi_skia_vcl deve executar somente a Etapa 2 sobre o baseline agregado `8c1cf49b4791d173c641ba9b3cc7d9557007339a6ad4a14fc6100fe80aa8d673`: migrar primeiro os cinco controles que continuarão com `TDACFieldDataLink` e remover o adapter dos oito controles com DataLink VCL nativo, sem tocar ainda em StyleHooks, Demo, packages ou testes além do mínimo estritamente necessário para compilar o runtime. Antes de editar, deve registrar quais helpers públicos não streamados serão preservados por façade funcional e quais serão migração source explícita. Deve retornar ao orquestrador diff, APIs afetadas, prova de ausência de DataLink duplo e novo hash; qualquer mudança de DFM ou perda de propriedade publicada devolve a demanda à arquitetura.

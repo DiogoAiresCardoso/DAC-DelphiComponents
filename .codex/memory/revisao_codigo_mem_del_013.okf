@@ -1,0 +1,53 @@
+# Re-revisao de codigo - MEM-DEL-013
+
+Data: 2026-07-21  
+Branch: `codex/fix-demo-visual-regressions`  
+Status: `APPROVED_FOR_FINAL_UI_QA`
+
+## Repaint durante scroll
+
+- `TDACScrollContainer` e `TDACGridContainer` sincronizam `Color` com o
+  token de `BackgroundColor`, inclusive quando a superficie e transparente e
+  precisa herdar a superficie do parent.
+- Os handlers `WM_ERASEBKGND` preenchem todo o `ClientRect` por brush nativo
+  da mesma cor tokenizada antes de devolver sucesso. Assim a janela de pixels
+  expostos pelo deslocamento nativo de filhos nao mostra o brush preto/default
+  antes da camada Skia ser redesenhada.
+- O ScrollContainer reposiciona/solicita redesenho do chrome apos mensagens de
+  scroll, wheel e resize; o send-to-back da surface Skia continua protegido por
+  handle e por `not csDesigning`. Nao foi identificada regressao de Designer
+  ou acesso a parent/handle antes de o controle ter contexto runtime.
+
+## Evidencia visual e gate de pixels
+
+- Foram inspecionadas as capturas PrintWindow de 144 PPI em
+  `Build/VisualValidation/dac-demo-printwindow-144-top.png`,
+  `...-middle.png` e `...-bottom.png`. Topo, meio e fim mantem superfices
+  claras tokenizadas; nao ha faixa preta entre grids, no viewport ou na borda
+  durante o scroll.
+- O interaction exerce `SB_TOP`, `SB_PAGEDOWN` e `SB_BOTTOM`. Em cada etapa,
+  coleta tres pixels no viewport pelo DC nativo e exige a cor do token dentro
+  de tolerancia RGB 24, recusando `CLR_INVALID` e o preto/default. O gate
+  tambem mantem os cenarios anteriores de reflow, grid, tooltip e scroll.
+
+## Verificacao executada pelo revisor
+
+- Runtime, design-time, Demo, smoke e interaction recompilaram Win32/Delphi
+  32.0 com `0 Warning(s)` e `0 Error(s)`.
+- `DACComponentsSmoke.exe`: `PASS`, exit code `0`.
+- Cinco execucoes consecutivas de `DACComponentsInteraction.exe`: todas
+  `PASS`, exit code `0`; nenhuma flakiness observada.
+- `git diff --check`: sem erro de whitespace (apenas avisos LF/CRLF).
+
+## Handoff ao QA final
+
+Liberado para QA final visual em 96/120/144/192 PPI. Validar scroll
+topo/meio/fim com redimensionamento, tabs horizontal/vertical, foco/teclado,
+tooltip/modal e Designer. Sem regressao, o orquestrador pode seguir para o
+gate de commit e PR.
+
+## Observacao de worktree
+
+O build continua removendo `Package/DACSkiaComponentsRuntime.vrc`; o revisor
+nao restaurou nem incluiu esse arquivo. O orquestrador precisa resolver esse
+alvo explicitamente antes do commit.

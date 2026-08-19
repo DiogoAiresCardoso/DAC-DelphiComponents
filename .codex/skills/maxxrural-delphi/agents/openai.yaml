@@ -1,0 +1,4 @@
+interface:
+  display_name: "MaxxRural Delphi"
+  short_description: "Work inside the MaxxRural Delphi codebase"
+  default_prompt: "Use $maxxrural-delphi to make a Delphi change in the MaxxRural project."

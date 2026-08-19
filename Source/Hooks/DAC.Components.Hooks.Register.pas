@@ -16,7 +16,6 @@ uses
   DAC.Components.Controls.Charts,
   DAC.Components.Controls.ComboBox,
   DAC.Components.Controls.Container,
-  DAC.Components.Controls.DataGrid,
   DAC.Components.Controls.DateTimePicker,
   DAC.Components.Controls.Edit,
   DAC.Components.Controls.Feedback,
@@ -28,9 +27,12 @@ uses
   DAC.Components.Controls.ReportViewer,
   DAC.Components.Controls.ScrollContainer,
   DAC.Components.Controls.Selectors,
+  DAC.Components.Controls.SkiaControl,
   DAC.Components.Controls.StatusBar,
+  DAC.Components.Controls.StatusTimelineChart,
   DAC.Components.Controls.SummaryCard,
   DAC.Components.Controls.Tabs,
+  DAC.Components.Hooks.ScrollContainer,
   DAC.Components.Hooks.SkiaControls;
 
 var
@@ -41,8 +43,8 @@ begin
   if GHooksRegistered then
     Exit;
 
-  TCustomStyleEngine.RegisterStyleHook(TDACScrollContainer, TScrollBoxStyleHook);
-  TCustomStyleEngine.RegisterStyleHook(TDACDataGrid, TScrollingStyleHook);
+  TCustomStyleEngine.RegisterStyleHook(TDACScrollContainer,
+    TDACScrollContainerStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACContainer, TDACSkiaControlStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACGridContainer, TDACSkiaControlStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACButton, TDACSkiaControlStyleHook);
@@ -57,10 +59,6 @@ begin
   TCustomStyleEngine.RegisterStyleHook(TDACSlider, TDACSkiaControlStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACSummaryCard, TDACSkiaControlStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACChart, TDACSkiaControlStyleHook);
-  TCustomStyleEngine.RegisterStyleHook(TDACBarChart, TDACSkiaControlStyleHook);
-  TCustomStyleEngine.RegisterStyleHook(TDACLineChart, TDACSkiaControlStyleHook);
-  TCustomStyleEngine.RegisterStyleHook(TDACAreaChart, TDACSkiaControlStyleHook);
-  TCustomStyleEngine.RegisterStyleHook(TDACDoughnutChart, TDACSkiaControlStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACBadge, TDACSkiaControlStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACProgress, TDACSkiaControlStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACPagination, TDACSkiaControlStyleHook);
@@ -68,7 +66,11 @@ begin
   TCustomStyleEngine.RegisterStyleHook(TDACToast, TDACSkiaControlStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACModalDialog, TDACSkiaControlStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACStatusBar, TDACSkiaControlStyleHook);
+  TCustomStyleEngine.RegisterStyleHook(TDACStatusTimelineChart,
+    TDACSkiaControlStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACReportViewer, TDACSkiaControlStyleHook);
+  TCustomStyleEngine.RegisterStyleHook(TDACSkiaControl, TDACSkiaControlStyleHook);
+  TCustomStyleEngine.RegisterStyleHook(TDACTooltip, TDACSkiaControlStyleHook);
 
   GHooksRegistered := True;
 end;
@@ -78,20 +80,20 @@ begin
   if not GHooksRegistered then
     Exit;
 
-  TCustomStyleEngine.UnRegisterStyleHook(TDACDataGrid, TScrollingStyleHook);
-  TCustomStyleEngine.UnRegisterStyleHook(TDACScrollContainer, TScrollBoxStyleHook);
+  TCustomStyleEngine.UnRegisterStyleHook(TDACScrollContainer,
+    TDACScrollContainerStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACReportViewer, TDACSkiaControlStyleHook);
+  TCustomStyleEngine.UnRegisterStyleHook(TDACSkiaControl, TDACSkiaControlStyleHook);
+  TCustomStyleEngine.UnRegisterStyleHook(TDACTooltip, TDACSkiaControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACStatusBar, TDACSkiaControlStyleHook);
+  TCustomStyleEngine.UnRegisterStyleHook(TDACStatusTimelineChart,
+    TDACSkiaControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACModalDialog, TDACSkiaControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACToast, TDACSkiaControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACLoading, TDACSkiaControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACPagination, TDACSkiaControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACProgress, TDACSkiaControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACBadge, TDACSkiaControlStyleHook);
-  TCustomStyleEngine.UnRegisterStyleHook(TDACDoughnutChart, TDACSkiaControlStyleHook);
-  TCustomStyleEngine.UnRegisterStyleHook(TDACAreaChart, TDACSkiaControlStyleHook);
-  TCustomStyleEngine.UnRegisterStyleHook(TDACLineChart, TDACSkiaControlStyleHook);
-  TCustomStyleEngine.UnRegisterStyleHook(TDACBarChart, TDACSkiaControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACChart, TDACSkiaControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACSummaryCard, TDACSkiaControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACSlider, TDACSkiaControlStyleHook);

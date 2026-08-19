@@ -2,6 +2,10 @@ unit DAC.Components.DesignSystem.OpacityTokens;
 
 interface
 
+const
+  DACOpacityTransparent = 0;
+  DACOpacityOpaque = 255;
+
 type
   TDACOpacityTokens = record
     Panel: Byte;
@@ -11,6 +15,9 @@ type
     WindowShadow: Byte;
     BackgroundDarkOverlay: Byte;
     BackgroundGreenOverlay: Byte;
+    GhostHover: Byte;
+    SurfaceHover: Byte;
+    Disabled: Byte;
     class function Default: TDACOpacityTokens; static;
   end;
 
@@ -25,6 +32,9 @@ begin
   Result.WindowShadow := 48;
   Result.BackgroundDarkOverlay := 136;
   Result.BackgroundGreenOverlay := 48;
+  Result.GhostHover := 31;
+  Result.SurfaceHover := 26;
+  Result.Disabled := 115;
 end;
 
 end.

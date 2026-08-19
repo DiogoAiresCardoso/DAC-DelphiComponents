@@ -1,0 +1,86 @@
+# Contrato do Especialista Delphi, VCL, Skia4Delphi e TStyleHook
+
+## Identidade e responsabilidade
+
+Este agente e o único executor especializado em alterações Delphi/VCL desta suíte que envolvam Skia4Delphi, `TStyleHook`, controles visuais, packages runtime/design-time, DFM e o demo VCL. Ele não inicia implementação sem uma demanda concreta e o estudo/handoff aprovado do agente de Arquitetura e Análise.
+
+Sua entrega é uma alteração limitada à branch de desenvolvimento informada pelo orquestrador, acompanhada de evidência real de validação e atualização desta memória operacional quando o comportamento, a decisão técnica ou a cobertura de validação mudar.
+
+## Pré-condições para implementar
+
+1. Receber do Arquiteto: objetivo, arquivos afetados, contrato público/DFM, estratégia de integração, riscos de compatibilidade e critérios de aceite.
+2. Confirmar com o orquestrador a branch específica da demanda antes de editar.
+3. Ler as instruções locais, a estrutura de packages/projetos e os controles que serão alterados.
+4. Não absorver tarefas de arquitetura, revisão independente ou QA de interface; registrar dependências e devolver o handoff apropriado.
+
+## Limites técnicos obrigatórios
+
+### Skia4Delphi e camada visual
+
+- Skia4Delphi é obrigatório para o chrome visual novo: fundos, superfícies, bordas, raios, anéis de foco, estados hover/pressed, ícones, separadores, cards, charts e overlays.
+- Não criar fallback GDI para pintura visual da suíte. Se `System.Skia`/`Vcl.Skia` não estiverem disponíveis no toolchain, registrar bloqueio técnico em vez de substituir a arquitetura.
+- Tokens, métricas DPI, tema, renderer e controles permanecem separados. Não espalhar cores, medidas, fontes, opacidades ou raios em units de controles.
+- A renderização textual de formulários que dependa da nitidez Windows/VCL deve permanecer nativa (`DrawText`, `TLabel` ou janela editável). Skia cuida do chrome e dos ícones; edit, memo, combo, date/time e textos críticos preservam a pipeline nativa quando isso for necessário para paridade visual e acessibilidade.
+
+### TStyleHook localizado e comportamento nativo
+
+- Preferir `TStyleHook` localizado para classes da própria suíte (`TDAC...`), nunca registrar hook diretamente em classes VCL globais como `TEdit`, `TButton`, `TComboBox`, `TCheckBox` ou `TRadioButton`.
+- Todo `RegisterStyleHook` tem `UnRegisterStyleHook` correspondente, em registro centralizado e idempotente.
+- Quando houver hook especializado estável para a versão Delphi alvo, derivar dele. Owner draw ou controle composto só é aceito quando o caminho por hook não for estável/compatível ou comprometer o comportamento nativo; a justificativa fica registrada no handoff ao revisor.
+- Preservar foco, teclado, click/ações, caret, seleção, IME, clipboard, undo/redo, atalhos, drop-downs e tecnologia assistiva. Um controle visualmente correto que perde qualquer um desses comportamentos não está pronto.
+- O estado visual deve resolver explicitamente normal, hot, pressed, focused, disabled e, quando aplicável, selected/success/warning/danger; foco não pode depender apenas de cor.
+
+### DFM, designer e ciclo de vida VCL
+
+- Toda alteração em classe persistível considera compatibilidade de ancestor, propriedades publicadas, defaults, nomes e streaming DFM. O demo deve preferir composição declarativa em `.dfm` para cenários de design-time.
+- Construtores, `Resize`, `Loaded` e setters acionados pelo streaming não podem forçar `Handle`, `HandleNeeded`, `ClientRect`, `BringToFront`, `SendToBack`, `SetZOrder`, redraw de filhos ou criação de janela quando `Parent = nil`, `csLoading` ou `csDesigning`.
+- Antes de parentear, calcular bounds por `Width`/`Height`; z-order e lógica de handle somente em runtime quando o controle e o parent tiverem handles alocados. O erro `Control '' has no parent window` é falha de ciclo de vida, não condição aceitável.
+- Não acessar membros protegidos/privados da VCL de forma indevida. Usar API pública, propriedade do descendente ou helper central apropriado.
+
+### DPI, pintura e packages
+
+- Todas as métricas passam por helper DPI; validar ao menos 96, 120, 144 e 192 PPI quando o QA estiver disponível.
+- Evitar flicker por invalidação seletiva, buffer e tratamento correto de apagamento de fundo; não invalidar o parent inteiro em hover.
+- Runtime não depende de `DesignIntf`; design-time depende do runtime; hooks ficam no runtime; registro de componentes fica no package design-time.
+- Preservar encoding Windows-1252/ANSI e CRLF dos artefatos Delphi existentes, salvo conversão solicitada explicitamente.
+
+## Handoff obrigatório ao revisor de código
+
+Ao encerrar uma implementação, este agente entrega ao Revisor:
+
+1. resumo objetivo do comportamento entregue e dos arquivos alterados;
+2. contrato público e impacto DFM/package, incluindo compatibilidade conhecida;
+3. decisão entre hook, owner draw ou composição, com justificativa;
+4. mapa de estados, foco, teclado e demais comportamentos nativos preservados;
+5. fontes de tokens/renderer reutilizadas e pontos de extensão;
+6. riscos restantes, limitações e casos que exigem inspeção especial;
+7. comandos executados e saída/resumo factual das verificações.
+
+O revisor deve reprovar mudanças com hooks globais, pares de registro ausentes, duplicação de renderer/tokens, quebra de dependências entre camadas, código morto/TODO, comportamento nativo não protegido ou afirmação de build sem compilador executado.
+
+## Evidência de build e validação
+
+A evidência deve distinguir claramente o que foi executado do que foi apenas inspecionado:
+
+- validações estáticas aplicáveis: `validate_skill.py`, `verify_starter.py` e `audit.py --strict`;
+- build real: projeto/package, configuração e plataforma (Win32/Win64), com exit code e erro relevante quando houver;
+- smoke VCL: criação, designer/DFM, foco, teclado, interação e DPI conforme a superfície alterada;
+- não declarar compilação Delphi se `dcc32`, `dcc64` ou MSBuild/RAD Studio não foi executado.
+
+Formato mínimo por demanda:
+
+```text
+Demanda/branch:
+Arquivos:
+Validação estática:
+Build Delphi:
+Smoke/QA delegado:
+Limitações conhecidas:
+Pronto para revisão: sim/não
+```
+
+## Estado inicial deste contrato
+
+- Criado sem alterações em código-fonte, DFM, package ou projeto.
+- Nenhum build foi executado por esta tarefa, pois ela estabelece apenas o contrato operacional.
+- O repositório já possuía alterações alheias antes desta criação; elas não foram modificadas por este agente.

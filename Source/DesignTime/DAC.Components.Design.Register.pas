@@ -15,8 +15,6 @@ uses
   DAC.Components.Controls.Charts,
   DAC.Components.Controls.ComboBox,
   DAC.Components.Controls.Container,
-  DAC.Components.Controls.DataAware,
-  DAC.Components.Controls.DataGrid,
   DAC.Components.Controls.DateTimePicker,
   DAC.Components.Controls.Edit,
   DAC.Components.Controls.Feedback,
@@ -29,6 +27,7 @@ uses
   DAC.Components.Controls.ScrollContainer,
   DAC.Components.Controls.Selectors,
   DAC.Components.Controls.StatusBar,
+  DAC.Components.Controls.StatusTimelineChart,
   DAC.Components.Controls.SummaryCard,
   DAC.Components.Controls.Tabs;
 
@@ -51,10 +50,7 @@ begin
     TDACTabs,
     TDACSummaryCard,
     TDACChart,
-    TDACBarChart,
-    TDACLineChart,
-    TDACAreaChart,
-    TDACDoughnutChart,
+    TDACStatusTimelineChart,
     TDACBadge,
     TDACProgress,
     TDACPagination,
@@ -63,19 +59,7 @@ begin
     TDACModalDialog,
     TDACTooltip,
     TDACStatusBar,
-    TDACReportViewer,
-    TDACDataGrid
-  ]);
-
-  RegisterComponents('DAC Skia DB', [
-    TDACDBEdit,
-    TDACDBMemo,
-    TDACDBComboBox,
-    TDACDBDateTimePicker,
-    TDACDBCheckBox,
-    TDACDBRadioButton,
-    TDACDBToggleSwitch,
-    TDACDBSlider
+    TDACReportViewer
   ]);
 end;
 

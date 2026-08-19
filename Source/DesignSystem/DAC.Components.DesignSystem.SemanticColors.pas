@@ -75,19 +75,19 @@ begin
       end;
     mssInfo:
       begin
-        Result.Accent := TDACComponentColors.Alpha(37, 99, 235);
-        Result.AccentDark := TDACComponentColors.Alpha(29, 78, 216);
-        Result.AccentLight := TDACComponentColors.Alpha(96, 165, 250);
-        Result.SoftBackground := TDACComponentColors.Alpha(226, 239, 255);
-        Result.Text := TDACComponentColors.Alpha(29, 78, 216);
-        Result.Border := TDACComponentColors.Alpha(174, 206, 255);
+        Result.Accent := TDACComponentColors.Info;
+        Result.AccentDark := TDACComponentColors.InfoDark;
+        Result.AccentLight := TDACComponentColors.InfoLight;
+        Result.SoftBackground := TDACComponentColors.InfoSoftBackground;
+        Result.Text := TDACComponentColors.InfoText;
+        Result.Border := TDACComponentColors.InfoBorder;
       end;
   else
-    Result.Accent := TDACComponentColors.TextSecondary;
-    Result.AccentDark := TDACComponentColors.ControlText;
-    Result.AccentLight := TDACComponentColors.ControlBorderHover;
-    Result.SoftBackground := TDACComponentColors.Alpha(244, 247, 244);
-    Result.Text := TDACComponentColors.ControlText;
+    Result.Accent := TDACComponentColors.Neutral;
+    Result.AccentDark := TDACComponentColors.NeutralDark;
+    Result.AccentLight := TDACComponentColors.NeutralLight;
+    Result.SoftBackground := TDACComponentColors.NeutralSoftBackground;
+    Result.Text := TDACComponentColors.NeutralDark;
     Result.Border := TDACComponentColors.ControlBorder;
   end;
 end;

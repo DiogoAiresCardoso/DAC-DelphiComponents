@@ -9,10 +9,11 @@
   </PropertyGroup>
   <PropertyGroup>
     <Base>true</Base>
-    <DCC_DcuOutput>..\Build\Dcu\$(Platform)\$(Config)</DCC_DcuOutput>
-    <DCC_ExeOutput>..\Build\Tests\$(Platform)\$(Config)</DCC_ExeOutput>
-    <DCC_UnitSearchPath>..\Source\Core;..\Source\Controls;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
-    <DCC_UsePackage>rtl;vcl;vcldb;$(DCC_UsePackage)</DCC_UsePackage>
+    <DCC_DcuOutput>..\Build\Dcu\$(Platform)\$(Config)\Tests\DACComponentsSmoke</DCC_DcuOutput>
+    <DCC_ExeOutput>..\Build\Exe\$(Platform)\$(Config)\Tests</DCC_ExeOutput>
+    <DCC_CBuilderOutput>None</DCC_CBuilderOutput>
+    <DCC_UnitSearchPath>..\Source\Core;..\Source\DesignSystem;..\Source\Skia;..\Source\Controls;..\Source\Hooks;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+    <DCC_UsePackage>rtl;vcl;vclimg;Skia.Package.RTL;Skia.Package.VCL;$(DCC_UsePackage)</DCC_UsePackage>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_1)'!=''">
     <Cfg_1>true</Cfg_1>

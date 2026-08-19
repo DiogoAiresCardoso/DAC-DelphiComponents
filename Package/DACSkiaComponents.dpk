@@ -1,0 +1,103 @@
+package DACSkiaComponents;
+
+{$R *.res}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES ON}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
+{$DESIGNONLY}
+{$IMPLICITBUILD ON}
+
+requires
+  rtl,
+  designide,
+  dbrtl,
+  vcl,
+  vclimg,
+  Skia.Package.VCL,
+  Skia.Package.RTL;
+
+contains
+  DAC.Components.Types in '..\Source\Core\DAC.Components.Types.pas',
+  DAC.Components.Geometry in '..\Source\Core\DAC.Components.Geometry.pas',
+  DAC.Components.DesignSystem.ColorTokens in '..\Source\DesignSystem\DAC.Components.DesignSystem.ColorTokens.pas',
+  DAC.Components.DesignSystem.DashboardTokens in '..\Source\DesignSystem\DAC.Components.DesignSystem.DashboardTokens.pas',
+  DAC.Components.DesignSystem.DemoTokens in '..\Source\DesignSystem\DAC.Components.DesignSystem.DemoTokens.pas',
+  DAC.Components.DesignSystem.OpacityTokens in '..\Source\DesignSystem\DAC.Components.DesignSystem.OpacityTokens.pas',
+  DAC.Components.DesignSystem.Fonts in '..\Source\DesignSystem\DAC.Components.DesignSystem.Fonts.pas',
+  DAC.Components.DesignSystem.TypographyTokens in '..\Source\DesignSystem\DAC.Components.DesignSystem.TypographyTokens.pas',
+  DAC.Components.DesignSystem.SpacingTokens in '..\Source\DesignSystem\DAC.Components.DesignSystem.SpacingTokens.pas',
+  DAC.Components.DesignSystem.RadiusTokens in '..\Source\DesignSystem\DAC.Components.DesignSystem.RadiusTokens.pas',
+  DAC.Components.DesignSystem.InteractionTokens in '..\Source\DesignSystem\DAC.Components.DesignSystem.InteractionTokens.pas',
+  DAC.Components.DesignSystem.CardTokens in '..\Source\DesignSystem\DAC.Components.DesignSystem.CardTokens.pas',
+  DAC.Components.DesignSystem.ControlTokens in '..\Source\DesignSystem\DAC.Components.DesignSystem.ControlTokens.pas',
+  DAC.Components.DesignSystem.Tokens in '..\Source\DesignSystem\DAC.Components.DesignSystem.Tokens.pas',
+  DAC.Components.DesignSystem.ChartPalette in '..\Source\DesignSystem\DAC.Components.DesignSystem.ChartPalette.pas',
+  DAC.Components.DesignSystem.Metrics in '..\Source\DesignSystem\DAC.Components.DesignSystem.Metrics.pas',
+  DAC.Components.DesignSystem.SemanticColors in '..\Source\DesignSystem\DAC.Components.DesignSystem.SemanticColors.pas',
+  DAC.Components.DesignSystem.Theme in '..\Source\DesignSystem\DAC.Components.DesignSystem.Theme.pas',
+  DAC.Components.DesignSystem.DefaultTheme in '..\Source\DesignSystem\DAC.Components.DesignSystem.DefaultTheme.pas',
+  DAC.Components.DesignSystem.ComponentStyle in '..\Source\DesignSystem\DAC.Components.DesignSystem.ComponentStyle.pas',
+  DAC.Components.DesignSystem.AssetResolver in '..\Source\DesignSystem\DAC.Components.DesignSystem.AssetResolver.pas',
+  DAC.Components.DesignSystem.IconAssets in '..\Source\DesignSystem\DAC.Components.DesignSystem.IconAssets.pas',
+  DAC.Components.Skia.Renderer in '..\Source\Skia\DAC.Components.Skia.Renderer.pas',
+  DAC.Components.Skia.BackgroundPainter in '..\Source\Skia\DAC.Components.Skia.BackgroundPainter.pas',
+  DAC.Components.Skia.BorderPainter in '..\Source\Skia\DAC.Components.Skia.BorderPainter.pas',
+  DAC.Components.Skia.IconPainter in '..\Source\Skia\DAC.Components.Skia.IconPainter.pas',
+  DAC.Components.Skia.VisualElement in '..\Source\Skia\DAC.Components.Skia.VisualElement.pas',
+  DAC.Components.Skia.Container in '..\Source\Skia\DAC.Components.Skia.Container.pas',
+  DAC.Components.Controls.SkiaControl in '..\Source\Controls\DAC.Components.Controls.SkiaControl.pas',
+  DAC.Components.Controls.SystemText in '..\Source\Controls\DAC.Components.Controls.SystemText.pas',
+  DAC.Components.Controls.Container in '..\Source\Controls\DAC.Components.Controls.Container.pas',
+  DAC.Components.Controls.NativeWindowTheme in '..\Source\Controls\DAC.Components.Controls.NativeWindowTheme.pas',
+  DAC.Components.Controls.ScrollContainer in '..\Source\Controls\DAC.Components.Controls.ScrollContainer.pas',
+  DAC.Components.Controls.GridContainer in '..\Source\Controls\DAC.Components.Controls.GridContainer.pas',
+  DAC.Components.Controls.Button in '..\Source\Controls\DAC.Components.Controls.Button.pas',
+  DAC.Components.Controls.FieldSupport in '..\Source\Controls\DAC.Components.Controls.FieldSupport.pas',
+  DAC.Components.Controls.Edit in '..\Source\Controls\DAC.Components.Controls.Edit.pas',
+  DAC.Components.Controls.ButtonEdit in '..\Source\Controls\DAC.Components.Controls.ButtonEdit.pas',
+  DAC.Components.Controls.DateTimePickerPopup in '..\Source\Controls\DAC.Components.Controls.DateTimePickerPopup.pas',
+  DAC.Components.Controls.DateTimePicker in '..\Source\Controls\DAC.Components.Controls.DateTimePicker.pas',
+  DAC.Components.Controls.ComboBox in '..\Source\Controls\DAC.Components.Controls.ComboBox.pas',
+  DAC.Components.Controls.Memo in '..\Source\Controls\DAC.Components.Controls.Memo.pas',
+  DAC.Components.Controls.Selectors in '..\Source\Controls\DAC.Components.Controls.Selectors.pas',
+  DAC.Components.Controls.Tabs in '..\Source\Controls\DAC.Components.Controls.Tabs.pas',
+  DAC.Components.Controls.SummaryCard in '..\Source\Controls\DAC.Components.Controls.SummaryCard.pas',
+  DAC.Components.Controls.Charts in '..\Source\Controls\DAC.Components.Controls.Charts.pas',
+  DAC.Components.Controls.StatusTimelineChart in '..\Source\Controls\DAC.Components.Controls.StatusTimelineChart.pas',
+  DAC.Components.Controls.Badges in '..\Source\Controls\DAC.Components.Controls.Badges.pas',
+  DAC.Components.Controls.Progress in '..\Source\Controls\DAC.Components.Controls.Progress.pas',
+  DAC.Components.Controls.Pagination in '..\Source\Controls\DAC.Components.Controls.Pagination.pas',
+  DAC.Components.Controls.Loading in '..\Source\Controls\DAC.Components.Controls.Loading.pas',
+  DAC.Components.Controls.Feedback in '..\Source\Controls\DAC.Components.Controls.Feedback.pas',
+  DAC.Components.Controls.StatusBar in '..\Source\Controls\DAC.Components.Controls.StatusBar.pas',
+  DAC.Components.Controls.ReportViewer in '..\Source\Controls\DAC.Components.Controls.ReportViewer.pas',
+  DAC.Components.Controls.Register in '..\Source\Controls\DAC.Components.Controls.Register.pas',
+  DAC.Components.Hooks.SkiaControls in '..\Source\Hooks\DAC.Components.Hooks.SkiaControls.pas',
+  DAC.Components.Hooks.ScrollRenderer in '..\Source\Hooks\DAC.Components.Hooks.ScrollRenderer.pas',
+  DAC.Components.Hooks.ScrollContainer in '..\Source\Hooks\DAC.Components.Hooks.ScrollContainer.pas',
+  DAC.Components.Hooks.Register in '..\Source\Hooks\DAC.Components.Hooks.Register.pas',
+  DAC.Components.Design.Register in '..\Source\DesignTime\DAC.Components.Design.Register.pas';
+
+end.
+

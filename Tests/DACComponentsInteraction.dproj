@@ -9,17 +9,18 @@
   </PropertyGroup>
   <PropertyGroup>
     <Base>true</Base>
-    <DCC_DcuOutput>..\Build\Dcu\$(Platform)\$(Config)</DCC_DcuOutput>
-    <DCC_ExeOutput>..\Build\Tests\$(Platform)\$(Config)</DCC_ExeOutput>
+    <DCC_DcuOutput>..\Build\Dcu\$(Platform)\$(Config)\Tests\DACComponentsInteraction</DCC_DcuOutput>
+    <DCC_ExeOutput>..\Build\Exe\$(Platform)\$(Config)\Tests</DCC_ExeOutput>
+    <DCC_CBuilderOutput>None</DCC_CBuilderOutput>
     <DAC_SkiaRuntimeSource>$(MSBuildProjectDirectory)\..\Build\EXE\sk4d.dll</DAC_SkiaRuntimeSource>
-    <DCC_UnitSearchPath>..\demo;..\Source\Core;..\Source\DesignSystem;..\Source\Skia;..\Source\Controls;..\Source\Controls\DataAware;..\Source\Hooks;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
-    <DCC_UsePackage>rtl;vcl;vcldb;vclimg;Skia.Package.RTL;Skia.Package.VCL;$(DCC_UsePackage)</DCC_UsePackage>
+    <DCC_UnitSearchPath>..\demo;..\Source\Core;..\Source\DesignSystem;..\Source\Skia;..\Source\Controls;..\Source\Hooks;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+    <DCC_UsePackage>rtl;vcl;vclimg;Skia.Package.RTL;Skia.Package.VCL;$(DCC_UsePackage)</DCC_UsePackage>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_1)'!=''">
     <Cfg_1>true</Cfg_1>
     <CfgParent>Base</CfgParent>
     <Base>true</Base>
-    <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+    <DCC_Define>DEBUG;DAC_COMPONENTS_TESTS;$(DCC_Define)</DCC_Define>
   </PropertyGroup>
   <ItemGroup>
     <DelphiCompile Include="$(MainSource)"><MainSource>MainSource</MainSource></DelphiCompile>

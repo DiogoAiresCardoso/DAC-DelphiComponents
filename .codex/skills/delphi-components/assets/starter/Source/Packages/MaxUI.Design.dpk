@@ -1,0 +1,19 @@
+package MaxUI_Design;
+
+{$CODEPAGE 65001}
+
+{$R *.res}
+{$DESCRIPTION 'MaxUI VCL design-time package'}
+{$DESIGNONLY}
+{$IMPLICITBUILD OFF}
+
+requires
+  rtl,
+  vcl,
+  designide,
+  MaxUI_Runtime;
+
+contains
+  MaxUI.Design.Register in '..\DesignTime\MaxUI.Design.Register.pas';
+
+end.

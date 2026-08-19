@@ -14,7 +14,6 @@ uses
   DAC.Components.Controls.Charts,
   DAC.Components.Controls.ComboBox,
   DAC.Components.Controls.Container,
-  DAC.Components.Controls.DataGrid,
   DAC.Components.Controls.DateTimePicker,
   DAC.Components.Controls.Edit,
   DAC.Components.Controls.Feedback,
@@ -26,7 +25,9 @@ uses
   DAC.Components.Controls.ReportViewer,
   DAC.Components.Controls.ScrollContainer,
   DAC.Components.Controls.Selectors,
+  DAC.Components.Controls.SkiaControl,
   DAC.Components.Controls.StatusBar,
+  DAC.Components.Controls.StatusTimelineChart,
   DAC.Components.Controls.SummaryCard,
   DAC.Components.Controls.SystemText,
   DAC.Components.Controls.Tabs;
@@ -34,26 +35,28 @@ uses
 procedure RegisterDACComponentClasses;
 begin
   RegisterClass(TDACBadge);
-  RegisterClass(TDACBarChart);
   RegisterClass(TDACButton);
   RegisterClass(TDACButtonEdit);
   RegisterClass(TDACCheckBox);
   RegisterClass(TDACComboBox);
   RegisterClass(TDACContainer);
-  RegisterClass(TDACDataGrid);
+  RegisterClass(TDACChart);
   RegisterClass(TDACDateTimePicker);
-  RegisterClass(TDACDoughnutChart);
   RegisterClass(TDACEdit);
   RegisterClass(TDACGridContainer);
   RegisterClass(TDACLoading);
   RegisterClass(TDACMemo);
+  RegisterClass(TDACModalDialog);
   RegisterClass(TDACPagination);
   RegisterClass(TDACProgress);
   RegisterClass(TDACRadioButton);
   RegisterClass(TDACReportViewer);
   RegisterClass(TDACScrollContainer);
+  RegisterClass(TDACSelector);
   RegisterClass(TDACSlider);
+  RegisterClass(TDACSkiaControl);
   RegisterClass(TDACStatusBar);
+  RegisterClass(TDACStatusTimelineChart);
   RegisterClass(TDACSummaryCard);
   RegisterClass(TDACSystemText);
   RegisterClass(TDACTabs);

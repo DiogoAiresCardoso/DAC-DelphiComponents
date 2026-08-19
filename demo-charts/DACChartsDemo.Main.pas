@@ -14,6 +14,7 @@ uses
   Vcl.Graphics,
   Vcl.StdCtrls,
   DAC.Components.Controls.Charts,
+  DACChartsDemo.ClientDataSetAdapter,
   DAC.Components.DesignSystem.Theme;
 
 type
@@ -65,9 +66,9 @@ const
   { The gallery deliberately uses the same minimum visual size as the
     component.  It may scroll horizontally on smaller displays, rather than
     compressing chart text, axes or the reserved legend panel. }
-  ChartWidth = 500;
-  ChartHeight = 320;
-  ChartGap = 24;
+  ChartWidth = 560;
+  ChartHeight = 360;
+  ChartGap = 28;
 
 procedure TChartsDemoForm.AddManual(const ASeries: TDACChartSeries;
   const ACategories: array of string; const AValues: array of Double;
@@ -321,6 +322,69 @@ begin
   LChart := CreateChart('18. Doughnut sem valores positivos', 2, 5);
   LSeries := NewSeries(LChart, 'Sem valores', ctDoughnut, cfSolid);
   AddManual(LSeries, ['A', 'B', 'C'], [0, 0, 0]);
+
+  { Stress cases: the cards intentionally contain enough information to prove
+    that a physical legend panel and native text remain readable. }
+  LChart := CreateChart('19. Legenda inferior com oito series', 0, 6);
+  LChart.Legend.Position := cpBottom;
+  LChart.Legend.Orientation := coHorizontal;
+  LChart.Legend.BackgroundVisible := True;
+  LChart.Legend.BorderVisible := True;
+  LChart.Legend.Padding := 10;
+  LSeries := NewSeries(LChart, 'Receita liquida', ctBar);
+  AddManual(LSeries, ['T1', 'T2', 'T3'], [32, 45, 51]);
+  LSeries := NewSeries(LChart, 'Meta operacional', ctBar);
+  LSeries.Color := TAlphaColor($FF4C8DFF);
+  AddManual(LSeries, ['T1', 'T2', 'T3'], [38, 42, 55]);
+  LSeries := NewSeries(LChart, 'Custo direto', ctBar);
+  LSeries.Color := TAlphaColor($FFF5C842);
+  AddManual(LSeries, ['T1', 'T2', 'T3'], [20, 26, 30]);
+  LSeries := NewSeries(LChart, 'Margem estimada', ctLine);
+  LSeries.Color := TAlphaColor($FF7C4DFF);
+  AddManual(LSeries, ['T1', 'T2', 'T3'], [28, 31, 37]);
+  LSeries := NewSeries(LChart, 'Chuva acumulada', ctLine);
+  LSeries.Color := TAlphaColor($FF00A9D9);
+  AddManual(LSeries, ['T1', 'T2', 'T3'], [44, 36, 48]);
+  LSeries := NewSeries(LChart, 'Insumos aplicados', ctArea);
+  LSeries.Color := TAlphaColor($FFDB6E28);
+  AddManual(LSeries, ['T1', 'T2', 'T3'], [15, 22, 18]);
+  LSeries := NewSeries(LChart, 'Produtividade', ctLine);
+  LSeries.Color := TAlphaColor($FF2F9E22);
+  AddManual(LSeries, ['T1', 'T2', 'T3'], [41, 47, 52]);
+  LSeries := NewSeries(LChart, 'Previsao anual', ctLine);
+  LSeries.Color := TAlphaColor($FFE84C88);
+  AddManual(LSeries, ['T1', 'T2', 'T3'], [35, 40, 46]);
+
+  LChart := CreateChart('20. Legenda direita com dez fatias', 1, 6);
+  LChart.Legend.Position := cpRight;
+  LChart.Legend.Orientation := coVertical;
+  LChart.Legend.BackgroundVisible := True;
+  LChart.Legend.BorderVisible := True;
+  LChart.Legend.Padding := 10;
+  LSeries := NewSeries(LChart, 'Distribuicao de culturas', ctDoughnut, cfRadialGradient);
+  AddManual(LSeries, ['Soja precoce', 'Soja tardia', 'Milho safrinha',
+    'Feijao carioca', 'Algodao irrigado', 'Cafe especial', 'Trigo de inverno',
+    'Hortalicas', 'Pastagem', 'Outras culturas'],
+    [24, 18, 14, 10, 8, 7, 6, 5, 4, 4]);
+
+  LChart := CreateChart('21. Eixo denso com 24 categorias', 2, 6);
+  LChart.XAxis.TitleVisible := True;
+  LChart.XAxis.Title := 'Leituras sequenciais por talhao';
+  LChart.Legend.Position := cpBottom;
+  LChart.Legend.Padding := 10;
+  LSeries := NewSeries(LChart, 'Producao observada', ctBar, cfLinearGradient);
+  AddManual(LSeries, ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08',
+    'T09', 'T10', 'T11', 'T12', 'T13', 'T14', 'T15', 'T16', 'T17', 'T18',
+    'T19', 'T20', 'T21', 'T22', 'T23', 'T24'],
+    [38, 44, 41, 55, 49, 62, 58, 67, 61, 74, 70, 78, 73, 83, 76, 88,
+    82, 91, 86, 96, 90, 101, 95, 108]);
+  LSeries := NewSeries(LChart, 'Meta de referencia', ctLine);
+  LSeries.Color := TAlphaColor($FF4C8DFF);
+  AddManual(LSeries, ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08',
+    'T09', 'T10', 'T11', 'T12', 'T13', 'T14', 'T15', 'T16', 'T17', 'T18',
+    'T19', 'T20', 'T21', 'T22', 'T23', 'T24'],
+    [42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72,
+    74, 76, 78, 80, 82, 84, 86, 88]);
 end;
 
 procedure TChartsDemoForm.BuildDataSet;
@@ -486,7 +550,7 @@ begin
   Result.DataMode := cdmManual;
   Result.Title.Visible := True;
   Result.Title.Text := ATitle;
-  Result.Title.Font.Size := 14;
+  Result.Title.Font.Size := 12;
   Result.Legend.Visible := True;
   Result.Legend.AllowToggleSeries := True;
   Result.Tooltip.Enabled := True;

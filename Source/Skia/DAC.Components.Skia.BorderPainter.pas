@@ -57,7 +57,8 @@ type
 implementation
 
 uses
-  DAC.Components.DesignSystem.DefaultTheme;
+  DAC.Components.DesignSystem.DefaultTheme,
+  DAC.Components.DesignSystem.OpacityTokens;
 
 function ResolveTheme(const ATheme: IDACComponentsTheme): IDACComponentsTheme;
 begin
@@ -93,17 +94,17 @@ begin
       begin
         Result.Color := LTheme.Tokens.Colors.PrimaryLight;
         Result.Width := LTheme.Metrics.FocusStrokeWidth;
-        Result.Alpha := 255;
+        Result.Alpha := DACOpacityOpaque;
       end;
     mbkDanger:
       begin
         Result.Color := LTheme.Tokens.Colors.Danger;
-        Result.Alpha := 255;
+        Result.Alpha := DACOpacityOpaque;
       end;
     mbkWarning:
       begin
         Result.Color := LTheme.Tokens.Colors.Warning;
-        Result.Alpha := 255;
+        Result.Alpha := DACOpacityOpaque;
       end;
   end;
 end;
@@ -128,9 +129,12 @@ var
   LRect: TRectF;
 begin
   if (FRenderer = nil) or (ACanvas = nil) or (AStyle.Width <= 0) or
-    (AStyle.Alpha = 0) then
+    (AStyle.Alpha = DACOpacityTransparent) then
     Exit;
 
+  { Match TDACChart's raster rule: center the stroke inside its physical
+    bounds.  An odd one-pixel stroke therefore stays on the half-pixel grid,
+    while a two-pixel chart/card outline lands on whole pixels. }
   LRect := InsetRect(ARect, AStyle.Width / 2);
   FRenderer.StrokeRoundRect(ACanvas, LRect, AStyle.Color, AStyle.Radius,
     AStyle.Width, AStyle.Alpha);

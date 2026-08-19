@@ -1,17 +1,12 @@
-object Form1: TForm1
+﻿object Form1: TForm1
   Left = 0
   Top = 0
   Caption = 'DAC Componentes - Demo'
   ClientHeight = 760
   ClientWidth = 1200
-  Color = clWhite
-  Font.Charset = DEFAULT_CHARSET
-  Font.Color = clWindowText
-  Font.Height = -12
-  Font.Name = 'Segoe UI'
-  Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  Scaled = False
   PixelsPerInch = 96
   TextHeight = 15
   object GalleryTabs: TDACTabs
@@ -25,6 +20,7 @@ object Form1: TForm1
     TabHeight = 44
     TabWidth = 132
     ActiveIndex = 0
+    ActivePageHeaderOnly = True
     object tsDashboard: TTabSheet
       Caption = 'Dashboard'
       object scrDashboard: TDACScrollContainer
@@ -35,54 +31,45 @@ object Form1: TForm1
         Align = alClient
         AutoScroll = True
         BorderStyle = bsNone
-        CornerRadius = 0
+        Appearance = mscaViewport
         ScrollBarMode = msbmVertical
-        BackgroundColor = -16248051
-        BorderColor = 0
         TabOrder = 0
         object dashWelcomeTitle: TDACSystemText
           Left = 24
           Top = 24
           Width = 220
-          Height = 32
+          Height = 40
           Bold = False
-          FontSize = 20
+          Role = mtrDisplay
           Text = 'Bem-vindo,'
-          TextColor = -657163
+          Tone = mttPrimary
         end
         object dashWelcomeName: TDACSystemText
           Left = 252
           Top = 24
           Width = 500
-          Height = 32
+          Height = 40
           Bold = False
-          FontSize = 20
+          Role = mtrDisplay
           Text = 'Administrador'
-          TextColor = -12339413
+          Tone = mttSuccess
         end
         object dashWelcomeSubtitle: TDACSystemText
           Left = 24
-          Top = 58
+          Top = 66
           Width = 430
           Height = 24
           Bold = False
-          FontSize = 10
+          Role = mtrSmall
           Text = 'Aqui esta o resumo da sua operacao hoje.'
-          TextColor = -4668998
+          Tone = mttSecondary
         end
         object dashDateSummary: TDACContainer
           Left = 960
           Top = 24
           Width = 210
           Height = 72
-          ContentPadding = 20
           Appearance = mcaDarkPanel
-          BackgroundColor = -435282155
-          BorderColor = 486539263
-          BorderRadius = 14
-          CornerRadius = 14
-          TitleColor = -657163
-          SubtitleColor = -4668998
           ShowHeader = False
           TabOrder = 1
           object dashDateValue: TDACSystemText
@@ -91,9 +78,9 @@ object Form1: TForm1
             Width = 160
             Height = 20
             Bold = True
-            FontSize = 10
+            Role = mtrSmall
             Text = '24 de maio de 2025'
-            TextColor = -657163
+            Tone = mttPrimary
           end
           object dashDateWeekday: TDACSystemText
             Left = 20
@@ -101,9 +88,9 @@ object Form1: TForm1
             Width = 160
             Height = 20
             Bold = False
-            FontSize = 9
+            Role = mtrCaption
             Text = 'Sabado'
-            TextColor = -4668998
+            Tone = mttSecondary
           end
         end
         object dashKpi1: TDACSummaryCard
@@ -111,10 +98,7 @@ object Form1: TForm1
           Top = 96
           Width = 214
           Height = 108
-          AccentColor = -12339413
-          BackgroundColor = -435282155
-          BorderColor = 486539263
-          CornerRadius = 14
+          Appearance = mcsaDashboard
           FooterText = '+ 2 este mes'
           IconKind = mikField
           Title = 'Talhoes'
@@ -125,10 +109,7 @@ object Form1: TForm1
           Top = 96
           Width = 214
           Height = 108
-          AccentColor = -12339413
-          BackgroundColor = -435282155
-          BorderColor = 486539263
-          CornerRadius = 14
+          Appearance = mcsaDashboard
           FooterText = '+ 8,4% vs. safra anterior'
           IconKind = mikLeaf
           Title = 'Producao (safra)'
@@ -139,10 +120,7 @@ object Form1: TForm1
           Top = 96
           Width = 214
           Height = 108
-          AccentColor = -12339413
-          BackgroundColor = -435282155
-          BorderColor = 486539263
-          CornerRadius = 14
+          Appearance = mcsaDashboard
           FooterText = '12 itens cadastrados'
           IconKind = mikInventoryStack
           Title = 'Estoque'
@@ -153,10 +131,7 @@ object Form1: TForm1
           Top = 96
           Width = 214
           Height = 108
-          AccentColor = -12339413
-          BackgroundColor = -435282155
-          BorderColor = 486539263
-          CornerRadius = 14
+          Appearance = mcsaDashboard
           FooterText = '5 em andamento'
           IconKind = mikClipboardOrder
           Title = 'Ordens'
@@ -167,10 +142,7 @@ object Form1: TForm1
           Top = 96
           Width = 214
           Height = 108
-          AccentColor = -12339413
-          BackgroundColor = -435282155
-          BorderColor = 486539263
-          CornerRadius = 14
+          Appearance = mcsaDashboard
           FooterText = '+ 12,7% vs. mes anterior'
           IconKind = mikMoneyCircle
           Title = 'Financeiro (mes)'
@@ -181,14 +153,7 @@ object Form1: TForm1
           Top = 228
           Width = 370
           Height = 224
-          ContentPadding = 20
           Appearance = mcaDarkPanel
-          BackgroundColor = -435282155
-          BorderColor = 486539263
-          BorderRadius = 14
-          CornerRadius = 14
-          SubtitleColor = -4668998
-          TitleColor = -657163
           Title = 'Acoes rapidas'
           TabOrder = 2
           object dashQuickActionsGrid: TDACGridContainer
@@ -198,11 +163,8 @@ object Form1: TForm1
             Height = 142
             Align = alClient
             Columns = 2
-            BackgroundColor = 0
-            BorderColor = 0
-            ContentPadding = 0
-            Gutter = 12
-            RowHeight = 70
+            Appearance = mgcaTransparent
+            Layout = mgclActionTiles
             TabOrder = 0
             object dashQuickAction1: TDACButton
               Left = 0
@@ -210,7 +172,6 @@ object Form1: TForm1
               Width = 159
               Height = 70
               Caption = 'Nova ordem de servico'
-              CornerRadius = 12
               ShowIcon = True
               IconKind = mikTractor
               IconSize = 22
@@ -223,7 +184,6 @@ object Form1: TForm1
               Width = 159
               Height = 70
               Caption = 'Lancar producao'
-              CornerRadius = 12
               ShowIcon = True
               IconKind = mikSoybean
               IconSize = 22
@@ -236,7 +196,6 @@ object Form1: TForm1
               Width = 159
               Height = 70
               Caption = 'Entrada no estoque'
-              CornerRadius = 12
               ShowIcon = True
               IconKind = mikPackage
               IconSize = 22
@@ -249,7 +208,6 @@ object Form1: TForm1
               Width = 159
               Height = 70
               Caption = 'Nova despesa'
-              CornerRadius = 12
               ShowIcon = True
               IconKind = mikMoneyCircle
               IconSize = 22
@@ -263,14 +221,7 @@ object Form1: TForm1
           Top = 228
           Width = 370
           Height = 224
-          ContentPadding = 20
           Appearance = mcaDarkPanel
-          BackgroundColor = -435282155
-          BorderColor = 486539263
-          BorderRadius = 14
-          CornerRadius = 14
-          SubtitleColor = -4668998
-          TitleColor = -657163
           Title = 'Agenda'
           TabOrder = 3
           object dashAgendaLine1: TDACSystemText
@@ -278,27 +229,36 @@ object Form1: TForm1
             Top = 70
             Width = 320
             Height = 32
-            FontSize = 10
+            Role = mtrSmall
             Text = '24 MAI   Aplicacao de Herbicida   Hoje'
-            TextColor = -657163
+            Tone = mttPrimary
+          end
+          object dashAgendaTodayChip: TDACBadge
+            Left = 280
+            Top = 16
+            Width = 66
+            Height = 24
+            Caption = 'HOJE'
+            Appearance = mbaOutline
+            TabOrder = 0
           end
           object dashAgendaLine2: TDACSystemText
             Left = 20
             Top = 110
             Width = 320
             Height = 32
-            FontSize = 10
+            Role = mtrSmall
             Text = '25 MAI   Irrigacao - Talhao 08   Amanha'
-            TextColor = -657163
+            Tone = mttPrimary
           end
           object dashAgendaLine3: TDACSystemText
             Left = 20
             Top = 150
             Width = 320
             Height = 32
-            FontSize = 10
+            Role = mtrSmall
             Text = '27 MAI   Manutencao de Equipamentos'
-            TextColor = -657163
+            Tone = mttPrimary
           end
           object dashAgendaFooter: TDACSystemText
             Left = 20
@@ -306,9 +266,9 @@ object Form1: TForm1
             Width = 320
             Height = 24
             Bold = True
-            FontSize = 10
+            Role = mtrSmall
             Text = 'Ver agenda completa  ->'
-            TextColor = -10302406
+            Tone = mttAccent
           end
         end
         object dashRecentActivity: TDACContainer
@@ -316,42 +276,71 @@ object Form1: TForm1
           Top = 228
           Width = 370
           Height = 224
-          ContentPadding = 20
           Appearance = mcaDarkPanel
-          BackgroundColor = -435282155
-          BorderColor = 486539263
-          BorderRadius = 14
-          CornerRadius = 14
-          SubtitleColor = -4668998
-          TitleColor = -657163
           Title = 'Atividades recentes'
           TabOrder = 4
           object dashActivityLine1: TDACSystemText
-            Left = 20
+            Left = 52
             Top = 70
             Width = 320
             Height = 32
-            FontSize = 10
+            Role = mtrSmall
             Text = 'Entrada de 120 sacas de Sementes de Soja'
-            TextColor = -657163
+            Tone = mttPrimary
           end
           object dashActivityLine2: TDACSystemText
-            Left = 20
+            Left = 52
             Top = 110
             Width = 320
             Height = 32
-            FontSize = 10
+            Role = mtrSmall
             Text = 'Ordem de servico #OS-1456 concluida'
-            TextColor = -657163
+            Tone = mttPrimary
           end
           object dashActivityLine3: TDACSystemText
-            Left = 20
+            Left = 52
             Top = 150
             Width = 320
             Height = 32
-            FontSize = 10
+            Role = mtrSmall
             Text = 'Producao lancada: 320 t de Soja'
-            TextColor = -657163
+            Tone = mttPrimary
+          end
+          object dashActivityIcon1: TDACButton
+            Left = 20
+            Top = 70
+            Width = 24
+            Height = 24
+            Caption = ''
+            Kind = mbkTransparent
+            ShowIcon = True
+            IconKind = mikPackage
+            IconSize = 16
+            TabOrder = 0
+          end
+          object dashActivityIcon2: TDACButton
+            Left = 20
+            Top = 110
+            Width = 24
+            Height = 24
+            Caption = ''
+            Kind = mbkTransparent
+            ShowIcon = True
+            IconKind = mikTractor
+            IconSize = 16
+            TabOrder = 1
+          end
+          object dashActivityIcon3: TDACButton
+            Left = 20
+            Top = 150
+            Width = 24
+            Height = 24
+            Caption = ''
+            Kind = mbkTransparent
+            ShowIcon = True
+            IconKind = mikSoybean
+            IconSize = 16
+            TabOrder = 2
           end
           object dashActivityFooter: TDACSystemText
             Left = 20
@@ -359,9 +348,9 @@ object Form1: TForm1
             Width = 320
             Height = 24
             Bold = True
-            FontSize = 10
+            Role = mtrSmall
             Text = 'Ver todas as atividades  ->'
-            TextColor = -10302406
+            Tone = mttAccent
           end
         end
         object dashProductivity: TDACContainer
@@ -369,27 +358,53 @@ object Form1: TForm1
           Top = 476
           Width = 560
           Height = 270
-          ContentPadding = 20
           Appearance = mcaDarkPanel
-          BackgroundColor = -435282155
-          BorderColor = 486539263
-          BorderRadius = 14
-          CornerRadius = 14
-          SubtitleColor = -4668998
-          TitleColor = -657163
           Title = 'Produtividade da safra'
           TabOrder = 5
-          object dashProductivityChart: TDACBarChart
+          object dashProductivityChart: TDACChart
             Left = 20
-            Top = 62
+            Top = 72
             Width = 520
-            Height = 188
-            Align = alClient
-            BackgroundColor = -536077037
-            BorderColor = 486539263
-            CategoriesText = 'Jan;Fev;Mar;Abr;Mai'
-            ValuesText = '42;68;57;75;54'
+            Height = 178
+            Appearance = mchaDashboard
+            DataMode = cdmManual
+            Series = <
+              item
+                Name = 'Soja 2024/25'
+                ChartType = ctBar
+                FillMode = cfLinearGradient
+                GradientAngle = 90.000000000000000000
+                Points = <
+                  item
+                    Category = 'Jan'
+                    Value = 42.000000000000000000
+                  end
+                  item
+                    Category = 'Fev'
+                    Value = 68.000000000000000000
+                  end
+                  item
+                    Category = 'Mar'
+                    Value = 57.000000000000000000
+                  end
+                  item
+                    Category = 'Abr'
+                    Value = 75.000000000000000000
+                  end>
+              end>
             TabOrder = 0
+          end
+          object dashProductivitySelect: TDACButton
+            Left = 390
+            Top = 16
+            Width = 150
+            Height = 32
+            Caption = 'Soja 2024/25'
+            Kind = mbkGhost
+            ShowIcon = True
+            IconKind = mikChevronDown
+            IconPosition = mipRight
+            TabOrder = 1
           end
         end
         object dashModules: TDACContainer
@@ -397,14 +412,7 @@ object Form1: TForm1
           Top = 476
           Width = 566
           Height = 270
-          ContentPadding = 20
           Appearance = mcaDarkPanel
-          BackgroundColor = -435282155
-          BorderColor = 486539263
-          BorderRadius = 14
-          CornerRadius = 14
-          SubtitleColor = -4668998
-          TitleColor = -657163
           Title = 'Modulos'
           TabOrder = 6
           object dashModule1: TDACContainer
@@ -412,14 +420,7 @@ object Form1: TForm1
             Top = 56
             Width = 125
             Height = 172
-            ContentPadding = 12
-            Appearance = mcaDarkPanel
-            BackgroundColor = -536077037
-            BorderColor = -1941719253
-            BorderRadius = 12
-            CornerRadius = 12
-            SubtitleColor = -4668998
-            TitleColor = -657163
+            Appearance = mcaDarkCard
             ShowHeader = False
             TabOrder = 0
             object dashModule1Text: TDACSystemText
@@ -428,9 +429,21 @@ object Form1: TForm1
               Width = 100
               Height = 32
               Bold = True
-              FontSize = 11
+              Role = mtrBody
               Text = 'Producao'
-              TextColor = -657163
+              Tone = mttPrimary
+            end
+            object dashModule1Icon: TDACButton
+              Left = 16
+              Top = 16
+              Width = 32
+              Height = 32
+              Caption = ''
+              Kind = mbkTransparent
+              ShowIcon = True
+              IconKind = mikSoybean
+              IconSize = 20
+              TabOrder = 0
             end
           end
           object dashModule2: TDACContainer
@@ -438,14 +451,7 @@ object Form1: TForm1
             Top = 56
             Width = 125
             Height = 172
-            ContentPadding = 12
-            Appearance = mcaDarkPanel
-            BackgroundColor = -536077037
-            BorderColor = -1941719253
-            BorderRadius = 12
-            CornerRadius = 12
-            SubtitleColor = -4668998
-            TitleColor = -657163
+            Appearance = mcaDarkCard
             ShowHeader = False
             TabOrder = 1
             object dashModule2Text: TDACSystemText
@@ -454,9 +460,21 @@ object Form1: TForm1
               Width = 100
               Height = 32
               Bold = True
-              FontSize = 11
+              Role = mtrBody
               Text = 'Estoque'
-              TextColor = -657163
+              Tone = mttPrimary
+            end
+            object dashModule2Icon: TDACButton
+              Left = 16
+              Top = 16
+              Width = 32
+              Height = 32
+              Caption = ''
+              Kind = mbkTransparent
+              ShowIcon = True
+              IconKind = mikInventoryStack
+              IconSize = 20
+              TabOrder = 0
             end
           end
           object dashModule3: TDACContainer
@@ -464,14 +482,7 @@ object Form1: TForm1
             Top = 56
             Width = 125
             Height = 172
-            ContentPadding = 12
-            Appearance = mcaDarkPanel
-            BackgroundColor = -536077037
-            BorderColor = -1941719253
-            BorderRadius = 12
-            CornerRadius = 12
-            SubtitleColor = -4668998
-            TitleColor = -657163
+            Appearance = mcaDarkCard
             ShowHeader = False
             TabOrder = 2
             object dashModule3Text: TDACSystemText
@@ -480,9 +491,21 @@ object Form1: TForm1
               Width = 100
               Height = 32
               Bold = True
-              FontSize = 11
+              Role = mtrBody
               Text = 'Financeiro'
-              TextColor = -657163
+              Tone = mttPrimary
+            end
+            object dashModule3Icon: TDACButton
+              Left = 16
+              Top = 16
+              Width = 32
+              Height = 32
+              Caption = ''
+              Kind = mbkTransparent
+              ShowIcon = True
+              IconKind = mikMoneyCircle
+              IconSize = 20
+              TabOrder = 0
             end
           end
           object dashModule4: TDACContainer
@@ -490,14 +513,7 @@ object Form1: TForm1
             Top = 56
             Width = 125
             Height = 172
-            ContentPadding = 12
-            Appearance = mcaDarkPanel
-            BackgroundColor = -536077037
-            BorderColor = -1941719253
-            BorderRadius = 12
-            CornerRadius = 12
-            SubtitleColor = -4668998
-            TitleColor = -657163
+            Appearance = mcaDarkCard
             ShowHeader = False
             TabOrder = 3
             object dashModule4Text: TDACSystemText
@@ -506,9 +522,21 @@ object Form1: TForm1
               Width = 100
               Height = 32
               Bold = True
-              FontSize = 11
+              Role = mtrBody
               Text = 'Relatorios'
-              TextColor = -657163
+              Tone = mttPrimary
+            end
+            object dashModule4Icon: TDACButton
+              Left = 16
+              Top = 16
+              Width = 32
+              Height = 32
+              Caption = ''
+              Kind = mbkTransparent
+              ShowIcon = True
+              IconKind = mikReport
+              IconSize = 20
+              TabOrder = 0
             end
           end
         end
@@ -517,14 +545,7 @@ object Form1: TForm1
           Top = 770
           Width = 1142
           Height = 56
-          ContentPadding = 20
           Appearance = mcaDarkPanel
-          BackgroundColor = -435282155
-          BorderColor = 486539263
-          BorderRadius = 14
-          CornerRadius = 14
-          SubtitleColor = -4668998
-          TitleColor = -657163
           ShowHeader = False
           TabOrder = 7
           object dashStatusConnection: TDACSystemText
@@ -533,27 +554,27 @@ object Form1: TForm1
             Width = 130
             Height = 20
             Bold = True
-            FontSize = 9
+            Role = mtrCaption
             Text = 'Conectado'
-            TextColor = -12205254
+            Tone = mttSuccess
           end
           object dashStatusFarm: TDACSystemText
             Left = 480
             Top = 18
             Width = 180
             Height = 20
-            FontSize = 9
+            Role = mtrCaption
             Text = 'Fazenda Boa Vista'
-            TextColor = -657163
+            Tone = mttPrimary
           end
           object dashStatusSeason: TDACSystemText
             Left = 960
             Top = 18
             Width = 150
             Height = 20
-            FontSize = 9
+            Role = mtrCaption
             Text = 'Safra 2024/25'
-            TextColor = -4668998
+            Tone = mttSecondary
           end
         end
       end
@@ -568,47 +589,36 @@ object Form1: TForm1
         Align = alClient
         AutoScroll = True
         BorderStyle = bsNone
-        CornerRadius = 0
+        Appearance = mscaViewport
         ScrollBarMode = msbmVertical
         TabOrder = 0
-        object lblButtonsTitle: TLabel
+        object lblButtonsTitle: TDACSystemText
           Left = 24
           Top = 22
           Width = 193
           Height = 25
-          Caption = 'Botoes DACComponentes'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = 985605
-          Font.Height = -19
-          Font.Name = 'Segoe UI Semibold'
-          Font.Style = [fsBold]
-          ParentFont = False
+          Bold = True
+          Role = mtrBody
+          Text = 'Botoes DACComponentes'
         end
-        object lblButtonsSubtitle: TLabel
+        object lblButtonsSubtitle: TDACSystemText
           Left = 24
           Top = 53
           Width = 857
           Height = 15
-          Caption = 'Cenarios declarativos como no designer: Kind, Size, IconKind, IconPosition, Loading, Enabled, TabStop, CornerRadius e variacoes de acao.'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = 5263440
-          Font.Height = -12
-          Font.Name = 'Segoe UI'
-          Font.Style = []
-          ParentFont = False
+          MaxLines = 4
+          Role = mtrSmall
+          Text = 'Cenarios declarativos como no designer: Kind, Size, IconKind, IconPosition, Loading, Enabled, TabStop, CornerRadius e variacoes de acao.'
+          Tone = mttSecondary
         end
-        object lblButtonKinds: TLabel
+        object lblButtonKinds: TDACSystemText
           Left = 24
           Top = 92
           Width = 150
           Height = 17
-          Caption = '1. Variantes de Kind'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = 985605
-          Font.Height = -13
-          Font.Name = 'Segoe UI Semibold'
-          Font.Style = [fsBold]
-          ParentFont = False
+          Bold = True
+          Role = mtrBody
+          Text = '1. Variantes de Kind'
         end
         object gcButtonKinds: TDACGridContainer
           Left = 24
@@ -616,10 +626,7 @@ object Form1: TForm1
           Width = 1128
           Height = 148
           Columns = 12
-          ContentPadding = 16
-          CornerRadius = 10
-          Gutter = 10
-          RowHeight = 44
+          Layout = mgclDense
           TabOrder = 0
           object btnKindPrimary: TDACButton
             Left = 40
@@ -707,18 +714,14 @@ object Form1: TForm1
             TabOrder = 6
           end
         end
-        object lblButtonSizes: TLabel
+        object lblButtonSizes: TDACSystemText
           Left = 24
           Top = 288
           Width = 230
           Height = 17
-          Caption = '2. Tamanhos, raio e foco por teclado'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = 985605
-          Font.Height = -13
-          Font.Name = 'Segoe UI Semibold'
-          Font.Style = [fsBold]
-          ParentFont = False
+          Bold = True
+          Role = mtrBody
+          Text = '2. Tamanhos, raio e foco por teclado'
         end
         object gcButtonSizes: TDACGridContainer
           Left = 24
@@ -726,10 +729,7 @@ object Form1: TForm1
           Width = 1128
           Height = 148
           Columns = 12
-          ContentPadding = 16
-          CornerRadius = 10
-          Gutter = 10
-          RowHeight = 46
+          Layout = mgclCompact
           TabOrder = 1
           object btnSizeSmall: TDACButton
             Left = 40
@@ -773,7 +773,7 @@ object Form1: TForm1
             Height = 46
             Caption = 'Raio 4'
             Kind = mbkSecondary
-            CornerRadius = 4
+            Shape = mbshCompact
             Tag = 3
             TabOrder = 3
           end
@@ -783,7 +783,7 @@ object Form1: TForm1
             Width = 180
             Height = 46
             Caption = 'Raio pill'
-            CornerRadius = 20
+            Shape = mbshRounded
             ShowIcon = True
             IconKind = mikLeaf
             Tag = 3
@@ -801,18 +801,14 @@ object Form1: TForm1
             TabOrder = 5
           end
         end
-        object lblButtonIcons: TLabel
+        object lblButtonIcons: TDACSystemText
           Left = 24
           Top = 484
           Width = 218
           Height = 17
-          Caption = '3. Icones, posicao e icon-only'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = 985605
-          Font.Height = -13
-          Font.Name = 'Segoe UI Semibold'
-          Font.Style = [fsBold]
-          ParentFont = False
+          Bold = True
+          Role = mtrBody
+          Text = '3. Icones, posicao e icon-only'
         end
         object gcButtonIcons: TDACGridContainer
           Left = 24
@@ -820,10 +816,7 @@ object Form1: TForm1
           Width = 1128
           Height = 150
           Columns = 12
-          ContentPadding = 16
-          CornerRadius = 10
-          Gutter = 10
-          RowHeight = 46
+          Layout = mgclCompact
           TabOrder = 2
           object btnIconLeft: TDACButton
             Left = 40
@@ -898,18 +891,14 @@ object Form1: TForm1
             TabOrder = 5
           end
         end
-        object lblButtonStates: TLabel
+        object lblButtonStates: TDACSystemText
           Left = 24
           Top = 682
           Width = 272
           Height = 17
-          Caption = '4. Estados: normal, hover, foco, pressed, loading e disabled'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = 985605
-          Font.Height = -13
-          Font.Name = 'Segoe UI Semibold'
-          Font.Style = [fsBold]
-          ParentFont = False
+          Bold = True
+          Role = mtrBody
+          Text = '4. Estados: normal, hover, foco, pressed, loading e disabled'
         end
         object gcButtonStates: TDACGridContainer
           Left = 24
@@ -917,10 +906,7 @@ object Form1: TForm1
           Width = 1128
           Height = 150
           Columns = 12
-          ContentPadding = 16
-          CornerRadius = 10
-          Gutter = 10
-          RowHeight = 46
+          Layout = mgclCompact
           TabOrder = 3
           object btnStateNormal: TDACButton
             Left = 40
@@ -994,18 +980,14 @@ object Form1: TForm1
             TabOrder = 5
           end
         end
-        object lblButtonSpecials: TLabel
+        object lblButtonSpecials: TDACSystemText
           Left = 24
           Top = 880
           Width = 238
           Height = 17
-          Caption = '5. Cenarios compostos de botao'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = 985605
-          Font.Height = -13
-          Font.Name = 'Segoe UI Semibold'
-          Font.Style = [fsBold]
-          ParentFont = False
+          Bold = True
+          Role = mtrBody
+          Text = '5. Cenarios compostos de botao'
         end
         object gcButtonSpecials: TDACGridContainer
           Left = 24
@@ -1013,10 +995,8 @@ object Form1: TForm1
           Width = 1128
           Height = 150
           Columns = 12
-          ContentPadding = 16
-          CornerRadius = 10
-          Gutter = 10
-          RowHeight = 46
+          Appearance = mgcaViewport
+          Layout = mgclCompact
           TabOrder = 4
           object btnSplitMain: TDACButton
             Left = 40
@@ -1093,34 +1073,311 @@ object Form1: TForm1
     object tsInputs: TTabSheet
       Caption = 'Inputs'
       ImageIndex = 1
-      object lblInputs: TLabel
-        Left = 24
-        Top = 24
-        Caption = 'Inputs nativos com chrome Skia, foco e teclado'
-      end
-      object demoEdit: TDACEdit
-        Left = 24
-        Top = 56
-        Width = 280
-        Height = 40
-        Text = 'Texto editavel'
+      object scrInputs: TDACScrollContainer
+        Left = 0
+        Top = 0
+        Width = 1192
+        Height = 708
+        Align = alClient
+        AutoScroll = True
+        BorderStyle = bsNone
+        Appearance = mscaViewport
+        ScrollBarMode = msbmVertical
         TabOrder = 0
-      end
-      object demoButtonEdit: TDACButtonEdit
-        Left = 320
-        Top = 56
-        Width = 280
-        Height = 40
-        TabOrder = 1
-      end
-      object demoMemo: TDACMemo
-        Left = 24
-        Top = 116
-        Width = 576
-        Height = 92
-        Lines.Strings = (
-          'Memo com selecao, clipboard e rolagem nativos.')
-        TabOrder = 2
+        object gcInputStates: TDACGridContainer
+          AlignWithMargins = True
+          Left = 16
+          Top = 16
+          Width = 1144
+          Height = 1140
+          Margins.Left = 16
+          Margins.Top = 16
+          Margins.Right = 16
+          Margins.Bottom = 16
+          Align = alTop
+          AutoContentHeight = True
+          Appearance = mgcaTransparent
+          Columns = 7
+          MinimumColumnWidth = 180
+          SizeRowsToContent = True
+          TabOrder = 0
+          object lblInputs: TDACSystemText
+            Left = 12
+            Top = 12
+            Width = 1120
+            Height = 30
+            Bold = True
+            Role = mtrBody
+            Tag = 12
+            Text = 'Input e Memo - estados declarativos (hover/foco por interacao real)'
+          end
+          object lblInputEditStates: TDACSystemText
+            Left = 12
+            Top = 54
+            Width = 1120
+            Height = 22
+            Bold = True
+            Role = mtrBody
+            Tag = 12
+            Text = 'Edit'
+          end
+          object demoEdit: TDACEdit
+            Left = 12
+            Top = 88
+            Width = 300
+            Height = 64
+            Constraints.MinWidth = 180
+            LabelText = 'Input / Default'
+            Placeholder = 'Digite...'
+            TabOrder = 0
+          end
+          object demoEditFilled: TDACEdit
+            Left = 324
+            Top = 88
+            Width = 300
+            Height = 64
+            Constraints.MinWidth = 180
+            LabelText = 'Input / Filled'
+            Text = 'Valor preenchido'
+            TabOrder = 1
+          end
+          object demoEditError: TDACEdit
+            Left = 636
+            Top = 88
+            Width = 300
+            Height = 88
+            Constraints.MinWidth = 180
+            ErrorText = 'Mensagem de erro'
+            LabelText = 'Input / Error'
+            Status = mesDanger
+            Text = 'Valor invalido'
+            TabOrder = 2
+          end
+          object demoEditSuccess: TDACEdit
+            Left = 12
+            Top = 188
+            Width = 300
+            Height = 88
+            Constraints.MinWidth = 180
+            HelperText = 'Mensagem de sucesso'
+            LabelText = 'Input / Success'
+            Status = mesSuccess
+            Text = 'Valor valido'
+            TabOrder = 3
+          end
+          object demoEditDisabled: TDACEdit
+            Left = 324
+            Top = 188
+            Width = 300
+            Height = 64
+            Constraints.MinWidth = 180
+            Enabled = False
+            LabelText = 'Input / Disabled'
+            Text = 'Desabilitado'
+            TabOrder = 4
+          end
+          object demoEditReadOnly: TDACEdit
+            Left = 636
+            Top = 188
+            Width = 300
+            Height = 64
+            Constraints.MinWidth = 180
+            LabelText = 'Input / ReadOnly'
+            ReadOnly = True
+            Text = 'Somente leitura'
+            TabOrder = 5
+          end
+          object demoEditLoading: TDACEdit
+            Left = 12
+            Top = 288
+            Width = 300
+            Height = 64
+            Constraints.MinWidth = 180
+            LabelText = 'Input / Loading'
+            Loading = True
+            Text = 'Carregando...'
+            TabOrder = 6
+          end
+          object lblInputMemoStates: TDACSystemText
+            Left = 12
+            Top = 364
+            Width = 1120
+            Height = 22
+            Bold = True
+            Role = mtrBody
+            Tag = 12
+            Text = 'Memo'
+          end
+          object demoMemo: TDACMemo
+            Left = 12
+            Top = 398
+            Width = 300
+            Height = 112
+            Constraints.MinWidth = 180
+            LabelText = 'Memo / Default'
+            TabOrder = 7
+          end
+          object demoMemoFilled: TDACMemo
+            Left = 324
+            Top = 398
+            Width = 300
+            Height = 112
+            Constraints.MinWidth = 180
+            LabelText = 'Memo / Filled'
+            Lines.Strings = (
+              'Memo com selecao, clipboard e rolagem nativos.')
+            TabOrder = 8
+          end
+          object demoMemoError: TDACMemo
+            Left = 636
+            Top = 398
+            Width = 300
+            Height = 136
+            Constraints.MinWidth = 180
+            ErrorText = 'Mensagem de erro'
+            LabelText = 'Memo / Error'
+            Lines.Strings = (
+              'Valor invalido')
+            Status = mesDanger
+            TabOrder = 9
+          end
+          object demoMemoSuccess: TDACMemo
+            Left = 12
+            Top = 546
+            Width = 300
+            Height = 136
+            Constraints.MinWidth = 180
+            HelperText = 'Mensagem de sucesso'
+            LabelText = 'Memo / Success'
+            Lines.Strings = (
+              'Valor valido')
+            Status = mesSuccess
+            TabOrder = 10
+          end
+          object demoMemoDisabled: TDACMemo
+            Left = 324
+            Top = 546
+            Width = 300
+            Height = 112
+            Constraints.MinWidth = 180
+            Enabled = False
+            LabelText = 'Memo / Disabled'
+            Lines.Strings = (
+              'Desabilitado')
+            TabOrder = 11
+          end
+          object demoMemoReadOnly: TDACMemo
+            Left = 636
+            Top = 546
+            Width = 300
+            Height = 112
+            Constraints.MinWidth = 180
+            LabelText = 'Memo / ReadOnly'
+            Lines.Strings = (
+              'Somente leitura')
+            ReadOnly = True
+            TabOrder = 12
+          end
+          object demoMemoLoading: TDACMemo
+            Left = 12
+            Top = 694
+            Width = 300
+            Height = 112
+            Constraints.MinWidth = 180
+            LabelText = 'Memo / Loading'
+            Lines.Strings = (
+              'Carregando...')
+            Loading = True
+            TabOrder = 13
+          end
+          object lblInputButtonEditStates: TDACSystemText
+            Left = 12
+            Top = 818
+            Width = 1120
+            Height = 22
+            Bold = True
+            Role = mtrBody
+            Tag = 12
+            Text = 'ButtonEdit'
+          end
+          object demoButtonEdit: TDACButtonEdit
+            Left = 12
+            Top = 852
+            Width = 300
+            Height = 64
+            Constraints.MinWidth = 180
+            LabelText = 'ButtonEdit / Default'
+            Placeholder = 'Pesquisar...'
+            TabOrder = 14
+          end
+          object demoButtonEditFilled: TDACButtonEdit
+            Left = 324
+            Top = 852
+            Width = 300
+            Height = 64
+            Constraints.MinWidth = 180
+            LabelText = 'ButtonEdit / Filled'
+            Text = 'Valor'
+            TabOrder = 15
+          end
+          object demoButtonEditError: TDACButtonEdit
+            Left = 636
+            Top = 852
+            Width = 300
+            Height = 88
+            Constraints.MinWidth = 180
+            ErrorText = 'Mensagem de erro'
+            LabelText = 'ButtonEdit / Error'
+            Status = mesDanger
+            Text = 'Invalido'
+            TabOrder = 16
+          end
+          object demoButtonEditSuccess: TDACButtonEdit
+            Left = 12
+            Top = 952
+            Width = 300
+            Height = 88
+            Constraints.MinWidth = 180
+            HelperText = 'Mensagem de sucesso'
+            LabelText = 'ButtonEdit / Success'
+            Status = mesSuccess
+            Text = 'Valido'
+            TabOrder = 17
+          end
+          object demoButtonEditDisabled: TDACButtonEdit
+            Left = 324
+            Top = 952
+            Width = 300
+            Height = 64
+            Constraints.MinWidth = 180
+            Enabled = False
+            LabelText = 'ButtonEdit / Disabled'
+            Text = 'Desabilitado'
+            TabOrder = 18
+          end
+          object demoButtonEditReadOnly: TDACButtonEdit
+            Left = 636
+            Top = 952
+            Width = 300
+            Height = 64
+            Constraints.MinWidth = 180
+            LabelText = 'ButtonEdit / ReadOnly'
+            ReadOnly = True
+            Text = 'Somente leitura'
+            TabOrder = 19
+          end
+          object demoButtonEditLoading: TDACButtonEdit
+            Left = 12
+            Top = 1052
+            Width = 300
+            Height = 64
+            Constraints.MinWidth = 180
+            LabelText = 'ButtonEdit / Loading'
+            Loading = True
+            Text = 'Carregando...'
+            TabOrder = 20
+          end
+        end
       end
     end
     object tsSelectors: TTabSheet
@@ -1129,27 +1386,157 @@ object Form1: TForm1
       object lblSelectors: TLabel
         Left = 24
         Top = 24
-        Caption = 'Seletores e data/hora com interacao nativa'
+        Caption = 'ComboBox e DateTimePicker - estados declarativos'
       end
       object demoCombo: TDACComboBox
         Left = 24
-        Top = 56
-        Width = 220
-        Height = 40
+        Top = 88
+        Width = 196
+        Height = 64
+        LabelText = 'Combo / Default'
+        Items.Strings = (
+          'Opcao A'
+          'Opcao B'
+          'Opcao C')
+        TabOrder = 0
+      end
+      object demoComboFilled: TDACComboBox
+        Left = 236
+        Top = 88
+        Width = 196
+        Height = 64
         Items.Strings = (
           'Opcao A'
           'Opcao B'
           'Opcao C')
         ItemIndex = 0
-        TabOrder = 0
+        LabelText = 'Combo / Filled'
+        TabOrder = 1
         Text = 'Opcao A'
       end
+      object demoComboError: TDACComboBox
+        Left = 24
+        Top = 184
+        Width = 196
+        Height = 88
+        ErrorText = 'Mensagem de erro'
+        Items.Strings = (
+          'Opcao A'
+          'Opcao B')
+        LabelText = 'Combo / Error'
+        Status = mesDanger
+        TabOrder = 2
+      end
+      object demoComboSuccess: TDACComboBox
+        Left = 236
+        Top = 184
+        Width = 196
+        Height = 88
+        HelperText = 'Mensagem de sucesso'
+        Items.Strings = (
+          'Opcao A'
+          'Opcao B')
+        ItemIndex = 0
+        LabelText = 'Combo / Success'
+        Status = mesSuccess
+        TabOrder = 3
+        Text = 'Opcao A'
+      end
+      object demoComboDisabled: TDACComboBox
+        Left = 24
+        Top = 288
+        Width = 196
+        Height = 64
+        Enabled = False
+        LabelText = 'Combo / Disabled'
+        TabOrder = 4
+      end
+      object demoComboReadOnly: TDACComboBox
+        Left = 236
+        Top = 288
+        Width = 196
+        Height = 64
+        Items.Strings = (
+          'Opcao A')
+        ItemIndex = 0
+        LabelText = 'Combo / ReadOnly'
+        ReadOnly = True
+        TabOrder = 5
+        Text = 'Opcao A'
+      end
+      object demoComboLoading: TDACComboBox
+        Left = 24
+        Top = 384
+        Width = 196
+        Height = 64
+        LabelText = 'Combo / Loading'
+        Loading = True
+        TabOrder = 6
+        Text = 'Carregando...'
+      end
       object demoDateTime: TDACDateTimePicker
-        Left = 264
-        Top = 56
+        Left = 520
+        Top = 88
         Width = 220
-        Height = 40
-        TabOrder = 1
+        Height = 64
+        LabelText = 'Date / Default'
+        TabOrder = 7
+      end
+      object demoDateTimeFilled: TDACDateTimePicker
+        Left = 756
+        Top = 88
+        Width = 220
+        Height = 64
+        DateTime = 46067.625000000000000000
+        LabelText = 'Date / Filled'
+        TabOrder = 8
+      end
+      object demoDateTimeError: TDACDateTimePicker
+        Left = 520
+        Top = 184
+        Width = 220
+        Height = 88
+        ErrorText = 'Mensagem de erro'
+        LabelText = 'Date / Error'
+        Status = mesDanger
+        TabOrder = 9
+      end
+      object demoDateTimeSuccess: TDACDateTimePicker
+        Left = 756
+        Top = 184
+        Width = 220
+        Height = 88
+        HelperText = 'Mensagem de sucesso'
+        LabelText = 'Date / Success'
+        Status = mesSuccess
+        TabOrder = 10
+      end
+      object demoDateTimeDisabled: TDACDateTimePicker
+        Left = 520
+        Top = 288
+        Width = 220
+        Height = 64
+        Enabled = False
+        LabelText = 'Date / Disabled'
+        TabOrder = 11
+      end
+      object demoDateTimeReadOnly: TDACDateTimePicker
+        Left = 756
+        Top = 288
+        Width = 220
+        Height = 64
+        LabelText = 'Date / ReadOnly'
+        ReadOnly = True
+        TabOrder = 12
+      end
+      object demoDateTimeLoading: TDACDateTimePicker
+        Left = 520
+        Top = 384
+        Width = 220
+        Height = 64
+        LabelText = 'Date / Loading'
+        Loading = True
+        TabOrder = 13
       end
     end
     object tsControls: TTabSheet
@@ -1204,14 +1591,90 @@ object Form1: TForm1
         Left = 24
         Top = 56
         Width = 560
-        Height = 220
+        Height = 260
         ActiveIndex = 0
         TabOrder = 0
         object demoTabsFirst: TTabSheet
-          Caption = 'Primeira'
+          Caption = 'Geral'
+          object demoTabsFirstText: TDACSystemText
+            Left = 20
+            Top = 20
+            Width = 400
+            Height = 52
+            Role = mtrBody
+            MaxLines = 2
+            Text = 'Geral: foco, acoes e dados.'
+          end
         end
         object demoTabsSecond: TTabSheet
-          Caption = 'Segunda'
+          Caption = 'Detalhes'
+          object demoTabsSecondText: TDACSystemText
+            Left = 20
+            Top = 20
+            Width = 400
+            Height = 52
+            Role = mtrBody
+            MaxLines = 2
+            Text = 'Detalhes: painel independente.'
+          end
+        end
+        object demoTabsThird: TTabSheet
+          Caption = 'Historico'
+          Enabled = False
+          object demoTabsThirdText: TDACSystemText
+            Left = 20
+            Top = 20
+            Width = 400
+            Height = 52
+            Role = mtrBody
+            MaxLines = 2
+            Text = 'Historico: estado desabilitado.'
+          end
+        end
+      end
+      object demoVerticalTabs: TDACTabs
+        Left = 608
+        Top = 56
+        Width = 400
+        Height = 260
+        ActiveIndex = 0
+        Orientation = mtoVertical
+        TabOrder = 1
+        object demoVerticalTabsFirst: TTabSheet
+          Caption = 'Geral'
+          object demoVerticalTabsFirstText: TDACSystemText
+            Left = 20
+            Top = 20
+            Width = 190
+            Height = 52
+            Role = mtrBody
+            MaxLines = 2
+            Text = 'Geral: painel ativo.'
+          end
+        end
+        object demoVerticalTabsSecond: TTabSheet
+          Caption = 'Detalhes'
+          object demoVerticalTabsSecondText: TDACSystemText
+            Left = 20
+            Top = 20
+            Width = 190
+            Height = 52
+            Role = mtrBody
+            MaxLines = 2
+            Text = 'Detalhes: selecionavel.'
+          end
+        end
+        object demoVerticalTabsThird: TTabSheet
+          Caption = 'Historico'
+          object demoVerticalTabsThirdText: TDACSystemText
+            Left = 20
+            Top = 20
+            Width = 190
+            Height = 52
+            Role = mtrBody
+            MaxLines = 2
+            Text = 'Historico: conteudo proprio.'
+          end
         end
       end
     end
@@ -1228,22 +1691,6 @@ object Form1: TForm1
         Top = 56
         Width = 300
         Height = 140
-        TabOrder = 0
-      end
-    end
-    object tsGrid: TTabSheet
-      Caption = 'Grid'
-      ImageIndex = 6
-      object lblGrid: TLabel
-        Left = 24
-        Top = 24
-        Caption = 'Grid preserva TDBGrid, dataset, selecao e rolagem'
-      end
-      object demoDataGrid: TDACDataGrid
-        Left = 24
-        Top = 56
-        Width = 860
-        Height = 260
         TabOrder = 0
       end
     end
@@ -1330,13 +1777,22 @@ object Form1: TForm1
         Height = 72
         TabOrder = 0
       end
+      object demoModal: TDACModalDialog
+        Left = 350
+        Top = 56
+        Width = 320
+        Height = 180
+        MessageText = 'Modal declarativo demonstrando foco e fechamento com Escape.'
+        TabOrder = 1
+        TitleText = 'Confirmacao DAC'
+      end
       object btnTooltipTarget: TDACButton
         Left = 24
         Top = 158
         Width = 180
         Height = 42
         Caption = 'Passe o mouse'
-        TabOrder = 1
+        TabOrder = 2
       end
       object demoTooltip: TDACTooltip
         Left = 24
@@ -1390,19 +1846,132 @@ object Form1: TForm1
         Top = 24
         Caption = 'Charts de barra, linha, area e donut'
       end
-      object demoBarChart: TDACBarChart
+      object demoBarChart: TDACChart
         Left = 24
         Top = 56
         Width = 360
-        Height = 230
+        Height = 180
+        DataMode = cdmManual
+        Title.Visible = True
+        Title.Text = 'Manual: barras e linha'
+        Series = <
+          item
+            Name = 'Producao'
+            ChartType = ctBar
+            FillMode = cfLinearGradient
+            Points = <
+              item Category = 'Jan' Value = 20.000000000000000000 end
+              item Category = 'Fev' Value = 35.000000000000000000 end
+              item Category = 'Mar' Value = 27.000000000000000000 end
+              item Category = 'Abr' Value = 46.000000000000000000 end>
+          end
+          item
+            Name = 'Meta'
+            ChartType = ctLine
+            FillMode = cfSolid
+            Points = <
+              item Category = 'Jan' Value = 28.000000000000000000 end
+              item Category = 'Fev' Value = 30.000000000000000000 end
+              item Category = 'Mar' Value = 33.000000000000000000 end
+              item Category = 'Abr' Value = 39.000000000000000000 end>
+          end>
         TabOrder = 0
       end
-      object demoDoughnutChart: TDACDoughnutChart
+      object demoDoughnutChart: TDACChart
         Left = 410
         Top = 56
         Width = 230
-        Height = 230
+        Height = 180
+        ChartType = ctDoughnut
+        DataMode = cdmManual
+        Series = <
+          item
+            Name = 'Culturas'
+            ChartType = ctDoughnut
+            FillMode = cfRadialGradient
+            Points = <
+              item Category = 'Soja' Value = 55.000000000000000000 end
+              item Category = 'Milho' Value = 30.000000000000000000 end
+              item Category = 'Feijao' Value = 15.000000000000000000 end>
+          end>
         TabOrder = 1
+      end
+      object demoLineChart: TDACChart
+        Left = 24
+        Top = 260
+        Width = 360
+        Height = 180
+        ChartType = ctLine
+        DataMode = cdmManual
+        Series = <
+          item
+            Name = 'Umidade'
+            ChartType = ctLine
+            Points = <
+              item Category = 'Jan' Value = 16.000000000000000000 end
+              item Category = 'Fev' Value = 22.000000000000000000 end
+              item Category = 'Mar' IsNull = True end
+              item Category = 'Abr' Value = 18.000000000000000000 end>
+          end>
+        TabOrder = 2
+      end
+      object demoAreaChart: TDACChart
+        Left = 410
+        Top = 260
+        Width = 360
+        Height = 180
+        ChartType = ctArea
+        DataMode = cdmManual
+        Series = <
+          item
+            Name = 'Precipitacao'
+            ChartType = ctArea
+            FillMode = cfLinearGradient
+            GradientAngle = 0.000000000000000000
+            Points = <
+              item Category = 'Jan' Value = 12.000000000000000000 end
+              item Category = 'Fev' Value = 30.000000000000000000 end
+              item Category = 'Mar' Value = 24.000000000000000000 end
+              item Category = 'Abr' Value = 40.000000000000000000 end>
+          end>
+        TabOrder = 3
+      end
+      object demoStatusTimeline: TDACStatusTimelineChart
+        Left = 24
+        Top = 464
+        Width = 746
+        Height = 180
+        CurrentState = stsOnline
+        EmptyText = 'Sem dados de status no periodo'
+        TabOrder = 4
+        WindowFinish = 45870.666666666660000000
+        WindowStart = 45869.666666666660000000
+        Segments = <
+          item
+            StartAt = 45869.666666666660000000
+            FinishAt = 45870.020833333340000000
+            State = stsOnline
+          end
+          item
+            StartAt = 45870.020833333340000000
+            FinishAt = 45870.083333333340000000
+            State = stsOffline
+          end
+          item
+            StartAt = 45870.083333333340000000
+            FinishAt = 45870.416666666660000000
+            State = stsOnline
+          end
+          item
+            StartAt = 45870.416666666660000000
+            FinishAt = 45870.458333333340000000
+            State = stsUnstable
+          end
+          item
+            StartAt = 45870.458333333340000000
+            FinishAt = 45870.666666666660000000
+            State = stsOnline
+          end>
       end
     end
     object tsReport: TTabSheet

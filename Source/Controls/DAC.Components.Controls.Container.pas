@@ -10,10 +10,14 @@ uses
   Winapi.Messages,
   Vcl.Controls,
   Vcl.Graphics,
+  Vcl.StdCtrls,
   Vcl.Skia,
   DAC.Components.Controls.SystemText,
   DAC.Components.DesignSystem.ColorTokens,
   DAC.Components.DesignSystem.Fonts,
+  DAC.Components.DesignSystem.ComponentStyle,
+  DAC.Components.DesignSystem.ControlTokens,
+  DAC.Components.DesignSystem.Theme,
   DAC.Components.Skia.BackgroundPainter,
   DAC.Components.Skia.BorderPainter,
   DAC.Components.Skia.Renderer;
@@ -22,6 +26,7 @@ type
   TDACContainerAppearance = (
     mcaSuiteSection,
     mcaDarkPanel,
+    mcaDarkCard,
     mcaTransparent
   );
 
@@ -31,6 +36,13 @@ type
     FBackgroundColor: TAlphaColor;
     FBackgroundPainter: TDACSkiaBackgroundPainter;
     FBorderColor: TAlphaColor;
+    FCustomBackgroundColor: Boolean;
+    FCustomBorderColor: Boolean;
+    FCustomSubtitleColor: Boolean;
+    FCustomTitleColor: Boolean;
+    FCustomBorderRadius: Boolean;
+    FCustomContentPadding: Boolean;
+    FCustomCornerRadius: Boolean;
     FBorderPainter: TDACSkiaBorderPainter;
     FBorderRadius: Integer;
     FBorderWidth: Integer;
@@ -47,15 +59,25 @@ type
     FTitle: string;
     FTitleLabel: TDACSystemText;
     FTitleColor: TAlphaColor;
+    FThemeMode: TDACThemeMode;
+    procedure CMControlChange(var AMessage: TMessage); message CM_CONTROLCHANGE;
+    procedure ApplyAppearanceColors;
     procedure CMParentColorChanged(var AMessage: TMessage); message CM_PARENTCOLORCHANGED;
+    procedure CMParentFontChanged(var AMessage: TMessage); message CM_PARENTFONTCHANGED;
     function HeaderText: string;
     function LayoutRect: TRect;
     procedure InvalidateChrome;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
     function ParentSurfaceColor: TAlphaColor;
-    function ScaleFactor: Single;
-    function ScaleMetric(const AValue: Integer): Integer;
+    function Pixels(const AValue: Integer): Integer;
+    function IsBackgroundColorStored: Boolean;
+    function IsBorderColorStored: Boolean;
+    function IsBorderRadiusStored: Boolean;
+    function IsContentPaddingStored: Boolean;
+    function IsCornerRadiusStored: Boolean;
+    function IsSubtitleColorStored: Boolean;
+    function IsTitleColorStored: Boolean;
     procedure SetAppearance(const AValue: TDACContainerAppearance);
     procedure SetBackgroundColor(const AValue: TAlphaColor);
     procedure SetBorderColor(const AValue: TAlphaColor);
@@ -70,12 +92,16 @@ type
     procedure SetSubtitleColor(const AValue: TAlphaColor);
     procedure SetTitle(const AValue: string);
     procedure SetTitleColor(const AValue: TAlphaColor);
+    procedure SetThemeMode(const AValue: TDACThemeMode);
+    procedure ReleaseThemeAppearanceOverrides;
+    procedure RefreshThemeDescendants;
+    procedure SynchronizeNativeLabels;
+    procedure ThemeChanged(Sender: TObject);
     procedure UpdateHeaderLabels;
     procedure UpdatePaintBoxBounds;
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
   protected
     procedure AdjustClientRect(var Rect: TRect); override;
-    procedure ChangeScale(M, D: Integer); override;
     procedure CreateWnd; override;
     procedure Loaded; override;
     procedure Resize; override;
@@ -83,21 +109,30 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     function ContentRect: TRect;
+    function ResolvedBackgroundColor: TAlphaColor;
     procedure Redraw;
   published
     property Align;
     property Anchors;
     property Appearance: TDACContainerAppearance read FAppearance write SetAppearance default mcaSuiteSection;
-    property BackgroundColor: TAlphaColor read FBackgroundColor write SetBackgroundColor;
-    property BorderColor: TAlphaColor read FBorderColor write SetBorderColor;
-    property BorderRadius: Integer read FBorderRadius write SetBorderRadius default 10;
-    property BorderWidth: Integer read FBorderWidth write SetBorderWidth default 1;
+    property BackgroundColor: TAlphaColor read FBackgroundColor
+      write SetBackgroundColor stored IsBackgroundColorStored;
+    property HasCustomBackgroundColor: Boolean read FCustomBackgroundColor stored False;
+    property BorderColor: TAlphaColor read FBorderColor write SetBorderColor
+      stored IsBorderColorStored;
+    property BorderRadius: Integer read FBorderRadius write SetBorderRadius
+      stored IsBorderRadiusStored;
+    property BorderWidth: Integer read FBorderWidth write SetBorderWidth
+      default DACContainerDefaultBorderWidth;
     property Color;
     property Constraints;
-    property ContentPadding: Integer read FContentPadding write SetContentPadding default 16;
-    property CornerRadius: Integer read FCornerRadius write SetCornerRadius default 10;
+    property ContentPadding: Integer read FContentPadding write SetContentPadding
+      stored IsContentPaddingStored;
+    property CornerRadius: Integer read FCornerRadius write SetCornerRadius
+      stored IsCornerRadiusStored;
     property Enabled;
-    property HeaderHeight: Integer read FHeaderHeight write SetHeaderHeight default 42;
+    property HeaderHeight: Integer read FHeaderHeight write SetHeaderHeight
+      default DACContainerDefaultHeaderHeight;
     property ParentColor;
     property ParentShowHint;
     property PopupMenu;
@@ -105,41 +140,122 @@ type
     property ShowHeader: Boolean read FShowHeader write SetShowHeader default True;
     property ShowHint;
     property Subtitle: string read FSubtitle write SetSubtitle;
-    property SubtitleColor: TAlphaColor read FSubtitleColor write SetSubtitleColor;
+    property SubtitleColor: TAlphaColor read FSubtitleColor
+      write SetSubtitleColor stored IsSubtitleColorStored;
     property TabOrder;
     property TabStop default False;
     property Title: string read FTitle write SetTitle;
-    property TitleColor: TAlphaColor read FTitleColor write SetTitleColor;
+    property TitleColor: TAlphaColor read FTitleColor write SetTitleColor
+      stored IsTitleColorStored;
+    property ThemeMode: TDACThemeMode read FThemeMode write SetThemeMode default dtmInherit;
     property Visible;
   end;
 
 implementation
 
 uses
+  System.Math,
   System.SysUtils;
+
+procedure TDACContainer.ApplyAppearanceColors;
+var
+  LTokens: TDACControlTokens;
+begin
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  case FAppearance of
+    mcaSuiteSection:
+      begin
+        if not FCustomBackgroundColor then
+          FBackgroundColor := LTokens.ContainerSuiteBackground;
+        if not FCustomBorderColor then
+          FBorderColor := LTokens.ContainerSuiteBorder;
+        if not FCustomTitleColor then
+          FTitleColor := LTokens.ContainerTitle;
+        if not FCustomSubtitleColor then
+          FSubtitleColor := LTokens.ContainerSubtitle;
+        if not FCustomCornerRadius then
+          FCornerRadius := Round(LTokens.ContainerRadius);
+        if not FCustomBorderRadius then
+          FBorderRadius := Round(LTokens.ContainerRadius);
+        if not FCustomContentPadding then
+          FContentPadding := Round(LTokens.ContainerPadding);
+      end;
+    mcaDarkPanel:
+      begin
+        if not FCustomBackgroundColor then
+          FBackgroundColor := LTokens.ContainerDarkBackground;
+        if not FCustomBorderColor then
+          FBorderColor := LTokens.ContainerDarkBorder;
+        if not FCustomTitleColor then
+          FTitleColor := LTokens.ContainerDarkTitle;
+        if not FCustomSubtitleColor then
+          FSubtitleColor := LTokens.ContainerDarkSubtitle;
+        if not FCustomCornerRadius then
+          FCornerRadius := Round(LTokens.ContainerDarkPanelRadius);
+        if not FCustomBorderRadius then
+          FBorderRadius := Round(LTokens.ContainerDarkPanelRadius);
+        if not FCustomContentPadding then
+          FContentPadding := Round(LTokens.ContainerDarkPanelPadding);
+      end;
+    mcaDarkCard:
+      begin
+        if not FCustomBackgroundColor then
+          FBackgroundColor := LTokens.ContainerDarkCardBackground;
+        if not FCustomBorderColor then
+          FBorderColor := LTokens.ContainerDarkCardBorder;
+        if not FCustomTitleColor then
+          FTitleColor := LTokens.ContainerDarkTitle;
+        if not FCustomSubtitleColor then
+          FSubtitleColor := LTokens.ContainerDarkSubtitle;
+        if not FCustomCornerRadius then
+          FCornerRadius := Round(LTokens.ContainerDarkCardRadius);
+        if not FCustomBorderRadius then
+          FBorderRadius := Round(LTokens.ContainerDarkCardRadius);
+        if not FCustomContentPadding then
+          FContentPadding := Round(LTokens.ContainerDarkCardPadding);
+      end;
+    mcaTransparent:
+      begin
+        if not FCustomBackgroundColor then
+          FBackgroundColor := LTokens.TransparentSurfaceFallback;
+        if not FCustomBorderColor then
+          FBorderColor := LTokens.TransparentSurfaceFallback;
+        if not FCustomTitleColor then
+          FTitleColor := LTokens.ContainerTitle;
+        if not FCustomSubtitleColor then
+          FSubtitleColor := LTokens.ContainerSubtitle;
+        if not FCustomCornerRadius then
+          FCornerRadius := Round(LTokens.ContainerRadius);
+        if not FCustomBorderRadius then
+          FBorderRadius := Round(LTokens.ContainerRadius);
+        if not FCustomContentPadding then
+          FContentPadding := Round(LTokens.ContainerPadding);
+      end;
+  end;
+end;
 
 constructor TDACContainer.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csAcceptsControls, csOpaque];
-  Width := 460;
-  Height := 200;
+  Width := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.ContainerDefaultWidth);
+  Height := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.ContainerDefaultHeight);
   TabStop := False;
-  ParentColor := True;
+  ParentColor := False;
+  ParentBackground := False;
+  ParentFont := False;
   StyleElements := [];
 
   FAppearance := mcaSuiteSection;
-  FBackgroundColor := TDACComponentColors.SuiteSectionBackground;
-  FBorderColor := TDACComponentColors.ControlBorder;
-  FTitleColor := TDACComponentColors.ControlText;
-  FSubtitleColor := TDACComponentColors.SuiteSectionSubtitle;
-  FBorderRadius := 10;
-  FBorderWidth := 1;
-  FContentPadding := 16;
-  FCornerRadius := 10;
-  FHeaderHeight := 42;
+  FThemeMode := dtmInherit;
+  ApplyAppearanceColors;
+  FBorderWidth := Round(TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.ContainerBorderWidth);
+  FHeaderHeight := Round(TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.ContainerHeaderHeight);
   FShowHeader := True;
-  Color := TDACComponentColors.ToVclColor(FBackgroundColor);
+  if FAppearance = mcaTransparent then
+    Color := clNone
+  else
+    Color := TDACComponentColors.ToVclColor(FBackgroundColor);
 
   FRenderer := TDACSkiaRenderer.Create;
   FBackgroundPainter := TDACSkiaBackgroundPainter.Create(FRenderer);
@@ -158,10 +274,50 @@ begin
   FSubtitleLabel := TDACSystemText.Create(Self);
   FSubtitleLabel.Parent := Self;
   FSubtitleLabel.SetSubComponent(True);
+  FTitleLabel.ThemeMode := FThemeMode;
+  FSubtitleLabel.ThemeMode := FThemeMode;
+  ThemeChanged(Self);
+  TDACThemeManager.RegisterListener(Self, ThemeChanged);
+end;
+
+function TDACContainer.IsBackgroundColorStored: Boolean;
+begin
+  Result := FCustomBackgroundColor;
+end;
+
+function TDACContainer.IsBorderColorStored: Boolean;
+begin
+  Result := FCustomBorderColor;
+end;
+
+function TDACContainer.IsBorderRadiusStored: Boolean;
+begin
+  Result := FCustomBorderRadius;
+end;
+
+function TDACContainer.IsContentPaddingStored: Boolean;
+begin
+  Result := FCustomContentPadding;
+end;
+
+function TDACContainer.IsCornerRadiusStored: Boolean;
+begin
+  Result := FCustomCornerRadius;
+end;
+
+function TDACContainer.IsSubtitleColorStored: Boolean;
+begin
+  Result := FCustomSubtitleColor;
+end;
+
+function TDACContainer.IsTitleColorStored: Boolean;
+begin
+  Result := FCustomTitleColor;
 end;
 
 destructor TDACContainer.Destroy;
 begin
+  TDACThemeManager.UnregisterListener(Self);
   FSubtitleLabel.Free;
   FTitleLabel.Free;
   FPaintBox.Free;
@@ -174,7 +330,18 @@ end;
 procedure TDACContainer.CMParentColorChanged(var AMessage: TMessage);
 begin
   inherited;
-  Redraw;
+  { A child with ThemeMode=dtmInherit resolves its palette from this physical
+    surface. Rebuild its token-backed appearance, not only the Skia frame,
+    whenever the designer or runtime changes the parent theme/color. }
+  ThemeChanged(Self);
+  RefreshThemeDescendants;
+end;
+
+procedure TDACContainer.CMParentFontChanged(var AMessage: TMessage);
+begin
+  inherited;
+  ThemeChanged(Self);
+  RefreshThemeDescendants;
 end;
 
 procedure TDACContainer.AdjustClientRect(var Rect: TRect);
@@ -185,8 +352,8 @@ begin
   inherited AdjustClientRect(Rect);
   LHeaderOffset := 0;
   if FShowHeader then
-    LHeaderOffset := ScaleMetric(FHeaderHeight);
-  LPadding := ScaleMetric(FContentPadding);
+    LHeaderOffset := Pixels(FHeaderHeight);
+  LPadding := Pixels(FContentPadding);
 
   Inc(Rect.Left, LPadding);
   Inc(Rect.Top, LPadding + LHeaderOffset);
@@ -198,14 +365,6 @@ begin
   if Rect.Bottom < Rect.Top then
     Rect.Bottom := Rect.Top;
 end;
-
-procedure TDACContainer.ChangeScale(M, D: Integer);
-begin
-  inherited;
-  UpdateHeaderLabels;
-  Redraw;
-end;
-
 procedure TDACContainer.CreateWnd;
 begin
   inherited;
@@ -216,6 +375,14 @@ end;
 function TDACContainer.ContentRect: TRect;
 begin
   Result := LayoutRect;
+end;
+
+function TDACContainer.ResolvedBackgroundColor: TAlphaColor;
+begin
+  if FAppearance = mcaTransparent then
+    Result := ParentSurfaceColor
+  else
+    Result := TDACComponentColors.Normalize(FBackgroundColor);
 end;
 
 function TDACContainer.HeaderText: string;
@@ -235,15 +402,55 @@ begin
   Realign;
   UpdateHeaderLabels;
   Redraw;
-  Invalidate;
+  if FPaintBox = nil then
+    Invalidate;
 end;
 
 procedure TDACContainer.Loaded;
 begin
   inherited;
+  ThemeChanged(Self);
+  { During DFM streaming the container can receive ThemeMode before all child
+    controls are loaded. Refresh the completed tree now so inherited children
+    resolve the container surface in the designer and at runtime alike. }
+  RefreshThemeDescendants;
+  SynchronizeNativeLabels;
   UpdatePaintBoxBounds;
   UpdateHeaderLabels;
   Redraw;
+end;
+
+procedure TDACContainer.CMControlChange(var AMessage: TMessage);
+begin
+  inherited;
+  { Native labels are painted by Windows above the Skia surface.  A regular
+    VCL TLabel otherwise paints its Parent.Color as an opaque rectangle, which
+    is not the actual raster colour of a TDACContainer. }
+  SynchronizeNativeLabels;
+end;
+
+procedure TDACContainer.SynchronizeNativeLabels;
+var
+  LIndex: Integer;
+  LLabel: TLabel;
+  LTokens: TDACControlTokens;
+begin
+  if csDestroying in ComponentState then
+    Exit;
+  LTokens := TDACComponentStyle.ResolveForSurface(Self,
+    FThemeMode).Tokens.Controls;
+  for LIndex := 0 to ControlCount - 1 do
+    if Controls[LIndex] is TLabel then
+    begin
+      LLabel := TLabel(Controls[LIndex]);
+      LLabel.Transparent := True;
+      LLabel.ParentFont := False;
+      LLabel.Font.Name := TDACComponentStyle.FontFamily;
+      LLabel.Font.Size := Round(LTokens.FieldLabelTextSize);
+      LLabel.Font.Style := [];
+      LLabel.Font.Color := TDACComponentColors.ToVclColor(
+        LTokens.FieldLabelText);
+    end;
 end;
 
 function TDACContainer.LayoutRect: TRect;
@@ -264,6 +471,7 @@ var
   LBorderStyle: TDACBorderStyle;
   LInset: Single;
   LScale: Single;
+  LTokens: TDACControlTokens;
 begin
   if ACanvas = nil then
     Exit;
@@ -271,8 +479,9 @@ begin
   if (ADest.Width <= 0) or (ADest.Height <= 0) then
     Exit;
 
-  LScale := ScaleFactor;
-  LInset := 0.5 / LScale;
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  LScale := LTokens.ContainerBorderWidth;
+  LInset := (LTokens.ContainerBorderWidth / 2) / LScale;
   LBorderRect := FRenderer.SnapRect(TRectF.Create(0, 0, ADest.Width,
     ADest.Height), LScale);
   LBackgroundRect := LBorderRect;
@@ -282,30 +491,54 @@ begin
 
   LBackgroundStyle.Color := FBackgroundColor;
   LBackgroundStyle.Radius := FCornerRadius;
-  LBackgroundStyle.Alpha := 255;
+  LBackgroundStyle.Alpha := LTokens.AlphaOpaque;
   if FAppearance = mcaTransparent then
-    LBackgroundStyle.Alpha := 0;
+    LBackgroundStyle.Color := LTokens.TransparentSurfaceFallback;
   FBackgroundPainter.Draw(ACanvas, LBackgroundRect, LBackgroundStyle);
 
   LBorderStyle.Color := FBorderColor;
   LBorderStyle.Radius := FBorderRadius;
   LBorderStyle.Width := FBorderWidth;
-  LBorderStyle.Alpha := 255;
+  LBorderStyle.Alpha := LTokens.AlphaOpaque;
   if FAppearance = mcaTransparent then
-    LBorderStyle.Alpha := 0;
+    LBorderStyle.Color := LTokens.TransparentSurfaceFallback;
   FBorderPainter.Draw(ACanvas, LBorderRect, LBorderStyle);
 end;
 
 function TDACContainer.ParentSurfaceColor: TAlphaColor;
 begin
+  { The Skia surface must begin with the actual host surface so the pixels
+    outside the rounded card remain transparent from the user's perspective.
+    This is also safe in the form designer: ResolveParentSurface walks the
+    component tree and never requires a window handle. }
   Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
 procedure TDACContainer.Redraw;
 begin
+  if (FPaintBox = nil) or (csLoading in ComponentState) or
+    (csDestroying in ComponentState) then
+    Exit;
+
   UpdatePaintBoxBounds;
-  if (FPaintBox <> nil) and HandleAllocated then
+
+  { TSkPaintBox is a design-time child as well.  Do not use Handle/ClientRect
+    here: the designer may stream a component before any HWND exists. Its
+    default raster cache must nevertheless be discarded; Invalidate alone
+    retains the previously rendered dark frame when ThemeMode changes. }
+  if csDesigning in ComponentState then
+  begin
+    { TSkPaintBox descends from TGraphicControl. Redraw only clears its Skia
+      cache and invalidates the design surface; it does not create a HWND. }
     FPaintBox.Redraw;
+    Invalidate;
+    Exit;
+  end;
+
+  if (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated then
+    Exit;
+
+  FPaintBox.Redraw;
 end;
 
 procedure TDACContainer.Resize;
@@ -316,18 +549,9 @@ begin
   Redraw;
 end;
 
-function TDACContainer.ScaleFactor: Single;
+function TDACContainer.Pixels(const AValue: Integer): Integer;
 begin
-  Result := 1;
-  if FPaintBox <> nil then
-    Result := FPaintBox.ScaleFactor;
-  if Result <= 0 then
-    Result := 1;
-end;
-
-function TDACContainer.ScaleMetric(const AValue: Integer): Integer;
-begin
-  Result := Round(AValue * ScaleFactor);
+  Result := AValue;
   if (AValue > 0) and (Result < 1) then
     Result := 1;
 end;
@@ -339,33 +563,78 @@ begin
     Exit;
 
   FAppearance := AValue;
-  case FAppearance of
-    mcaSuiteSection:
-      begin
-        FBackgroundColor := TDACComponentColors.SuiteSectionBackground;
-        FBorderColor := TDACComponentColors.SuiteSectionBorder;
-        FTitleColor := TDACComponentColors.SuiteSectionTitle;
-        FSubtitleColor := TDACComponentColors.SuiteSectionSubtitle;
-      end;
-    mcaDarkPanel:
-      begin
-        FBackgroundColor := TDACComponentColors.DarkPanelBackground;
-        FBorderColor := TDACComponentColors.DarkPanelBorder;
-        FTitleColor := TDACComponentColors.Text;
-        FSubtitleColor := TDACComponentColors.TextSecondary;
-      end;
-    mcaTransparent:
-      begin
-        FBackgroundColor := TDACComponentColors.Transparent;
-        FBorderColor := TDACComponentColors.Transparent;
-        FTitleColor := TDACComponentColors.SuiteSectionTitle;
-        FSubtitleColor := TDACComponentColors.SuiteSectionSubtitle;
-      end;
+  FCustomBackgroundColor := False;
+  FCustomBorderColor := False;
+  FCustomTitleColor := False;
+  FCustomSubtitleColor := False;
+  FCustomBorderRadius := False;
+  FCustomContentPadding := False;
+  FCustomCornerRadius := False;
+  ThemeChanged(Self);
+end;
+
+procedure TDACContainer.SetThemeMode(const AValue: TDACThemeMode);
+begin
+  if FThemeMode = AValue then
+  begin
+    { The designer can re-apply the same streamed value after a component was
+      recreated. Refresh descendants so no child keeps a stale Skia raster. }
+    ThemeChanged(Self);
+    RefreshThemeDescendants;
+    Exit;
   end;
+
+  { ThemeMode is an explicit palette decision. Earlier versions streamed the
+    default appearance colors into DFM files, which made them indistinguishable
+    from an override and prevented the new palette from taking effect. Release
+    those appearance values before resolving the newly selected theme. }
+  ReleaseThemeAppearanceOverrides;
+  FThemeMode := AValue;
+  ThemeChanged(Self);
+  RefreshThemeDescendants;
+end;
+
+procedure TDACContainer.ReleaseThemeAppearanceOverrides;
+begin
+  FCustomBackgroundColor := False;
+  FCustomBorderColor := False;
+  FCustomTitleColor := False;
+  FCustomSubtitleColor := False;
+  FCustomCornerRadius := False;
+  FCustomBorderRadius := False;
+  FCustomContentPadding := False;
+end;
+
+procedure TDACContainer.RefreshThemeDescendants;
+begin
+  TDACThemeManager.RefreshTree(Self);
+end;
+
+procedure TDACContainer.ThemeChanged(Sender: TObject);
+begin
+  ApplyAppearanceColors;
   if FAppearance = mcaTransparent then
-    Color := clNone
+  begin
+    ParentColor := True;
+    ParentBackground := True;
+    Color := clNone;
+  end
   else
+  begin
+    ParentColor := False;
+    ParentBackground := False;
     Color := TDACComponentColors.ToVclColor(FBackgroundColor);
+  end;
+  ParentFont := False;
+  Font.Name := TDACComponentStyle.FontFamily;
+  Font.Size := TDACComponentStyle.TextSize;
+  Font.Style := [];
+  Font.Color := TDACComponentColors.ToVclColor(FTitleColor);
+  if FTitleLabel <> nil then
+    FTitleLabel.ThemeMode := FThemeMode;
+  if FSubtitleLabel <> nil then
+    FSubtitleLabel.ThemeMode := FThemeMode;
+  SynchronizeNativeLabels;
   UpdateHeaderLabels;
   InvalidateChrome;
 end;
@@ -375,6 +644,7 @@ var
   LValue: TAlphaColor;
 begin
   LValue := TDACComponentColors.Normalize(AValue);
+  FCustomBackgroundColor := True;
   if FBackgroundColor = LValue then
     Exit;
   FBackgroundColor := LValue;
@@ -390,6 +660,7 @@ var
   LValue: TAlphaColor;
 begin
   LValue := TDACComponentColors.Normalize(AValue);
+  FCustomBorderColor := True;
   if FBorderColor = LValue then
     Exit;
   FBorderColor := LValue;
@@ -398,7 +669,8 @@ end;
 
 procedure TDACContainer.SetBorderRadius(const AValue: Integer);
 begin
-  if FBorderRadius = AValue then
+  FCustomBorderRadius := True;
+  if FBorderRadius = Max(0, AValue) then
     Exit;
   FBorderRadius := AValue;
   if FBorderRadius < 0 then
@@ -418,7 +690,8 @@ end;
 
 procedure TDACContainer.SetContentPadding(const AValue: Integer);
 begin
-  if FContentPadding = AValue then
+  FCustomContentPadding := True;
+  if FContentPadding = Max(0, AValue) then
     Exit;
   FContentPadding := AValue;
   if FContentPadding < 0 then
@@ -430,14 +703,18 @@ procedure TDACContainer.SetCornerRadius(const AValue: Integer);
 var
   LPreviousRadius: Integer;
 begin
-  if FCornerRadius = AValue then
-    Exit;
   LPreviousRadius := FCornerRadius;
+  FCustomCornerRadius := True;
+  if FBorderRadius = LPreviousRadius then
+  begin
+    FBorderRadius := Max(0, AValue);
+    FCustomBorderRadius := True;
+  end;
+  if FCornerRadius = Max(0, AValue) then
+    Exit;
   FCornerRadius := AValue;
   if FCornerRadius < 0 then
     FCornerRadius := 0;
-  if FBorderRadius = LPreviousRadius then
-    FBorderRadius := FCornerRadius;
   InvalidateChrome;
 end;
 
@@ -482,6 +759,7 @@ var
   LValue: TAlphaColor;
 begin
   LValue := TDACComponentColors.Normalize(AValue);
+  FCustomSubtitleColor := True;
   if FSubtitleColor = LValue then
     Exit;
   FSubtitleColor := LValue;
@@ -503,6 +781,7 @@ var
   LValue: TAlphaColor;
 begin
   LValue := TDACComponentColors.Normalize(AValue);
+  FCustomTitleColor := True;
   if FTitleColor = LValue then
     Exit;
   FTitleColor := LValue;
@@ -515,13 +794,15 @@ var
   LContentWidth: Integer;
   LPadding: Integer;
   LText: string;
+  LTokens: TDACControlTokens;
 begin
   if (FTitleLabel = nil) or (FSubtitleLabel = nil) then
     Exit;
-  if not HandleAllocated then
+  if (csLoading in ComponentState) or (csDestroying in ComponentState) then
     Exit;
 
-  LPadding := ScaleMetric(FContentPadding);
+  LPadding := Pixels(FContentPadding);
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
   LContentWidth := Width - (LPadding * 2);
   if LContentWidth < 0 then
     LContentWidth := 0;
@@ -529,23 +810,31 @@ begin
   LText := HeaderText;
 
   FTitleLabel.Visible := FShowHeader and (LText <> '');
-  FTitleLabel.SetBounds(LPadding, LPadding + ScaleMetric(5), LContentWidth, ScaleMetric(20));
+  FTitleLabel.SetBounds(LPadding, LPadding + Pixels(Round(LTokens.ContainerTitleTopOffset)),
+    LContentWidth, Pixels(Round(LTokens.ContainerTitleHeight)));
   FTitleLabel.Text := LText;
-  FTitleLabel.FontFamily := TDACComponentFontInstaller.FontFamily;
-  FTitleLabel.FontSize := 10;
+  FTitleLabel.Role := mtrSmall;
   FTitleLabel.Bold := True;
-  FTitleLabel.TextColor := FTitleColor;
+  if FCustomTitleColor then
+    FTitleLabel.TextColor := FTitleColor
+  else if FAppearance in [mcaDarkPanel, mcaDarkCard] then
+    FTitleLabel.Tone := mttPrimary
+  else
+    FTitleLabel.Tone := mttDefault;
   FTitleLabel.HorzAlign := mthaLeft;
   FTitleLabel.VertAlign := mtvaCenter;
   FTitleLabel.MaxLines := 1;
 
   FSubtitleLabel.Visible := FShowHeader and (FSubtitle.Trim <> '');
-  FSubtitleLabel.SetBounds(LPadding, LPadding + ScaleMetric(29), LContentWidth, ScaleMetric(17));
+  FSubtitleLabel.SetBounds(LPadding, LPadding + Pixels(Round(LTokens.ContainerSubtitleTopOffset)),
+    LContentWidth, Pixels(Round(LTokens.ContainerSubtitleHeight)));
   FSubtitleLabel.Text := FSubtitle;
-  FSubtitleLabel.FontFamily := TDACComponentFontInstaller.FontFamily;
-  FSubtitleLabel.FontSize := 8;
+  FSubtitleLabel.Role := mtrCaption;
   FSubtitleLabel.Bold := False;
-  FSubtitleLabel.TextColor := FSubtitleColor;
+  if FCustomSubtitleColor then
+    FSubtitleLabel.TextColor := FSubtitleColor
+  else
+    FSubtitleLabel.Tone := mttSecondary;
   FSubtitleLabel.HorzAlign := mthaLeft;
   FSubtitleLabel.VertAlign := mtvaCenter;
   FSubtitleLabel.MaxLines := 1;
@@ -557,18 +846,24 @@ var
   LHeight: Integer;
   LWidth: Integer;
 begin
-  if FPaintBox = nil then
+  if (FPaintBox = nil) or (csLoading in ComponentState) or
+    (csDestroying in ComponentState) then
     Exit;
 
-  if HandleAllocated then
+  if csDesigning in ComponentState then
   begin
-    LWidth := ClientWidth;
-    LHeight := ClientHeight;
+    { Width/Height are valid while a DFM is being streamed.  ClientRect and
+      handle allocation are deliberately avoided so the preview uses the
+      same rounded Skia painting as runtime without creating a child HWND. }
+    LWidth := Width;
+    LHeight := Height;
   end
   else
   begin
-    LWidth := Width;
-    LHeight := Height;
+    if (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated then
+      Exit;
+    LWidth := ClientWidth;
+    LHeight := ClientHeight;
   end;
 
   if (FPaintBox.Left <> 0) or (FPaintBox.Top <> 0) or

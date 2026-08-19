@@ -6,10 +6,13 @@ uses
   System.Classes,
   System.Skia,
   System.Types,
+  System.UITypes,
   Winapi.Messages,
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
+  DAC.Components.Controls.SystemText,
+  DAC.Components.DesignSystem.Theme,
   DAC.Components.Skia.Renderer;
 
 type
@@ -19,12 +22,16 @@ type
     FPageIndex: Integer;
     FPaintBox: TSkPaintBox;
     FRenderer: TDACSkiaRenderer;
+    FTextOverlay: TDACSystemTextOverlay;
+    FThemeMode: TDACThemeMode;
     FZoomPercent: Integer;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
     procedure SetPageCount(const AValue: Integer);
     procedure SetPageIndex(const AValue: Integer);
     procedure SetZoomPercent(const AValue: Integer);
+    procedure SetThemeMode(const AValue: TDACThemeMode);
+    procedure ThemeChanged(Sender: TObject);
     procedure UpdatePaintBoxBounds;
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
   protected
@@ -34,6 +41,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    function ResolvedBackgroundColor: TAlphaColor;
     procedure Redraw;
   published
     property Align;
@@ -47,6 +55,7 @@ type
     property ShowHint;
     property TabOrder;
     property TabStop default True;
+    property ThemeMode: TDACThemeMode read FThemeMode write SetThemeMode default dtmInherit;
     property Visible;
     property ZoomPercent: Integer read FZoomPercent write SetZoomPercent default 100;
   end;
@@ -57,30 +66,40 @@ uses
   System.Math,
   System.SysUtils,
   DAC.Components.DesignSystem.ColorTokens,
-  DAC.Components.DesignSystem.Fonts;
+  DAC.Components.DesignSystem.Fonts,
+  DAC.Components.DesignSystem.ComponentStyle,
+  DAC.Components.DesignSystem.ControlTokens;
 
 constructor TDACReportViewer.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque];
-  Width := 720;
-  Height := 360;
+  Width := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.ReportViewerDefaultWidth);
+  Height := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.ReportViewerDefaultHeight);
   TabStop := True;
   ParentColor := False;
   StyleElements := [];
   FPageCount := 1;
   FPageIndex := 1;
   FZoomPercent := 100;
+  FThemeMode := dtmInherit;
   FRenderer := TDACSkiaRenderer.Create;
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
   FPaintBox.SetSubComponent(True);
   FPaintBox.StyleElements := [];
   FPaintBox.OnDraw := PaintBoxDraw;
+  FTextOverlay := TDACSystemTextOverlay.Create(Self);
+  FTextOverlay.Parent := Self;
+  FTextOverlay.SetSubComponent(True);
+  FTextOverlay.Align := alClient;
+  TDACThemeManager.RegisterListener(Self, ThemeChanged);
 end;
 
 destructor TDACReportViewer.Destroy;
 begin
+  TDACThemeManager.UnregisterListener(Self);
+  FTextOverlay.Free;
   FPaintBox.Free;
   FRenderer.Free;
   inherited;
@@ -106,50 +125,79 @@ var
   LPage: TRectF;
   LToolbar: TRectF;
   LTop: Single;
+  LTokens: TDACControlTokens;
 begin
+  if ACanvas = nil then
+    Exit;
+  FRenderer.BeginNativeText(FTextOverlay);
+  try
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
   FRenderer.FillRoundRect(ACanvas, TRectF.Create(0, 0, ADest.Width, ADest.Height),
-    TDACComponentColors.White, 8, 255);
-  FRenderer.StrokeRoundRect(ACanvas, TRectF.Create(0.5, 0.5, ADest.Width - 0.5, ADest.Height - 0.5),
-    TDACComponentColors.ControlBorder, 8, 1, 255);
+    LTokens.ContainerSuiteBackground, LTokens.ReportRadius, LTokens.AlphaOpaque);
+  FRenderer.StrokeRoundRect(ACanvas, TRectF.Create(LTokens.ReportBorderWidth / 2, LTokens.ReportBorderWidth / 2, ADest.Width - LTokens.ReportBorderWidth / 2, ADest.Height - LTokens.ReportBorderWidth / 2),
+    LTokens.ContainerSuiteBorder, LTokens.ReportRadius, LTokens.ReportBorderWidth,
+    LTokens.AlphaOpaque);
 
-  LToolbar := TRectF.Create(0.5, 0.5, ADest.Width - 0.5, 42);
-  FRenderer.FillRoundRect(ACanvas, LToolbar, TDACComponentColors.Alpha(248, 250, 252), 8, 255);
+  LToolbar := TRectF.Create(LTokens.ReportBorderWidth / 2, LTokens.ReportBorderWidth / 2, ADest.Width - LTokens.ReportBorderWidth / 2, LTokens.ReportToolbarHeight);
+  FRenderer.FillRoundRect(ACanvas, LToolbar, LTokens.PopupBackground,
+    LTokens.ReportToolbarRadius, LTokens.AlphaOpaque);
   FRenderer.Text(ACanvas, Format('%d / %d', [FPageIndex, FPageCount]),
-    TDACComponentFontInstaller.FontFamily, 24, 26, 11,
-    TDACComponentColors.ControlText, True, 80);
+    TDACComponentStyle.FontFamily, LTokens.ReportToolbarPageX, LTokens.ReportToolbarBaseline, LTokens.ReportToolbarTextSize,
+    LTokens.ContainerTitle, True, LTokens.ReportToolbarPageWidth);
   FRenderer.Text(ACanvas, Format('%d%%', [FZoomPercent]),
-    TDACComponentFontInstaller.FontFamily, ADest.Width - 72, 26, 11,
-    TDACComponentColors.TextSecondary, False, 56);
-  ACanvas.ClipRect(TRectF.Create(0, 42, ADest.Width, ADest.Height));
-  LPage := TRectF.Create((ADest.Width - 300) / 2, 62, (ADest.Width + 300) / 2,
-    ADest.Height - 18);
-  FRenderer.FillRoundRect(ACanvas, LPage, TDACComponentColors.White, 4, 255);
-  FRenderer.StrokeRoundRect(ACanvas, LPage, TDACComponentColors.ControlBorder, 4, 1, 255);
+    TDACComponentStyle.FontFamily, ADest.Width - LTokens.ReportToolbarZoomRight, LTokens.ReportToolbarBaseline, LTokens.ReportToolbarTextSize,
+    LTokens.ContainerSubtitle, False, LTokens.ReportToolbarZoomWidth);
+  ACanvas.ClipRect(TRectF.Create(0, LTokens.ReportToolbarHeight, ADest.Width, ADest.Height));
+  LPage := TRectF.Create((ADest.Width - LTokens.ReportPageWidth) / 2, LTokens.ReportPageTop, (ADest.Width + LTokens.ReportPageWidth) / 2,
+    ADest.Height - LTokens.ReportPageBottomInset);
+  FRenderer.FillRoundRect(ACanvas, LPage, LTokens.InputBackground,
+    LTokens.ReportPageRadius, LTokens.AlphaOpaque);
+  FRenderer.StrokeRoundRect(ACanvas, LPage, LTokens.InputBorder,
+    LTokens.ReportPageRadius, LTokens.ReportBorderWidth, LTokens.AlphaOpaque);
   FRenderer.Text(ACanvas, 'Relatorio de Vendas',
-    TDACComponentFontInstaller.FontFamily, LPage.Left + 24, LPage.Top + 34,
-    16, TDACComponentColors.ControlText, True, LPage.Width - 48);
+    TDACComponentStyle.FontFamily, LPage.Left + LTokens.ReportTextInset, LPage.Top + LTokens.ReportTitleTop,
+    LTokens.ReportTitleTextSize, LTokens.InputText, True, LPage.Width - (LTokens.ReportTextInset * 2));
   FRenderer.Text(ACanvas, 'Periodo: 01/05/2025 a 24/05/2025',
-    TDACComponentFontInstaller.FontFamily, LPage.Left + 24, LPage.Top + 56,
-    9, TDACComponentColors.TextSecondary, False, LPage.Width - 48);
-  LTop := LPage.Top + 86;
-  FRenderer.FillRoundRect(ACanvas, TRectF.Create(LPage.Left + 24, LTop,
-    LPage.Right - 24, LTop + 24), TDACComponentColors.Alpha(248, 250, 252), 0, 255);
-  FRenderer.Text(ACanvas, 'Produto', TDACComponentFontInstaller.FontFamily,
-    LPage.Left + 34, LTop + 16, 9, TDACComponentColors.ControlText, True, 80);
-  FRenderer.Text(ACanvas, 'Valor Total', TDACComponentFontInstaller.FontFamily,
-    LPage.Right - 112, LTop + 16, 9, TDACComponentColors.ControlText, True, 80);
-  FRenderer.Text(ACanvas, 'Notebook Dell', TDACComponentFontInstaller.FontFamily,
-    LPage.Left + 34, LTop + 48, 9, TDACComponentColors.ControlText, False, 120);
-  FRenderer.Text(ACanvas, 'R$ 48.750,00', TDACComponentFontInstaller.FontFamily,
-    LPage.Right - 112, LTop + 48, 9, TDACComponentColors.ControlText, False, 90);
+    TDACComponentStyle.FontFamily, LPage.Left + LTokens.ReportTextInset, LPage.Top + LTokens.ReportSubtitleTop,
+    LTokens.ReportBodyTextSize, LTokens.InputHelper, False, LPage.Width - (LTokens.ReportTextInset * 2));
+  LTop := LPage.Top + LTokens.ReportRowTop;
+  FRenderer.FillRoundRect(ACanvas, TRectF.Create(LPage.Left + LTokens.ReportTextInset, LTop,
+    LPage.Right - LTokens.ReportTextInset, LTop + LTokens.ReportRowHeight),
+    LTokens.PopupBackground, LTokens.ReportRowRadius, LTokens.AlphaOpaque);
+  FRenderer.Text(ACanvas, 'Produto', TDACComponentStyle.FontFamily,
+    LPage.Left + LTokens.ReportTextInset + LTokens.ReportColumnInset, LTop + LTokens.ReportToolbarBaseline - LTokens.ReportColumnInset, LTokens.ReportBodyTextSize, LTokens.InputText, True, LTokens.ReportToolbarPageWidth);
+  FRenderer.Text(ACanvas, 'Valor Total', TDACComponentStyle.FontFamily,
+    LPage.Right - LTokens.ReportValueRight, LTop + LTokens.ReportToolbarBaseline - LTokens.ReportColumnInset, LTokens.ReportBodyTextSize, LTokens.InputText, True, LTokens.ReportToolbarPageWidth);
+  FRenderer.Text(ACanvas, 'Notebook Dell', TDACComponentStyle.FontFamily,
+    LPage.Left + LTokens.ReportTextInset + LTokens.ReportColumnInset, LTop + LTokens.ReportRowHeight * 2, LTokens.ReportBodyTextSize, LTokens.InputText, False, LTokens.ReportTextWidth);
+  FRenderer.Text(ACanvas, 'R$ 48.750,00', TDACComponentStyle.FontFamily,
+    LPage.Right - LTokens.ReportValueRight, LTop + LTokens.ReportRowHeight * 2, LTokens.ReportBodyTextSize, LTokens.InputText, False, LTokens.ReportValueWidth);
+  finally
+    FRenderer.EndNativeText;
+  end;
 end;
 
 procedure TDACReportViewer.Redraw;
 begin
-  if (FPaintBox <> nil) and not (csDestroying in ComponentState) and
-    ((Parent <> nil) or not (csDesigning in ComponentState)) then
+  if (FPaintBox = nil) or (csDestroying in ComponentState) then
+    Exit;
+  UpdatePaintBoxBounds;
+  if csDesigning in ComponentState then
+  begin
+    if Parent <> nil then
+      FPaintBox.Redraw;
+    Invalidate;
+    Exit;
+  end;
+  if (Parent <> nil) and HandleAllocated and Parent.HandleAllocated then
     FPaintBox.Redraw;
-  Invalidate;
+  if HandleAllocated then
+    Invalidate;
+end;
+
+function TDACReportViewer.ResolvedBackgroundColor: TAlphaColor;
+begin
+  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.ContainerSuiteBackground;
 end;
 
 procedure TDACReportViewer.Resize;
@@ -179,10 +227,35 @@ begin
   Redraw;
 end;
 
-procedure TDACReportViewer.UpdatePaintBoxBounds;
+procedure TDACReportViewer.SetThemeMode(const AValue: TDACThemeMode);
 begin
-  if FPaintBox <> nil then
-    FPaintBox.SetBounds(0, 0, Width, Height);
+  if FThemeMode = AValue then Exit;
+  FThemeMode := AValue;
+  ThemeChanged(Self);
+end;
+
+procedure TDACReportViewer.ThemeChanged(Sender: TObject);
+begin
+  if (FThemeMode = dtmInherit) or (Sender = Self) then
+    Redraw;
+end;
+
+procedure TDACReportViewer.UpdatePaintBoxBounds;
+var
+  LHeight: Integer;
+  LWidth: Integer;
+begin
+  if (FPaintBox = nil) or (csLoading in ComponentState) or
+    (csDestroying in ComponentState) then
+    Exit;
+  LWidth := Width;
+  LHeight := Height;
+  if not (csDesigning in ComponentState) and HandleAllocated then
+  begin
+    LWidth := ClientWidth;
+    LHeight := ClientHeight;
+  end;
+  FPaintBox.SetBounds(0, 0, LWidth, LHeight);
 end;
 
 procedure TDACReportViewer.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);

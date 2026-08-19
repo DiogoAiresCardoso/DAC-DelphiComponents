@@ -11,7 +11,10 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
+  DAC.Components.Controls.SystemText,
+  DAC.Components.DesignSystem.ControlTokens,
   DAC.Components.DesignSystem.IconAssets,
+  DAC.Components.DesignSystem.Theme,
   DAC.Components.Skia.IconPainter,
   DAC.Components.Skia.Renderer;
 
@@ -23,58 +26,84 @@ type
     mcsDanger
   );
 
+  TDACSummaryCardAppearance = (
+    mcsaDefault,
+    mcsaDashboard,
+    mcsaCustom
+  );
+
   TDACSummaryCard = class(TCustomControl)
   private
+    FAppearance: TDACSummaryCardAppearance;
+    FBaseAppearance: TDACSummaryCardAppearance;
     FAccentColor: TAlphaColor;
     FBackgroundColor: TAlphaColor;
     FBorderColor: TAlphaColor;
     FCustomBackgroundColor: Boolean;
     FCustomBorderColor: Boolean;
+    FCustomAccentColor: Boolean;
+    FCustomCornerRadius: Boolean;
     FCornerRadius: Integer;
     FFooterText: string;
     FIconKind: TDACIconKind;
     FIconPainter: TDACSkiaIconPainter;
     FPaintBox: TSkPaintBox;
     FRenderer: TDACSkiaRenderer;
+    FTextOverlay: TDACSystemTextOverlay;
     FStatus: TDACSummaryCardStatus;
     FTitle: string;
+    FThemeMode: TDACThemeMode;
     FValue: string;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     function EffectiveAccentColor: TAlphaColor;
     function FooterColor: TAlphaColor;
+    procedure ApplyAppearance;
+    function IsAccentColorStored: Boolean;
+    function IsBackgroundColorStored: Boolean;
+    function IsBorderColorStored: Boolean;
+    function IsCornerRadiusStored: Boolean;
     function ParentSurfaceColor: TAlphaColor;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
-    function ScaleFactor: Single;
-    function ScaleMetric(const AValue: Integer): Integer;
+    function Pixels(const AValue: Integer): Integer;
     procedure SetAccentColor(const AValue: TAlphaColor);
+    procedure SetAppearance(const AValue: TDACSummaryCardAppearance);
     procedure SetBackgroundColor(const AValue: TAlphaColor);
     procedure SetBorderColor(const AValue: TAlphaColor);
     procedure SetCornerRadius(const AValue: Integer);
     procedure SetFooterText(const AValue: string);
     procedure SetIconKind(const AValue: TDACIconKind);
     procedure SetStatus(const AValue: TDACSummaryCardStatus);
+    procedure SetThemeMode(const AValue: TDACThemeMode);
     procedure SetTitle(const AValue: string);
     procedure SetValue(const AValue: string);
     procedure UpdatePaintBoxBounds;
+    procedure ThemeChanged(Sender: TObject);
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
   protected
-    procedure ChangeScale(M, D: Integer); override;
     procedure CreateWnd; override;
     procedure Loaded; override;
     procedure Resize; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    function ResolvedBackgroundColor: TAlphaColor;
     procedure Redraw;
   published
     property Align;
     property Anchors;
+    property Appearance: TDACSummaryCardAppearance read FAppearance
+      write SetAppearance default mcsaDefault;
     property Constraints;
-    property AccentColor: TAlphaColor read FAccentColor write SetAccentColor;
-    property BackgroundColor: TAlphaColor read FBackgroundColor write SetBackgroundColor;
-    property BorderColor: TAlphaColor read FBorderColor write SetBorderColor;
-    property CornerRadius: Integer read FCornerRadius write SetCornerRadius default 10;
+    property AccentColor: TAlphaColor read FAccentColor write SetAccentColor
+      stored IsAccentColorStored;
+    property BackgroundColor: TAlphaColor read FBackgroundColor
+      write SetBackgroundColor stored IsBackgroundColorStored;
+    property HasCustomBackgroundColor: Boolean read FCustomBackgroundColor stored False;
+    property BorderColor: TAlphaColor read FBorderColor write SetBorderColor
+      stored IsBorderColorStored;
+    property CornerRadius: Integer read FCornerRadius write SetCornerRadius
+      stored IsCornerRadiusStored;
     property Enabled;
     property FooterText: string read FFooterText write SetFooterText;
     property Hint;
@@ -85,6 +114,7 @@ type
     property Status: TDACSummaryCardStatus read FStatus write SetStatus default mcsSuccess;
     property TabOrder;
     property TabStop default False;
+    property ThemeMode: TDACThemeMode read FThemeMode write SetThemeMode default dtmInherit;
     property Title: string read FTitle write SetTitle;
     property Value: string read FValue write SetValue;
     property Visible;
@@ -100,26 +130,28 @@ type
 implementation
 
 uses
+  System.Math,
   DAC.Components.DesignSystem.ColorTokens,
-  DAC.Components.DesignSystem.Fonts;
+  DAC.Components.DesignSystem.Fonts,
+  DAC.Components.DesignSystem.ComponentStyle;
 
 constructor TDACSummaryCard.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque, csReplicatable];
-  Width := 150;
-  Height := 116;
+  Width := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.SummaryCardDefaultWidth);
+  Height := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.SummaryCardDefaultHeight);
   TabStop := False;
 
-  FAccentColor := TDACComponentColors.PrimaryDark;
-  FBackgroundColor := TDACComponentColors.ControlBackground;
-  FBorderColor := TDACComponentColors.ControlBorder;
+  FThemeMode := dtmInherit;
+  FAppearance := mcsaDefault;
+  FBaseAppearance := mcsaDefault;
   FCustomBackgroundColor := False;
   FCustomBorderColor := False;
-  FCornerRadius := 10;
   FFooterText := '+0,0% vs. mes anterior';
   FIconKind := mikMoneyCircle;
   FStatus := mcsSuccess;
+  ApplyAppearance;
   FTitle := 'Receita';
   FValue := 'R$ 0,00';
 
@@ -129,23 +161,61 @@ begin
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
   FPaintBox.OnDraw := PaintBoxDraw;
+  FTextOverlay := TDACSystemTextOverlay.Create(Self);
+  FTextOverlay.Parent := Self;
+  FTextOverlay.SetSubComponent(True);
+  FTextOverlay.Align := alClient;
+  TDACThemeManager.RegisterListener(Self, ThemeChanged);
   UpdatePaintBoxBounds;
+end;
+
+procedure TDACSummaryCard.ApplyAppearance;
+var
+  LAppearance: TDACSummaryCardAppearance;
+  LTokens: TDACControlTokens;
+begin
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  LAppearance := FAppearance;
+  if LAppearance = mcsaCustom then
+    LAppearance := FBaseAppearance;
+  case LAppearance of
+    mcsaDefault:
+      begin
+        if (FAppearance <> mcsaCustom) or not FCustomBackgroundColor then
+          FBackgroundColor := LTokens.SummaryCardBackground;
+        if (FAppearance <> mcsaCustom) or not FCustomBorderColor then
+          FBorderColor := LTokens.SummaryCardBorder;
+        if (FAppearance <> mcsaCustom) or not FCustomCornerRadius then
+          FCornerRadius := Round(LTokens.SummaryCardRadius);
+      end;
+    mcsaDashboard:
+      begin
+        if (FAppearance <> mcsaCustom) or not FCustomBackgroundColor then
+          FBackgroundColor := LTokens.SummaryCardDashboardBackground;
+        if (FAppearance <> mcsaCustom) or not FCustomBorderColor then
+          FBorderColor := LTokens.SummaryCardDashboardBorder;
+        if (FAppearance <> mcsaCustom) or not FCustomCornerRadius then
+          FCornerRadius := Round(LTokens.SummaryCardDashboardRadius);
+      end;
+  end;
+  if FAppearance <> mcsaCustom then
+  begin
+    FCustomBackgroundColor := False;
+    FCustomBorderColor := False;
+    FCustomCornerRadius := False;
+  end;
+  if not FCustomAccentColor then
+    FAccentColor := LTokens.SummaryCardSuccess;
 end;
 
 destructor TDACSummaryCard.Destroy;
 begin
+  TDACThemeManager.UnregisterListener(Self);
+  FTextOverlay.Free;
   FIconPainter.Free;
   FRenderer.Free;
   inherited;
 end;
-
-procedure TDACSummaryCard.ChangeScale(M, D: Integer);
-begin
-  inherited;
-  UpdatePaintBoxBounds;
-  Redraw;
-end;
-
 procedure TDACSummaryCard.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
@@ -155,49 +225,97 @@ end;
 procedure TDACSummaryCard.CreateWnd;
 begin
   inherited;
+  ApplyAppearance;
   UpdatePaintBoxBounds;
   Redraw;
 end;
 
 function TDACSummaryCard.EffectiveAccentColor: TAlphaColor;
+var
+  LTokens: TDACControlTokens;
 begin
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
   case FStatus of
     mcsWarning:
-      Result := TDACComponentColors.WarningDark;
+      Result := LTokens.SummaryCardWarning;
     mcsDanger:
-      Result := TDACComponentColors.Danger;
+      Result := LTokens.SummaryCardDanger;
     mcsNeutral:
-      Result := TDACComponentColors.TextSecondary;
+      Result := LTokens.SummaryCardFooterNeutral;
   else
-    Result := FAccentColor;
+    if FCustomAccentColor then
+      Result := FAccentColor
+    else
+      Result := LTokens.SummaryCardSuccess;
   end;
   Result := TDACComponentColors.Normalize(Result);
 end;
 
 function TDACSummaryCard.FooterColor: TAlphaColor;
+var
+  LTokens: TDACControlTokens;
 begin
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
   case FStatus of
     mcsWarning:
-      Result := TDACComponentColors.WarningDark;
+      Result := LTokens.SummaryCardWarning;
     mcsDanger:
-      Result := TDACComponentColors.Danger;
+      Result := LTokens.SummaryCardDanger;
     mcsNeutral:
-      Result := TDACComponentColors.SuiteSectionSubtitle;
+      Result := LTokens.SummaryCardFooterNeutral;
   else
-    Result := TDACComponentColors.PrimaryDark;
+    Result := LTokens.SummaryCardSuccess;
   end;
 end;
 
 procedure TDACSummaryCard.Loaded;
 begin
   inherited;
+  ApplyAppearance;
   UpdatePaintBoxBounds;
   Redraw;
 end;
 
 function TDACSummaryCard.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TDACComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.PopupBackground;
+end;
+
+function TDACSummaryCard.ResolvedBackgroundColor: TAlphaColor;
+var
+  LAppearance: TDACSummaryCardAppearance;
+  LTokens: TDACControlTokens;
+begin
+  if (FAppearance = mcsaCustom) and FCustomBackgroundColor then
+    Exit(FBackgroundColor);
+  LAppearance := FAppearance;
+  if LAppearance = mcsaCustom then
+    LAppearance := FBaseAppearance;
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  if LAppearance = mcsaDashboard then
+    Result := LTokens.SummaryCardDashboardBackground
+  else
+    Result := LTokens.SummaryCardBackground;
+end;
+
+function TDACSummaryCard.IsAccentColorStored: Boolean;
+begin
+  Result := FCustomAccentColor;
+end;
+
+function TDACSummaryCard.IsBackgroundColorStored: Boolean;
+begin
+  Result := (FAppearance = mcsaCustom) and FCustomBackgroundColor;
+end;
+
+function TDACSummaryCard.IsBorderColorStored: Boolean;
+begin
+  Result := (FAppearance = mcsaCustom) and FCustomBorderColor;
+end;
+
+function TDACSummaryCard.IsCornerRadiusStored: Boolean;
+begin
+  Result := (FAppearance = mcsaCustom) and FCustomCornerRadius;
 end;
 
 procedure TDACSummaryCard.PaintBoxDraw(Sender: TObject;
@@ -219,64 +337,87 @@ var
   LTextColor: TAlphaColor;
   LTitleColor: TAlphaColor;
   LTextLeft: Single;
+  LTokens: TDACControlTokens;
 begin
   if ACanvas = nil then
     Exit;
 
-  LScale := ScaleFactor;
+  FRenderer.BeginNativeText(FTextOverlay);
+  try
+
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  LScale := LTokens.BorderWidth;
   LSurface := ParentSurfaceColor;
   ACanvas.Clear(LSurface);
 
   LCardRect := FRenderer.SnapRect(TRectF.Create(0, 0, ADest.Width, ADest.Height), LScale);
-  LCardRect.Inflate(-0.5 / LScale, -0.5 / LScale);
-  LRadius := ScaleMetric(FCornerRadius);
+  LCardRect.Inflate(-(LTokens.BorderWidth / 2) / LScale,
+    -(LTokens.BorderWidth / 2) / LScale);
+  LRadius := Pixels(FCornerRadius);
   if FCustomBackgroundColor then
     LCardBackground := FBackgroundColor
   else
-    LCardBackground := TDACComponentColors.ControlBackgroundForSurface(LSurface);
+    LCardBackground := LTokens.SummaryCardBackground;
   if FCustomBorderColor then
     LCardBorder := FBorderColor
   else
-    LCardBorder := TDACComponentColors.ControlBorderForSurface(LSurface);
-  LAlpha := 255;
+    LCardBorder := LTokens.SummaryCardBorder;
+  LAlpha := LTokens.AlphaOpaque;
   if not Enabled then
-    LAlpha := 130;
+    LAlpha := LTokens.SummaryCardDisabledAlpha;
 
   FRenderer.FillRoundRect(ACanvas, LCardRect, LCardBackground, LRadius, LAlpha);
   FRenderer.StrokeRoundRect(ACanvas, LCardRect, LCardBorder, LRadius,
-    ScaleMetric(1), 210);
+    Pixels(Round(LTokens.BorderWidth)), LTokens.SummaryCardBorderAlpha);
 
   LAccent := EffectiveAccentColor;
-  LPadding := ScaleMetric(12);
+  LPadding := Pixels(Round(LTokens.SummaryCardPadding));
   LBadgeRect := TRectF.Create(LCardRect.Left + LPadding, LCardRect.Top + LPadding,
-    LCardRect.Left + LPadding + ScaleMetric(32), LCardRect.Top + LPadding + ScaleMetric(32));
-  FRenderer.FillRoundRect(ACanvas, LBadgeRect, LAccent, LBadgeRect.Height / 2, 34);
+    LCardRect.Left + LPadding + Pixels(Round(LTokens.SummaryCardBadgeSize)),
+    LCardRect.Top + LPadding + Pixels(Round(LTokens.SummaryCardBadgeSize)));
+  FRenderer.FillRoundRect(ACanvas, LBadgeRect, LAccent, LBadgeRect.Height / 2,
+    LTokens.SummaryCardBadgeAlpha);
 
   LIconStyle.Color := LAccent;
   LIconStyle.Alpha := LAlpha;
   LIconRect := LBadgeRect;
-  LIconRect.Inflate(-ScaleMetric(8), -ScaleMetric(8));
+  LIconRect.Inflate(-Pixels(Round(LTokens.SummaryCardIconInset)), -Pixels(Round(LTokens.SummaryCardIconInset)));
   FIconPainter.Draw(ACanvas, LIconRect, FIconKind, LIconStyle);
 
-  LTextLeft := LBadgeRect.Right + ScaleMetric(8);
-  LTitleColor := TDACComponentColors.ControlTextDisabledForSurface(LSurface);
-  LTextColor := TDACComponentColors.ControlTextForSurface(LSurface);
-  FRenderer.Text(ACanvas, FTitle, TDACComponentFontInstaller.FontFamily,
-    LTextLeft, LCardRect.Top + ScaleMetric(25), 12, LTitleColor, False,
-    LCardRect.Right - LTextLeft - ScaleMetric(8));
-  FRenderer.Text(ACanvas, FValue, TDACComponentFontInstaller.FontFamily,
-    LTextLeft, LCardRect.Top + ScaleMetric(50), 16, LTextColor, True,
-    LCardRect.Right - LTextLeft - ScaleMetric(8));
+  LTextLeft := LBadgeRect.Right + Pixels(Round(LTokens.SummaryCardTextGap));
+  LTitleColor := LTokens.SummaryCardTitle;
+  LTextColor := LTokens.SummaryCardText;
+  FRenderer.Text(ACanvas, FTitle, TDACComponentStyle.FontFamily,
+    LTextLeft, LCardRect.Top + Pixels(Round(LTokens.SummaryCardTitleBaseline)),
+    LTokens.SummaryCardTitleTextSize, LTitleColor, False,
+    LCardRect.Right - LTextLeft - Pixels(Round(LTokens.SummaryCardTextGap)));
+  FRenderer.Text(ACanvas, FValue, TDACComponentStyle.FontFamily,
+    LTextLeft, LCardRect.Top + Pixels(Round(LTokens.SummaryCardValueBaseline)),
+    LTokens.SummaryCardValueTextSize, LTextColor, True,
+    LCardRect.Right - LTextLeft - Pixels(Round(LTokens.SummaryCardTextGap)));
 
-  LFooterY := LCardRect.Bottom - ScaleMetric(20);
-  FRenderer.Text(ACanvas, FFooterText, TDACComponentFontInstaller.FontFamily,
-    LCardRect.Left + LPadding, LFooterY, 12, FooterColor, True,
+  LFooterY := LCardRect.Bottom - Pixels(Round(LTokens.SummaryCardFooterInset));
+  FRenderer.Text(ACanvas, FFooterText, TDACComponentStyle.FontFamily,
+    LCardRect.Left + LPadding, LFooterY, LTokens.SummaryCardFooterTextSize, FooterColor, True,
     LCardRect.Width - (LPadding * 2));
+  finally
+    FRenderer.EndNativeText;
+  end;
 end;
 
 procedure TDACSummaryCard.Redraw;
 begin
-  if (FPaintBox <> nil) and HandleAllocated then
+  if (FPaintBox = nil) or (csDestroying in ComponentState) then
+    Exit;
+  UpdatePaintBoxBounds;
+  if csDesigning in ComponentState then
+  begin
+    if Parent <> nil then
+      FPaintBox.Redraw;
+    Invalidate;
+    Exit;
+  end;
+  if (Parent <> nil) and HandleAllocated and Parent.HandleAllocated then
     FPaintBox.Redraw;
 end;
 
@@ -287,18 +428,9 @@ begin
   Redraw;
 end;
 
-function TDACSummaryCard.ScaleFactor: Single;
+function TDACSummaryCard.Pixels(const AValue: Integer): Integer;
 begin
-  Result := 1;
-  if FPaintBox <> nil then
-    Result := FPaintBox.ScaleFactor;
-  if Result <= 0 then
-    Result := 1;
-end;
-
-function TDACSummaryCard.ScaleMetric(const AValue: Integer): Integer;
-begin
-  Result := Round(AValue * ScaleFactor);
+  Result := AValue;
   if (AValue > 0) and (Result < 1) then
     Result := 1;
 end;
@@ -308,6 +440,7 @@ var
   LValue: TAlphaColor;
 begin
   LValue := TDACComponentColors.Normalize(AValue);
+  FCustomAccentColor := True;
   if FAccentColor = LValue then
     Exit;
 
@@ -315,35 +448,67 @@ begin
   Redraw;
 end;
 
-procedure TDACSummaryCard.SetBackgroundColor(const AValue: TAlphaColor);
+procedure TDACSummaryCard.SetAppearance(
+  const AValue: TDACSummaryCardAppearance);
 begin
-  if FBackgroundColor = AValue then
+  if FAppearance = AValue then
   begin
-    FCustomBackgroundColor := True;
-    Redraw;
+    if AValue <> mcsaCustom then
+      ApplyAppearance;
     Exit;
   end;
-  FBackgroundColor := AValue;
+  FAppearance := AValue;
+  if AValue <> mcsaCustom then
+    FBaseAppearance := AValue
+  else
+  begin
+    FCustomBackgroundColor := True;
+    FCustomBorderColor := True;
+    FCustomCornerRadius := True;
+  end;
+  ApplyAppearance;
+  Redraw;
+end;
+
+procedure TDACSummaryCard.SetThemeMode(const AValue: TDACThemeMode);
+begin
+  if FThemeMode = AValue then
+    Exit;
+  FThemeMode := AValue;
+  ThemeChanged(Self);
+end;
+
+procedure TDACSummaryCard.ThemeChanged(Sender: TObject);
+begin
+  ApplyAppearance;
+  Redraw;
+end;
+
+procedure TDACSummaryCard.SetBackgroundColor(const AValue: TAlphaColor);
+begin
+  FAppearance := mcsaCustom;
   FCustomBackgroundColor := True;
+  if FBackgroundColor = AValue then
+    Exit;
+  FBackgroundColor := AValue;
   Redraw;
 end;
 
 procedure TDACSummaryCard.SetBorderColor(const AValue: TAlphaColor);
 begin
-  if FBorderColor = AValue then
-  begin
-    FCustomBorderColor := True;
-    Redraw;
-    Exit;
-  end;
-  FBorderColor := AValue;
+  FAppearance := mcsaCustom;
   FCustomBorderColor := True;
+  if FBorderColor = AValue then
+    Exit;
+  FBorderColor := AValue;
   Redraw;
 end;
 
 procedure TDACSummaryCard.SetCornerRadius(const AValue: Integer);
 begin
-  if FCornerRadius = AValue then
+  FAppearance := mcsaCustom;
+  FCustomCornerRadius := True;
+  if FCornerRadius = Max(0, AValue) then
     Exit;
 
   FCornerRadius := AValue;
@@ -403,18 +568,16 @@ var
   LHeight: Integer;
   LWidth: Integer;
 begin
-  if FPaintBox = nil then
+  if (FPaintBox = nil) or (csLoading in ComponentState) or
+    (csDestroying in ComponentState) then
     Exit;
 
-  if HandleAllocated then
+  LWidth := Width;
+  LHeight := Height;
+  if not (csDesigning in ComponentState) and HandleAllocated then
   begin
     LWidth := ClientWidth;
     LHeight := ClientHeight;
-  end
-  else
-  begin
-    LWidth := Width;
-    LHeight := Height;
   end;
 
   if LWidth < 0 then

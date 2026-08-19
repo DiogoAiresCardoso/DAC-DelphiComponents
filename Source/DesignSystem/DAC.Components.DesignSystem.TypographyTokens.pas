@@ -11,6 +11,10 @@ type
     TextSize: Single;
     TextSecondarySize: Single;
     CaptionSize: Single;
+    SmallTextSize: Single;
+    DisplaySize: Single;
+    TabTextSize: Single;
+    GridTextSize: Single;
     MetricSize: Single;
     class function Default: TDACTypographyTokens; static;
   end;
@@ -26,9 +30,13 @@ begin
   Result.Title1Size := 22;
   Result.Title2Size := 16;
   Result.Title3Size := 13;
-  Result.TextSize := 9;
-  Result.TextSecondarySize := 8;
-  Result.CaptionSize := 8;
+  Result.TextSize := 11;
+  Result.TextSecondarySize := 10;
+  Result.CaptionSize := 9;
+  Result.SmallTextSize := 10;
+  Result.DisplaySize := 20;
+  Result.TabTextSize := 12;
+  Result.GridTextSize := 12;
   Result.MetricSize := 18;
 end;
 

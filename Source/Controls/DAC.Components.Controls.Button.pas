@@ -13,6 +13,9 @@ uses
   Vcl.Skia,
   DAC.Components.Controls.SystemText,
   DAC.Components.DesignSystem.Fonts,
+  DAC.Components.DesignSystem.ControlTokens,
+  DAC.Components.DesignSystem.ComponentStyle,
+  DAC.Components.DesignSystem.Theme,
   DAC.Components.DesignSystem.IconAssets,
   DAC.Components.Skia.BackgroundPainter,
   DAC.Components.Skia.BorderPainter,
@@ -41,6 +44,16 @@ type
     mipRight
   );
 
+  TDACButtonShape = (
+    mbshDefault,
+    mbshCompact,
+    mbshRounded,
+    mbshCustom
+  );
+
+  TDACInputActionSurfaceProvider = procedure(const ASender: TObject;
+    out AColor: TAlphaColor) of object;
+
   TDACButton = class(TCustomControl)
   private
     FBackgroundPainter: TDACSkiaBackgroundPainter;
@@ -50,6 +63,8 @@ type
     FIconPainter: TDACSkiaIconPainter;
     FIconPosition: TDACButtonIconPosition;
     FIconSize: Integer;
+    FInputActionOuterCornerRadius: Integer;
+    FInputActionSurfaceProvider: TDACInputActionSurfaceProvider;
     FKind: TDACButtonKind;
     FLoading: Boolean;
     FMouseInside: Boolean;
@@ -57,9 +72,13 @@ type
     FPressed: Boolean;
     FRenderer: TDACSkiaRenderer;
     FShowIcon: Boolean;
+    FShape: TDACButtonShape;
     FSize: TDACButtonSize;
     FTextLabel: TDACSystemText;
+    FThemeMode: TDACThemeMode;
     function ButtonFontSize: Single;
+    function CanvasBackground(
+      const ATokens: TDACControlTokens): TAlphaColor;
     procedure CalculateContentLayout(const ADest: TRectF;
       out AIconRect, ATextRect: TRectF);
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
@@ -68,6 +87,7 @@ type
     function ContentPadding: Integer;
     function CursorInside: Boolean;
     function EffectiveIconSize: Integer;
+    function IsDesignTimePreview: Boolean;
     procedure InvalidateButton;
     procedure LabelMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -85,9 +105,11 @@ type
     procedure PaintBoxMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure PaintBoxMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    function ParentSurfaceColor: TAlphaColor;
-    function ScaleFactor: Single;
-    function ScaleMetric(const AValue: Integer): Integer;
+    function Pixels(const AValue: Integer): Integer;
+    function IsCornerRadiusStored: Boolean;
+    function ResolvedTokens: TDACControlTokens;
+    procedure ApplyShape;
+    procedure ApplyWindowRegion;
     procedure SetCornerRadius(const AValue: Integer);
     procedure SetIconKind(const AValue: TDACIconKind);
     procedure SetIconPosition(const AValue: TDACButtonIconPosition);
@@ -95,14 +117,16 @@ type
     procedure SetKind(const AValue: TDACButtonKind);
     procedure SetLoading(const AValue: Boolean);
     procedure SetShowIcon(const AValue: Boolean);
+    procedure SetShape(const AValue: TDACButtonShape);
     procedure SetSize(const AValue: TDACButtonSize);
+    procedure SetThemeMode(const AValue: TDACThemeMode);
+    procedure ThemeChanged(Sender: TObject);
     procedure UpdateCursor;
     procedure UpdateLabel;
     procedure UpdatePaintBoxBounds;
     procedure UpdateZOrder;
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
   protected
-    procedure ChangeScale(M, D: Integer); override;
     procedure CreateWnd; override;
     procedure KeyDown(var Key: Word; Shift: TShiftState); override;
     procedure KeyUp(var Key: Word; Shift: TShiftState); override;
@@ -116,13 +140,19 @@ type
     destructor Destroy; override;
     procedure Click; override;
     function MinimumContentWidth: Integer;
+    function ResolvedBackgroundColor: TAlphaColor;
+    function ResolvedCanvasBackgroundColor: TAlphaColor;
     procedure Redraw;
+    procedure SetInputActionSurfaceProvider(
+      const AProvider: TDACInputActionSurfaceProvider);
+    procedure SetInputActionOuterCornerRadius(const AValue: Integer);
   published
     property Align;
     property Anchors;
     property Caption;
     property Constraints;
-    property CornerRadius: Integer read FCornerRadius write SetCornerRadius default 8;
+    property CornerRadius: Integer read FCornerRadius write SetCornerRadius
+      stored IsCornerRadiusStored;
     property Enabled;
     property Font;
     property Hint;
@@ -136,9 +166,11 @@ type
     property PopupMenu;
     property ShowHint;
     property ShowIcon: Boolean read FShowIcon write SetShowIcon default False;
+    property Shape: TDACButtonShape read FShape write SetShape default mbshDefault;
     property Size: TDACButtonSize read FSize write SetSize default mbsMedium;
     property TabOrder;
     property TabStop default True;
+    property ThemeMode: TDACThemeMode read FThemeMode write SetThemeMode default dtmInherit;
     property Visible;
     property OnClick;
     property OnEnter;
@@ -156,7 +188,6 @@ type
 implementation
 
 uses
-  DAC.Components.DesignSystem.ColorTokens,
   System.Math,
   System.SysUtils,
   Winapi.Windows;
@@ -171,60 +202,67 @@ type
     Alpha: Byte;
   end;
 
+function ButtonVclColor(const AColor: TAlphaColor): TColor;
+begin
+  Result := TColor(((AColor and $00FF0000) shr 16) or
+    (AColor and $0000FF00) or ((AColor and $000000FF) shl 16));
+end;
+
 function ButtonPalette(const AKind: TDACButtonKind;
-  const AEnabled, AHot, APressed, AFocused: Boolean): TButtonPalette;
+  const AEnabled, ALoading, AHot, APressed, AFocused: Boolean;
+  const ATokens: TDACControlTokens): TButtonPalette;
 var
   LActive: Boolean;
 begin
-  Result.Alpha := 255;
-  Result.BorderAlpha := 0;
+  Result.Alpha := ATokens.ButtonAlphaOpaque;
+  Result.BorderAlpha := ATokens.ButtonBorderAlphaNone;
   LActive := AHot or AFocused;
   case AKind of
     mbkSecondary:
       begin
-        Result.Background := TDACComponentColors.White;
-        Result.Border := TDACComponentColors.ControlBorder;
-        Result.BorderAlpha := 255;
-        Result.Text := TDACComponentColors.ControlText;
+        Result.Background := ATokens.ButtonSecondaryBackground;
+        Result.Border := ATokens.ButtonSecondaryBorder;
+        Result.BorderAlpha := ATokens.ButtonBorderAlphaFull;
+        Result.Text := ATokens.ButtonSecondaryText;
       end;
     mbkInputAction:
       begin
-        Result.Background := TDACComponentColors.Transparent;
-        Result.Border := TDACComponentColors.Transparent;
-        Result.BorderAlpha := 0;
-        Result.Text := TDACComponentColors.PrimaryDark;
+        Result.Background := ATokens.ButtonTransparent;
+        Result.Border := ATokens.ButtonTransparent;
+        Result.BorderAlpha := ATokens.ButtonBorderAlphaNone;
+        Result.Text := ATokens.ButtonInputActionText;
       end;
     mbkTransparent:
       begin
-        Result.Background := TDACComponentColors.Transparent;
-        Result.Border := TDACComponentColors.Transparent;
-        Result.BorderAlpha := 0;
-        Result.Text := TDACComponentColors.PrimaryDark;
+        Result.Background := ATokens.ButtonTransparent;
+        Result.Border := ATokens.ButtonTransparent;
+        Result.BorderAlpha := ATokens.ButtonBorderAlphaNone;
+        Result.Text := ATokens.ButtonTransparentText;
       end;
     mbkGhost:
       begin
-        Result.Background := TDACComponentColors.Transparent;
-        Result.Border := TDACComponentColors.PrimaryDark;
-        Result.BorderAlpha := 140;
-        Result.Text := TDACComponentColors.PrimaryDark;
+        Result.Background := ATokens.ButtonGhostBackground;
+        Result.Border := ATokens.ButtonGhostBorder;
+        Result.BorderAlpha := ATokens.ButtonBorderAlphaGhostNormal;
+        Result.Text := ATokens.ButtonGhostText;
       end;
     mbkDanger:
       begin
-        Result.Background := TDACComponentColors.Danger;
-        Result.Border := TDACComponentColors.Transparent;
-        Result.Text := TDACComponentColors.White;
+        Result.Background := ATokens.ButtonDangerBackground;
+        Result.Border := ATokens.ButtonTransparent;
+        Result.Text := ATokens.ButtonDangerText;
       end;
     mbkWarning:
       begin
-        Result.Background := TDACComponentColors.Warning;
-        Result.Border := TDACComponentColors.Transparent;
-        Result.Text := TDACComponentColors.ControlText;
+        Result.Background := ATokens.ButtonWarningBackground;
+        Result.Border := ATokens.ButtonTransparent;
+        Result.Text := ATokens.ButtonWarningText;
       end;
   else
     begin
-      Result.Background := TDACComponentColors.Primary;
-      Result.Border := TDACComponentColors.Transparent;
-      Result.Text := TDACComponentColors.White;
+      Result.Background := ATokens.ButtonPrimaryBackground;
+      Result.Border := ATokens.ButtonTransparent;
+      Result.Text := ATokens.ButtonPrimaryText;
     end;
   end;
 
@@ -233,38 +271,38 @@ begin
     case AKind of
       mbkPrimary:
         begin
-          Result.Background := TDACComponentColors.PrimaryFocus;
+          Result.Background := ATokens.ButtonPrimaryPressedBackground;
           if AHot then
-            Result.Background := TDACComponentColors.PrimaryLight;
+            Result.Background := ATokens.ButtonPrimaryHoverBackground;
         end;
       mbkSecondary:
         begin
-          Result.Background := TDACComponentColors.ControlBackgroundDisabled;
-          Result.Border := TDACComponentColors.ControlBorderHover;
+          Result.Background := ATokens.ButtonSecondaryHoverBackground;
+          Result.Border := ATokens.ButtonSecondaryHoverBorder;
         end;
       mbkInputAction:
         begin
-          Result.Background := TDACComponentColors.Transparent;
-          Result.Border := TDACComponentColors.Transparent;
-          Result.BorderAlpha := 0;
+          Result.Background := ATokens.ButtonTransparent;
+          Result.Border := ATokens.ButtonTransparent;
+          Result.BorderAlpha := ATokens.ButtonBorderAlphaNone;
         end;
       mbkTransparent:
         begin
-          Result.Background := TDACComponentColors.Transparent;
-          Result.Border := TDACComponentColors.Transparent;
-          Result.BorderAlpha := 0;
-          Result.Text := TDACComponentColors.Primary;
+          Result.Background := ATokens.ButtonTransparent;
+          Result.Border := ATokens.ButtonTransparent;
+          Result.BorderAlpha := ATokens.ButtonBorderAlphaNone;
+          Result.Text := ATokens.ButtonTransparentText;
         end;
       mbkGhost:
         begin
-          Result.Background := TDACComponentColors.Alpha(31, 59, 35, $14);
-          Result.Border := TDACComponentColors.PrimaryLight;
-          Result.BorderAlpha := 190;
+          Result.Background := ATokens.ButtonGhostActiveBackground;
+          Result.Border := ATokens.ButtonGhostBorder;
+          Result.BorderAlpha := ATokens.ButtonBorderAlphaGhostActive;
         end;
       mbkDanger:
-        Result.Background := TDACComponentColors.DangerLight;
+        Result.Background := ATokens.ButtonDangerBackground;
       mbkWarning:
-        Result.Background := TDACComponentColors.WarningLight;
+        Result.Background := ATokens.ButtonWarningHoverBackground;
     end;
   end;
 
@@ -272,59 +310,102 @@ begin
   begin
     case AKind of
       mbkPrimary:
-        Result.Background := TDACComponentColors.PrimaryDark;
+        Result.Background := ATokens.ButtonPrimaryPressedBackground;
       mbkSecondary:
         begin
-          Result.Background := TDACComponentColors.ControlBorder;
-          Result.Border := TDACComponentColors.ControlBorderHover;
+          Result.Background := ATokens.ButtonSecondaryPressedBackground;
+          Result.Border := ATokens.ButtonSecondaryHoverBorder;
         end;
       mbkInputAction:
         begin
-          Result.Background := TDACComponentColors.Transparent;
-          Result.Border := TDACComponentColors.Transparent;
-          Result.BorderAlpha := 0;
+          Result.Background := ATokens.ButtonTransparent;
+          Result.Border := ATokens.ButtonTransparent;
+          Result.BorderAlpha := ATokens.ButtonBorderAlphaNone;
         end;
       mbkTransparent:
         begin
-          Result.Background := TDACComponentColors.Transparent;
-          Result.Border := TDACComponentColors.Transparent;
-          Result.BorderAlpha := 0;
-          Result.Text := TDACComponentColors.PrimaryDark;
+          Result.Background := ATokens.ButtonTransparent;
+          Result.Border := ATokens.ButtonTransparent;
+          Result.BorderAlpha := ATokens.ButtonBorderAlphaNone;
+          Result.Text := ATokens.ButtonTransparentText;
         end;
       mbkGhost:
         begin
-          Result.Background := TDACComponentColors.Alpha(47, 158, 34, $1F);
-          Result.Border := TDACComponentColors.Alpha(61, 184, 42, $66);
-          Result.BorderAlpha := 255;
+          Result.Background := ATokens.ButtonGhostActiveBackground;
+          Result.Border := ATokens.ButtonGhostBorder;
+          Result.BorderAlpha := ATokens.ButtonBorderAlphaFull;
         end;
       mbkDanger:
-        Result.Background := TDACComponentColors.DangerDark;
+        Result.Background := ATokens.ButtonDangerBackground;
       mbkWarning:
-        Result.Background := TDACComponentColors.WarningDark;
+        Result.Background := ATokens.ButtonWarningPressedBackground;
     end;
   end;
 
   if not AEnabled then
   begin
-    Result.Alpha := 110;
-    if Result.BorderAlpha > 0 then
-      Result.BorderAlpha := Result.Alpha;
-    Result.Text := TDACComponentColors.TextSecondary;
+    if AKind = mbkInputAction then
+    begin
+      // Embedded actions never own the field's outer border. Keep the edit
+      // chrome visible and only dim the action glyph/text.
+      Result.Background := ATokens.ButtonTransparent;
+      Result.Border := ATokens.ButtonTransparent;
+      Result.BorderAlpha := ATokens.ButtonBorderAlphaNone;
+    end
+    else
+    begin
+      Result.Background := ATokens.ButtonDisabledBackground;
+      Result.Border := ATokens.ButtonDisabledBorder;
+      Result.BorderAlpha := ATokens.ButtonBorderAlphaFull;
+    end;
+    Result.Text := ATokens.ButtonDisabledText;
+  end
+  else if ALoading then
+  begin
+    // Loading is non-interactive, but still represents a live primary action.
+    // Keep the primary semantic in an opaque, high-contrast palette instead
+    // of applying the disabled alpha used by the old implementation.
+    if AKind = mbkInputAction then
+    begin
+      Result.Background := ATokens.ButtonTransparent;
+      Result.Border := ATokens.ButtonTransparent;
+      Result.BorderAlpha := ATokens.ButtonBorderAlphaNone;
+    end
+    else
+    begin
+      Result.Background := ATokens.ButtonLoadingBackground;
+      Result.Border := ATokens.ButtonLoadingBorder;
+      Result.BorderAlpha := ATokens.ButtonBorderAlphaFull;
+    end;
+    Result.Text := ATokens.ButtonLoadingText;
   end;
 
   Result.Icon := Result.Text;
 end;
 
 function TDACButton.ButtonFontSize: Single;
+var
+  LTokens: TDACControlTokens;
 begin
+  LTokens := ResolvedTokens;
   case FSize of
     mbsSmall:
-      Result := 7.5;
+      Result := LTokens.ButtonSmall.NativeFontSize;
     mbsLarge:
-      Result := 9;
+      Result := LTokens.ButtonLarge.NativeFontSize;
   else
-    Result := 8;
+    Result := LTokens.ButtonMedium.NativeFontSize;
   end;
+end;
+
+function TDACButton.CanvasBackground(
+  const ATokens: TDACControlTokens): TAlphaColor;
+begin
+  if FKind <> mbkInputAction then
+    Exit(ATokens.ButtonCanvasBackground);
+  Result := ATokens.ButtonInputActionCanvasBackground;
+  if Assigned(FInputActionSurfaceProvider) then
+    FInputActionSurfaceProvider(Self, Result);
 end;
 
 procedure TDACButton.CalculateContentLayout(const ADest: TRectF;
@@ -341,7 +422,7 @@ begin
   AIconRect := TRectF.Empty;
   ATextRect := TRectF.Empty;
 
-  LGap := 8;
+  LGap := ResolvedTokens.ButtonContentGap;
   LIconSize := EffectiveIconSize;
   LHasText := Trim(Caption) <> '';
 
@@ -363,8 +444,7 @@ begin
   end
   else if FTextLabel <> nil then
     LTextWidth := FTextLabel.MeasureTextWidth(Caption,
-      TDACComponentFontInstaller.FontFamily, Round(ButtonFontSize), True) /
-      ScaleFactor
+      TDACComponentFontInstaller.FontFamily, Round(ButtonFontSize), True)
   else
     LTextWidth := 0;
   LAvailableWidth := Max(0, ADest.Width - (ContentPadding * 2));
@@ -410,19 +490,22 @@ constructor TDACButton.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque, csClickEvents, csCaptureMouse];
-  Width := 128;
-  Height := 36;
+  FThemeMode := dtmInherit;
+  Width := Round(ResolvedTokens.ButtonDefaultWidth);
+  Height := Round(ResolvedTokens.ButtonDefaultHeight);
   TabStop := True;
   Cursor := crHandPoint;
   ParentColor := False;
   StyleElements := [];
-  Color := clWhite;
-  FCornerRadius := 8;
+  Color := ButtonVclColor(ResolvedTokens.ButtonFallbackBackground);
+  FShape := mbshDefault;
+  ApplyShape;
   FIconKind := mikCheck;
   FIconPosition := mipLeft;
   FIconSize := 0;
   FKind := mbkPrimary;
   FSize := mbsMedium;
+  TDACThemeManager.RegisterListener(Self, ThemeChanged);
   Caption := 'Botao';
 
   FRenderer := TDACSkiaRenderer.Create;
@@ -452,11 +535,31 @@ begin
   FTextLabel.OnMouseMove := LabelMouseMove;
   FTextLabel.OnMouseUp := LabelMouseUp;
 
-  Resize;
+  { Do not calculate text/layout from the constructor.  At this point the
+    button may still have no Parent (the IDE uses this creation order), and a
+    native text measurement would otherwise force TWinControl.CreateWnd. }
+end;
+
+procedure TDACButton.ApplyShape;
+var
+  LTokens: TDACControlTokens;
+begin
+  LTokens := ResolvedTokens;
+  case FShape of
+    mbshDefault:
+      FCornerRadius := Round(LTokens.ButtonDefaultCornerRadius);
+    mbshCompact:
+      FCornerRadius := Round(LTokens.ButtonCompactCornerRadius);
+    mbshRounded:
+      FCornerRadius := Round(LTokens.ButtonRoundedCornerRadius);
+  end;
+  ApplyWindowRegion;
+  InvalidateButton;
 end;
 
 destructor TDACButton.Destroy;
 begin
+  TDACThemeManager.UnregisterListener(Self);
   FTextLabel.Free;
   FPaintBox.Free;
   FIconPainter.Free;
@@ -465,15 +568,6 @@ begin
   FRenderer.Free;
   inherited;
 end;
-
-procedure TDACButton.ChangeScale(M, D: Integer);
-begin
-  inherited;
-  UpdateCursor;
-  UpdateLabel;
-  Redraw;
-end;
-
 procedure TDACButton.Click;
 begin
   if FLoading then
@@ -501,15 +595,53 @@ begin
 end;
 
 function TDACButton.ContentPadding: Integer;
+var
+  LTokens: TDACControlTokens;
 begin
+  LTokens := ResolvedTokens;
   case FSize of
     mbsSmall:
-      Result := 10;
+      Result := Round(LTokens.ButtonSmall.PaddingHorizontal);
     mbsLarge:
-      Result := 18;
+      Result := Round(LTokens.ButtonLarge.PaddingHorizontal);
   else
-    Result := 14;
+    Result := Round(LTokens.ButtonMedium.PaddingHorizontal);
   end;
+end;
+
+procedure TDACButton.ApplyWindowRegion;
+var
+  LDiameter: Integer;
+  LLeftRegion: HRGN;
+  LRadius: Integer;
+  LRegion: HRGN;
+begin
+  if not HandleAllocated or (Width <= 0) or (Height <= 0) then
+    Exit;
+  if FKind <> mbkInputAction then
+  begin
+    SetWindowRgn(Handle, 0, True);
+    Exit;
+  end;
+
+  // An input action is hosted inside another component's rounded chrome. A
+  // rectangular child HWND would occlude the parent's right corner even when
+  // its Skia canvas is transparent. The left edge remains square so the
+  // embedded action still covers its full divider/content column.
+  LRadius := FInputActionOuterCornerRadius;
+  if LRadius <= 0 then
+    LRadius := FCornerRadius;
+  LDiameter := Max(1, LRadius * 2);
+  LRegion := CreateRoundRectRgn(0, 0, Width + 1, Height + 1,
+    LDiameter, LDiameter);
+  LLeftRegion := CreateRectRgn(0, 0, Min(Width, LRadius + 1), Height + 1);
+  if LLeftRegion <> 0 then
+  begin
+    CombineRgn(LRegion, LRegion, LLeftRegion, RGN_OR);
+    DeleteObject(LLeftRegion);
+  end;
+  if SetWindowRgn(Handle, LRegion, True) = 0 then
+    DeleteObject(LRegion);
 end;
 
 function TDACButton.CursorInside: Boolean;
@@ -529,6 +661,7 @@ end;
 procedure TDACButton.CreateWnd;
 begin
   inherited;
+  ApplyWindowRegion;
   UpdateZOrder;
   UpdateLabel;
   Redraw;
@@ -559,6 +692,8 @@ end;
 procedure TDACButton.Loaded;
 begin
   inherited;
+  ApplyShape;
+  ApplyWindowRegion;
   UpdatePaintBoxBounds;
   UpdateZOrder;
   UpdateLabel;
@@ -566,17 +701,39 @@ begin
 end;
 
 function TDACButton.EffectiveIconSize: Integer;
+var
+  LTokens: TDACControlTokens;
 begin
   if FIconSize > 0 then
     Exit(FIconSize);
 
+  LTokens := ResolvedTokens;
   case FSize of
     mbsSmall:
-      Result := 14;
+      Result := Round(LTokens.ButtonSmall.IconSize);
     mbsLarge:
-      Result := 18;
+      Result := Round(LTokens.ButtonLarge.IconSize);
   else
-    Result := 16;
+    Result := Round(LTokens.ButtonMedium.IconSize);
+  end;
+end;
+
+function TDACButton.IsDesignTimePreview: Boolean;
+var
+  LControl: TControl;
+begin
+  { A child can receive CreateWnd/Resize while the IDE is reparenting it and
+    before csDesigning is reflected on the child itself.  Inspect the existing
+    owner/parent chain before performing runtime-only Z-order work. }
+  Result := csDesigning in ComponentState;
+  if (not Result) and (Owner <> nil) then
+    Result := csDesigning in Owner.ComponentState;
+
+  LControl := Parent;
+  while (not Result) and (LControl <> nil) do
+  begin
+    Result := csDesigning in LControl.ComponentState;
+    LControl := LControl.Parent;
   end;
 end;
 
@@ -592,18 +749,33 @@ begin
     LTextWidth := 0;
     if FTextLabel <> nil then
       LTextWidth := FTextLabel.MeasureTextWidth(Caption,
-        TDACComponentFontInstaller.FontFamily, Round(ButtonFontSize), True) /
-        ScaleFactor;
+      TDACComponentFontInstaller.FontFamily, Round(ButtonFontSize), True);
     Inc(LWidth, Ceil(LTextWidth));
   end;
   if FShowIcon then
   begin
     LGap := 0;
     if Trim(Caption) <> '' then
-      LGap := 8;
+      LGap := Round(ResolvedTokens.ButtonContentGap);
     Inc(LWidth, EffectiveIconSize + LGap);
   end;
-  Result := Max(ScaleMetric(44), ScaleMetric(LWidth));
+  Result := Max(Pixels(Round(ResolvedTokens.ButtonMinimumWidth)), Pixels(LWidth));
+end;
+
+function TDACButton.ResolvedBackgroundColor: TAlphaColor;
+begin
+  Result := ButtonPalette(FKind, Enabled, FLoading, FMouseInside, FPressed,
+    Focused, ResolvedTokens).Background;
+end;
+
+function TDACButton.ResolvedCanvasBackgroundColor: TAlphaColor;
+begin
+  Result := CanvasBackground(ResolvedTokens);
+end;
+
+function TDACButton.IsCornerRadiusStored: Boolean;
+begin
+  Result := FShape = mbshCustom;
 end;
 
 procedure TDACButton.InvalidateButton;
@@ -695,24 +867,24 @@ var
   LScale: Single;
   LStyle: TDACIconStyle;
   LTextRect: TRectF;
+  LTokens: TDACControlTokens;
 begin
   if (ACanvas = nil) or (ADest.Width <= 0) or (ADest.Height <= 0) then
     Exit;
 
-  LPalette := ButtonPalette(FKind, Enabled and not FLoading, FMouseInside,
-    FPressed, Focused);
-  LScale := ScaleFactor;
+  LTokens := ResolvedTokens;
+  LPalette := ButtonPalette(FKind, Enabled, FLoading, FMouseInside,
+    FPressed, Focused, LTokens);
+  LScale := LTokens.ButtonPainterSnapScale;
   LBorderRect := FRenderer.SnapRect(TRectF.Create(0, 0, ADest.Width,
     ADest.Height), LScale);
   LBackgroundRect := LBorderRect;
-  LBackgroundRect.Inflate(-0.5 / LScale, -0.5 / LScale);
+  LBackgroundRect.Inflate(-LTokens.ButtonPainterInset / LScale,
+    -LTokens.ButtonPainterInset / LScale);
 
-  if FKind = mbkInputAction then
-    ACanvas.Clear(TDACComponentColors.ControlBackgroundForSurface(ParentSurfaceColor))
-  else
-    ACanvas.Clear(ParentSurfaceColor);
+  ACanvas.Clear(CanvasBackground(LTokens));
 
-  if LPalette.Background <> TDACComponentColors.Transparent then
+  if LPalette.Background <> LTokens.ButtonTransparent then
   begin
     LBackground.Color := LPalette.Background;
     LBackground.Radius := FCornerRadius;
@@ -724,20 +896,17 @@ begin
   begin
     LBorder.Color := LPalette.Border;
     LBorder.Radius := FCornerRadius;
-    LBorder.Width := 1;
+    LBorder.Width := LTokens.ButtonBorderWidth;
     LBorder.Alpha := LPalette.BorderAlpha;
     FBorderPainter.Draw(ACanvas, LBorderRect, LBorder);
   end;
 
   if FKind = mbkInputAction then
     FRenderer.FillRoundRect(ACanvas,
-      TRectF.Create(0, 1 / LScale, 1 / LScale, ADest.Height - (1 / LScale)),
-      TDACComponentColors.ControlBorder, 0, 255);
-
-  if (FKind = mbkInputAction) and (not FShowIcon) and (Trim(Caption) <> '') then
-    FRenderer.TextCentered(ACanvas, Caption,
-      TDACComponentFontInstaller.FontFamily, ADest, 11,
-      LPalette.Text, True, ADest.Width - 8);
+      TRectF.Create(0, LTokens.ButtonInputActionDividerVerticalInset / LScale,
+        LTokens.ButtonInputActionDividerWidth / LScale,
+        ADest.Height - (LTokens.ButtonInputActionDividerVerticalInset / LScale)),
+      LTokens.ButtonInputActionDivider, 0, LTokens.ButtonAlphaOpaque);
 
   if FShowIcon then
   begin
@@ -782,50 +951,96 @@ begin
   MouseUp(Button, Shift, X, Y);
 end;
 
-function TDACButton.ParentSurfaceColor: TAlphaColor;
-begin
-  Result := TDACComponentColors.ResolveParentSurface(Self);
-end;
-
 procedure TDACButton.Redraw;
 begin
+  if (FPaintBox = nil) or (FPaintBox.Parent <> Self) or
+    (csDestroying in ComponentState) then
+    Exit;
   UpdatePaintBoxBounds;
   UpdateLabel;
-  if (FPaintBox <> nil) and HandleAllocated then
+
+  { The designer does not guarantee a stable HWND tree while a component is
+    being inserted or resized.  TSkPaintBox and TDACSystemText are child
+    controls/graphic controls, so their design preview must use the persisted
+    bounds and regular invalidation instead of waiting for runtime handles. }
+  if IsDesignTimePreview then
+  begin
+    { Invalidate alone retains the cached Skia frame in the VCL designer.
+      Redraw clears that cache and repaints the current token palette without
+      requiring a HWND or changing the composition order. }
     FPaintBox.Redraw;
+    if (FTextLabel <> nil) and (FTextLabel.Parent = Self) then
+      FTextLabel.Invalidate;
+    Invalidate;
+    Exit;
+  end;
+
+  if (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated then
+    Exit;
+  FPaintBox.Redraw;
 end;
 
 procedure TDACButton.Resize;
 begin
   inherited;
+  ApplyWindowRegion;
   UpdatePaintBoxBounds;
   UpdateZOrder;
   UpdateLabel;
   Redraw;
 end;
 
-function TDACButton.ScaleFactor: Single;
+function TDACButton.Pixels(const AValue: Integer): Integer;
 begin
-  Result := 1;
-  if FPaintBox <> nil then
-    Result := FPaintBox.ScaleFactor;
-  if Result <= 0 then
-    Result := 1;
-end;
-
-function TDACButton.ScaleMetric(const AValue: Integer): Integer;
-begin
-  Result := Round(AValue * ScaleFactor);
+  Result := AValue;
   if (AValue > 0) and (Result < 1) then
     Result := 1;
 end;
 
+function TDACButton.ResolvedTokens: TDACControlTokens;
+begin
+  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+end;
+
 procedure TDACButton.SetCornerRadius(const AValue: Integer);
 begin
-  if FCornerRadius = AValue then
+  FShape := mbshCustom;
+  if FCornerRadius = Max(0, AValue) then
     Exit;
   FCornerRadius := Max(0, AValue);
+  ApplyWindowRegion;
   InvalidateButton;
+end;
+
+procedure TDACButton.SetInputActionOuterCornerRadius(const AValue: Integer);
+var
+  LValue: Integer;
+begin
+  LValue := Max(0, AValue);
+  if FInputActionOuterCornerRadius = LValue then
+    Exit;
+  FInputActionOuterCornerRadius := LValue;
+  ApplyWindowRegion;
+  InvalidateButton;
+end;
+
+procedure TDACButton.SetInputActionSurfaceProvider(
+  const AProvider: TDACInputActionSurfaceProvider);
+begin
+  FInputActionSurfaceProvider := AProvider;
+  InvalidateButton;
+end;
+
+procedure TDACButton.SetShape(const AValue: TDACButtonShape);
+begin
+  if FShape = AValue then
+  begin
+    if AValue <> mbshCustom then
+      ApplyShape;
+    Exit;
+  end;
+  FShape := AValue;
+  ApplyShape;
 end;
 
 procedure TDACButton.SetIconKind(const AValue: TDACIconKind);
@@ -849,7 +1064,7 @@ procedure TDACButton.SetIconSize(const AValue: Integer);
 var
   LValue: Integer;
 begin
-  LValue := Max(0, Min(AValue, 64));
+  LValue := Max(0, Min(AValue, ResolvedTokens.ButtonMaximumIconSize));
   if FIconSize = LValue then
     Exit;
   FIconSize := LValue;
@@ -861,6 +1076,7 @@ begin
   if FKind = AValue then
     Exit;
   FKind := AValue;
+  ApplyWindowRegion;
   InvalidateButton;
 end;
 
@@ -883,18 +1099,37 @@ begin
 end;
 
 procedure TDACButton.SetSize(const AValue: TDACButtonSize);
+var
+  LTokens: TDACControlTokens;
 begin
   if FSize = AValue then
     Exit;
   FSize := AValue;
+  LTokens := ResolvedTokens;
   case FSize of
     mbsSmall:
-      Height := ScaleMetric(30);
+      Height := Pixels(Round(LTokens.ButtonSmall.Height));
     mbsLarge:
-      Height := ScaleMetric(42);
+      Height := Pixels(Round(LTokens.ButtonLarge.Height));
   else
-    Height := ScaleMetric(36);
+    Height := Pixels(Round(LTokens.ButtonMedium.Height));
   end;
+  ApplyWindowRegion;
+  InvalidateButton;
+end;
+
+procedure TDACButton.SetThemeMode(const AValue: TDACThemeMode);
+begin
+  if FThemeMode = AValue then
+    Exit;
+  FThemeMode := AValue;
+  ThemeChanged(Self);
+end;
+
+procedure TDACButton.ThemeChanged(Sender: TObject);
+begin
+  Color := ButtonVclColor(ResolvedTokens.ButtonFallbackBackground);
+  ApplyShape;
   InvalidateButton;
 end;
 
@@ -917,38 +1152,56 @@ end;
 procedure TDACButton.UpdateLabel;
 var
   LPalette: TButtonPalette;
+  LTokens: TDACControlTokens;
   LIconRect: TRectF;
   LLabelLeft: Integer;
   LLabelWidth: Integer;
   LTextRect: TRectF;
 begin
-  if (FTextLabel = nil) or not HandleAllocated then
+  if (FTextLabel = nil) or (FTextLabel.Parent <> Self) or
+    (csDestroying in ComponentState) then
     Exit;
 
   if FKind = mbkInputAction then
   begin
-    FTextLabel.Visible := False;
+    FTextLabel.Visible := (not FShowIcon) and (Trim(Caption) <> '');
+    if not FTextLabel.Visible then
+      Exit;
+    LTokens := ResolvedTokens;
+    LPalette := ButtonPalette(FKind, Enabled, FLoading, FMouseInside,
+      FPressed, Focused, LTokens);
+    FTextLabel.SetBounds(0, 0,
+      Max(0, Width - Round(LTokens.ButtonInputActionCaptionRightInset)), Height);
+    FTextLabel.Text := Caption;
+    FTextLabel.FontFamily := TDACComponentFontInstaller.FontFamily;
+    FTextLabel.FontSize := Round(LTokens.ButtonInputActionCaptionTextSize);
+    FTextLabel.Bold := True;
+    FTextLabel.TextColor := LPalette.Text;
+    FTextLabel.HorzAlign := mthaCenter;
+    FTextLabel.VertAlign := mtvaCenter;
+    FTextLabel.MaxLines := 1;
     Exit;
   end;
 
   FTextLabel.Visible := True;
-  LPalette := ButtonPalette(FKind, Enabled and not FLoading, FMouseInside,
-    FPressed, Focused);
-  CalculateContentLayout(TRectF.Create(0, 0, Width / ScaleFactor,
-    Height / ScaleFactor), LIconRect, LTextRect);
+  LTokens := ResolvedTokens;
+  LPalette := ButtonPalette(FKind, Enabled, FLoading, FMouseInside,
+    FPressed, Focused, LTokens);
+  CalculateContentLayout(TRectF.Create(0, 0, Width, Height),
+    LIconRect, LTextRect);
 
-  LLabelLeft := Max(0, Round(LTextRect.Left * ScaleFactor));
-  LLabelWidth := Max(0, Round(LTextRect.Width * ScaleFactor));
+  LLabelLeft := Max(0, Round(LTextRect.Left));
+  LLabelWidth := Max(0, Round(LTextRect.Width));
   LLabelWidth := Min(LLabelWidth, Width - LLabelLeft);
   FTextLabel.SetBounds(LLabelLeft, 0, LLabelWidth, Height);
   FTextLabel.Text := Caption;
   FTextLabel.FontFamily := TDACComponentFontInstaller.FontFamily;
   FTextLabel.FontSize := Round(ButtonFontSize);
-  FTextLabel.Bold := True;
+  FTextLabel.Bold := LTokens.ButtonCaptionBold;
   FTextLabel.TextColor := LPalette.Text;
   FTextLabel.HorzAlign := mthaCenter;
   FTextLabel.VertAlign := mtvaCenter;
-  FTextLabel.MaxLines := 1;
+  FTextLabel.MaxLines := LTokens.ButtonCaptionMaxLines;
 end;
 
 procedure TDACButton.UpdatePaintBoxBounds;
@@ -956,12 +1209,18 @@ var
   LWidth: Integer;
   LHeight: Integer;
 begin
-  if FPaintBox = nil then
+  if (FPaintBox = nil) or (FPaintBox.Parent <> Self) or
+    (csLoading in ComponentState) or
+    (csDestroying in ComponentState) then
     Exit;
 
+  { Width/Height are the only reliable dimensions before the VCL has created
+    the design-time HWND hierarchy.  At runtime keep using client bounds so
+    the chrome follows the actual client area. }
   LWidth := Width;
   LHeight := Height;
-  if HandleAllocated then
+  if not IsDesignTimePreview and HandleAllocated and
+    (Parent <> nil) and Parent.HandleAllocated then
   begin
     LWidth := ClientWidth;
     LHeight := ClientHeight;
@@ -977,16 +1236,16 @@ procedure TDACButton.UpdateZOrder;
 begin
   if (csLoading in ComponentState) or (csDestroying in ComponentState) then
     Exit;
-  if csDesigning in ComponentState then
+  if IsDesignTimePreview then
     Exit;
   if not HandleAllocated then
     Exit;
-  if (Parent = nil) or not Parent.HandleAllocated then
+  if (Parent = nil) or not Parent.HandleAllocated or not Showing then
     Exit;
 
-  if FPaintBox <> nil then
+  if (FPaintBox <> nil) and (FPaintBox.Parent = Self) then
     FPaintBox.SendToBack;
-  if FTextLabel <> nil then
+  if (FTextLabel <> nil) and (FTextLabel.Parent = Self) then
     FTextLabel.BringToFront;
 end;
 

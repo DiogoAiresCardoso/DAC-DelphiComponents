@@ -8,6 +8,7 @@ type
     S8: Single;
     S12: Single;
     S16: Single;
+    S20: Single;
     S24: Single;
     S32: Single;
     S40: Single;
@@ -24,6 +25,7 @@ begin
   Result.S8 := 8;
   Result.S12 := 12;
   Result.S16 := 16;
+  Result.S20 := 20;
   Result.S24 := 24;
   Result.S32 := 32;
   Result.S40 := 40;

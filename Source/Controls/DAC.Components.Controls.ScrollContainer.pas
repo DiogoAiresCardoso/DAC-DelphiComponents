@@ -219,6 +219,7 @@ begin
   FRenderer.Free;
   inherited;
 end;
+
 procedure TDACScrollContainer.CMControlListChange(
   var AMessage: TCMControlListChange);
 begin
@@ -230,6 +231,12 @@ begin
     not (csDesigning in ComponentState) and (Parent <> nil) and
     HandleAllocated and Parent.HandleAllocated and Showing then
     FPaintBox.SendToBack;
+
+  { A control added after a local theme was selected must resolve from this
+    physical scroll surface immediately. RefreshTree is listener-only and
+    never forces a HWND, so it is safe for streamed and runtime descendants. }
+  if not (csLoading in ComponentState) and not (csDestroying in ComponentState) then
+    TDACThemeManager.RefreshTree(Self);
 end;
 
 procedure TDACScrollContainer.CMShowingChanged(var AMessage: TMessage);
@@ -303,7 +310,6 @@ begin
     ScrollVertically(LCode);
     Dec(LSteps);
   end;
-
 end;
 
 function TDACScrollContainer.CanArbitrateNestedWheel: Boolean;
@@ -332,6 +338,7 @@ begin
   UpdateScrollBars;
   ApplyDACNativeScrollBarTheme(Self, FThemeMode);
   UpdateChromeBounds;
+  TDACThemeManager.RefreshTree(Self);
   ApplyPendingTheme;
   Redraw;
 end;
@@ -342,6 +349,9 @@ begin
   ApplyAppearance;
   UpdateScrollBars;
   UpdateChromeBounds;
+  { Children can be streamed after the container ThemeMode. Reapply the
+    resolved physical palette only after the visual tree is complete. }
+  TDACThemeManager.RefreshTree(Self);
   ApplyPendingTheme;
   Redraw;
 end;
@@ -435,20 +445,23 @@ end;
 
 procedure TDACScrollContainer.RedrawChrome;
 begin
-  if (FPaintBox <> nil) and not (csDestroying in ComponentState) and
-    not (csDesigning in ComponentState) and (Parent <> nil) and
-    HandleAllocated and Parent.HandleAllocated and Showing and IsPageActive then
+  if (FPaintBox = nil) or (csDestroying in ComponentState) then
+    Exit;
+  if csDesigning in ComponentState then
   begin
+    { Design-time: descarta cache Skia e invalida a superficie do designer.
+      TSkPaintBox e TGraphicControl — Redraw nao cria HWND. }
     FPaintBox.Redraw;
-    FPaintBox.Invalidate;
-    FPaintBox.Update;
+    Invalidate;
+    Exit;
   end;
-  if not (csDestroying in ComponentState) and not (csDesigning in ComponentState) and
-    (Parent <> nil) and HandleAllocated and Parent.HandleAllocated and Showing and
-    IsPageActive then
-  begin
-    RedrawWindow(Handle, nil, 0, RDW_INVALIDATE or RDW_FRAME);
-  end;
+  if (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated or
+    not Showing or not IsPageActive then
+    Exit;
+  FPaintBox.Redraw;
+  FPaintBox.Invalidate;
+  FPaintBox.Update;
+  RedrawWindow(Handle, nil, 0, RDW_INVALIDATE or RDW_FRAME);
 end;
 
 procedure TDACScrollContainer.Resize;
@@ -534,7 +547,7 @@ begin
   ApplyAppearance;
   Color := TDACComponentColors.ToVclColor(ResolvedBackgroundColor);
   ApplyDACNativeScrollBarTheme(Self, FThemeMode);
-  if HandleAllocated then
+  if HandleAllocated and not (csDesigning in ComponentState) then
     RedrawWindow(Handle, nil, 0, RDW_INVALIDATE or RDW_FRAME);
   FPendingThemeRedraw := not ((Parent <> nil) and HandleAllocated and
     IsPageActive and not (csDesigning in ComponentState));
@@ -613,8 +626,16 @@ end;
 procedure TDACScrollContainer.UpdateChromeBounds;
 begin
   if (FPaintBox = nil) or (csLoading in ComponentState) or
-    (csDestroying in ComponentState) or (csDesigning in ComponentState) or
-    (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated or
+    (csDestroying in ComponentState) then
+    Exit;
+  if csDesigning in ComponentState then
+  begin
+    { Never query ClientRect nor change z-order while the designer is
+      streaming. Width/Height provide the same static preview bounds. }
+    FPaintBox.SetBounds(0, 0, Width, Height);
+    Exit;
+  end;
+  if (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated or
     not Showing then
     Exit;
   if FPaintBox.Align <> alClient then
@@ -653,6 +674,7 @@ begin
   // The Skia paintbox is a child too, so it can be temporarily outside those
   // pixels during the native scroll.  Paint the same token surface here to
   // prevent the default black brush from becoming visible between grids.
+  // Em design-time tambem preenche para evitar pixels fantasma ao mover.
   LBrush := CreateSolidBrush(ColorToRGB(Color));
   try
     Winapi.Windows.FillRect(AMessage.DC, ClientRect, LBrush);
@@ -663,4 +685,3 @@ begin
 end;
 
 end.
-

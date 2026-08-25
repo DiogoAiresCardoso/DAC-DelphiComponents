@@ -303,9 +303,24 @@ begin
 end;
 
 procedure TDACToast.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+var
+  LBrush: HBRUSH;
+  LColor: TAlphaColor;
 begin
+  { Fill com cor de fundo para eliminar pixels fantasma em design-time. }
+  LColor := ResolvedBackgroundColor;
+  LBrush := CreateSolidBrush(ColorToRGB(
+    TColor(((LColor and $00FF0000) shr 16) or
+    (LColor and $0000FF00) or ((LColor and $000000FF) shl 16))));
+  try
+    Winapi.Windows.FillRect(AMessage.DC, ClientRect, LBrush);
+  finally
+    DeleteObject(LBrush);
+  end;
   AMessage.Result := 1;
 end;
+
+
 
 constructor TDACModalDialog.Create(AOwner: TComponent);
 begin
@@ -547,9 +562,23 @@ begin
 end;
 
 procedure TDACTooltip.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+var
+  LBrush: HBRUSH;
+  LColor: TAlphaColor;
 begin
+  LColor := ResolvedBackgroundColor;
+  LBrush := CreateSolidBrush(ColorToRGB(
+    TColor(((LColor and $00FF0000) shr 16) or
+    (LColor and $0000FF00) or ((LColor and $000000FF) shl 16))));
+  try
+    Winapi.Windows.FillRect(AMessage.DC, ClientRect, LBrush);
+  finally
+    DeleteObject(LBrush);
+  end;
   AMessage.Result := 1;
 end;
 
+
 end.
+
 

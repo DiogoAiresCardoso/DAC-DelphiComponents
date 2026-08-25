@@ -5334,10 +5334,26 @@ begin
 end;
 
 procedure TDACChart.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+var
+  LBrush: HBRUSH;
+  LColor: TAlphaColor;
 begin
-  { The Skia surface always covers the full client area. }
+  { A superficie Skia cobre toda a area do cliente em runtime.
+    Em design-time o fill elimina pixels fantasma ao mover o componente.
+    ResolvedBackgroundColor ja aplica a logica de tema/modo correto. }
+  LColor := ResolvedBackgroundColor;
+  LBrush := CreateSolidBrush(ColorToRGB(
+    TColor(((LColor and $00FF0000) shr 16) or
+    (LColor and $0000FF00) or ((LColor and $000000FF) shl 16))));
+  try
+    Winapi.Windows.FillRect(AMessage.DC, ClientRect, LBrush);
+  finally
+    DeleteObject(LBrush);
+  end;
   AMessage.Result := 1;
 end;
+
+
 
 initialization
   GDACChartDataSetAdapters := TList<TDACChartDataSetAdapter>.Create;

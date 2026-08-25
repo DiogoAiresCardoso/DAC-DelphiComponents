@@ -327,8 +327,14 @@ var
   LPlacements: array of TDACGridPlacement;
 begin
   if FArranging or not FAutoLayout or (csLoading in ComponentState) or
-    (csDestroying in ComponentState) or (csDesigning in ComponentState) or
-    (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated then
+    (csDestroying in ComponentState) or (Parent = nil) then
+    Exit;
+
+  { The design surface has no reliable client HWND contract while a DFM is
+    streamed. The layout itself is pure bounds math, therefore preview it with
+    Width/Height but keep the runtime handle checks for the live control. }
+  if not (csDesigning in ComponentState) and
+    (not HandleAllocated or not Parent.HandleAllocated) then
     Exit;
 
   LClient := LayoutRect;
@@ -418,7 +424,11 @@ begin
         (LColumnWidth * LPlacements[I].Span) +
           (LGutter * (LPlacements[I].Span - 1)), LRowHeight);
     end;
-    if FAutoContentHeight and (Height <> LContentHeight) then
+    { Auto height remains runtime-only: in the designer it would rewrite the
+      component size while the user is positioning controls. The preview still
+      uses the same columns, gutter, padding and row metrics. }
+    if FAutoContentHeight and not (csDesigning in ComponentState) and
+      (Height <> LContentHeight) then
     begin
       Height := LContentHeight;
       LHeightChanged := True;
@@ -485,7 +495,7 @@ end;
 
 function TDACGridContainer.LayoutRect: TRect;
 begin
-  if HandleAllocated then
+  if not (csDesigning in ComponentState) and HandleAllocated then
     Result := ClientRect
   else
     Result := Rect(0, 0, Width, Height);
@@ -531,6 +541,7 @@ begin
   ApplyAppearance;
   ApplyLayout;
   UpdateChromeBounds;
+  TDACThemeManager.RefreshTree(Self);
   ArrangeChildren;
   Redraw;
 end;
@@ -541,6 +552,9 @@ begin
   ApplyAppearance;
   ApplyLayout;
   UpdateChromeBounds;
+  { ThemeMode may have been streamed before child controls. The completed
+    tree must resolve the host surface in both the designer and runtime. }
+  TDACThemeManager.RefreshTree(Self);
   ArrangeChildren;
   Redraw;
 end;
@@ -603,12 +617,22 @@ end;
 
 procedure TDACGridContainer.RedrawChrome;
 begin
-  if (FPaintBox <> nil) and not (csDestroying in ComponentState) and
-    not (csDesigning in ComponentState) and (Parent <> nil) and
-    HandleAllocated and Parent.HandleAllocated then
+  if (FPaintBox = nil) or (csDestroying in ComponentState) then
+    Exit;
+
+  if csDesigning in ComponentState then
+  begin
+    { TSkPaintBox is a graphic child. Clearing its cache keeps the designer
+      preview in sync without creating a window or touching z-order. }
     FPaintBox.Redraw;
-  if HandleAllocated then
     Invalidate;
+    Exit;
+  end;
+
+  if (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated then
+    Exit;
+  FPaintBox.Redraw;
+  Invalidate;
 end;
 
 procedure TDACGridContainer.Resize;
@@ -705,6 +729,7 @@ procedure TDACGridContainer.ThemeChanged(Sender: TObject);
 begin
   ApplyAppearance;
   ApplyLayout;
+  UpdateChromeBounds;
 end;
 
 procedure TDACGridContainer.CMParentColorChanged(var AMessage: TMessage);
@@ -806,8 +831,19 @@ end;
 procedure TDACGridContainer.UpdateChromeBounds;
 begin
   if (FPaintBox = nil) or (csLoading in ComponentState) or
-    (csDestroying in ComponentState) or (csDesigning in ComponentState) or
-    (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated or
+    (csDestroying in ComponentState) then
+    Exit;
+
+  if csDesigning in ComponentState then
+  begin
+    { Keep the static Skia surface behind designer-visible children. Bounds
+      are derived only from Width/Height; no ClientRect, HWND or z-order call
+      is allowed before the host is fully parented. }
+    FPaintBox.SetBounds(0, 0, Width, Height);
+    Exit;
+  end;
+
+  if (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated or
     not Showing then
     Exit;
   FPaintBox.SetBounds(0, 0, Width, Height);

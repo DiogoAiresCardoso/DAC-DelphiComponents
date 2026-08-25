@@ -155,7 +155,9 @@ implementation
 
 uses
   System.Math,
-  System.SysUtils;
+  System.SysUtils,
+  Winapi.Windows,
+  DAC.Components.Controls.FieldSupport;
 
 procedure TDACContainer.ApplyAppearanceColors;
 var
@@ -368,6 +370,10 @@ end;
 procedure TDACContainer.CreateWnd;
 begin
   inherited;
+  { A recreated designer/runtime handle can leave native descendants with the
+    previous inherited surface. Reapply the completed tree without requesting
+    another handle or changing the z-order. }
+  RefreshThemeDescendants;
   UpdateHeaderLabels;
   Redraw;
 end;
@@ -873,7 +879,17 @@ begin
 end;
 
 procedure TDACContainer.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+var
+  LBrush: HBRUSH;
+  LColor: TColor;
 begin
+  LColor := DACFieldVclColor(TDACComponentColors.ResolveParentSurface(Self));
+  LBrush := CreateSolidBrush(ColorToRGB(LColor));
+  try
+    FillRect(AMessage.DC, ClientRect, LBrush);
+  finally
+    DeleteObject(LBrush);
+  end;
   AMessage.Result := 1;
 end;
 

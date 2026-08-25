@@ -520,8 +520,9 @@ begin
   LChanged := (LPreviousBounds.Left <> ALeft) or (LPreviousBounds.Top <> ATop) or
     (LPreviousBounds.Width <> AWidth) or (LPreviousBounds.Height <> AHeight);
   LCanLayout := not (csLoading in ComponentState) and
-    not (csDestroying in ComponentState) and not (csDesigning in ComponentState) and
-    (Parent <> nil) and HandleAllocated and Parent.HandleAllocated;
+    not (csDestroying in ComponentState);
+  if not (csDesigning in ComponentState) then
+    LCanLayout := LCanLayout and (Parent <> nil) and HandleAllocated and Parent.HandleAllocated;
   if LChanged and LCanLayout then
   begin
     Perform(WM_SETREDRAW, 0, 0);
@@ -671,8 +672,13 @@ var
   LTokens: TDACControlTokens;
 begin
   if (FEdit = nil) or (FButton = nil) or (csLoading in ComponentState) or
-    (csDestroying in ComponentState) or (csDesigning in ComponentState) or
-    (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated then
+    (csDestroying in ComponentState) then
+    Exit;
+  if csDesigning in ComponentState then
+  begin
+    { Child bounds are calculated without handle checks during design time. }
+  end
+  else if (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated then
     Exit;
 
   LTokens := ResolvedTokens;

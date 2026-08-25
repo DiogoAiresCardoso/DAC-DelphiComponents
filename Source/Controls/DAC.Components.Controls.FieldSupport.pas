@@ -69,6 +69,14 @@ procedure DACFieldEndLoadingTabPolicy(const AHost: TWinControl;
   var APreviousTabStop, ACaptured: Boolean);
 procedure DACFieldRelinquishFocus(const AHost, AEditor: TWinControl);
 
+{ Mede a largura de AText em pixels usando a API GDI nativa com a fonte AFont.
+  Use esta funcao em controles que precisam alinhar texto nativo (TLabel, DrawText)
+  com o layout calculado em codigo — nunca use TDACSkiaRenderer.MeasureText
+  para posicionar texto VCL, pois Skia opera em pixels de dispositivo enquanto
+  VCL opera em pontos de fonte. }
+function DACMeasureNativeText(const AText: string; const AFont: TFont): Integer;
+
+
 implementation
 
 uses
@@ -185,6 +193,23 @@ begin
   Result := TColor(((AColor and $00FF0000) shr 16) or
     (AColor and $0000FF00) or ((AColor and $000000FF) shl 16));
 end;
+
+function DACMeasureNativeText(const AText: string; const AFont: TFont): Integer;
+var
+  LBitmap: Vcl.Graphics.TBitmap;
+begin
+  Result := 0;
+  if AText = '' then
+    Exit;
+  LBitmap := Vcl.Graphics.TBitmap.Create;
+  try
+    LBitmap.Canvas.Font.Assign(AFont);
+    Result := LBitmap.Canvas.TextWidth(AText);
+  finally
+    LBitmap.Free;
+  end;
+end;
+
 
 function DACFieldChromeTop(const AHasCaption: Boolean;
   const ATokens: TDACControlTokens): Integer;

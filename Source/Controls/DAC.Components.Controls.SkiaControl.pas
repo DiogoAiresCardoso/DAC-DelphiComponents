@@ -7,6 +7,8 @@ uses
   System.Skia,
   System.Types,
   Winapi.Messages,
+  Winapi.Windows,
+  Vcl.Graphics,
   Vcl.Controls,
   Vcl.Skia,
   DAC.Components.DesignSystem.ComponentStyle,
@@ -43,6 +45,7 @@ type
     procedure ThemeChanged(Sender: TObject);
     procedure CMParentColorChanged(var AMessage: TMessage); message CM_PARENTCOLORCHANGED;
     procedure CMParentFontChanged(var AMessage: TMessage); message CM_PARENTFONTCHANGED;
+    procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
   protected
     function MouseButtonToPointerButton(const AButton: TMouseButton): TDACPointerButton;
     procedure DrawContent(const ACanvas: ISkCanvas; const ADest: TRectF); virtual;
@@ -50,6 +53,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    procedure SetBounds(ALeft, ATop, AWidth, AHeight: Integer); override;
     procedure Redraw;
     function ResolvedTheme: IDACComponentsTheme;
     function ResolvedTokens: TDACControlTokens;
@@ -77,6 +81,10 @@ type
   end;
 
 implementation
+
+uses
+  DAC.Components.Controls.FieldSupport,
+  DAC.Components.DesignSystem.ColorTokens;
 
 constructor TDACSkiaControl.Create(AOwner: TComponent);
 begin
@@ -175,10 +183,61 @@ end;
 
 procedure TDACSkiaControl.Redraw;
 begin
-  if (FPaintBox <> nil) and not (csDesigning in ComponentState) and
-    not (csDestroying in ComponentState) and (Parent <> nil) and
-    HandleAllocated and Parent.HandleAllocated then
+  if (FPaintBox = nil) or (csDestroying in ComponentState) then
+    Exit;
+  if csDesigning in ComponentState then
+  begin
+    { Design-time: descarta cache Skia e invalida a superficie do designer.
+      TSkPaintBox e TGraphicControl — Redraw nao cria HWND. }
     FPaintBox.Redraw;
+    Invalidate;
+    Exit;
+  end;
+  if (Parent <> nil) and HandleAllocated and Parent.HandleAllocated then
+    FPaintBox.Redraw;
+end;
+
+procedure TDACSkiaControl.SetBounds(ALeft, ATop, AWidth, AHeight: Integer);
+var
+  LPreviousBounds: TRect;
+  LNewBounds: TRect;
+  LChanged: Boolean;
+begin
+  LPreviousBounds := BoundsRect;
+  LChanged := (LPreviousBounds.Left <> ALeft) or (LPreviousBounds.Top <> ATop) or
+    (LPreviousBounds.Right <> ALeft + AWidth) or
+    (LPreviousBounds.Bottom <> ATop + AHeight);
+  inherited SetBounds(ALeft, ATop, AWidth, AHeight);
+  if LChanged and (csDesigning in ComponentState) then
+  begin
+    { Invalida posicao anterior e nova no parent para limpar pixels fantasma
+      ao mover o componente no designer. }
+    if (Parent <> nil) and Parent.HandleAllocated then
+    begin
+      LNewBounds := BoundsRect;
+      InvalidateRect(Parent.Handle, @LPreviousBounds, True);
+      InvalidateRect(Parent.Handle, @LNewBounds, True);
+    end;
+    Invalidate;
+  end;
+end;
+
+
+procedure TDACSkiaControl.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+var
+  LBrush: HBRUSH;
+  LColor: TColor;
+begin
+  { Preencher com a cor da superficie do parent elimina pixels fantasma
+    ao mover o componente no designer e evita flicker em runtime. }
+  LColor := DACFieldVclColor(TDACComponentColors.ResolveParentSurface(Self));
+  LBrush := CreateSolidBrush(ColorToRGB(LColor));
+  try
+    FillRect(AMessage.DC, ClientRect, LBrush);
+  finally
+    DeleteObject(LBrush);
+  end;
+  AMessage.Result := 1;
 end;
 
 procedure TDACSkiaControl.Resize;

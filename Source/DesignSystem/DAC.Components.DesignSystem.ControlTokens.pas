@@ -8,7 +8,7 @@ uses
 const
   // Kept as a compile-time constant so the published DFM default remains
   // stable while the runtime metric is resolved through ButtonDefaultCornerRadius.
-  DACButtonDefaultCornerRadius = 12;
+  DACButtonDefaultCornerRadius = 8;
   DACDataGridDefaultCornerRadius = 8;
   DACButtonEditDefaultButtonWidth = 48;
   DACButtonEditDefaultCornerRadius = 8;
@@ -46,6 +46,8 @@ type
 
   // Component-specific visual contract reconstructed from the reference
   // boards. Controls consume this record instead of carrying measurements.
+  // AGREGADOR: Este record mantem a compatibilidade de DFM completa.
+  // Futuras refatoracoes migrarao gradualmente para os 7 records de dominio.
   TDACControlTokens = record
     ButtonSmall: TDACControlSizeTokens;
     ButtonMedium: TDACControlSizeTokens;
@@ -975,7 +977,14 @@ implementation
 
 uses
   DAC.Components.DesignSystem.OpacityTokens,
-  DAC.Components.DesignSystem.SpacingTokens;
+  DAC.Components.DesignSystem.SpacingTokens,
+  DAC.Components.DesignSystem.ControlTokens.Field,
+  DAC.Components.DesignSystem.ControlTokens.Button,
+  DAC.Components.DesignSystem.ControlTokens.Selector,
+  DAC.Components.DesignSystem.ControlTokens.Tab,
+  DAC.Components.DesignSystem.ControlTokens.Chart,
+  DAC.Components.DesignSystem.ControlTokens.Feedback,
+  DAC.Components.DesignSystem.ControlTokens.Layout;
 
 procedure ConfigureMetrics(var AValue: TDACControlTokens);
 var
@@ -1066,7 +1075,7 @@ begin
   AValue.ButtonLarge.IconSize := 20;
   AValue.ButtonLarge.TextSize := 15;
   AValue.ButtonCompactCornerRadius := 4;
-  AValue.ButtonRoundedCornerRadius := 20;
+  AValue.ButtonRoundedCornerRadius := 12;
   AValue.ButtonLarge.NativeFontSize := 9;
   AValue.ButtonDefaultWidth := 128;
   AValue.ButtonDefaultHeight := 36;

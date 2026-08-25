@@ -1,4 +1,4 @@
-package DACSkiaComponents;
+package DACSkiaComponentsRuntime;
 
 {$R *.res}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
@@ -25,15 +25,13 @@ package DACSkiaComponents;
 {$IMAGEBASE $400000}
 {$DEFINE DEBUG}
 {$ENDIF IMPLICITBUILDING}
-{$DESIGNONLY}
 {$IMPLICITBUILD ON}
 
 requires
   rtl,
-  designide,
-  dbrtl,
   vcl,
   vclimg,
+  dbrtl,
   Skia.Package.VCL,
   Skia.Package.RTL;
 
@@ -59,6 +57,7 @@ contains
   DAC.Components.DesignSystem.ControlTokens.Feedback in '..\Source\DesignSystem\DAC.Components.DesignSystem.ControlTokens.Feedback.pas',
   DAC.Components.DesignSystem.ControlTokens.Layout in '..\Source\DesignSystem\DAC.Components.DesignSystem.ControlTokens.Layout.pas',
   DAC.Components.DesignSystem.Tokens in '..\Source\DesignSystem\DAC.Components.DesignSystem.Tokens.pas',
+
   DAC.Components.DesignSystem.ChartPalette in '..\Source\DesignSystem\DAC.Components.DesignSystem.ChartPalette.pas',
   DAC.Components.DesignSystem.Metrics in '..\Source\DesignSystem\DAC.Components.DesignSystem.Metrics.pas',
   DAC.Components.DesignSystem.SemanticColors in '..\Source\DesignSystem\DAC.Components.DesignSystem.SemanticColors.pas',
@@ -118,7 +117,6 @@ contains
   DAC.Components.Hooks.SkiaControls in '..\Source\Hooks\DAC.Components.Hooks.SkiaControls.pas',
   DAC.Components.Hooks.ScrollRenderer in '..\Source\Hooks\DAC.Components.Hooks.ScrollRenderer.pas',
   DAC.Components.Hooks.ScrollContainer in '..\Source\Hooks\DAC.Components.Hooks.ScrollContainer.pas',
-  DAC.Components.Hooks.Register in '..\Source\Hooks\DAC.Components.Hooks.Register.pas',
-  DAC.Components.Design.Register in '..\Source\DesignTime\DAC.Components.Design.Register.pas';
+  DAC.Components.Hooks.Register in '..\Source\Hooks\DAC.Components.Hooks.Register.pas';
 
 end.

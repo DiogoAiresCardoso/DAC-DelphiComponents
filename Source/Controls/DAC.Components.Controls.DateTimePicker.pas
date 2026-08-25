@@ -2109,9 +2109,24 @@ begin
 end;
 
 procedure TDACDateTimePicker.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+var
+  LBrush: HBRUSH;
+  LColor: TAlphaColor;
 begin
+  { Fill com a cor de fundo do campo para eliminar pixels fantasma
+    ao mover o componente no designer e evitar flicker em runtime. }
+  LColor := ResolvedTokens.InputBackground;
+  LBrush := CreateSolidBrush(ColorToRGB(
+    TColor(((LColor and $00FF0000) shr 16) or
+    (LColor and $0000FF00) or ((LColor and $000000FF) shl 16))));
+  try
+    Winapi.Windows.FillRect(AMessage.DC, ClientRect, LBrush);
+  finally
+    DeleteObject(LBrush);
+  end;
   AMessage.Result := 1;
 end;
+
 
 procedure TDACDateTimePicker.WMSetFocus(var AMessage: TWMSetFocus);
 begin

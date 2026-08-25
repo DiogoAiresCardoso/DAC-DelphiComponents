@@ -1,0 +1,46 @@
+# MEM-DEL-CONTAINER-001 — paridade de tema dos containers clássicos
+
+Data: 2026-08-19
+Status: aplicado estaticamente; compilação, designer e QA físico pendentes por decisão do usuário.
+
+## Escopo
+
+- `TDACContainer`;
+- `TDACScrollContainer`;
+- `TDACGridContainer`.
+
+Cards, report viewer, tabs, paginação e demais componentes compostos não são
+containers clássicos públicos nesta etapa.
+
+## Contrato
+
+- `ThemeMode` explícito ou herdado atualiza a própria superfície e toda a
+  árvore de descendentes por `TDACThemeManager.RefreshTree`.
+- Reatribuir o mesmo valor de `ThemeMode`, receber `CM_PARENTCOLORCHANGED`,
+  `CM_PARENTFONTCHANGED`, concluir `Loaded` ou recriar a janela reaplica a
+  paleta física do host antes de seus filhos.
+- `dtmInherit` é resolvido a partir da superfície física dos ancestrais, e não
+  somente do tema global.
+- Nenhum refresh cria HWND, reparenta controles, altera seleção ou reinicia
+  estado de scroll.
+
+## Design-time
+
+- Preview usa `Width` e `Height`; não consulta `ClientRect` nem executa
+  `SendToBack` antes de parent/handle válidos.
+- `TDACGridContainer` agora calcula a grade estática no designer quando
+  `AutoLayout=True`, usando as mesmas colunas, gutter, padding e altura de
+  linha do runtime.
+- `AutoContentHeight` permanece somente em runtime para não regravar a altura
+  do componente enquanto o usuário edita o DFM.
+- A superfície Skia continua atrás dos controles filhos e tem cache
+  invalidado no designer sem criar uma janela nova.
+
+## Validação pendente
+
+- matriz Light/Dark, `dtmInherit`, `dtmLight`, `dtmDark` e tema reatribuído;
+- containers aninhados com filhos DAC e VCL nativos;
+- Grid com/sem `AutoLayout`, Scroll com conteúdo além do viewport;
+- `Parent=nil`, streaming DFM, recriação de HWND e ausência de
+  `Control '' has no parent`;
+- compilação e QA visual de designer/runtime.

@@ -141,10 +141,12 @@ type
 implementation
 
 uses
+  Winapi.Windows,
   System.Math,
   DAC.Components.DesignSystem.ColorTokens,
   DAC.Components.DesignSystem.Fonts,
   DAC.Components.DesignSystem.ComponentStyle;
+
 
 constructor TDACBadge.Create(AOwner: TComponent);
 begin
@@ -325,8 +327,7 @@ begin
     Exit;
   if csDesigning in ComponentState then
   begin
-    if Parent <> nil then
-      FPaintBox.Redraw;
+    FPaintBox.Redraw;
     Invalidate;
     Exit;
   end;
@@ -643,10 +644,15 @@ begin
     (csDestroying in ComponentState) then
     Exit;
 
-  LWidth := Width;
-  LHeight := Height;
-  if not (csDesigning in ComponentState) and HandleAllocated then
+  if csDesigning in ComponentState then
   begin
+    LWidth := Width;
+    LHeight := Height;
+  end
+  else
+  begin
+    if (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated then
+      Exit;
     LWidth := ClientWidth;
     LHeight := ClientHeight;
   end;
@@ -657,9 +663,22 @@ begin
 end;
 
 procedure TDACBadge.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+var
+  LBrush: HBRUSH;
+  LColor: TAlphaColor;
 begin
+  LColor := ResolvedBackgroundColor;
+  LBrush := CreateSolidBrush(ColorToRGB(
+    TColor(((LColor and $00FF0000) shr 16) or
+    (LColor and $0000FF00) or ((LColor and $000000FF) shl 16))));
+  try
+    Winapi.Windows.FillRect(AMessage.DC, ClientRect, LBrush);
+  finally
+    DeleteObject(LBrush);
+  end;
   AMessage.Result := 1;
 end;
+
 
 end.
 

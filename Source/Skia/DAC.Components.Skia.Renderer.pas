@@ -57,6 +57,12 @@ type
     procedure StrokeRoundRect(const ACanvas: ISkCanvas; const ARect: TRectF;
       const AColor: TAlphaColor; const ARadius, AStrokeWidth: Single;
       const AAlpha: Byte = DACOpacityOpaque);
+    procedure DrawLine(const ACanvas: ISkCanvas; const AP1, AP2: TPointF;
+      const AColor: TAlphaColor; const AWidth: Single = 1;
+      const AAlpha: Byte = DACOpacityOpaque);
+    procedure StrokeLine(const ACanvas: ISkCanvas; const AP1, AP2: TPointF;
+      const AColor: TAlphaColor; const AWidth: Single = 1;
+      const AAlpha: Byte = DACOpacityOpaque);
     procedure BeginNativeText(const ASink: IDACNativeTextSink);
     procedure EndNativeText;
     procedure Svg(const ACanvas: ISkCanvas; const AIcon: ISkSVGDOM; const ARect: TRectF);
@@ -273,6 +279,23 @@ begin
   else
     ACanvas.DrawRect(ARect, GetStrokePaint(AColor, AStrokeWidth, AAlpha));
 end;
+
+procedure TDACSkiaRenderer.DrawLine(const ACanvas: ISkCanvas;
+  const AP1, AP2: TPointF; const AColor: TAlphaColor; const AWidth: Single;
+  const AAlpha: Byte);
+begin
+  if ACanvas = nil then
+    Exit;
+  ACanvas.DrawLine(AP1, AP2, GetStrokePaint(AColor, AWidth, AAlpha));
+end;
+
+procedure TDACSkiaRenderer.StrokeLine(const ACanvas: ISkCanvas;
+  const AP1, AP2: TPointF; const AColor: TAlphaColor; const AWidth: Single;
+  const AAlpha: Byte);
+begin
+  DrawLine(ACanvas, AP1, AP2, AColor, AWidth, AAlpha);
+end;
+
 
 procedure TDACSkiaRenderer.BeginNativeText(const ASink: IDACNativeTextSink);
 begin

@@ -1250,9 +1250,23 @@ begin
 end;
 
 procedure TDACButton.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+var
+  LBrush: HBRUSH;
 begin
+  { Preenche com a cor de canvas do botao para eliminar pixels fantasma ao
+    mover em design-time e evitar flicker de repintura em runtime.
+    O botao usa csOpaque, mas o fill aqui garante que qualquer pixel
+    exposto durante move/resize seja pintado com a cor correta. }
+  LBrush := CreateSolidBrush(ColorToRGB(
+    ButtonVclColor(ResolvedTokens.ButtonCanvasBackground)));
+  try
+    Winapi.Windows.FillRect(AMessage.DC, ClientRect, LBrush);
+  finally
+    DeleteObject(LBrush);
+  end;
   AMessage.Result := 1;
 end;
+
 
 end.
 

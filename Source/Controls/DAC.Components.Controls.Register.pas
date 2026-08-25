@@ -12,6 +12,7 @@ uses
   DAC.Components.Controls.Button,
   DAC.Components.Controls.ButtonEdit,
   DAC.Components.Controls.Charts,
+  DAC.Components.Controls.CheckBox,
   DAC.Components.Controls.ComboBox,
   DAC.Components.Controls.Container,
   DAC.Components.Controls.DateTimePicker,
@@ -22,15 +23,18 @@ uses
   DAC.Components.Controls.Memo,
   DAC.Components.Controls.Pagination,
   DAC.Components.Controls.Progress,
+  DAC.Components.Controls.RadioButton,
   DAC.Components.Controls.ReportViewer,
   DAC.Components.Controls.ScrollContainer,
   DAC.Components.Controls.Selectors,
   DAC.Components.Controls.SkiaControl,
+  DAC.Components.Controls.Slider,
   DAC.Components.Controls.StatusBar,
   DAC.Components.Controls.StatusTimelineChart,
   DAC.Components.Controls.SummaryCard,
   DAC.Components.Controls.SystemText,
-  DAC.Components.Controls.Tabs;
+  DAC.Components.Controls.Tabs,
+  DAC.Components.Controls.ToggleSwitch;
 
 procedure RegisterDACComponentClasses;
 begin
@@ -54,7 +58,9 @@ begin
   RegisterClass(TDACScrollContainer);
   RegisterClass(TDACSelector);
   RegisterClass(TDACSlider);
-  RegisterClass(TDACSkiaControl);
+  { TDACSkiaControl nao e registrado: e a base abstrata dos componentes.
+    Registrar a base na paleta expoe internos e viola o principio de
+    minima superficie publica (SOLID - ISP). }
   RegisterClass(TDACStatusBar);
   RegisterClass(TDACStatusTimelineChart);
   RegisterClass(TDACSummaryCard);

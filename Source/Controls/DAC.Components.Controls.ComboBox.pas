@@ -157,11 +157,11 @@ type
     procedure Loaded; override;
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
     procedure Resize; override;
-    procedure SetBounds(ALeft, ATop, AWidth, AHeight: Integer); override;
     procedure SetBindingCanModify(const AValue: Boolean);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    procedure SetBounds(ALeft, ATop, AWidth, AHeight: Integer); override;
     function LabelFontSize: Integer;
     function PopupVisible: Boolean;
     function ResolvedChromeColor: TAlphaColor;
@@ -1176,16 +1176,15 @@ begin
   UpdateChildBounds;
   UpdateNativeLabel;
   UpdatePaintBoxBounds;
+  if (FPaintBox = nil) or (csDestroying in ComponentState) then
+    Exit;
   if csDesigning in ComponentState then
   begin
-    if FPaintBox <> nil then
-      FPaintBox.Redraw;
+    FPaintBox.Redraw;
     Invalidate;
     Exit;
   end;
-  if (FPaintBox <> nil) and not (csDesigning in ComponentState) and
-    not (csDestroying in ComponentState) and (Parent <> nil) and
-    HandleAllocated and Parent.HandleAllocated then
+  if (Parent <> nil) and HandleAllocated and Parent.HandleAllocated then
     FPaintBox.Redraw;
 end;
 
@@ -1815,8 +1814,18 @@ begin
 end;
 
 procedure TDACComboBox.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+var
+  LBrush: HBRUSH;
+  LColor: TColor;
 begin
-  inherited;
+  LColor := DACFieldVclColor(TDACComponentColors.ResolveParentSurface(Self));
+  LBrush := CreateSolidBrush(ColorToRGB(LColor));
+  try
+    FillRect(AMessage.DC, ClientRect, LBrush);
+  finally
+    DeleteObject(LBrush);
+  end;
+  AMessage.Result := 1;
 end;
 
 procedure TDACComboBox.WMSetFocus(var AMessage: TWMSetFocus);

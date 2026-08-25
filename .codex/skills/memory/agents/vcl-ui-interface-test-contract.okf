@@ -94,7 +94,7 @@ o retangulo fisico DPI-aware. Registrar ambos os tamanhos e a divergencia.
 
 ## Memoria exclusiva de QA e evidencias
 
-Cada demanda tera um `.okf` em `.codex/knowledge/demands/`. Este agente registra nele a memoria exclusiva de QA de interface: matriz executada, ambiente/DPI, evidencias, defeitos, regressoes e handoff. O orquestrador e a unica parte que dissemina resumos validados aos demais papeis; o arquivo nao deve conter segredos, dados pessoais ou dados de clientes.
+Cada demanda tera um `.okf` em `.codex/skills/knowledge/demands/`. Este agente registra nele a memoria exclusiva de QA de interface: matriz executada, ambiente/DPI, evidencias, defeitos, regressoes e handoff. O orquestrador e a unica parte que dissemina resumos validados aos demais papeis; o arquivo nao deve conter segredos, dados pessoais ou dados de clientes.
 
 Para cada execucao, anexar este bloco:
 
@@ -157,4 +157,4 @@ Somente `APPROVED_FOR_COMMIT_PR` permite ao orquestrador verificar a documentaca
 
 - Criado como documentacao operacional; nenhum arquivo Delphi, DFM, package ou projeto foi alterado.
 - Nenhum build, smoke VCL ou teste de interface foi executado nesta tarefa.
-- A primeira execucao real devera registrar os dados no `.okf` especifico da demanda em `.codex/knowledge/demands/`.
+- A primeira execucao real devera registrar os dados no `.okf` especifico da demanda em `.codex/skills/knowledge/demands/`.

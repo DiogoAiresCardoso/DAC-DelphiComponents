@@ -7,8 +7,8 @@ delegar uma demanda. Formato e regras: `team-memory-model.okf`.
 
 | Papel | Memoria exclusiva | Registros legados preservados |
 |---|---|---|
-| Orquestrador | `orchestrator-index.okf` | `.codex/knowledge/architecture-orchestration.okf` (protocolo de fluxo) |
-| Arquitetura | `architecture.okf` | `.codex/knowledge/architecture-orchestration.okf` |
+| Orquestrador | `orchestrator-index.okf` | `.codex/skills/knowledge/architecture-orchestration.okf` (protocolo de fluxo) |
+| Arquitetura | `architecture.okf` | `.codex/skills/knowledge/architecture-orchestration.okf` |
 | Delphi/Skia/VCL | `delphi_skia_vcl.okf` | `agents/delphi-vcl-skia-stylehook-contract.okf`, `novomaxxrural-skia.md` |
 | Revisao | `revisao_codigo.okf` | `code-review-gate.okf` |
 | Testes de interface | `testes_interface.okf` | nenhum nesta data |
@@ -29,7 +29,7 @@ ID de memoria que originou a pendencia. Nao pular gates.
 | ID | Fonte | Status | Consumidores | Uso |
 |---|---|---|---|---|
 | MEM-ORQ-001 | `team-memory-model.okf` | CONFIRMED | todos | formato, disseminacao e handoffs |
-| MEM-ORQ-002 | `.codex/knowledge/architecture-orchestration.okf` | CONFIRMED | arquitetura, delphi_skia_vcl, revisao_codigo, testes_interface | branch e gates da suite |
+| MEM-ORQ-002 | `.codex/skills/knowledge/architecture-orchestration.okf` | CONFIRMED | arquitetura, delphi_skia_vcl, revisao_codigo, testes_interface | branch e gates da suite |
 
 ## Registro inicial
 

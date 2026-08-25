@@ -136,7 +136,7 @@ Pre-condicoes:
 
 1. Criar branch nova `codex/<slug>` a partir do `main` atualizado; a branch
    observada nesta auditoria nao e automaticamente autorizada para implementacao.
-2. Registrar a demanda em `.codex/knowledge/demands/<data>-<slug>.okf` e
+2. Registrar a demanda em `.codex/skills/knowledge/demands/<data>-<slug>.okf` e
    referenciar este estudo.
 3. Preservar `TPageControl`/`TDBGrid` quando a semantica nativa for requisito;
    mover apenas o chrome visual para Skia via renderer compartilhado.

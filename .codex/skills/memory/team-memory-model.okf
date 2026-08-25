@@ -7,7 +7,7 @@ validos como evidencia historica e sao indexados em `orchestrator-index.okf`.
 ## Diretorios e autoridade
 
 ```text
-.codex/memory/
+.codex/skills/memory/
   orchestrator-index.okf       indice, fila de disseminacao e estado dos gates
   team-memory-model.okf        este contrato de formato
   architecture.okf             memoria exclusiva do arquiteto

@@ -16,7 +16,7 @@ Use these references only as needed:
 - For desktop modules, shared packages, and REST client consumption, read `references/desktop-modules.md`.
 - For DataSnap-related configuration and how to verify actual DataSnap code in this checkout, read `references/datasnap-config.md`.
 - For `Ancoragem` / `NovoMaxxRural` Skia shell, reusable components, card/chart separation, hover/focus routing, and chart palette, read `references/novomaxxrural-skia.md`.
-- For durable NovoMaxxRural Skia decisions and continuity notes, also read `../../memory/novomaxxrural-skia.md` when present.
+- For durable NovoMaxxRural Skia decisions and continuity notes, also read `../memory/novomaxxrural-skia.md` when present.
 
 Prefer `rg` searches scoped to the relevant area before editing. Exclude vendor folders when the task is about product code:
 

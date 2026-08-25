@@ -8,7 +8,7 @@ Data: 2026-07-20
 Demanda/branch: N/A
 Fato: Componentes VCL/Skia precisam de validacao alem do build, cobrindo foco, teclado, mouse, resize, DPI, design-time e estados visuais.
 Decisao: Todo roteiro de UI deve declarar ambiente, PPI, controle/cenario, acao, resultado esperado, resultado observado e evidencia (screenshot, log ou video quando disponivel).
-Evidencia: `.codex/knowledge/architecture-orchestration.okf`, secoes 3 e 6; `code-review-gate.okf`, secao "Saida e handoff".
+Evidencia: `.codex/skills/knowledge/architecture-orchestration.okf`, secoes 3 e 6; `code-review-gate.okf`, secao "Saida e handoff".
 Impacto: Build ou revisao estatica isolados nao aprovam clipping, foco invisivel, comportamento de teclado, z-order, flicker ou falhas de design-time.
 Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, arquitetura
 Status: CONFIRMED
@@ -30,7 +30,7 @@ Handoff: Testes entregam ao orquestrador resultado por cenario e IDs de regressa
 # Execucao QA - branch `codex/skia-suite-compliance-demo`
 
 Data: 2026-07-20
-Status de entrada: `APPROVED_FOR_UI_TEST` em `.codex/memory/revisao_codigo.okf`, secao `MEM-DEL-004`.
+Status de entrada: `APPROVED_FOR_UI_TEST` em `.codex/skills/memory/revisao_codigo.okf`, secao `MEM-DEL-004`.
 Decisao QA: `BLOCKED`.
 
 ## Artefatos e ambiente observados
@@ -81,7 +81,7 @@ Handoff ao orquestrador: `BLOCKED`. Nenhum codigo, DFM, package, projeto, branch
 Data: 2026-07-20
 Branch: `codex/skia-suite-compliance-demo`
 Artefato canonico: `Build\\EXE\\Win32\\Debug\\Demo.exe` (18,479,614 bytes; 2026-07-20 22:45:19).
-Pre-condicao: `APPROVED_FOR_UI_TEST` em `.codex/memory/revisao_codigo.okf`, `MEM-DEL-005`.
+Pre-condicao: `APPROVED_FOR_UI_TEST` em `.codex/skills/memory/revisao_codigo.okf`, `MEM-DEL-005`.
 Decisao QA: `BLOCKED` por cobertura visual/interativa nao comprovada; a abertura isolada passou.
 
 ## Checkpoints executados

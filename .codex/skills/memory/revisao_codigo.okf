@@ -9,8 +9,8 @@ Status: `CHANGES_REQUESTED` — não liberado para QA nesta revisão
 - Branch/worktree: `codex/skia-suite-compliance-demo`, sobre o commit
   `0951b31` (`codex-sanitize-dac`); as alterações desta demanda ainda estão no
   worktree, portanto o intervalo revisado é `0951b31..WORKTREE`.
-- Contratos de entrada: `.codex/knowledge/demands/2026-07-20-phase-1-static-audit.okf`
-  e `.codex/memory/delphi_skia_vcl.okf`.
+- Contratos de entrada: `.codex/skills/knowledge/demands/2026-07-20-phase-1-static-audit.okf`
+  e `.codex/skills/memory/delphi_skia_vcl.okf`.
 - Arquivos de produção revisados: tabs, data grid, pagination, feedback/tooltip,
   registro de hooks/design-time, packages e demo DFM/projeto; também foram
   revisados `Tests/DACComponentsSmoke.dpr/.dproj` ainda não versionados.
@@ -3840,7 +3840,7 @@ Finding bloqueador exception-safe: `RequireDataGridScrollStyleHookRuntime` captu
 Contrato minimo para correcao: inicializar referencias e flags (`LGrid := nil`, `LHook := nil`, observer/callbacks false/nil); capturar pagina e `ActiveIndex` originais antes de mutar; entrar em um `try/finally` externo antes de qualquer `Require`, instalacao de observer, construtor ou configuracao de tema/enabled. O cleanup deve ser idempotente e em ordem segura: desarmar callbacks/reentrancia, `SetPaintObserver(nil)`, liberar o hook, restaurar `Enabled`/`ThemeMode` somente se a grid foi adquirida e, por fim, restaurar pagina e indice original ainda validos. Nenhuma falha intermediaria pode deixar callback, target HWND ou estado global residual.
 Gate negativo obrigatorio: induzir falha controlada separadamente depois de cada estagio de aquisicao/configuracao relevante — troca da pagina, aquisicao/validacao da grid, instalacao do observer, construcao do hook e mutacao ThemeMode/Enabled. Apos cada excecao esperada, provar observer inativo por paint sem incremento do capture, callbacks/target zerados, grid e pagina/ActiveIndex exatamente restaurados; em seguida executar novamente o gate nominal completo e exigir PASS. O processo tambem deve finalizar com clean teardown. Nao aceitar apenas inspecao do `finally` ou caminho feliz.
 Matriz: os resultados completos declarados em `Build/Evidence/MEM-DEL-DB-036/summary.txt` nao foram promovidos para aprovar esta arvore porque nao exercitam as falhas de setup acima. A revisao independente confirmou somente o nominal Interaction descrito. Por determinacao do gate vermelho, nao foram repetidas a matriz longa nem a validacao visual extensa; esta revisao nao declara `UI_APPROVED`.
-Evidencia: `Build/Evidence/MEM-DEL-DB-036/summary.txt`; `.codex/memory/delphi_skia_vcl.okf:4791-4805`; `Tests/DACComponentsInteraction.dpr:373-384,3300-3343,5108-5342,10079-10120`; MEM-REV-DB-035.
+Evidencia: `Build/Evidence/MEM-DEL-DB-036/summary.txt`; `.codex/skills/memory/delphi_skia_vcl.okf:4791-4805`; `Tests/DACComponentsInteraction.dpr:373-384,3300-3343,5108-5342,10079-10120`; MEM-REV-DB-035.
 Decisao: `CHANGES_REQUESTED`. O gate DB036 e substantivo no caminho nominal, mas viola o requisito expresso de teardown/restauracao mesmo em excecao. `testes_interface` permanece bloqueado; sem stage, commit, push, PR ou UI_APPROVED.
 Consumidores: orquestrador, delphi_skia_vcl
 Status: CHANGES_REQUESTED

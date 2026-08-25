@@ -26,7 +26,7 @@ verdade e a divergencia deve ser registrada no estudo da demanda.
 ## 2. Como o arquiteto produz um estudo tecnico
 
 Antes de desenvolvimento, abrir uma demanda em
-`.codex/knowledge/demands/<yyyy-mm-dd>-<slug>.okf`. O estudo precisa ser
+`.codex/skills/knowledge/demands/<yyyy-mm-dd>-<slug>.okf`. O estudo precisa ser
 curto, verificavel e orientado a arquivos, com estas secoes obrigatorias:
 
 1. **Objetivo e fronteira**: comportamento pretendido, API publica afetada e
@@ -117,7 +117,7 @@ compilacao Delphi.
 
 ## 7. Documentacao continua
 
-- Um `.okf` por demanda em `.codex/knowledge/demands/`; usar UTF-8 simples e
+- Um `.okf` por demanda em `.codex/skills/knowledge/demands/`; usar UTF-8 simples e
   manter historico por anexos datados, sem apagar decisoes relevantes.
 - Este arquivo e atualizado apenas quando a arquitetura-base, o fluxo ou o
   contrato mudarem.

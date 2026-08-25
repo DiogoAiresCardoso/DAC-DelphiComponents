@@ -1,14 +1,14 @@
 # Memoria Exclusiva - Arquitetura e Analise
 
 O arquiteto usa esta memoria para regras reutilizaveis e decisoes confirmadas.
-Estudos por demanda ficam em `.codex/knowledge/demands/`. Formato: `team-memory-model.okf`.
+Estudos por demanda ficam em `.codex/skills/knowledge/demands/`. Formato: `team-memory-model.okf`.
 
 ID: MEM-ARC-001
 Data: 2026-07-20
 Demanda/branch: N/A
 Fato: A suite possui camadas Core, DesignSystem, Skia, Controls, Hooks e DesignTime; runtime e design-time sao packages distintos.
 Decisao: Estudos devem ser orientados aos arquivos reais, mapear impacto entre camadas e concluir com um handoff antes de qualquer alteracao de fonte.
-Evidencia: `.codex/knowledge/architecture-orchestration.okf`, secoes 1 a 4; `Package/DACSkiaComponentsRuntime.dpk`; `Package/DACSkiaComponentsDesign.dpk`.
+Evidencia: `.codex/skills/knowledge/architecture-orchestration.okf`, secoes 1 a 4; `Package/DACSkiaComponentsRuntime.dpk`; `Package/DACSkiaComponentsDesign.dpk`.
 Impacto: Toda feature precisa declarar compatibilidade DFM/package, estrategia Skia/StyleHook e ordem de build antes de desenvolvimento.
 Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, testes_interface
 Status: CONFIRMED
@@ -18,8 +18,8 @@ ID: MEM-ARC-002
 Data: 2026-07-20
 Demanda/branch: N/A
 Fato: O protocolo completo de arquitetura e branch por demanda ja existe e foi preservado.
-Decisao: Referenciar, e nao duplicar, `.codex/knowledge/architecture-orchestration.okf`; esta memoria conserva apenas entradas reutilizaveis.
-Evidencia: `.codex/knowledge/architecture-orchestration.okf`, secoes 2, 5 e 6.
+Decisao: Referenciar, e nao duplicar, `.codex/skills/knowledge/architecture-orchestration.okf`; esta memoria conserva apenas entradas reutilizaveis.
+Evidencia: `.codex/skills/knowledge/architecture-orchestration.okf`, secoes 2, 5 e 6.
 Impacto: Evita duas fontes conflitantes para o mesmo fluxo.
 Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, testes_interface
 Status: CONFIRMED
@@ -30,7 +30,7 @@ Data: 2026-07-20
 Demanda/branch: phase-1-static-audit / codex-sanitize-dac (somente observacao)
 Fato: A auditoria estatica encontrou fundacao de packages/tokens/Skia, mas tabs e data grid usam GDI, a demo so materializa botoes, nao ha tooltip e nao ha projeto de testes/smoke.
 Decisao: Priorizar migracao Skia de tabs/grid antes de ampliar a galeria; manter uma demanda por correcao e entregar o estudo ao especialista Delphi pelo orquestrador.
-Evidencia: `.codex/knowledge/demands/2026-07-20-phase-1-static-audit.okf`.
+Evidencia: `.codex/skills/knowledge/demands/2026-07-20-phase-1-static-audit.okf`.
 Impacto: A suite ainda nao satisfaz integralmente o criterio de Skia obrigatorio nem a demonstracao das 15 familias.
 Consumidores: orquestrador, delphi_skia_vcl, revisao_codigo, testes_interface
 Status: CONFIRMED
@@ -1134,7 +1134,7 @@ sem interacao, foco e lifecycle.
 
 Somente depois de `UI_APPROVED`, o orquestrador coordena a documentacao final.
 Arquivos permitidos: `README.md`, `IMPLEMENTATION_PLAN.md` se ja for o indice
-canonico, registros append-only `.codex/memory/*.okf` dos agentes e evidencia
+canonico, registros append-only `.codex/skills/memory/*.okf` dos agentes e evidencia
 sob `Build`; nenhuma fonte, DFM, package ou teste pode mudar. Documentar
 instalacao runtime/design, Demo `TClientDataSet`, contratos sem Post automatico,
 matriz executada, evidencias, hashes e limitacoes. Mudanca executavel cancela

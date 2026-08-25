@@ -3,7 +3,7 @@
 ID: MEM-DEL-001
 Data: 2026-07-20
 Demanda/branch: phase-1-static-audit / `codex/skia-suite-compliance-demo`
-Estudo de entrada: `.codex/knowledge/demands/2026-07-20-phase-1-static-audit.okf`; `MEM-ARC-003` em `.codex/memory/architecture.okf`.
+Estudo de entrada: `.codex/skills/knowledge/demands/2026-07-20-phase-1-static-audit.okf`; `MEM-ARC-003` em `.codex/skills/memory/architecture.okf`.
 
 ## Decisoes implementadas
 
@@ -2775,7 +2775,7 @@ Demanda/branch: hardening P1 do teardown do gate DACDemoStartup apontado na revi
 - Logs completos preservados em `Build/Tests/Evidence/MEM-DEL-123`: Smoke stdout SHA-256 `172F950AB48DA60B1B3E94F25E4EF974D9B39CF30686A2DC5257CFD4755B0E5B`; Interaction `90465BE2BC4497FD4EEE7007D25EAF4C0CE3E5312D6AD15AC9288B5345D11AB3`; cada Lifecycle `A7EA0505B0830E6052DD62A97B8D805769DAE32F08006DDF3F2DF9DC97C46E23`; cada Startup `6CED63C442B042C600EC64B08621A10446FF702C1687B3704652A6C15C45EF09`; todos os stderr tem zero bytes/SHA-256 vazio padrao `E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855`.
 - Scans finais: `NO_DPI_APIS_IN_MEM_DEL_123_TARGETS`, `NO_GLOBAL_PAGECONTROL_OR_TABSHEET_STYLEHOOK`, `NO_GDI_VISUAL_DRAWING_IN_SCROLL_HOOK`, `SCROLL_HOOK_BITBLT_COUNT=1`, `NO_RECENT_COMPILER_OUTPUT_OUTSIDE_BUILD`, `NO_REMAINING_TEST_OR_DEMO_PROCESSES`; `git diff --check` exit 0.
 
-Arquivos alterados no ciclo: Tests/DACDemoStartup.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-123.
+Arquivos alterados no ciclo: Tests/DACDemoStartup.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-123.
 Impacto: fecha exclusivamente o P1 do gate de teardown sem alterar a correcao Tabs, sem enfraquecer o bootstrap real e com uma prova negativa deterministica de que excecao postada no drain e capturada sem modal. Nenhum stage, commit, push ou PR foi realizado pelo especialista.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -2811,7 +2811,7 @@ Demanda/branch: correcao P1 exclusiva do finally negativo apontado na revisao de
 - O mapa final contem `TPostedTeardownExceptionForm.Destroy`, `SameExceptionHandler` e `RunNegativeTeardownExceptionGate`.
 - Scans finais: `NO_DPI_APIS_IN_MEM_DEL_124_TARGETS`, `NO_GLOBAL_PAGECONTROL_OR_TABSHEET_STYLEHOOK`, `NO_GDI_VISUAL_DRAWING_IN_SCROLL_HOOK`, `SCROLL_HOOK_BITBLT_COUNT=1`, `NO_RECENT_COMPILER_OUTPUT_OUTSIDE_BUILD`, `NO_REMAINING_TEST_OR_DEMO_PROCESSES`, `NO_TRAILING_WHITESPACE_IN_DACDEMOSTARTUP`; `git diff --check` exit 0.
 
-Arquivos alterados no ciclo: Tests/DACDemoStartup.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-124.
+Arquivos alterados no ciclo: Tests/DACDemoStartup.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-124.
 Impacto: fecha exclusivamente o P1 de cleanup do gate negativo, garantindo restauracao de OnException e liberacao do probe mesmo quando o proprio Free levanta. Nenhum stage, commit, push ou PR foi realizado pelo especialista.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -2847,7 +2847,7 @@ Demanda/branch: correcao P1 single-shot do caminho nominal apontado na revisao d
 - O mapa final contem `TPostedTeardownExceptionForm.Destroy`, `ReleasePostedTeardownHostOnce` e `RunNegativeTeardownExceptionGate`.
 - Scans finais: `NO_DPI_APIS_IN_MEM_DEL_125_TARGETS`, `NO_GLOBAL_PAGECONTROL_OR_TABSHEET_STYLEHOOK`, `NO_GDI_VISUAL_DRAWING_IN_SCROLL_HOOK`, `SCROLL_HOOK_BITBLT_COUNT=1`, `NO_RECENT_COMPILER_OUTPUT_OUTSIDE_BUILD`, `NO_REMAINING_TEST_OR_DEMO_PROCESSES`, `NO_TRAILING_WHITESPACE_IN_DACDEMOSTARTUP`; `git diff --check` exit 0.
 
-Arquivos alterados no ciclo: Tests/DACDemoStartup.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-125.
+Arquivos alterados no ciclo: Tests/DACDemoStartup.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-125.
 Impacto: fecha exclusivamente o P1 de double-free/use-after-destroy do gate negativo, com ownership single-shot e prova runtime de uma unica tentativa de Destroy quando o primeiro Free levanta. Nenhum stage, commit, push ou PR foi realizado pelo especialista.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -2898,7 +2898,7 @@ Demanda/branch: correcao P2 da pagina Inputs observada em `Build/VisualValidatio
 - Hashes SHA-256: Runtime BPL `60908E12383C308A576669E8A87989287A0D7B64460F6CFD3663FE224C3DFB98`; Design BPL `328AC2C04C332100FF0AB05750870B24B6BAF35E990E642D160C86705C72DFF0`; Demo `A32FF956D0A1B2EEE30FBB8E66E0F0BC1217DE81884F6C832981D27711BFA617`; Smoke `BB6327176F5A798BDCB1A012C1881D30CA48F00F313E665D26368CC0FF1BAF11`; Interaction `356473AE1268A1C730CAE8BE2CF0137E2CAD5740CF3656E83A58B004A11A8980`; Lifecycle `FF46FBAAC1A41583BE214C1AB5352D3CC9EAD949CC1FD7D8D6BE0F4EA44A6369`; Startup `5EA9DA20BE85D623048DC6617C770E1359EAB3248DC9901946FCB6E27DD15660`.
 - Evidencia completa: `Build/Tests/Evidence/MEM-DEL-126`. Scans: sem APIs de DPI nos alvos, apenas renderer Skia no chrome de grid/scroll, 21 estados, zero `Top=496`, zero `Width=120`, nenhum output recente fora de Build, nenhum processo residual e `git diff --check` exit 0.
 
-Arquivos alterados no ciclo: Source/Controls/DAC.Components.Controls.GridContainer.pas; Source/Controls/DAC.Components.Controls.ScrollContainer.pas; demo/Demo.Principal.dfm; demo/Demo.Principal.pas; Tests/DACComponentsInteraction.dpr; Tests/DACComponentsDesignLifecycle.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-126.
+Arquivos alterados no ciclo: Source/Controls/DAC.Components.Controls.GridContainer.pas; Source/Controls/DAC.Components.Controls.ScrollContainer.pas; demo/Demo.Principal.dfm; demo/Demo.Principal.pas; Tests/DACComponentsInteraction.dpr; Tests/DACComponentsDesignLifecycle.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-126.
 Impacto: fecha a colisao/corte da pagina Inputs por composicao declarativa responsiva, preserva 21 estados, design-time, runtime, temas e editores nativos. Nenhum stage, commit, push, PR ou QA fisica foi realizado pelo especialista.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -2943,7 +2943,7 @@ Demanda/branch: corretivo de cobertura solicitado pela revisao de MEM-DEL-126 / 
 - Hashes SHA-256: Runtime BPL `C0894D508A4A5E9B7DAECF67E5100531F59FA498158120B7A4956BE69BBB9B1E`; Design BPL `760AF1AF4DBF0C590A02B6A85443ABA7833B599B6403E491FA72E17FB2F8A7F5`; Demo `D7CF0EC12D647C5671FB0E9FF06E829E1420A0CFEEA5204A8EE54CD486865908`; Smoke `B8CE24F0EBF284988B31C94703F3BA4A7DB9F99D89B72ACD7D6D573C4DB20313`; Interaction `7B078FD04E924550CA394AD820DE87C79A939E51BF0C907C060321BF3AFF01E1`; Lifecycle `2AD8B89E1A50DE4EF6404A9A2925B0BBE9D3D6EEDFF14B5B2D76B71BE6B366DF`; Startup `FB9DC8E2FB26CD4BCFD64195C62F924B8CE763C3ACB6F2FBE08F73334B5084B1`.
 - Evidencia completa: `Build/Tests/Evidence/MEM-DEL-127`. Scans: sem diagnosticos de build, sem APIs DPI nos alvos de producao, nenhum output recente fora de Build, nenhum processo residual e `git diff --check` exit 0.
 
-Arquivos alterados no ciclo: Tests/DACComponentsInteraction.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-127.
+Arquivos alterados no ciclo: Tests/DACComponentsInteraction.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-127.
 Impacto: fecha exclusivamente os P1/P2 de cobertura da revisao MEM-DEL-126, sem alterar o comportamento, API, DFM ou binarios de producao alem da recompilacao dos gates. Nenhum stage, commit, push, PR ou QA fisica foi realizado.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -2975,7 +2975,7 @@ Demanda/branch: sentinela P2 de identidade do HWND solicitada pela revisao de ME
 - Os hashes de producao/DFM permaneceram iguais aos de MEM-DEL-127: GridContainer `BC94A085C79B6C1B778E6D3EFE95B94589B82CB23B0F4F536F5D74A06E08489D`; ScrollContainer `4CDCEDA6F33456EAEEF40A8CCD11A47D1AD41F1C0A0A487830FD29458277E0CC`; Demo.Principal.pas `2005226D5266F9DAD4755F7C1F1AA6344F4A2919EB3D20E2075A51E92D1BCF85`; Demo.Principal.dfm `20A654F3C26B085E0F92C47C97A24D69CDC6B5D5765B500B69C511336EA82C78`.
 - Evidencia completa: `Build/Tests/Evidence/MEM-DEL-128`. Scans: sentinela presente no fonte, nenhum diagnostico de build, nenhum output recente de compilador fora de Build, nenhum processo residual e `git diff --check` exit 0.
 
-Arquivos alterados no ciclo: Tests/DACComponentsInteraction.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-128.
+Arquivos alterados no ciclo: Tests/DACComponentsInteraction.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-128.
 Impacto: fecha exclusivamente a sentinela P2 da revisao MEM-DEL-127, provando que o HWND nativo do memo nao foi recriado durante o wheel. Nenhum stage, commit, push, PR ou QA fisica foi realizado.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -3016,7 +3016,7 @@ Demanda/branch: physical-memo-wheel-routing derivada de MEM-ARCH-129 e MEM-QA-12
 - Hashes de escopo: ScrollContainer `A430FF4AE415FC660F79B32A752EBD96E784F90D66B8F9790FD7A3976A6E3F5E`; Interaction `C95DB5881727F8478369A12FB929DDB5D19E2C7B2960BC315CF6B26EB638BB6E`; Memo congelado `13FED5B24ACD92D4A8F8F6852266949F0DE29BC87F5936E444C7EE49E3D70FED`; Demo.Principal.pas congelado `2005226D5266F9DAD4755F7C1F1AA6344F4A2919EB3D20E2075A51E92D1BCF85`; Demo.Principal.dfm congelado `20A654F3C26B085E0F92C47C97A24D69CDC6B5D5765B500B69C511336EA82C78`; hook localizado congelado `425E5A11E1D969FD960015B957C85B5C4A3D5A0FCD34F3EEAFA56EA764FA83AC`.
 - Evidencia completa: `Build/Tests/Evidence/MEM-DEL-129`. Scans: nenhum padrao proibido na producao, nenhum output recente de compilador fora de Build, nenhum processo residual e `git diff --check` exit 0.
 
-Arquivos alterados no ciclo: Source/Controls/DAC.Components.Controls.ScrollContainer.pas; Tests/DACComponentsInteraction.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-129.
+Arquivos alterados no ciclo: Source/Controls/DAC.Components.Controls.ScrollContainer.pas; Tests/DACComponentsInteraction.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-129.
 Impacto: corrige o P2 fisico de MEM-QA-129 com owner unico por mensagem e handoff direcional no limite, sem alterar Memo, DFM, layout, tema, tabs, hooks globais, DPI ou identidade de HWND. Nenhum stage, commit, push, PR ou QA fisica foi realizado.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -3064,7 +3064,7 @@ Demanda/branch: native-memo-explicit-line-scroll, supersede a tentativa incomple
 - Evidencia duravel: `Build/Tests/Evidence/MEM-DEL-131/summary.txt`.
 - Scans: `MEMO_FORBIDDEN_PATTERNS=0`, um unico site `EM_LINESCROLL`, zero `WM_VSCROLL` no Memo, entrega direta ao Memo no teste e zero entrega ao HWND focado, `git diff --check` limpo, nenhum output recente `.dcu/.bpl/.exe` fora de Build e nenhum processo residual.
 
-Arquivos alterados neste ciclo: Source/Controls/DAC.Components.Controls.Memo.pas; Source/Controls/DAC.Components.Controls.ScrollContainer.pas; Tests/DACComponentsInteraction.dpr; Tests/DACComponentsInteraction.dproj; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-131.
+Arquivos alterados neste ciclo: Source/Controls/DAC.Components.Controls.Memo.pas; Source/Controls/DAC.Components.Controls.ScrollContainer.pas; Tests/DACComponentsInteraction.dpr; Tests/DACComponentsInteraction.dproj; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-131.
 Impacto: corrige a rolagem fisica do Memo real sem scrollbar visivel, preserva comportamento nativo de input e owner unico, e fecha a cobertura deterministica de configuracao de wheel e streaming DFM. Nenhum stage, commit, push, PR ou QA fisica foi realizado.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -3104,7 +3104,7 @@ Demanda/branch: external-demo-start-lifecycle-gate derivada de MEM-ARCH-132 e do
 - Evidencia duravel: `Build/Tests/Evidence/MEM-DEL-132/summary.txt` e os logs completos em `final-run-01`, `final-run-02` e `final-run-03`.
 - Scans: `git diff --check` exit zero; nenhuma API DPI no controller; `RunDemoLifecycle` sem `TerminateProcess`; nenhum output recente fora de Build; zero processo residual. Artefatos historicos de 2026-06-19 em `demo/__msbuild` e `Package/Build/TempBpl` foram apenas identificados e permaneceram intocados.
 
-Arquivos alterados neste ciclo: Tests/DACPhysicalQAController.dpr; Tests/DACPhysicalQAController.dproj; demo/DemoComponentes.groupproj; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-132.
+Arquivos alterados neste ciclo: Tests/DACPhysicalQAController.dpr; Tests/DACPhysicalQAController.dproj; demo/DemoComponentes.groupproj; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-132.
 Impacto: substitui a selecao fragil de janela por um gate externo deterministico do Demo real e fecha o falso negativo de MEM-QA-132 sem alterar Memo, DFM, layout, DPI ou comportamento de producao. Nenhum stage, commit, push, PR ou QA fisica foi realizado.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -3190,7 +3190,7 @@ Demanda/branch: correcoes de MEM-REV-DB-001 / codex/data-aware-suite
 - Scans: `git diff --check` exit zero (somente avisos CRLF do worktree compartilhado); busca por `SimulateSelect` e APIs DPI/TerminateProcess no escopo alterado vazia; zero processo residual de Demo/testes.
 - A auditoria Python da skill continua indisponivel neste host (`python` aponta ao alias WindowsApps e `py` nao existe). Os builds Delphi, testes executaveis, scans e supervisor externo foram executados diretamente.
 
-Arquivos alterados incrementalmente: Source/Controls/DataAware/DAC.Components.Controls.DataAware.Lookup.pas; Source/Controls/DataAware/DAC.Components.Controls.DataAware.Navigator.pas; demo/Demo.Principal.dfm; Tests/DACComponentsDataAware.dpr; Tests/DACComponentsInteraction.dpr; Tests/DACComponentsDesignLifecycle.dpr; .codex/memory/delphi_skia_vcl.okf.
+Arquivos alterados incrementalmente: Source/Controls/DataAware/DAC.Components.Controls.DataAware.Lookup.pas; Source/Controls/DataAware/DAC.Components.Controls.DataAware.Navigator.pas; demo/Demo.Principal.dfm; Tests/DACComponentsDataAware.dpr; Tests/DACComponentsInteraction.dpr; Tests/DACComponentsDesignLifecycle.dpr; .codex/skills/memory/delphi_skia_vcl.okf.
 Impacto: fecha os tres bloqueios de MEM-REV-DB-001 sem retirar autoridade dos controles DB nativos, sem DPI manual, sem decisao transacional implicita e sem copiar agentes. Nenhum stage, commit, push, PR ou QA fisica foi realizado.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -3227,7 +3227,7 @@ Demanda/branch: correcao do bloqueio MEM-REV-DB-002 / codex/data-aware-suite
 - Scans: Navigator sem `TSkPaintBox`, `TDACNavigatorDataLink` ou observer duplicado; ancestria direta, `SkiaDraw`, `BitBlt` e `BtnClick` materializados; register/unregister localizado e pareado; nenhum hook de ancestral/global; sem `SimulateSelect`, API DPI, FireDAC/transacao automatica, `TerminateProcess` ou `MainWindowHandle` no escopo; `git diff --check` sem erro, somente avisos CRLF do worktree; nenhum processo residual.
 - A auditoria Python da skill permanece indisponivel neste host. A validacao Delphi, os testes executaveis, os scans e o supervisor externo foram executados diretamente.
 
-Arquivos alterados incrementalmente: Source/Controls/DataAware/DAC.Components.Controls.DataAware.Navigator.pas; Source/Hooks/DAC.Components.Hooks.DataAware.pas; Tests/DACComponentsDataAware.dpr; .codex/memory/delphi_skia_vcl.okf.
+Arquivos alterados incrementalmente: Source/Controls/DataAware/DAC.Components.Controls.DataAware.Navigator.pas; Source/Hooks/DAC.Components.Hooks.DataAware.pas; Tests/DACComponentsDataAware.dpr; .codex/skills/memory/delphi_skia_vcl.okf.
 Impacto: remove o conflito de z-order apontado por MEM-REV-DB-002 e entrega chrome Skia real no proprio HWND do `TDBNavigator`, preservando contrato nativo, designer, foco, teclado, mouse e lifecycle. A skill orientou o uso de hook localizado, renderizacao Skia obrigatoria e seguranca Parent=nil. Nenhum stage, commit, push, PR ou QA fisica foi realizado.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -3266,7 +3266,7 @@ Demanda/branch: correcoes P2 fisicas de MEM-QA-DB-001 / codex/data-aware-suite
 - Scans: tres hooks nativos internos com unregister pareado; nenhum hook ancestral/global; nenhum `SimulateSelect`, API DPI manual, FireDAC/decisao transacional, `TerminateProcess` ou `MainWindowHandle` no escopo; sem whitespace final ou debug probe; `git diff --check` sem erro, apenas avisos CRLF do worktree compartilhado; zero processo residual.
 - A auditoria Python da skill continua indisponivel neste host. Builds Delphi, testes executaveis, scans estaticos e supervisor externo foram executados diretamente.
 
-Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.ComboBox.pas; Source/Controls/DAC.Components.Controls.DateTimePicker.pas; Source/Controls/DataAware/DAC.Components.Controls.DataAware.Lookup.pas; Source/Controls/DAC.Components.Controls.DataGrid.pas; Source/Hooks/DAC.Components.Hooks.DataAware.pas; Source/Hooks/DAC.Components.Hooks.Register.pas; demo/Demo.Principal.dfm; Tests/DACComponentsInteraction.dpr; Tests/DACDemoStartup.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-004.
+Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.ComboBox.pas; Source/Controls/DAC.Components.Controls.DateTimePicker.pas; Source/Controls/DataAware/DAC.Components.Controls.DataAware.Lookup.pas; Source/Controls/DAC.Components.Controls.DataGrid.pas; Source/Hooks/DAC.Components.Hooks.DataAware.pas; Source/Hooks/DAC.Components.Hooks.Register.pas; demo/Demo.Principal.dfm; Tests/DACComponentsInteraction.dpr; Tests/DACDemoStartup.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-004.
 Impacto: fecha os tres P2 de MEM-QA-DB-001 sem alterar API publica funcional, sem hook global, sem DPI manual, sem decisao transacional e sem retirar a autoridade nativa de input. A skill orientou o boundary Skia no chrome, StyleHook localizado, fallback restrito a subclasses internas, Parent=nil/DFM e gates Light/Dark. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -3359,7 +3359,7 @@ Demanda/branch: correcao exclusiva dos dois P2 de MEM-REV-DB-004 / codex/data-aw
   `Build/Tests/Evidence/MEM-DEL-DB-005/summary.txt` e
   `Build/Tests/Evidence/MEM-DEL-DB-005/startlifecycle-final`.
 
-Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.ComboBox.pas; Source/Controls/DAC.Components.Controls.DateTimePicker.pas; Source/Controls/DataAware/DAC.Components.Controls.DataAware.Lookup.pas; Source/Controls/DAC.Components.Controls.DataGrid.pas; Source/Hooks/DAC.Components.Hooks.DataAware.pas; Tests/DACComponentsInteraction.dpr; Tests/DACDemoStartup.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-005.
+Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.ComboBox.pas; Source/Controls/DAC.Components.Controls.DateTimePicker.pas; Source/Controls/DataAware/DAC.Components.Controls.DataAware.Lookup.pas; Source/Controls/DAC.Components.Controls.DataGrid.pas; Source/Hooks/DAC.Components.Hooks.DataAware.pas; Tests/DACComponentsInteraction.dpr; Tests/DACDemoStartup.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-005.
 Impacto: fecha exclusivamente os dois P2 de MEM-REV-DB-004 preservando titulo, tokens e hooks localizados ja aceitos. A skill orientou a autoridade integral do common control sobre segmento/caret, o StyleHook especializado e a protecao real da faixa do header. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -3454,7 +3454,7 @@ Demanda/branch: correcao exclusiva da surface Date de MEM-REV-DB-005 / codex/dat
   `Build/Tests/Evidence/MEM-DEL-DB-006/summary.txt` e
   `Build/Tests/Evidence/MEM-DEL-DB-006/startlifecycle-final`.
 
-Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DateTimePicker.pas; Tests/DACDemoStartup.dpr; Tests/DACComponentsInteraction.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-006.
+Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DateTimePicker.pas; Tests/DACDemoStartup.dpr; Tests/DACComponentsInteraction.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-006.
 Impacto: fecha exclusivamente o bloqueio Date de MEM-REV-DB-005 com surface e texto tokenizados por pixels reais nos dois estados de foco, preservando integralmente o common control como autoridade de segmento, caret, teclado e popup. A skill determinou a heranca do hook especializado, a ausencia de takeover do client e o theme suppression somente localizado. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -3541,7 +3541,7 @@ Demanda/branch: correcao exclusiva do P2 fisico MEM-QA-DB-002 / codex/data-aware
 - Evidencia: `Build/Tests/Evidence/MEM-DEL-DB-007/summary.txt` e
   `Build/Tests/Evidence/MEM-DEL-DB-007/startlifecycle-final-2`.
 
-Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DateTimePicker.pas; Tests/DACDemoStartup.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-007.
+Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DateTimePicker.pas; Tests/DACDemoStartup.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-007.
 Impacto: fecha o unico P2 fisico conhecido sem alterar titulo, Combo, Lookup, Grid, layout ou popup ja aprovados. A skill orientou a preservacao da autoridade nativa, o hook exato localizado e o chrome externo Skia; a alternativa de remap so foi adotada depois de provar que os themes nativos permitidos nao resolvem o SO alvo. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -3620,7 +3620,7 @@ Demanda/branch: correcao exclusiva de MEM-REV-DB-007 / codex/data-aware-suite
   `Build/Tests/Evidence/MEM-DEL-DB-008/summary.txt` e
   `Build/Tests/Evidence/MEM-DEL-DB-008/startlifecycle-final`.
 
-Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DateTimePicker.pas; Tests/DACDemoStartup.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-008.
+Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DateTimePicker.pas; Tests/DACDemoStartup.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-008.
 Impacto: fecha exclusivamente MEM-REV-DB-007 com cache persistente, paint Dark offscreen e apresentacao atomica, instrumentacao de custo e provas de resize/RecreateWnd. A skill determinou ausencia de recursos por frame, hook exato localizado, preservacao do comportamento nativo e chrome externo Skia. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -3694,7 +3694,7 @@ Demanda/branch: correcao exclusiva de MEM-REV-DB-008 / codex/data-aware-suite
   `Build/Tests/Evidence/MEM-DEL-DB-009/summary.txt`,
   `normal-build-proof.txt` e `startlifecycle-final`.
 
-Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DateTimePicker.pas; Tests/DACDemoStartup.dpr; Tests/DACDemoStartup.dproj; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-009.
+Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DateTimePicker.pas; Tests/DACDemoStartup.dpr; Tests/DACDemoStartup.dproj; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-009.
 Impacto: fecha exclusivamente MEM-REV-DB-008 removendo integralmente instrumentacao e overhead do artefato distribuido, mantendo as mesmas fontes e asserts no build de teste. A skill determinou que o buffer funcional permanecesse cacheado e que nenhuma medicao por frame sobrevivesse no runtime normal. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -3770,7 +3770,7 @@ Demanda/branch: correcao exclusiva de MEM-QA-DB-003 / codex/data-aware-suite
   `Build/Tests/Evidence/MEM-DEL-DB-010/summary.txt` e
   `startlifecycle-final`.
 
-Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DateTimePicker.pas; Tests/DACDemoStartup.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-010.
+Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DateTimePicker.pas; Tests/DACDemoStartup.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-010.
 Impacto: fecha a implementacao do P2 MEM-QA-DB-003 substituindo a limpeza dependente do DC por reset integral deterministico do DIB e adicionando provas permanentes contra acumulacao estavel e cross-state. A skill determinou preservacao do buffer persistente, ausencia de recursos por frame e manutencao da autoridade nativa sobre glyphs e selecao. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -3834,7 +3834,7 @@ Demanda/branch: correcao exclusiva de MEM-QA-DB-004 / codex/data-aware-suite
 - Evidencia: `Build/Tests/Evidence/MEM-DEL-DB-011/summary.txt`, `pipeline/` e
   `startlifecycle-final/`.
 
-Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DateTimePicker.pas; Tests/DACDemoStartup.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-011.
+Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DateTimePicker.pas; Tests/DACDemoStartup.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-011.
 Impacto: fecha a implementacao do P2 MEM-QA-DB-004 ao preservar cobertura ClearType no remap, restringir selecao a highlight real, impedir segunda pintura do common control e provar estruturalmente o frame e a apresentacao. A skill determinou autoridade nativa sobre glyph/foco/selecao, hook localizado, chrome Skia externo e ausencia de recursos por frame. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -3889,7 +3889,7 @@ Demanda/branch: correcao exclusiva de MEM-QA-DB-005 / codex/data-aware-suite
   `Build/Tests/Evidence/MEM-DEL-DB-012/summary.txt` e
   `startlifecycle-final/`.
 
-Arquivos alterados incrementalmente: Source/Controls/DataAware/DAC.Components.Controls.DataAware.Lookup.pas; Tests/DACDemoStartup.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-012.
+Arquivos alterados incrementalmente: Source/Controls/DataAware/DAC.Components.Controls.DataAware.Lookup.pas; Tests/DACDemoStartup.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-012.
 Impacto: fecha exclusivamente o P2 MEM-QA-DB-005 corrigindo o popup nativo branco do DB Lookup em Dark com tokens aplicados apenas a instancia interna e provas reais de pixels, contraste, teclado, mouse, scroll e lifecycle. A skill determinou painter nativo, hook localizado e nenhuma interceptacao global. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -3941,7 +3941,7 @@ Demanda/branch: correcao exclusiva de MEM-QA-DB-006 / codex/data-aware-suite
 - Evidencia: `Build/Tests/Evidence/MEM-DEL-DB-013/summary.txt` e
   `startlifecycle-final/`.
 
-Arquivos alterados incrementalmente: Source/Controls/DataAware/DAC.Components.Controls.DataAware.Lookup.pas; Tests/DACDemoStartup.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-013.
+Arquivos alterados incrementalmente: Source/Controls/DataAware/DAC.Components.Controls.DataAware.Lookup.pas; Tests/DACDemoStartup.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-013.
 Impacto: fecha exclusivamente o P2 MEM-QA-DB-006 ao integrar o Tab do popup nativo ao dialog manager real do wrapper, com navegacao forward/backward, commit unico e foco/borda coerentes. A skill determinou preservacao do teclado/foco nativos e intervencao localizada sem tocar no Demo ou no painter. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -3980,7 +3980,7 @@ Demanda/branch: correcao exclusiva de MEM-QA-DB-007 / codex/data-aware-suite
 - Map/scans/diff-check limpos e zero processo residual.
 - Evidencia: `Build/Tests/Evidence/MEM-DEL-DB-014/summary.txt`.
 
-Arquivos alterados incrementalmente: Source/Controls/DataAware/DAC.Components.Controls.DataAware.Lookup.pas; Tests/DACDemoStartup.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-014.
+Arquivos alterados incrementalmente: Source/Controls/DataAware/DAC.Components.Controls.DataAware.Lookup.pas; Tests/DACDemoStartup.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-014.
 Impacto: fecha exclusivamente MEM-QA-DB-007 ao mover a autoridade da navegacao para o Form real e provar a arvore DFM nested, targets Date/DBCombo, HWND efetivo e F4. A skill determinou preservacao do comportamento nativo e intervencao localizada sem workaround de Demo. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -4028,7 +4028,7 @@ Demanda/branch: correcao exclusiva de MEM-QA-DB-008 / codex/data-aware-suite
   diff-check limpo e zero processo residual.
 - Evidencia: `Build/Tests/Evidence/MEM-DEL-DB-015/summary.txt`.
 
-Arquivos alterados incrementalmente: Source/Controls/DataAware/DAC.Components.Controls.DataAware.Lookup.pas; Tests/DACDemoStartup.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-015.
+Arquivos alterados incrementalmente: Source/Controls/DataAware/DAC.Components.Controls.DataAware.Lookup.pas; Tests/DACDemoStartup.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-015.
 Impacto: fecha exclusivamente MEM-QA-DB-008 ao capturar Tab no HWND real do popup com lifetime pareado e navegacao nativa preservada. A skill determinou intervencao localizada, sem hook global e com provas de foco, teclado, commit e recriacao. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -4074,7 +4074,7 @@ Demanda/branch: correcao exclusiva de MEM-QA-DB-009 / codex/data-aware-suite
   diff-check limpo e zero processo residual.
 - Evidencia: `Build/Tests/Evidence/MEM-DEL-DB-016/summary.txt`.
 
-Arquivos alterados incrementalmente: Source/Controls/DataAware/DAC.Components.Controls.DataAware.Lookup.pas; Tests/DACDemoStartup.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-016.
+Arquivos alterados incrementalmente: Source/Controls/DataAware/DAC.Components.Controls.DataAware.Lookup.pas; Tests/DACDemoStartup.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-016.
 Impacto: fecha exclusivamente MEM-QA-DB-009 ao declarar DLGC_WANTTAB antes do WndProc e provar a cadeia dialog-code, keydown, post, complete, persistencia e foco. A skill determinou preservacao da semantica nativa e lifetime localizado. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -4124,7 +4124,7 @@ Demanda/branch: correcao exclusiva de MEM-QA-DB-010 / codex/data-aware-suite
   diff-check limpo e zero processo residual.
 - Evidencia: `Build/Tests/Evidence/MEM-DEL-DB-017/summary.txt`.
 
-Arquivos alterados incrementalmente: Source/Controls/DataAware/DAC.Components.Controls.DataAware.Lookup.pas; Tests/DACDemoStartup.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-017.
+Arquivos alterados incrementalmente: Source/Controls/DataAware/DAC.Components.Controls.DataAware.Lookup.pas; Tests/DACDemoStartup.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-017.
 Impacto: fecha exclusivamente MEM-QA-DB-010 ao mover a autoridade de Tab para o HWND realmente focado do combo antes de WM_KILLFOCUS/CloseUp(False), preservando commit, foco e rollback. A skill determinou preservar a semantica nativa, a intervencao localizada e o lifetime pareado. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -4171,7 +4171,7 @@ Demanda/branch: correcao exclusiva de MEM-QA-DB-011 / codex/data-aware-suite
   diff-check/trailing whitespace limpos e zero processo residual.
 - Evidencia: `Build/Tests/Evidence/MEM-DEL-DB-018/summary.txt`.
 
-Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DateTimePicker.pas; Source/Controls/DataAware/DAC.Components.Controls.DataAware.pas; Tests/DACComponentsDataAware.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-018.
+Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DateTimePicker.pas; Source/Controls/DataAware/DAC.Components.Controls.DataAware.pas; Tests/DACComponentsDataAware.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-018.
 Impacto: fecha exclusivamente MEM-QA-DB-011 ao substituir o sentinel TDateTime(0) pelo estado nulo explicito ja pertencente ao TDACDBDateTimePicker, mantendo SysDateTimePick32, popup Skia, contratos data-aware e persistencia diferida. A skill determinou preservar a semantica nativa e manter a intervencao localizada. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -4222,7 +4222,7 @@ Demanda/branch: correcao exclusiva de MEM-QA-DB-012 / codex/data-aware-suite
   diff-check/trailing whitespace limpos e zero processo residual.
 - Evidencia: `Build/Tests/Evidence/MEM-DEL-DB-019/summary.txt`.
 
-Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DateTimePicker.pas; Source/Controls/DAC.Components.Controls.DateTimePickerPopup.pas; Source/Controls/DataAware/DAC.Components.Controls.DataAware.pas; Tests/DACComponentsDataAware.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-019.
+Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DateTimePicker.pas; Source/Controls/DAC.Components.Controls.DateTimePickerPopup.pas; Source/Controls/DataAware/DAC.Components.Controls.DataAware.pas; Tests/DACComponentsDataAware.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-019.
 Impacto: fecha exclusivamente MEM-QA-DB-012 ao dar ao OK do popup autoridade explicita para transicionar o TDACDBDateTimePicker de null para data valida, preservando o HWND nativo, popup Skia, clear/null de MEM-DEL-DB-018 e persistencia diferida. A skill determinou preservar a semantica nativa e manter a intervencao localizada. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -4270,7 +4270,7 @@ Demanda/branch: correcao exclusiva de MEM-QA-DB-013 / codex/data-aware-suite
   diff-check/trailing whitespace limpos e zero processo residual.
 - Evidencia: `Build/Tests/Evidence/MEM-DEL-DB-020/summary.txt`.
 
-Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.ScrollContainer.pas; Tests/DACComponentsDataAware.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-020.
+Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.ScrollContainer.pas; Tests/DACComponentsDataAware.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-020.
 Impacto: fecha exclusivamente MEM-QA-DB-013 ao impedir que a aquisicao de foco/linha da Grid seja interpretada como gesto horizontal do formulario, preservando selecao, foco, navegacao, edicao, scroll proprio, viewports e os fluxos Lookup/Date aprovados. A skill determinou preservar a semantica nativa e manter a intervencao localizada. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -4316,7 +4316,7 @@ Demanda/branch: atendimento exclusivo de MEM-REV-DB-020 / codex/data-aware-suite
   diff-check/trailing whitespace limpos e zero processo residual.
 - Evidencia: `Build/Tests/Evidence/MEM-DEL-DB-021/summary.txt`.
 
-Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.ScrollContainer.pas; Tests/DACComponentsDataAware.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-021.
+Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.ScrollContainer.pas; Tests/DACComponentsDataAware.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-021.
 Impacto: atende exclusivamente MEM-REV-DB-020 sem ampliar o workaround, garantindo restauracao horizontal sob excecao, pertencimento real ao container e cobertura do AutoScrollInView vertical/herdado. Lookup, Date, DataLink, HWNDs nativos e scroll proprio permanecem preservados. A skill reforcou semantica VCL nativa e gate por interacao real sintetica. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -4367,7 +4367,7 @@ Demanda/branch: correcao exclusiva dos P2 de MEM-QA-DB-014 / codex/data-aware-su
   residual.
 - Evidencia: `Build/Tests/Evidence/MEM-DEL-DB-022/summary.txt`.
 
-Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DataGrid.pas; demo/Demo.Principal.dfm; Tests/DACComponentsInteraction.dpr; Tests/DACPhysicalQAController.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-022.
+Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DataGrid.pas; demo/Demo.Principal.dfm; Tests/DACComponentsInteraction.dpr; Tests/DACPhysicalQAController.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-022.
 Impacto: fecha os dois P2 de MEM-QA-DB-014 ao tornar persistente o modo editavel do Data-Aware e exigir o caminho nativo completo F2/caret/input/rollback seguido do encerramento real pelo X. MEM-DEL-DB-021, Lookup, Date, scroll proprio e persistencia diferida permanecem preservados. A skill reforcou streaming coerente e semantica VCL nativa. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -4417,7 +4417,7 @@ Demanda/branch: MEM-REV-DB-022 lifecycle exception-safe / codex/data-aware-suite
   `6F9DE715DDDEE3E7E86F49BC31F2217E9DD0492899ED1E3439B9C4634510CA71`.
 - Evidencia: `Build/Tests/Evidence/MEM-DEL-DB-023/summary.txt`.
 
-Arquivos alterados incrementalmente: Tests/DACPhysicalQAController.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-023/.
+Arquivos alterados incrementalmente: Tests/DACPhysicalQAController.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-023/.
 Impacto: corrige exclusivamente o bloqueio de lifecycle do review sem alterar produto ou DFM. A skill reforcou ownership VCL/Win32, fechamento deterministico e a separacao entre gate funcional e cleanup de infraestrutura. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -4466,7 +4466,7 @@ Demanda/branch: MEM-REV-DB-023 rotas pos-CreateProcess e SaveLifecycleLog / code
   `6B68D029215B73EDCF4A4669DADF875A9756E522741B4D88833B3CACA3D9418D`.
 - Evidencia: `Build/Tests/Evidence/MEM-DEL-DB-024/summary.txt`.
 
-Arquivos alterados incrementalmente: Tests/DACPhysicalQAController.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-024/.
+Arquivos alterados incrementalmente: Tests/DACPhysicalQAController.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-024/.
 Impacto: fecha exclusivamente MEM-REV-DB-023, removendo Fail/Halt de todas as rotas do filho owned e tornando a persistencia final do log incapaz de mascarar a falha original ou produzir sucesso silencioso. A skill reforcou ownership Win32 e fechamento VCL deterministico. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -4511,7 +4511,7 @@ Demanda/branch: MEM-REV-DB-024 ownership do subprocesso WER / codex/data-aware-s
   `A930F17025AC3B4223747F87AAEE2A0322A910636923BA69C74AD9ADC58CA274`.
 - Evidencia: `Build/Tests/Evidence/MEM-DEL-DB-025/summary.txt`.
 
-Arquivos alterados incrementalmente: Tests/DACPhysicalQAController.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-025/.
+Arquivos alterados incrementalmente: Tests/DACPhysicalQAController.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-025/.
 Impacto: fecha exclusivamente MEM-REV-DB-024, tornando o subprocesso WER exception-safe, sem vazamento parcial e incapaz de mascarar a falha primaria. A skill reforcou ownership Win32 e separacao entre gate e diagnostico. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -4559,7 +4559,7 @@ Demanda/branch: MEM-REV-DB-025 precedencia Demo/WER e exit code estrito / codex/
   pos-ownership possuem zero Fail/Halt; scans e residual final ficaram zero.
 - Evidencia: `Build/Tests/Evidence/MEM-DEL-DB-026/summary.txt`.
 
-Arquivos alterados incrementalmente: Tests/DACPhysicalQAController.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-026/.
+Arquivos alterados incrementalmente: Tests/DACPhysicalQAController.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-026/.
 Impacto: fecha exclusivamente MEM-REV-DB-025, impedindo PASS silencioso em wevtutil nonzero e preservando a causa primaria da Demo no fluxo nominal real. A skill reforcou a separacao entre gate funcional, diagnostico secundario e ownership Win32. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -4611,7 +4611,7 @@ Demanda/branch: MEM-QA-DB-015 rows somem ao clicar CLIENTE / codex/data-aware-su
   o gate funcional foi comprovado por estado nativo e metricas de pintura.
 - Evidencia: `Build/Tests/Evidence/MEM-DEL-DB-027/summary.txt`.
 
-Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DataGrid.pas; Tests/DACComponentsInteraction.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-027/.
+Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DataGrid.pas; Tests/DACComponentsInteraction.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-027/.
 Impacto: fecha exclusivamente MEM-QA-DB-015 no codigo e gates automatizados, preservando selecao/edicao/F2, auto-scroll externo e DB-021..026. A skill manteve a fronteira TDBGrid nativo/Skia e exigiu scroll, foco e ciclo de vida. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -4665,7 +4665,7 @@ Demanda/branch: MEM-QA-DB-016 stale rows no scroll vertical / codex/data-aware-s
   zero. Auditor Python permaneceu indisponivel pelo erro de sessao de logon.
 - Evidencia: `Build/Tests/Evidence/MEM-DEL-DB-028/summary.txt`.
 
-Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DataGrid.pas; Tests/DACComponentsInteraction.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-028/.
+Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DataGrid.pas; Tests/DACComponentsInteraction.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-028/.
 Impacto: fecha exclusivamente MEM-QA-DB-016 no codigo e gates automatizados, sincronizando buffer/top row/highlight/controles externos sem navegar durante paint e preservando DB-027/DB-026. A skill reforcou a fronteira TDBGrid nativo/Skia, a faixa reservada do footer e o teste de muitas rows. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -4717,7 +4717,7 @@ Demanda/branch: MEM-QA-DB-017 wheel fisico deixa frame Skia stale / codex/data-a
   indisponivel pelo erro de sessao de logon.
 - Evidencia: `Build/Tests/Evidence/MEM-DEL-DB-029/summary.txt`.
 
-Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DataGrid.pas; Tests/DACComponentsInteraction.dpr; .codex/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-029/.
+Arquivos alterados incrementalmente: Source/Controls/DAC.Components.Controls.DataGrid.pas; Tests/DACComponentsInteraction.dpr; .codex/skills/memory/delphi_skia_vcl.okf. Evidencia nova: Build/Tests/Evidence/MEM-DEL-DB-029/.
 Impacto: fecha exclusivamente MEM-QA-DB-017 no codigo e gate automatizado fiel, sincronizando o frame Skia somente apos a rota inherited atualizar o DataLink, preservando DB027/028 e sem navegar durante paint. A skill reforcou ownership do TDBGrid, composicao Skia post-evento e ciclo de vida do HWND. Nenhuma QA fisica, stage, commit, push ou PR foi realizada.
 Consumidores: orquestrador, revisao_codigo, testes_interface
 Status: IMPLEMENTED_AWAITING_REVIEW
@@ -4732,7 +4732,7 @@ Implementacao: assinatura coalescida de viewport; hooks Scroll/TopLeftChanged/Li
 Gate externo: Demo PID28596/HWND1250414; mouse_event ID1008->1013; idle900 first1004 last1013 selected1013 recno13 top4; uma composicao; campos externos13; teclado e scrollbar fisicos verdes; screenshots SHA F401711A.../6A90EE2B....
 Regressao: Interaction PASS clean teardown com DB027-030, H/F2, rapid coalescing e recreate; Smoke/DataAware/DemoStartup/DesignLifecycle PASS.
 Evidencia: Build/Evidence/MEM-DEL-DB-030/summary.txt
-Arquivos: Source/Controls/DAC.Components.Controls.DataGrid.pas; Tests/DACComponentsInteraction.dpr; Tests/DACPhysicalQAController.dpr; demo/Demo.Principal.pas; .codex/memory/delphi_skia_vcl.okf.
+Arquivos: Source/Controls/DAC.Components.Controls.DataGrid.pas; Tests/DACComponentsInteraction.dpr; Tests/DACPhysicalQAController.dpr; demo/Demo.Principal.pas; .codex/skills/memory/delphi_skia_vcl.okf.
 Status: IMPLEMENTED_AWAITING_REVIEW
 Handoff: orquestrador deve chamar exclusivamente revisao_codigo; testes_interface somente apos APPROVED_FOR_UI_TEST. Sem Git e sem QA fisica declarada.
 
@@ -4946,7 +4946,7 @@ Hashes SHA-256:
 Arquivos incrementais: `Source/Controls/DataAware/DAC.Components.Controls.DataAware.pas`;
 `Tests/DACComponentsDataAware.dpr`;
 `Tests/DACComponentsDesignLifecycle.dpr`;
-`.codex/memory/delphi_skia_vcl.okf`.
+`.codex/skills/memory/delphi_skia_vcl.okf`.
 Limites: nenhum controle da Etapa 4+, Lookup, Navigator, Grid, hook, token,
 chrome Skia ou layout DFM foi alterado. O Demo foi compilado, mas nao foi
 aberto, salvo/reaberto ou submetido a QA fisica porque o orquestrador
@@ -5065,7 +5065,7 @@ Hashes SHA-256 finais:
 Arquivos incrementais: `Source/Controls/DataAware/DAC.Components.Controls.DataAware.pas`;
 `Tests/DACComponentsDataAware.dpr`;
 `Tests/DACComponentsDesignLifecycle.dpr`;
-`.codex/memory/delphi_skia_vcl.okf`.
+`.codex/skills/memory/delphi_skia_vcl.okf`.
 Limites: nenhum arquivo de Demo/DFM, Binding, Lookup, Navigator, Grid,
 StyleHook, hook, token, renderer, pintura Skia ou High DPI foi alterado pelo
 especialista nesta etapa. Demo nao foi compilado nem aberto. Nenhum build de
@@ -5169,7 +5169,7 @@ Hashes SHA-256 finais:
 Arquivos incrementais desta reexecucao:
 `Source/Controls/DataAware/DAC.Components.Controls.DataAware.pas`;
 `Tests/DACComponentsDataAware.dpr`;
-`.codex/memory/delphi_skia_vcl.okf`.
+`.codex/skills/memory/delphi_skia_vcl.okf`.
 Limites preservados: nenhum Demo/DFM, Lookup, Navigator, Grid, StyleHook,
 Skia, High DPI, wheel, mnemonic, Etapa 5+, revisao, QA, stage, commit, push ou
 PR foi executado/alterado. Handoff: parar e notificar o orquestrador; ele
@@ -5242,7 +5242,7 @@ Hashes SHA-256 finais:
 - DesignLifecycle.exe Stage5 = `CB7B1C227723869CCDA8B14C02A4CE245781A499A718DD6A72F664697C2A69A6`
 
 Arquivos incrementais: Lookup.pas; DACComponentsDataAware.dpr;
-DACComponentsDesignLifecycle.dpr; `.codex/memory/delphi_skia_vcl.okf`.
+DACComponentsDesignLifecycle.dpr; `.codex/skills/memory/delphi_skia_vcl.okf`.
 Navigator, DataGrid e ScrollContainer foram somente validados. Nenhum Hook,
 StyleHook, token, renderer, Skia, Demo/DFM, palette/design-time, High DPI,
 Etapa 6+, revisao, QA, stage, commit, push ou PR foi executado. Handoff: parar
@@ -5367,7 +5367,7 @@ Hashes SHA-256 finais:
 
 Arquivos incrementais: DataAware hook; Hook Register; ScrollContainer hook;
 Lookup; DataAware runner; DesignLifecycle runner;
-`.codex/memory/delphi_skia_vcl.okf`.
+`.codex/skills/memory/delphi_skia_vcl.okf`.
 Limites preservados: nenhum Demo/DFM, design-time/paleta, Etapa 7, revisao,
 QA, stage, commit, push ou PR foi executado. Handoff: parar e notificar o
 orquestrador; ele decide o proximo gate sequencial.

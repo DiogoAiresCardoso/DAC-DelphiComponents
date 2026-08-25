@@ -1,0 +1,182 @@
+# Porta de Revisão de Código — DAC Delphi Components
+
+## Propósito e autoridade
+
+Este arquivo é a memória operacional do agente revisor. Ele define quando uma
+alteração Delphi/VCL pode sair do desenvolvimento para os testes de interface.
+O revisor não implementa a feature: inspeciona o diff da branch da feature,
+executa verificações não destrutivas e emite um veredito rastreável.
+
+O desenvolvimento só entrega ao revisor depois de a análise de arquitetura ter
+definido o recorte, os arquivos previstos, os riscos e os critérios de aceite.
+O teste de interface só começa após `APPROVED_FOR_UI_TEST`.
+
+## Entrada obrigatória do handoff de desenvolvimento
+
+- branch de feature (`codex/<tema>` ou nome acordado), base e intervalo de
+  commits a revisar;
+- objetivo funcional, decisão arquitetural e os arquivos deliberadamente
+  alterados;
+- resultado real de build/validações, ou limitação declarada;
+- atualização do `.okf` da feature com contratos, riscos e comportamento
+  esperado;
+- lista de comportamentos VCL que devem permanecer nativos (por exemplo:
+  caret, IME, clipboard, foco, teclado, DFM e design-time).
+
+Sem esses elementos, o veredito é `BLOCKED` por falta de evidência; o revisor
+não deve inferir requisito funcional a partir do código.
+
+## Sequência de revisão
+
+1. Confirmar branch, base, `git status` e escopo do diff. Mudanças preexistentes
+   ou não relacionadas não são absorvidas pela revisão.
+2. Comparar o diff com a decisão do arquiteto e o contrato entregue pelo
+   desenvolvedor.
+3. Revisar primeiro camadas, dependências e ciclo de vida; depois contratos,
+   renderização, recursos, legibilidade e testes.
+4. Medir o delta, não apenas o estado final: duplicação, complexidade, acoplamento,
+   linhas adicionadas, warnings novos e cobertura de casos alterados.
+5. Registrar achados com severidade, arquivo/linha, evidência, impacto e correção
+   esperada. Não registrar preferências pessoais como bloqueio.
+6. Emitir um único veredito e atualizar este arquivo ou o `.okf` específico da
+   feature com a decisão resumida.
+
+## Porta arquitetural
+
+### Camadas e dependências
+
+- `Core` não depende de `Controls`, `Hooks`, `DesignTime` ou `Demo`.
+- `Controls` depende somente de `Core`, RTL e VCL; `Hooks` pode depender de
+  `Core` e `Controls`.
+- Runtime nunca referencia `DesignIntf`, `ToolsAPI` ou units de design-time;
+  package design-time depende do runtime, nunca o inverso.
+- Demo é consumidor da suíte, não local de regra de negócio, renderer canônico
+  ou correção essencial de componente.
+- Não introduzir dependência circular, singleton global evitável ou conhecimento
+  de formulário/aplicação dentro de componente reutilizável.
+
+### Reuso, SOLID e padrões
+
+- Novo comportamento comum deve entrar por contrato, helper, serviço, renderer,
+  token ou classe-base já existente — não por cópia entre controles.
+- Aplicar Strategy, Factory, Observer, Adapter ou Template Method somente quando
+  reduzirem variações reais, acoplamento ou condicionais repetidas. Não criar
+  abstração para uma única implementação estável.
+- Cada unit/classe deve ter uma responsabilidade coesa. Controle recebe estado e
+  contrato; renderer desenha; container roteia interação; formulário orquestra.
+- Dependências externas são injetadas por contrato/propriedade apropriada e são
+  limpas com `Notification`/`FreeNotification` quando a referência não é dona.
+- Interface pública, defaults publicados, DFM streaming e compatibilidade de
+  package exigem justificativa explícita para quebra.
+
+### Tokens e renderização
+
+- Cores, opacidade, tipografia, espaçamentos, raios, ícones e métricas pertencem
+  ao tema/tokens/helpers de DPI; não aceitar literais repetidos nas units visuais.
+- Skia4Delphi é obrigatório para chrome visual novo: superfícies, bordas, foco,
+  estados, ícones, separadores e gráficos usam renderer compartilhado.
+- Texto de formulário que precisa de nitidez e semântica nativas continua no
+  pipeline Windows/VCL (`DrawText`, `TLabel`, edit/combo/memo nativos), enquanto
+  Skia desenha o chrome. O revisor exige justificativa para exceções.
+- Não aceitar fallback GDI como desenho visual alternativo da suíte nem renderer
+  local que replique cache, geometria ou tokens canônicos.
+
+### StyleHook e semântica VCL
+
+- Hooks são registrados somente para classes próprias `TDAC...`; nunca em
+  classes VCL globais.
+- Todo `RegisterStyleHook` possui `UnRegisterStyleHook` correspondente; ambos
+  são centralizados e idempotentes.
+- O hook deve derivar do hook VCL especializado quando a versão alvo permitir e
+  só sobrescrever `Paint`/`PaintNC`/flags necessários.
+- Owner draw ou controle composto requerem justificativa técnica: hook inviável
+  ou instável, mantendo a semântica VCL requerida.
+- Não é aceitável perder click, `Action`, atalhos, foco, caret, seleção, IME,
+  clipboard, undo/redo, dropdown, acessibilidade, `Checked` ou teclado nativo.
+
+### Ciclo de vida, recursos e DPI
+
+- Construtor, `Resize`, `Loaded` e setters chamados pelo streaming DFM não podem
+  forçar `Handle`, `HandleNeeded`, `ClientRect`, z-order ou redraw de filhos
+  antes de existir `Parent`/handle válido; respeitar também `csDesigning` e
+  `csLoading`.
+- Referências externas usam `FreeNotification`; timers, handles, imagens, objetos
+  Skia e listeners são liberados/desregistrados em todos os caminhos.
+- Invalidar apenas a região/controle afetado; double buffer, `csOpaque` e
+  `WM_ERASEBKGND` só quando a pintura realmente cobre o client.
+- Toda métrica visual é escalada por PPI, sem mistura silenciosa de pixels físicos
+  e lógicos. Valores inválidos usam a política central de 96 PPI.
+
+## Métricas objetivas do delta
+
+As métricas orientam a conversa; não substituem julgamento sobre o contrato.
+
+| Métrica | Sinal de atenção | Porta de aprovação |
+| --- | --- | --- |
+| Duplicação | bloco novo de 10+ linhas ou 3+ ramos semanticamente iguais | extrair/usar a abstração existente, ou documentar motivo pontual |
+| Complexidade | método novo/alterado com mais de 12 decisões ou aninhamento maior que 3 | simplificar/extrair, ou justificar como fluxo de protocolo indivisível |
+| Tamanho e coesão | método maior que 80 linhas, classe maior que 500 linhas ou unit com responsabilidade mista | dividir por responsabilidade ou registrar exceção revisada |
+| Acoplamento | componente conhece form concreto, regra de negócio, package design-time ou detalhe de renderer alheio | inverter dependência/usar contrato antes de aprovar |
+| Tokens/renderização | literal visual repetido, novo painter/cache local ou bypass do tema/renderer | centralizar antes de aprovar |
+| Qualidade de build | erro, warning novo ou teste/regressão introduzido | zero regressões; exceção só com risco, dono e prazo documentados |
+| Testabilidade | estado/limite novo sem teste puro, smoke case ou roteiro verificável | evidência proporcional ao risco antes de liberar QA |
+
+Limites são aplicados ao código alterado. Código legado fora do diff vira débito
+anotado somente se impedir uma mudança segura; não amplia o escopo sem decisão
+do orquestrador.
+
+## Critérios de bloqueio
+
+`BLOCKED` ou `CHANGES_REQUESTED` é obrigatório quando houver qualquer item:
+
+1. quebra de build, erro de compilação, warning novo relevante ou verificação
+   declarada como executada sem evidência real;
+2. dependência invertida/cíclica, design-time no runtime, ou API/DFM/package
+   quebrado sem plano de compatibilidade aprovado;
+3. tokens espalhados, renderer Skia duplicado/contornado, ou fallback GDI visual;
+4. hook global, registro/desregistro não pareado/não idempotente, ou semântica
+   nativa de input/foco/teclado comprometida;
+5. acesso a janela/parent prematuro, leak/dangling reference, timer/listener sem
+   ciclo de destruição, ou risco de flicker/invalidação em cascata sem tratamento;
+6. comportamento novo sem roteiro que o agente de UI possa executar, inclusive
+   estados disabled/focus/keyboard/resize/DPI quando aplicáveis;
+7. conflito com a análise arquitetural sem decisão explícita do arquiteto;
+8. segredo, dado sensível, alteração não relacionada ou artefato de build no diff.
+
+Achados sem impacto funcional/arquitetural são `NOTE` e não bloqueiam. Achados
+que podem causar regressão localizada são `P1` e impedem testes; risco
+significativo de estabilidade, dados ou compatibilidade é `P0` e bloqueia a
+entrega até ser corrigido ou o orquestrador aceitar formalmente o risco.
+
+## Saída e handoff para o agente de testes
+
+O revisor publica um resumo no `.okf` da feature neste formato:
+
+```text
+Review: APPROVED_FOR_UI_TEST | CHANGES_REQUESTED | BLOCKED
+Branch/base: <feature> / <base>
+Diff revisado: <commit-range>
+Evidências: <comandos e resultados reais>
+P0/P1: <nenhum ou lista>
+Notas/debito aceito: <lista>
+Roteiro obrigatório para UI: <foco, teclado, mouse, resize, DPI, design-time e estados afetados>
+```
+
+Somente `APPROVED_FOR_UI_TEST`, sem P0/P1 aberto, libera o agente de testes de
+interface. O testador devolve ao orquestrador resultado por cenário e ambiente.
+Se o teste encontrar regressão, a tarefa retorna ao desenvolvedor na mesma
+branch; o revisor revisa o novo intervalo de commits antes de nova liberação.
+
+## Aprovação final para commit e PR
+
+Depois de UI aprovar todos os cenários obrigatórios, o orquestrador confirma:
+
+- análise arquitetural e `.okf` atualizados;
+- revisão `APPROVED_FOR_UI_TEST` e QA aprovado, com evidência real;
+- branch contém apenas o escopo da feature e não absorveu trabalho alheio;
+- build/testes possíveis foram realmente executados ou a limitação está explícita;
+- mensagem de commit e PR descrevem comportamento, risco e validação.
+
+Somente então o orquestrador faz commit, push e abre o PR. O revisor não cria
+commit, não faz push e não abre PR; sua responsabilidade termina no veredito
+registrado.

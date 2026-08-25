@@ -12,7 +12,8 @@ uses
   Vcl.ExtCtrls,
   Vcl.Graphics,
   Vcl.Skia,
-  DAC.Components.Skia.Renderer;
+  DAC.Components.Skia.Renderer,
+  DAC.Components.DesignSystem.Theme;
 
 type
   TDACLoadingKind = (
@@ -28,6 +29,7 @@ type
     FPaintBox: TSkPaintBox;
     FPhase: Integer;
     FRenderer: TDACSkiaRenderer;
+    FThemeMode: TDACThemeMode;
     FTimer: TTimer;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure CMVisibleChanged(var AMessage: TMessage); message CM_VISIBLECHANGED;
@@ -38,22 +40,24 @@ type
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
     function ParentSurfaceColor: TAlphaColor;
-    function ScaleFactor: Single;
-    function ScaleMetric(const AValue: Integer): Integer;
+    function Pixels(const AValue: Integer): Integer;
     procedure SetActive(const AValue: Boolean);
     procedure SetKind(const AValue: TDACLoadingKind);
+    procedure SetThemeMode(const AValue: TDACThemeMode);
     procedure TimerTick(Sender: TObject);
+    procedure ThemeChanged(Sender: TObject);
     procedure UpdatePaintBoxBounds;
     procedure UpdateTimer;
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
   protected
-    procedure ChangeScale(M, D: Integer); override;
     procedure CreateWnd; override;
     procedure Loaded; override;
     procedure Resize; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    function ResolvedAccentColor: TAlphaColor;
+    function ResolvedSurfaceColor: TAlphaColor;
     procedure Redraw;
   published
     property Active: Boolean read FActive write SetActive default True;
@@ -68,6 +72,7 @@ type
     property ShowHint;
     property TabOrder;
     property TabStop default False;
+    property ThemeMode: TDACThemeMode read FThemeMode write SetThemeMode default dtmInherit;
     property Visible;
     property OnClick;
     property OnDblClick;
@@ -82,14 +87,15 @@ implementation
 
 uses
   System.Math,
-  DAC.Components.DesignSystem.ColorTokens;
+  DAC.Components.DesignSystem.ComponentStyle,
+  DAC.Components.DesignSystem.ControlTokens;
 
 constructor TDACLoading.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   ControlStyle := ControlStyle + [csOpaque, csReplicatable];
-  Width := 160;
-  Height := 48;
+  Width := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.LoadingDefaultWidth);
+  Height := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.LoadingDefaultHeight);
   TabStop := False;
   ParentColor := False;
   StyleElements := [];
@@ -97,6 +103,8 @@ begin
   FActive := True;
   FKind := mlkSpinner;
   FPhase := 0;
+  FThemeMode := dtmInherit;
+  TDACThemeManager.RegisterListener(Self, ThemeChanged);
   FRenderer := TDACSkiaRenderer.Create;
 
   FPaintBox := TSkPaintBox.Create(Self);
@@ -107,7 +115,7 @@ begin
 
   FTimer := TTimer.Create(Self);
   FTimer.Enabled := False;
-  FTimer.Interval := 120;
+  FTimer.Interval := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.LoadingTimerInterval;
   FTimer.OnTimer := TimerTick;
 
   UpdatePaintBoxBounds;
@@ -116,19 +124,12 @@ end;
 
 destructor TDACLoading.Destroy;
 begin
+  TDACThemeManager.UnregisterListener(Self);
   FTimer.Free;
   FPaintBox.Free;
   FRenderer.Free;
   inherited;
 end;
-
-procedure TDACLoading.ChangeScale(M, D: Integer);
-begin
-  inherited;
-  UpdatePaintBoxBounds;
-  InvalidateLoading;
-end;
-
 procedure TDACLoading.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
@@ -160,17 +161,19 @@ var
   LPaint: ISkPaint;
   LRadius: Single;
   LSpacing: Single;
+  LTokens: TDACControlTokens;
 begin
-  LRadius := ScaleMetric(5);
-  LSpacing := ScaleMetric(20);
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  LRadius := Pixels(Round(LTokens.LoadingDotsRadius));
+  LSpacing := Pixels(Round(LTokens.LoadingDotsSpacing));
   LCenterX := (ADest.Width / 2) - LSpacing;
   LPaint := TSkPaint.Create(TSkPaintStyle.Fill);
   LPaint.AntiAlias := True;
-  LPaint.Color := TDACComponentColors.PrimaryDark;
+  LPaint.Color := LTokens.LoadingAccent;
 
   for I := 0 to 2 do
   begin
-    LAlpha := 92;
+    LAlpha := LTokens.LoadingDotsInactiveAlpha;
     if (FPhase mod 3) = I then
       LAlpha := AAlpha;
     LPaint.Alpha := LAlpha;
@@ -185,27 +188,34 @@ var
   LHighlight: TAlphaColor;
   LOffset: Single;
   LRect: TRectF;
+  LTokens: TDACControlTokens;
 begin
-  LBase := TDACComponentColors.Alpha(229, 235, 229);
-  LHighlight := TDACComponentColors.Alpha(246, 248, 246);
-  if TDACComponentColors.IsDarkSurface(ParentSurfaceColor) then
-  begin
-    LBase := TDACComponentColors.Alpha(18, 36, 24);
-    LHighlight := TDACComponentColors.Alpha(32, 54, 40);
-  end;
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  LBase := LTokens.LoadingSkeletonBase;
+  LHighlight := LTokens.LoadingSkeletonHighlight;
 
-  LRect := TRectF.Create(0, ScaleMetric(6), ScaleMetric(56), ScaleMetric(38));
-  FRenderer.FillRoundRect(ACanvas, LRect, LBase, ScaleMetric(6), AAlpha);
-  LRect := TRectF.Create(ScaleMetric(66), ScaleMetric(10), ADest.Width, ScaleMetric(18));
-  FRenderer.FillRoundRect(ACanvas, LRect, LBase, ScaleMetric(4), AAlpha);
-  LRect := TRectF.Create(ScaleMetric(66), ScaleMetric(28), ADest.Width - ScaleMetric(24),
-    ScaleMetric(36));
-  FRenderer.FillRoundRect(ACanvas, LRect, LBase, ScaleMetric(4), AAlpha);
+  LRect := TRectF.Create(0, Pixels(Round(LTokens.LoadingSkeletonAvatarTop)),
+    Pixels(Round(LTokens.LoadingSkeletonAvatarWidth)),
+    Pixels(Round(LTokens.LoadingSkeletonAvatarTop + LTokens.LoadingSkeletonAvatarHeight)));
+  FRenderer.FillRoundRect(ACanvas, LRect, LBase,
+    Pixels(Round(LTokens.LoadingSkeletonAvatarRadius)), AAlpha);
+  LRect := TRectF.Create(Pixels(Round(LTokens.LoadingSkeletonTextLeft)),
+    Pixels(Round(LTokens.LoadingSkeletonTitleTop)), ADest.Width,
+    Pixels(Round(LTokens.LoadingSkeletonTitleTop + LTokens.LoadingSkeletonTitleHeight)));
+  FRenderer.FillRoundRect(ACanvas, LRect, LBase, Pixels(Round(LTokens.LoadingSkeletonRadius)), AAlpha);
+  LRect := TRectF.Create(Pixels(Round(LTokens.LoadingSkeletonTextLeft)),
+    Pixels(Round(LTokens.LoadingSkeletonLineTop)),
+    ADest.Width - Pixels(Round(LTokens.LoadingSkeletonLineRightInset)),
+    Pixels(Round(LTokens.LoadingSkeletonLineTop + LTokens.LoadingSkeletonLineHeight)));
+  FRenderer.FillRoundRect(ACanvas, LRect, LBase, Pixels(Round(LTokens.LoadingSkeletonRadius)), AAlpha);
 
   LOffset := (FPhase mod 8) / 8;
-  LRect := TRectF.Create(ADest.Width * LOffset, ScaleMetric(10),
-    (ADest.Width * LOffset) + ScaleMetric(44), ScaleMetric(18));
-  FRenderer.FillRoundRect(ACanvas, LRect, LHighlight, ScaleMetric(4), 150);
+  LRect := TRectF.Create(ADest.Width * LOffset,
+    Pixels(Round(LTokens.LoadingSkeletonTitleTop)),
+    (ADest.Width * LOffset) + Pixels(Round(LTokens.LoadingSkeletonHighlightWidth)),
+    Pixels(Round(LTokens.LoadingSkeletonTitleTop + LTokens.LoadingSkeletonTitleHeight)));
+  FRenderer.FillRoundRect(ACanvas, LRect, LHighlight,
+    Pixels(Round(LTokens.LoadingSkeletonRadius)), LTokens.LoadingSkeletonHighlightAlpha);
 end;
 
 procedure TDACLoading.DrawSpinner(const ACanvas: ISkCanvas; const ADest: TRectF;
@@ -214,29 +224,42 @@ var
   LPaint: ISkPaint;
   LRect: TRectF;
   LSize: Single;
+  LTokens: TDACControlTokens;
 begin
-  LSize := Min(ADest.Width, ADest.Height) - ScaleMetric(8);
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  LSize := Min(ADest.Width, ADest.Height) - Pixels(Round(LTokens.LoadingSpinnerInset));
   LRect := TRectF.Create((ADest.Width - LSize) / 2, (ADest.Height - LSize) / 2,
     (ADest.Width + LSize) / 2, (ADest.Height + LSize) / 2);
 
   LPaint := TSkPaint.Create(TSkPaintStyle.Stroke);
   LPaint.AntiAlias := True;
-  LPaint.Color := TDACComponentColors.ControlBorderForSurface(ParentSurfaceColor);
-  LPaint.Alpha := 100;
+  LPaint.Color := LTokens.LoadingSpinnerTrack;
+  LPaint.Alpha := LTokens.LoadingSpinnerTrackAlpha;
   LPaint.StrokeCap := TSkStrokeCap.Round;
-  LPaint.StrokeWidth := ScaleMetric(4);
+  LPaint.StrokeWidth := Pixels(Round(LTokens.LoadingSpinnerThickness));
   ACanvas.DrawArc(LRect, 0, 360, False, LPaint);
 
-  LPaint.Color := TDACComponentColors.PrimaryDark;
+  LPaint.Color := LTokens.LoadingAccent;
   LPaint.Alpha := AAlpha;
   ACanvas.DrawArc(LRect, -90 + (FPhase * 32), 250, False, LPaint);
 end;
 
 procedure TDACLoading.InvalidateLoading;
 begin
+  if (FPaintBox = nil) or (csLoading in ComponentState) or
+    (csDestroying in ComponentState) then
+    Exit;
   UpdatePaintBoxBounds;
-  if (FPaintBox <> nil) and HandleAllocated then
-    FPaintBox.Redraw;
+  if csDesigning in ComponentState then
+  begin
+    if Parent <> nil then
+      FPaintBox.Redraw;
+    Invalidate;
+    Exit;
+  end;
+  if (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated then
+    Exit;
+  FPaintBox.Redraw;
 end;
 
 procedure TDACLoading.Loaded;
@@ -251,14 +274,16 @@ procedure TDACLoading.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
   const ADest: TRectF; const AOpacity: Single);
 var
   LAlpha: Byte;
+  LTokens: TDACControlTokens;
 begin
   if (ACanvas = nil) or (ADest.Width <= 0) or (ADest.Height <= 0) then
     Exit;
 
   ACanvas.Clear(ParentSurfaceColor);
-  LAlpha := 255;
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  LAlpha := LTokens.AlphaOpaque;
   if not Enabled then
-    LAlpha := 120;
+    LAlpha := LTokens.LoadingDisabledAlpha;
 
   case FKind of
     mlkDots:
@@ -272,13 +297,41 @@ end;
 
 function TDACLoading.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TDACComponentColors.ResolveParentSurface(Self);
+  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.PopupBackground;
 end;
 
 procedure TDACLoading.Redraw;
 begin
-  if (FPaintBox <> nil) and HandleAllocated then
-    FPaintBox.Redraw;
+  if (FPaintBox = nil) or (csLoading in ComponentState) or
+    (csDestroying in ComponentState) then
+    Exit;
+
+  UpdatePaintBoxBounds;
+
+  { The designer has a parent surface but no stable runtime HWND lifecycle.
+    Keep the Skia chrome preview available there without forcing a handle. }
+  if csDesigning in ComponentState then
+  begin
+    if Parent <> nil then
+      FPaintBox.Redraw;
+    Invalidate;
+    Exit;
+  end;
+
+  if (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated then
+    Exit;
+
+  FPaintBox.Redraw;
+end;
+
+function TDACLoading.ResolvedAccentColor: TAlphaColor;
+begin
+  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.LoadingAccent;
+end;
+
+function TDACLoading.ResolvedSurfaceColor: TAlphaColor;
+begin
+  Result := ParentSurfaceColor;
 end;
 
 procedure TDACLoading.Resize;
@@ -288,18 +341,9 @@ begin
   Redraw;
 end;
 
-function TDACLoading.ScaleFactor: Single;
+function TDACLoading.Pixels(const AValue: Integer): Integer;
 begin
-  Result := 1;
-  if FPaintBox <> nil then
-    Result := FPaintBox.ScaleFactor;
-  if Result <= 0 then
-    Result := 1;
-end;
-
-function TDACLoading.ScaleMetric(const AValue: Integer): Integer;
-begin
-  Result := Round(AValue * ScaleFactor);
+  Result := AValue;
   if (AValue > 0) and (Result < 1) then
     Result := 1;
 end;
@@ -321,9 +365,22 @@ begin
   InvalidateLoading;
 end;
 
+procedure TDACLoading.SetThemeMode(const AValue: TDACThemeMode);
+begin
+  if FThemeMode = AValue then
+    Exit;
+  FThemeMode := AValue;
+  ThemeChanged(Self);
+end;
+
 procedure TDACLoading.TimerTick(Sender: TObject);
 begin
   Inc(FPhase);
+  InvalidateLoading;
+end;
+
+procedure TDACLoading.ThemeChanged(Sender: TObject);
+begin
   InvalidateLoading;
 end;
 
@@ -332,12 +389,13 @@ var
   LHeight: Integer;
   LWidth: Integer;
 begin
-  if FPaintBox = nil then
+  if (FPaintBox = nil) or (csLoading in ComponentState) or
+    (csDestroying in ComponentState) then
     Exit;
 
   LWidth := Width;
   LHeight := Height;
-  if HandleAllocated then
+  if not (csDesigning in ComponentState) and HandleAllocated then
   begin
     LWidth := ClientWidth;
     LHeight := ClientHeight;

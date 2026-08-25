@@ -1,0 +1,62 @@
+# Revisao de codigo - MEM-DEL-009
+
+Data: 2026-07-21  
+Branch: `codex/fix-demo-visual-regressions`  
+Status: `CHANGES_REQUESTED`
+
+## Bloqueadores
+
+### P0 - a captura 144 PPI ainda mostra overflow horizontal
+
+O arquivo `Build/VisualValidation/dac-demo-144-buttons-bounds-final.png` foi
+inspecionado visualmente. Apesar de a janela estar dentro da imagem, o botao
+`Ghost` termina cortado na borda direita; os botoes seguintes da primeira
+grade tambem nao cabem no viewport. Logo, a alegacao de reflow/bounds para
+144 PPI nao e sustentada pela propria evidencia anexada.
+
+O gate de interaction passa porque reduz a form para 520 px e valida apenas
+esse estado apos resize. Ele nao verifica o layout inicial no PPI real da
+sessao nem que a largura de cada `TDACGridContainer` seja atualizada depois do
+realign dos filhos da form.
+
+### P1 - regressao previsivel no Delphi Designer
+
+`TForm1.CreateWnd`, `TForm1.Resize`, `FitToWorkArea` e
+`ConfigureResponsiveButtons` executam sem guarda de `csDesigning`. Ao abrir
+`Demo.Principal.dfm` no Designer, podem reposicionar/redimensionar a form para
+o work area da maquina e reatribuir as larguras dos cinco grids. O fluxo deve
+ser limitado a runtime, preservando DFM e designer como superfice declarativa.
+
+### P1 - `EffectiveColumns` pode exceder `Columns`
+
+`SetColumns` permite 1 e 2, porem
+`Max(3, Min(FColumns, Result))` devolve 3 nesses casos. Isto quebra o contrato
+da propriedade publicada e pode reposicionar filhos em tres colunas quando o
+consumidor declarou uma ou duas. A normalizacao precisa manter sempre o teto
+de `FColumns`, aplicando o minimo responsivo apenas quando `FColumns >= 3`.
+
+## Evidencia positiva, insuficiente para aprovacao
+
+- Build Win32/Delphi 32.0 de runtime, design-time, Demo, smoke e interaction:
+  `0 Warning(s)` e `0 Error(s)`.
+- `DACComponentsSmoke.exe` e `DACComponentsInteraction.exe`: `PASS`, exit
+  code `0`.
+- O gate de `WM_VSCROLL` confirma que, no resize artificial exercitado, a form
+  permanece visivel e com handle. Ele nao detecta clipping visual inicial nem
+  substitui a validacao em tela de 144 PPI.
+- `git diff --check` nao trouxe erro de whitespace (somente avisos LF/CRLF).
+
+## Correcao e nova evidencia obrigatoria
+
+1. Proteger os ajustes de work area/resize contra design-time e comprovar a
+   abertura de `Demo.Principal.dfm` no Designer sem mudar bounds persistidos ou
+   gerar `Control has no parent window`.
+2. Recalcular as larguras dos grids depois que o alinhamento de `GalleryTabs`,
+   pagina e `scrButtons` estiver efetivamente concluido; corrigir o contrato
+   de `EffectiveColumns` para 1..12.
+3. Ampliar o interaction gate para checar, antes do resize artificial, que
+   cada grid atende `Left + Width <= scrButtons.ClientWidth`, e incluir
+   cenarios `Columns = 1` e `Columns = 2`.
+4. Anexar captura nova em 144 PPI na aba Botoes, com a borda direita de cada
+   grid visivel e nenhum botao truncado/fora do viewport. Repetir a matriz
+   visual 96/120/144/192 antes de liberar commit/PR.

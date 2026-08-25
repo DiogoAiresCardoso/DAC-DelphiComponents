@@ -15,7 +15,13 @@ uses
   Vcl.Skia,
   Vcl.StdCtrls,
   DAC.Components.Controls.Edit,
+  DAC.Components.Controls.SystemText,
+  DAC.Components.Controls.FieldSupport,
   DAC.Components.DesignSystem.Fonts,
+  DAC.Components.DesignSystem.ComponentStyle,
+  DAC.Components.DesignSystem.ControlTokens,
+  DAC.Components.DesignSystem.OpacityTokens,
+  DAC.Components.DesignSystem.Theme,
   DAC.Components.DesignSystem.IconAssets,
   DAC.Components.Skia.IconPainter,
   DAC.Components.Skia.BackgroundPainter,
@@ -23,40 +29,69 @@ uses
   DAC.Components.Skia.Renderer;
 
 type
+  TDACComboDropDownState = (cdsClosed, cdsOpening, cdsOpen, cdsClosing);
+
   TDACComboBox = class(TCustomControl)
   private
     FBackgroundPainter: TDACSkiaBackgroundPainter;
+    FBindingCanModify: Boolean;
     FBorderPainter: TDACSkiaBorderPainter;
     FCombo: TComboBox;
     FCornerRadius: Integer;
     FCounterText: string;
+    FDropDownCount: Integer;
     FDropDownForm: TForm;
     FDropDownHotIndex: Integer;
     FDropDownPaintBox: TSkPaintBox;
+    FDropDownTextOverlay: TDACSystemTextOverlay;
+    FDropDownState: TDACComboDropDownState;
+    FDesignValueLabel: TLabel;
+    FErrorText: string;
+    FFieldText: TDACFieldTextSupport;
     FHelperText: string;
     FIconPainter: TDACSkiaIconPainter;
     FInputSize: TDACInputSize;
+    FItemIndex: Integer;
+    FItems: TStringList;
     FLabelText: string;
+    FNativeLabel: TLabel;
     FMouseInside: Boolean;
+    FLoading: Boolean;
+    FReadOnly: Boolean;
+    FOwnerClickCloseLatch: Boolean;
+    FOnCloseUp: TNotifyEvent;
     FOnChange: TNotifyEvent;
+    FOnDropDown: TNotifyEvent;
     FPaintBox: TSkPaintBox;
     FRenderer: TDACSkiaRenderer;
     FRequired: Boolean;
     FStatus: TDACEditStatus;
+    FSyncingNative: Boolean;
+    FLoadingTabStopCaptured: Boolean;
+    FTabStopBeforeLoading: Boolean;
+    FThemeMode: TDACThemeMode;
+    FText: string;
     FVariant: TDACInputVariant;
+    FStyle: TComboBoxStyle;
     function BorderAlpha: Byte;
     function BorderColor: TAlphaColor;
+    function CanModifyValue: Boolean;
+    procedure AttachComboToHost;
+    function CanUpdateChildren: Boolean;
     function ControlHeight: Integer;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure CMParentColorChanged(var AMessage: TMessage); message CM_PARENTCOLORCHANGED;
+    procedure CMParentFontChanged(var AMessage: TMessage); message CM_PARENTFONTCHANGED;
+    procedure CMShowingChanged(var AMessage: TMessage); message CM_SHOWINGCHANGED;
     procedure DoComboChange(Sender: TObject);
     procedure DoComboEnter(Sender: TObject);
     procedure DoComboExit(Sender: TObject);
     procedure DoMouseEnter(Sender: TObject);
     procedure DoMouseLeave(Sender: TObject);
     function ChromeTop: Integer;
-    procedure CloseDropDown;
     procedure DropDownDeactivate(Sender: TObject);
+    procedure DropDownKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
     function DropDownItemAt(const AY: Integer): Integer;
     function DropDownItemHeight: Integer;
     procedure DropDownPaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
@@ -76,62 +111,91 @@ type
     function HasLabel: Boolean;
     function HasSupportText: Boolean;
     function InputFontSize: Integer;
+    function ResolvedFieldState: TDACResolvedFieldState;
+    procedure ItemsChanged(Sender: TObject);
+    procedure NativeRequestDropDown(Sender: TObject);
+    function NativeFocused: Boolean;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
     procedure PaintBoxMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     function ParentSurfaceColor: TAlphaColor;
-    function ScaleFactor: Single;
-    function ScaleMetric(const AValue: Integer): Integer;
+    function Pixels(const AValue: Integer): Integer;
+    function ResolvedTokens: TDACControlTokens;
+    procedure ResolveTextState(const AValue: string);
     procedure SetCornerRadius(const AValue: Integer);
     procedure SetCounterText(const AValue: string);
     procedure SetDropDownCount(const AValue: Integer);
+    procedure SetErrorText(const AValue: string);
     procedure SetHelperText(const AValue: string);
     procedure SetInputSize(const AValue: TDACInputSize);
     procedure SetItemIndex(const AValue: Integer);
     procedure SetItems(const AValue: TStrings);
     procedure SetLabelText(const AValue: string);
+    procedure SetLoading(const AValue: Boolean);
+    procedure SetReadOnly(const AValue: Boolean);
     procedure SetRequired(const AValue: Boolean);
     procedure SetStatus(const AValue: TDACEditStatus);
     procedure SetStyle(const AValue: TComboBoxStyle);
     procedure SetText(const AValue: string);
+    procedure SetThemeMode(const AValue: TDACThemeMode);
     procedure SetVariant(const AValue: TDACInputVariant);
     procedure ShowDropDown;
-    function SupportTextColor(const ASurface: TAlphaColor): TAlphaColor;
+    procedure ToggleDropDown;
     procedure UpdateChildBounds;
     procedure UpdateComboStyle;
+    procedure UpdateDesignValuePreview;
+    procedure SynchronizeNative;
+    procedure UpdateNativeLabel;
     procedure UpdatePaintBoxBounds;
     procedure UpdateZOrder;
+    procedure ThemeChanged(Sender: TObject);
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
+    procedure WMSetFocus(var AMessage: TWMSetFocus); message WM_SETFOCUS;
   protected
-    procedure ChangeScale(M, D: Integer); override;
     procedure CreateWnd; override;
     procedure Loaded; override;
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
     procedure Resize; override;
+    procedure SetBindingCanModify(const AValue: Boolean);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    procedure SetBounds(ALeft, ATop, AWidth, AHeight: Integer); override;
+    function LabelFontSize: Integer;
+    function PopupVisible: Boolean;
+    function ResolvedChromeColor: TAlphaColor;
+    function ResolvedPopupBackground: TAlphaColor;
+    procedure CloseDropDown;
     procedure Redraw;
+    procedure OpenDropDown;
     procedure SetFocus; reintroduce;
+    procedure SimulateDropDownClick(const AIndex: Integer);
+    procedure SimulateDropDownExternalDeactivate;
+    procedure SimulateDropDownKey(const AKey: Word);
     property ComboControl: TComboBox read FCombo;
+    property NativeLabel: TLabel read FNativeLabel;
   published
     property Align;
     property Anchors;
     property Constraints;
-    property CornerRadius: Integer read FCornerRadius write SetCornerRadius default 8;
+    property CornerRadius: Integer read FCornerRadius write SetCornerRadius
+      default DACComboBoxDefaultCornerRadius;
     property CounterText: string read FCounterText write SetCounterText;
     property DropDownCount: Integer read GetDropDownCount write SetDropDownCount default 8;
     property Enabled;
+    property ErrorText: string read FErrorText write SetErrorText;
     property Font;
     property HelperText: string read FHelperText write SetHelperText;
-    property InputSize: TDACInputSize read FInputSize write SetInputSize default misMedium;
+    property InputSize: TDACInputSize read FInputSize write SetInputSize default misSmall;
     property ItemIndex: Integer read GetItemIndex write SetItemIndex default -1;
     property Items: TStrings read GetItems write SetItems;
     property LabelText: string read FLabelText write SetLabelText;
+    property Loading: Boolean read FLoading write SetLoading default False;
     property ParentFont;
     property ParentShowHint;
     property PopupMenu;
+    property ReadOnly: Boolean read FReadOnly write SetReadOnly default False;
     property Required: Boolean read FRequired write SetRequired default False;
     property ShowHint;
     property Status: TDACEditStatus read FStatus write SetStatus default mesNormal;
@@ -139,13 +203,16 @@ type
     property TabOrder;
     property TabStop default True;
     property Text: string read GetText write SetText;
+    property ThemeMode: TDACThemeMode read FThemeMode write SetThemeMode default dtmInherit;
     property Variant: TDACInputVariant read FVariant write SetVariant default mivOutlined;
     property Visible;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
+    property OnCloseUp: TNotifyEvent read FOnCloseUp write FOnCloseUp;
     property OnClick;
     property OnDblClick;
     property OnEnter;
     property OnExit;
+    property OnDropDown: TNotifyEvent read FOnDropDown write FOnDropDown;
     property OnKeyDown;
     property OnKeyPress;
     property OnKeyUp;
@@ -156,27 +223,192 @@ type
     property OnMouseUp;
   end;
 
+function DACNativeComboBoxClass: TWinControlClass;
+function DACNativeComboBoxEditablePaintDelegations(
+  const AControl: TComboBox): Cardinal;
+
 implementation
 
 uses
   DAC.Components.DesignSystem.ColorTokens,
   System.Math,
-  Winapi.Windows;
+  Winapi.Windows,
+  Winapi.UxTheme;
+
+type
+  { Keeps the real ComboBox HWND as the text, selection, keyboard-search and
+    accessibility owner. Its native border/dropdown column are clipped so the
+    surrounding DAC control remains the only visible chrome/popup owner. }
+  TDACNativeComboBox = class(TComboBox)
+  private
+    FDropDownClipWidth: Integer;
+    FEditablePaintDelegations: Cardinal;
+    FInteractionLocked: Boolean;
+    FOnRequestDropDown: TNotifyEvent;
+    FVerticalClipInset: Integer;
+    procedure ApplyClip;
+    procedure SetDropDownClipWidth(const AValue: Integer);
+    procedure SetVerticalClipInset(const AValue: Integer);
+  protected
+    procedure CreateParams(var Params: TCreateParams); override;
+    procedure CreateWnd; override;
+    procedure Resize; override;
+    procedure WndProc(var Message: TMessage); override;
+  public
+    constructor Create(AOwner: TComponent); override;
+    property DropDownClipWidth: Integer read FDropDownClipWidth
+      write SetDropDownClipWidth;
+    property VerticalClipInset: Integer read FVerticalClipInset
+      write SetVerticalClipInset;
+    property InteractionLocked: Boolean read FInteractionLocked
+      write FInteractionLocked;
+    property OnRequestDropDown: TNotifyEvent read FOnRequestDropDown
+      write FOnRequestDropDown;
+  end;
+
+function DACNativeComboBoxClass: TWinControlClass;
+begin
+  Result := TDACNativeComboBox;
+end;
+
+function DACNativeComboBoxEditablePaintDelegations(
+  const AControl: TComboBox): Cardinal;
+begin
+  if AControl is TDACNativeComboBox then
+    Result := TDACNativeComboBox(AControl).FEditablePaintDelegations
+  else
+    Result := 0;
+end;
+
+procedure TDACNativeComboBox.ApplyClip;
+var
+  LClipWidth: Integer;
+  LInset: Integer;
+  LRegion: HRGN;
+begin
+  if not HandleAllocated or (Width <= 0) or (Height <= 0) then
+    Exit;
+  LClipWidth := Max(1, Width - FDropDownClipWidth);
+  LInset := Min(Max(0, FVerticalClipInset), Max(0, (Height - 1) div 2));
+  LRegion := CreateRectRgn(0, LInset, LClipWidth, Height - LInset);
+  if SetWindowRgn(Handle, LRegion, True) = 0 then
+    DeleteObject(LRegion);
+end;
+
+constructor TDACNativeComboBox.Create(AOwner: TComponent);
+begin
+  inherited;
+end;
+
+procedure TDACNativeComboBox.CreateParams(var Params: TCreateParams);
+begin
+  inherited;
+  Params.Style := Params.Style and not WS_BORDER;
+  Params.ExStyle := Params.ExStyle and not
+    (WS_EX_CLIENTEDGE or WS_EX_STATICEDGE);
+end;
+
+procedure TDACNativeComboBox.CreateWnd;
+begin
+  inherited;
+  SetWindowTheme(Handle, '', '');
+  SetWindowLong(Handle, GWL_STYLE,
+    GetWindowLong(Handle, GWL_STYLE) and not WS_BORDER);
+  SetWindowLong(Handle, GWL_EXSTYLE,
+    GetWindowLong(Handle, GWL_EXSTYLE) and not
+      (WS_EX_CLIENTEDGE or WS_EX_STATICEDGE));
+  SetWindowPos(Handle, 0, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or
+    SWP_NOZORDER or SWP_NOACTIVATE or SWP_FRAMECHANGED);
+  SendMessage(Handle, WM_CHANGEUISTATE,
+    MakeLong(UIS_SET, UISF_HIDEFOCUS or UISF_HIDEACCEL), 0);
+  ApplyClip;
+end;
+
+procedure TDACNativeComboBox.Resize;
+begin
+  inherited;
+  ApplyClip;
+end;
+
+procedure TDACNativeComboBox.SetDropDownClipWidth(const AValue: Integer);
+begin
+  if FDropDownClipWidth = Max(0, AValue) then
+    Exit;
+  FDropDownClipWidth := Max(0, AValue);
+  ApplyClip;
+end;
+
+procedure TDACNativeComboBox.SetVerticalClipInset(const AValue: Integer);
+begin
+  if FVerticalClipInset = Max(0, AValue) then
+    Exit;
+  FVerticalClipInset := Max(0, AValue);
+  ApplyClip;
+end;
+
+procedure TDACNativeComboBox.WndProc(var Message: TMessage);
+begin
+  if Message.Msg = CB_SHOWDROPDOWN then
+  begin
+    if (Message.WParam <> 0) and Assigned(FOnRequestDropDown) and
+      not FInteractionLocked then
+      FOnRequestDropDown(Self);
+    Message.Result := 0;
+    Exit;
+  end;
+
+  if FInteractionLocked then
+    case Message.Msg of
+      WM_CHAR, WM_MOUSEWHEEL:
+        begin
+          Message.Result := 0;
+          Exit;
+        end;
+      WM_KEYDOWN:
+        if Message.WParam in [VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT, VK_HOME,
+          VK_END, VK_PRIOR, VK_NEXT, VK_F4, VK_SPACE] then
+        begin
+          Message.Result := 0;
+          Exit;
+        end;
+    end;
+  if (Style in [csDropDown, csSimple]) and
+    ((Message.Msg = WM_PAINT) or (Message.Msg = WM_PRINTCLIENT)) then
+    { Editable styles always reach the native ComboBox/edit child. No DAC
+      text renderer is allowed to cover its selection, caret or IME state. }
+    Inc(FEditablePaintDelegations);
+  inherited;
+end;
+
+function ComboBoxVclColor(const AColor: TAlphaColor): TColor;
+begin
+  Result := TColor(((AColor and $00FF0000) shr 16) or
+    (AColor and $0000FF00) or ((AColor and $000000FF) shl 16));
+end;
 
 constructor TDACComboBox.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  ControlStyle := ControlStyle + [csOpaque, csClickEvents, csCaptureMouse];
-  Width := 220;
-  Height := 38;
+  { The wrapper is only the host for native text and the Skia chrome. Keeping
+    it non-opaque prevents a white rectangle behind its label/support rows. }
+  ControlStyle := (ControlStyle + [csClickEvents, csCaptureMouse]) - [csOpaque];
+  FBindingCanModify := True;
+  FThemeMode := dtmInherit;
+  Width := Round(ResolvedTokens.ComboBoxDefaultWidth);
+  Height := Round(ResolvedTokens.ComboBoxDefaultHeight);
   TabStop := True;
-  ParentColor := False;
+  ParentColor := True;
   StyleElements := [];
   Cursor := crDefault;
-  Color := clWhite;
-  FCornerRadius := 8;
-  FInputSize := misMedium;
+  FCornerRadius := Round(ResolvedTokens.ComboBoxDefaultCornerRadius);
+  TDACThemeManager.RegisterListener(Self, ThemeChanged);
+  FInputSize := misSmall;
+  FItemIndex := -1;
+  FDropDownHotIndex := -1;
+  FDropDownState := cdsClosed;
+  FDropDownCount := ResolvedTokens.ComboBoxDefaultDropDownCount;
   FStatus := mesNormal;
+  FStyle := csDropDownList;
   FVariant := mivOutlined;
 
   FRenderer := TDACSkiaRenderer.Create;
@@ -184,11 +416,18 @@ begin
   FBorderPainter := TDACSkiaBorderPainter.Create(FRenderer);
   FIconPainter := TDACSkiaIconPainter.Create(FRenderer);
 
-  FCombo := TComboBox.Create(Self);
-  FCombo.Parent := Self;
-  FCombo.SetSubComponent(True);
+  FItems := TStringList.Create;
+  FItems.OnChange := ItemsChanged;
+
+  FCombo := TDACNativeComboBox.Create(Self);
+  { Parenting remains deferred until the wrapper has a complete HWND chain,
+    preserving Parent=nil designer safety. The transient native child is not
+    serialized, but becomes the permanent text/accessibility surface at
+    runtime. }
   FCombo.Style := csDropDownList;
-  FCombo.StyleElements := [];
+  { seClient is required for VCL 10.2 to dispatch WM_PAINT to the localized
+    suite style hook. Border and font remain outside the style engine. }
+  FCombo.StyleElements := [seClient];
   FCombo.ParentFont := False;
   FCombo.Visible := False;
   FCombo.TabStop := False;
@@ -197,6 +436,25 @@ begin
   FCombo.OnExit := DoComboExit;
   FCombo.OnMouseEnter := DoMouseEnter;
   FCombo.OnMouseLeave := DoMouseLeave;
+  TDACNativeComboBox(FCombo).OnRequestDropDown := NativeRequestDropDown;
+
+  { The form designer must not host the transient HWND used by the runtime
+    ComboBox. This lightweight VCL label presents the streamed value while
+    keeping its text as crisp as the native editor. }
+  FDesignValueLabel := TLabel.Create(Self);
+  FDesignValueLabel.Parent := Self;
+  FDesignValueLabel.SetSubComponent(True);
+  FDesignValueLabel.AutoSize := False;
+  FDesignValueLabel.Transparent := True;
+  FDesignValueLabel.ParentFont := False;
+  FDesignValueLabel.Visible := False;
+  FDesignValueLabel.OnMouseDown := PaintBoxMouseDown;
+  FDesignValueLabel.OnMouseEnter := DoMouseEnter;
+  FDesignValueLabel.OnMouseLeave := DoMouseLeave;
+
+  FFieldText := TDACFieldTextSupport.Create(Self, Self);
+  FNativeLabel := FFieldText.CaptionLabel;
+  FFieldText.SetFocusControl(FCombo);
 
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
@@ -213,8 +471,13 @@ end;
 
 destructor TDACComboBox.Destroy;
 begin
+  TDACThemeManager.UnregisterListener(Self);
+  FItems.OnChange := nil;
   FDropDownForm.Free;
+  FDesignValueLabel.Free;
   FCombo.Free;
+  FItems.Free;
+  FFieldText.Free;
   FPaintBox.Free;
   FIconPainter.Free;
   FBorderPainter.Free;
@@ -224,90 +487,118 @@ begin
 end;
 
 function TDACComboBox.BorderAlpha: Byte;
+var
+  LTokens: TDACControlTokens;
 begin
+  LTokens := ResolvedTokens;
   if FVariant = mivUnderlined then
   begin
-    if Focused or DropDownVisible or (FStatus <> mesNormal) then
-      Exit(255);
+    if NativeFocused or DropDownVisible or (FStatus <> mesNormal) then
+      Exit(LTokens.ComboBoxUnderlinedBorderAlphaFocus);
     if FMouseInside then
-      Exit(220);
-    Exit(190);
+      Exit(LTokens.ComboBoxUnderlinedBorderAlphaHover);
+    Exit(LTokens.ComboBoxUnderlinedBorderAlphaNormal);
   end;
 
-  if not Enabled then
-    Result := 130
-  else if Focused or DropDownVisible then
-    Result := 255
+  if not Enabled or FLoading then
+    Result := LTokens.ComboBoxBorderAlphaDisabled
+  else if NativeFocused or DropDownVisible then
+    Result := LTokens.ComboBoxBorderAlphaFocus
   else if FStatus <> mesNormal then
-    Result := 215
+    Result := LTokens.ComboBoxBorderAlphaStatus
   else if FMouseInside then
-    Result := 210
+    Result := LTokens.ComboBoxBorderAlphaHover
   else
-    Result := 185;
+    Result := LTokens.ComboBoxBorderAlphaNormal;
 end;
 
 function TDACComboBox.BorderColor: TAlphaColor;
 var
-  LSurface: TAlphaColor;
+  LTokens: TDACControlTokens;
 begin
-  LSurface := ParentSurfaceColor;
+  LTokens := ResolvedTokens;
   case FStatus of
     mesSuccess:
-      Result := TDACComponentColors.PrimaryDark;
+      Result := LTokens.ComboBoxSuccessBorder;
     mesWarning:
-      Result := TDACComponentColors.Warning;
+      Result := LTokens.ComboBoxWarningBorder;
     mesDanger:
-      Result := TDACComponentColors.Danger;
+      Result := LTokens.ComboBoxDangerBorder;
   else
-    if Focused or DropDownVisible then
-      Result := TDACComponentColors.Primary
+    if NativeFocused or DropDownVisible then
+      Result := LTokens.ComboBoxFocusBorder
     else if FMouseInside then
-      Result := TDACComponentColors.ControlBorderHoverForSurface(LSurface)
+      Result := LTokens.ComboBoxBorderHover
     else
-      Result := TDACComponentColors.ControlBorderForSurface(LSurface);
+      Result := LTokens.ComboBoxBorder;
   end;
 end;
 
-function TDACComboBox.ControlHeight: Integer;
+function TDACComboBox.CanModifyValue: Boolean;
 begin
-  case FInputSize of
-    misSmall:
-      Result := ScaleMetric(32);
-    misLarge:
-      Result := ScaleMetric(48);
-  else
-    Result := ScaleMetric(40);
-  end;
+  Result := Enabled and not FLoading and not FReadOnly and FBindingCanModify;
+end;
 
+procedure TDACComboBox.AttachComboToHost;
+begin
+  if (FCombo = nil) or (FCombo.Parent = Self) or
+    (csLoading in ComponentState) or (csDesigning in ComponentState) or
+    (csDestroying in ComponentState) or (Parent = nil) or
+    not HandleAllocated or not Parent.HandleAllocated then
+    Exit;
+  FCombo.Parent := Self;
+  SynchronizeNative;
+end;
+
+function TDACComboBox.CanUpdateChildren: Boolean;
+begin
+  Result := not (csDestroying in ComponentState) and (Parent <> nil) and
+    HandleAllocated and Parent.HandleAllocated and (FCombo <> nil) and
+    (FCombo.Parent = Self);
+end;
+
+function TDACComboBox.ControlHeight: Integer;
+var
+  LTokens: TDACControlTokens;
+begin
+  LTokens := ResolvedTokens;
+  case FInputSize of
+    misSmall: Result := Round(LTokens.ComboBoxSmallChromeHeight);
+    misLarge: Result := Round(LTokens.ComboBoxLargeChromeHeight);
+  else
+    Result := Round(LTokens.ComboBoxMediumChromeHeight);
+  end;
   if FVariant = mivCompact then
-    Result := ScaleMetric(32);
+    Result := Round(LTokens.ComboBoxSmallChromeHeight);
 end;
 
 procedure TDACComboBox.CloseDropDown;
 begin
-  if FDropDownForm <> nil then
+  if FDropDownState in [cdsClosed, cdsClosing] then
+    Exit;
+  FDropDownState := cdsClosing;
+  if (FDropDownForm <> nil) and FDropDownForm.Visible then
     FDropDownForm.Hide;
   FDropDownHotIndex := -1;
+  FDropDownState := cdsClosed;
   Redraw;
-end;
-
-procedure TDACComboBox.ChangeScale(M, D: Integer);
-begin
-  inherited;
-  UpdateChildBounds;
-  Redraw;
+  if Assigned(FOnCloseUp) then
+    FOnCloseUp(Self);
 end;
 
 function TDACComboBox.ChromeTop: Integer;
 begin
-  Result := 0;
-  if HasLabel then
-    Result := ScaleMetric(24);
+  Result := DACFieldChromeTop(HasLabel, ResolvedTokens);
 end;
 
 procedure TDACComboBox.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
+  if not Enabled then
+  begin
+    CloseDropDown;
+    DACFieldRelinquishFocus(Self, FCombo);
+  end;
   UpdateComboStyle;
   Redraw;
 end;
@@ -319,9 +610,34 @@ begin
   Redraw;
 end;
 
+procedure TDACComboBox.CMParentFontChanged(var AMessage: TMessage);
+begin
+  inherited;
+  UpdateComboStyle;
+  Redraw;
+end;
+
+procedure TDACComboBox.CMShowingChanged(var AMessage: TMessage);
+begin
+  inherited;
+  if not Showing then
+  begin
+    CloseDropDown;
+    if FCombo <> nil then
+      FCombo.Visible := False;
+    Exit;
+  end;
+  AttachComboToHost;
+  UpdateChildBounds;
+  UpdateComboStyle;
+  UpdateZOrder;
+  Redraw;
+end;
+
 procedure TDACComboBox.CreateWnd;
 begin
   inherited;
+  AttachComboToHost;
   UpdateZOrder;
   UpdateChildBounds;
   UpdateComboStyle;
@@ -330,6 +646,27 @@ end;
 
 procedure TDACComboBox.DoComboChange(Sender: TObject);
 begin
+  if FSyncingNative then
+    Exit;
+  if not CanModifyValue then
+  begin
+    SynchronizeNative;
+    Exit;
+  end;
+  if (FCombo <> nil) and FCombo.HandleAllocated then
+  begin
+    FItemIndex := FCombo.ItemIndex;
+    if (FItemIndex >= 0) and (FItemIndex < FItems.Count) then
+      FText := FItems[FItemIndex]
+    else
+    begin
+      FItemIndex := -1;
+      if FStyle = csDropDown then
+        FText := FCombo.Text
+      else
+        FText := '';
+    end;
+  end;
   Redraw;
   if Assigned(FOnChange) then
     FOnChange(Self);
@@ -350,20 +687,73 @@ begin
 end;
 
 procedure TDACComboBox.DropDownDeactivate(Sender: TObject);
+var
+  LPoint: TPoint;
 begin
+  FOwnerClickCloseLatch := False;
+  if GetCursorPos(LPoint) then
+  begin
+    LPoint := ScreenToClient(LPoint);
+    FOwnerClickCloseLatch := PtInRect(ClientRect, LPoint) and
+      (GetKeyState(VK_LBUTTON) < 0);
+  end;
   CloseDropDown;
+end;
+
+procedure TDACComboBox.DropDownKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+var
+  LIndex: Integer;
+  LKey: Word;
+begin
+  if not CanModifyValue or not DropDownVisible or
+    (FCombo = nil) or (FItems.Count = 0) then
+    Exit;
+
+  LKey := Key;
+  case Key of
+    VK_ESCAPE:
+      begin
+        Key := 0;
+        CloseDropDown;
+      end;
+    VK_RETURN:
+      begin
+        Key := 0;
+        CloseDropDown;
+      end;
+    VK_DOWN, VK_UP:
+      begin
+        Key := 0;
+        LIndex := FItemIndex;
+        if LIndex < 0 then
+          LIndex := 0
+        else if LKey = VK_DOWN then
+          LIndex := Min(FItems.Count - 1, LIndex + 1)
+        else
+          LIndex := Max(0, LIndex - 1);
+        if FItemIndex = LIndex then
+          Exit;
+        SetItemIndex(LIndex);
+        FDropDownHotIndex := LIndex;
+        if Assigned(FOnChange) then
+          FOnChange(Self);
+        if FDropDownPaintBox <> nil then
+          FDropDownPaintBox.Redraw;
+      end;
+  end;
 end;
 
 function TDACComboBox.DropDownItemAt(const AY: Integer): Integer;
 begin
   Result := AY div DropDownItemHeight;
-  if (Result < 0) or (Result >= FCombo.Items.Count) then
+  if (Result < 0) or (Result >= FItems.Count) then
     Result := -1;
 end;
 
 function TDACComboBox.DropDownItemHeight: Integer;
 begin
-  Result := Max(ScaleMetric(36), ControlHeight);
+  Result := Round(ResolvedTokens.ComboBoxPopupItemHeight);
 end;
 
 procedure TDACComboBox.DropDownPaintBoxDraw(Sender: TObject;
@@ -377,64 +767,80 @@ var
   LItemHeight: Integer;
   LRect: TRectF;
   LRow: TRectF;
-  LScale: Single;
-  LSurface: TAlphaColor;
   LTextColor: TAlphaColor;
+  LTokens: TDACControlTokens;
 begin
   if (ACanvas = nil) or (FCombo = nil) then
     Exit;
 
-  LScale := ScaleFactor;
-  LSurface := ParentSurfaceColor;
-  LBackground := TDACComponentColors.ControlBackgroundForSurface(LSurface);
-  LBorder := TDACComponentColors.ControlBorderForSurface(LSurface);
+  { Popup item captions are a native text layer.  Do not route form text
+    through the Skia renderer: the popup keeps Skia for its surface and icons
+    while Windows provides ClearType, font fallback and matching hinting. }
+  FDropDownTextOverlay.BeginNativeTextFrame;
+  try
 
-  ACanvas.Clear(TDACComponentColors.Transparent);
-  LRect := FRenderer.SnapRect(TRectF.Create(0, 0, ADest.Width, ADest.Height), LScale);
-  LRect.Inflate(-0.5 / LScale, -0.5 / LScale);
-  FRenderer.FillRoundRect(ACanvas, LRect, LBackground, FCornerRadius, 255);
-  FRenderer.StrokeRoundRect(ACanvas, LRect, TDACComponentColors.Primary,
-    FCornerRadius, 1, 255);
+  LTokens := ResolvedTokens;
+  LBackground := LTokens.ComboBoxPopupBackground;
+  LBorder := LTokens.ComboBoxPopupBorder;
+
+  ACanvas.Clear(LTokens.ComboBoxPopupCanvasBackground);
+  LRect := FRenderer.SnapRect(TRectF.Create(0, 0, ADest.Width, ADest.Height),
+    LTokens.ComboBoxPopupSnapScale);
+  LRect.Inflate(-LTokens.ComboBoxPopupBorderInset,
+    -LTokens.ComboBoxPopupBorderInset);
+  FRenderer.FillRoundRect(ACanvas, LRect, LBackground, FCornerRadius,
+    LTokens.ComboBoxPopupBackgroundAlpha);
+  FRenderer.StrokeRoundRect(ACanvas, LRect, LTokens.ComboBoxPopupBorder,
+    FCornerRadius, LTokens.ComboBoxPopupBorderWidth,
+    LTokens.ComboBoxPopupBorderAlpha);
 
   LItemHeight := DropDownItemHeight;
-  for LIndex := 0 to FCombo.Items.Count - 1 do
+  for LIndex := 0 to FItems.Count - 1 do
   begin
-    LRow := TRectF.Create(LRect.Left + 1, LRect.Top + (LIndex * LItemHeight) + 1,
-      LRect.Right - 1, LRect.Top + ((LIndex + 1) * LItemHeight) + 1);
+    LRow := TRectF.Create(LRect.Left + LTokens.ComboBoxPopupItemInset,
+      LRect.Top + (LIndex * LItemHeight) + LTokens.ComboBoxPopupItemInset,
+      LRect.Right - LTokens.ComboBoxPopupItemInset,
+      LRect.Top + ((LIndex + 1) * LItemHeight) + LTokens.ComboBoxPopupItemInset);
     if LRow.Top >= LRect.Bottom then
       Break;
 
-    if LIndex = FCombo.ItemIndex then
-      FRenderer.FillRoundRect(ACanvas, LRow, TDACComponentColors.PrimaryLight,
-        0, 80)
+    if LIndex = FItemIndex then
+      FRenderer.FillRoundRect(ACanvas, LRow, LTokens.ComboBoxPopupItemSelectedBackground,
+        LTokens.ComboBoxPopupRowRadius, LTokens.ComboBoxPopupSelectedAlpha)
     else if LIndex = FDropDownHotIndex then
-      FRenderer.FillRoundRect(ACanvas, LRow, TDACComponentColors.PrimaryLight,
-        0, 42);
+      FRenderer.FillRoundRect(ACanvas, LRow, LTokens.ComboBoxPopupItemHotBackground,
+        LTokens.ComboBoxPopupRowRadius, LTokens.ComboBoxPopupHotAlpha);
 
-    LTextColor := TDACComponentColors.ControlTextForSurface(LSurface);
-    if LIndex = FCombo.ItemIndex then
-      LTextColor := TDACComponentColors.PrimaryDark;
+    LTextColor := LTokens.ComboBoxPopupItemText;
+    if LIndex = FItemIndex then
+      LTextColor := LTokens.ComboBoxPopupItemSelectedText;
 
-    FRenderer.Text(ACanvas, FCombo.Items[LIndex],
-      TDACComponentFontInstaller.FontFamily, LRow.Left + ScaleMetric(14),
-      LRow.Top + (LRow.Height / 2) + ScaleMetric(5), 13, LTextColor,
-      False, LRow.Width - ScaleMetric(44));
+    FDropDownTextOverlay.QueueCenteredText(FItems[LIndex],
+      TDACComponentFontInstaller.FontFamily,
+      TRectF.Create(LRow.Left + Pixels(Round(LTokens.ComboBoxPopupItemTextLeftInset)), LRow.Top,
+        LRow.Right - Pixels(Round(LTokens.ComboBoxPopupItemTextRightReserve)), LRow.Bottom),
+      Round(LTokens.ComboBoxPopupItemTextSize), LTextColor);
 
-    if LIndex = FCombo.ItemIndex then
+    if LIndex = FItemIndex then
     begin
-      LCheckRect := TRectF.Create(LRow.Right - ScaleMetric(28),
-        LRow.Top + (LRow.Height - ScaleMetric(16)) / 2,
-        LRow.Right - ScaleMetric(12),
-        LRow.Top + (LRow.Height + ScaleMetric(16)) / 2);
-      LIconStyle.Color := TDACComponentColors.PrimaryDark;
-      LIconStyle.Alpha := 255;
+      LCheckRect := TRectF.Create(LRow.Right - Pixels(Round(LTokens.ComboBoxPopupCheckColumnWidth)),
+        LRow.Top + (LRow.Height - Pixels(Round(LTokens.ComboBoxPopupCheckSize))) / 2,
+        LRow.Right - Pixels(Round(LTokens.ComboBoxPopupCheckRightInset)),
+        LRow.Top + (LRow.Height + Pixels(Round(LTokens.ComboBoxPopupCheckSize))) / 2);
+      LIconStyle.Color := LTokens.ComboBoxPopupCheck;
+      LIconStyle.Alpha := LTokens.ComboBoxPopupCheckAlpha;
       FIconPainter.Draw(ACanvas, LCheckRect, mikCheck, LIconStyle);
     end;
 
-    if LIndex < FCombo.Items.Count - 1 then
+    if LIndex < FItems.Count - 1 then
       FRenderer.StrokeRoundRect(ACanvas,
-        TRectF.Create(LRect.Left + ScaleMetric(12), LRow.Bottom,
-          LRect.Right - ScaleMetric(12), LRow.Bottom + 0.5), LBorder, 0, 0.5, 130);
+        TRectF.Create(LRect.Left + Pixels(Round(LTokens.ComboBoxPopupSeparatorInset)), LRow.Bottom,
+          LRect.Right - Pixels(Round(LTokens.ComboBoxPopupSeparatorInset)),
+          LRow.Bottom + LTokens.ComboBoxPopupSeparatorHeight), LBorder, 0,
+        LTokens.ComboBoxPopupSeparatorHeight, LTokens.ComboBoxPopupSeparatorAlpha);
+  end;
+  finally
+    FDropDownTextOverlay.EndNativeTextFrame;
   end;
 end;
 
@@ -471,10 +877,10 @@ begin
   LIndex := DropDownItemAt(Y);
   if LIndex >= 0 then
   begin
-    FCombo.ItemIndex := LIndex;
-    FCombo.Text := FCombo.Items[LIndex];
+    SetItemIndex(LIndex);
     CloseDropDown;
-    DoComboChange(Self);
+    if Assigned(FOnChange) then
+      FOnChange(Self);
   end
   else
     CloseDropDown;
@@ -482,7 +888,8 @@ end;
 
 function TDACComboBox.DropDownVisible: Boolean;
 begin
-  Result := (FDropDownForm <> nil) and FDropDownForm.Visible;
+  Result := (FDropDownState = cdsOpen) and
+    (FDropDownForm <> nil) and FDropDownForm.Visible;
 end;
 
 procedure TDACComboBox.EnsureDropDown;
@@ -495,7 +902,9 @@ begin
   FDropDownForm.Position := poDesigned;
   FDropDownForm.StyleElements := [];
   FDropDownForm.Visible := False;
+  FDropDownForm.KeyPreview := True;
   FDropDownForm.OnDeactivate := DropDownDeactivate;
+  FDropDownForm.OnKeyDown := DropDownKeyDown;
 
   FDropDownPaintBox := TSkPaintBox.Create(FDropDownForm);
   FDropDownPaintBox.Parent := FDropDownForm;
@@ -505,6 +914,10 @@ begin
   FDropDownPaintBox.OnMouseLeave := DropDownPaintBoxMouseLeave;
   FDropDownPaintBox.OnMouseMove := DropDownPaintBoxMouseMove;
   FDropDownPaintBox.OnMouseUp := DropDownPaintBoxMouseUp;
+  FDropDownTextOverlay := TDACSystemTextOverlay.Create(FDropDownForm);
+  FDropDownTextOverlay.Parent := FDropDownForm;
+  FDropDownTextOverlay.SetSubComponent(True);
+  FDropDownTextOverlay.Align := alClient;
 end;
 
 procedure TDACComboBox.DoMouseEnter(Sender: TObject);
@@ -537,27 +950,27 @@ end;
 
 function TDACComboBox.GetDropDownCount: Integer;
 begin
-  Result := FCombo.DropDownCount;
+  Result := FDropDownCount;
 end;
 
 function TDACComboBox.GetItemIndex: Integer;
 begin
-  Result := FCombo.ItemIndex;
+  Result := FItemIndex;
 end;
 
 function TDACComboBox.GetItems: TStrings;
 begin
-  Result := FCombo.Items;
+  Result := FItems;
 end;
 
 function TDACComboBox.GetStyle: TComboBoxStyle;
 begin
-  Result := FCombo.Style;
+  Result := FStyle;
 end;
 
 function TDACComboBox.GetText: string;
 begin
-  Result := FCombo.Text;
+  Result := FText;
 end;
 
 function TDACComboBox.HasLabel: Boolean;
@@ -567,24 +980,62 @@ end;
 
 function TDACComboBox.HasSupportText: Boolean;
 begin
-  Result := (FHelperText.Trim <> '') or (FCounterText.Trim <> '');
+  Result := (FHelperText.Trim <> '') or (FErrorText.Trim <> '') or
+    (FCounterText.Trim <> '');
 end;
 
 function TDACComboBox.InputFontSize: Integer;
+var
+  LTokens: TDACControlTokens;
 begin
+  LTokens := ResolvedTokens;
   case FInputSize of
     misSmall:
-      Result := 11;
+      Result := Round(LTokens.ComboBoxSmallTextSize);
     misLarge:
-      Result := 14;
+      Result := Round(LTokens.ComboBoxLargeTextSize);
   else
-    Result := 12;
+    Result := Round(LTokens.ComboBoxMediumTextSize);
   end;
+end;
+
+procedure TDACComboBox.ItemsChanged(Sender: TObject);
+begin
+  ResolveTextState(FText);
+  SynchronizeNative;
+  Redraw;
+end;
+
+procedure TDACComboBox.NativeRequestDropDown(Sender: TObject);
+begin
+  if FOwnerClickCloseLatch then
+  begin
+    FOwnerClickCloseLatch := False;
+    Exit;
+  end;
+  ToggleDropDown;
+end;
+
+function TDACComboBox.NativeFocused: Boolean;
+begin
+  Result := Focused or ((FCombo <> nil) and FCombo.Focused);
+end;
+
+function TDACComboBox.LabelFontSize: Integer;
+begin
+  Result := Round(ResolvedTokens.FieldLabelTextSize);
 end;
 
 procedure TDACComboBox.Loaded;
 begin
   inherited;
+  if FLoading then
+  begin
+    DACFieldBeginLoadingTabPolicy(Self, FTabStopBeforeLoading,
+      FLoadingTabStopCaptured, True);
+    DACFieldRelinquishFocus(Self, FCombo);
+  end;
+  AttachComboToHost;
   UpdatePaintBoxBounds;
   UpdateChildBounds;
   UpdateComboStyle;
@@ -595,8 +1046,8 @@ procedure TDACComboBox.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 begin
   inherited;
-  if (Button = mbLeft) and Enabled and CanFocus then
-    inherited SetFocus;
+  if (Button = mbLeft) and Enabled and not FLoading and CanFocus then
+    SetFocus;
 end;
 
 procedure TDACComboBox.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
@@ -607,125 +1058,144 @@ var
   LBorder: TDACBorderStyle;
   LBorderRect: TRectF;
   LControlBottom: Single;
-  LCounterWidth: Single;
   LIconStyle: TDACIconStyle;
-  LLabelColor: TAlphaColor;
   LRect: TRectF;
-  LScale: Single;
   LSurface: TAlphaColor;
-  LSupportColor: TAlphaColor;
-  LTextColor: TAlphaColor;
-  LTextRect: TRectF;
   LTop: Single;
+  LTokens: TDACControlTokens;
 begin
   if (ACanvas = nil) or (ADest.Width <= 0) or (ADest.Height <= 0) then
     Exit;
 
-  LScale := ScaleFactor;
-  LTop := ChromeTop;
-  LControlBottom := Min(ADest.Height, LTop + ControlHeight);
+  LTop := 0;
+  LControlBottom := Min(ADest.Height, ControlHeight);
   LBorderRect := FRenderer.SnapRect(TRectF.Create(0, LTop, ADest.Width,
-    LControlBottom), LScale);
+    LControlBottom), ResolvedTokens.ComboBoxBorderSnapScale);
   LRect := LBorderRect;
-  LRect.Inflate(-0.5 / LScale, -0.5 / LScale);
+  LRect.Inflate(-ResolvedTokens.ComboBoxBorderInset,
+    -ResolvedTokens.ComboBoxBorderInset);
 
   LSurface := ParentSurfaceColor;
+  LTokens := ResolvedTokens;
   ACanvas.Clear(LSurface);
-
-  if HasLabel then
-  begin
-    LLabelColor := TDACComponentColors.ControlTextForSurface(LSurface);
-    if FRequired then
-      LLabelColor := TDACComponentColors.PrimaryDark;
-    FRenderer.Text(ACanvas, FLabelText,
-      TDACComponentFontInstaller.FontFamily, 0,
-      ScaleMetric(15), 12, LLabelColor, FRequired, ADest.Width);
-  end;
 
   LBorder.Color := BorderColor;
   LBorder.Radius := FCornerRadius;
-  LBorder.Width := 1;
-  if Focused or DropDownVisible then
-    LBorder.Width := 1.5;
+  LBorder.Width := LTokens.ComboBoxBorderWidth;
+  if NativeFocused or DropDownVisible then
+    LBorder.Width := LTokens.ComboBoxFocusBorderWidth;
   LBorder.Alpha := BorderAlpha;
+  if csDesigning in ComponentState then
+  begin
+    { Delphi's design surface is also light. The runtime normal stroke is
+      intentionally subtle, but the non-interactive preview needs a fully
+      legible chrome boundary. }
+    LBorder.Color := LTokens.ComboBoxBorderHover;
+    LBorder.Alpha := DACOpacityOpaque;
+  end;
   if FVariant = mivUnderlined then
   begin
     FRenderer.StrokeRoundRect(ACanvas,
-      TRectF.Create(LRect.Left, LRect.Bottom - ScaleMetric(1), LRect.Right,
+      TRectF.Create(LRect.Left, LRect.Bottom - Pixels(Round(LTokens.ComboBoxUnderlineHeight)), LRect.Right,
         LRect.Bottom), LBorder.Color, 0, LBorder.Width, LBorder.Alpha);
   end
   else
   begin
-    LBackground.Color := TDACComponentColors.ControlBackgroundForSurface(LSurface);
-    if not Enabled then
-      LBackground.Color := TDACComponentColors.ControlBackgroundDisabledForSurface(LSurface);
+    LBackground.Color := LTokens.ComboBoxBackground;
+    if not Enabled or FLoading then
+      LBackground.Color := LTokens.ComboBoxDisabledBackground;
     LBackground.Radius := FCornerRadius;
-    LBackground.Alpha := 255;
+    LBackground.Alpha := LTokens.ComboBoxBackgroundAlpha;
     FBackgroundPainter.Draw(ACanvas, LRect, LBackground);
     FBorderPainter.Draw(ACanvas, LBorderRect, LBorder);
   end;
 
-  LTextColor := TDACComponentColors.ControlTextForSurface(LSurface);
-  if not Enabled then
-    LTextColor := TDACComponentColors.ControlTextDisabledForSurface(LSurface);
-
-  LTextRect := TRectF.Create(LRect.Left + ScaleMetric(14), LRect.Top,
-    LRect.Right - ScaleMetric(38), LRect.Bottom);
-  FRenderer.Text(ACanvas, FCombo.Text,
-    TDACComponentFontInstaller.FontFamily, LTextRect.Left,
-    LTextRect.Top + (LTextRect.Height / 2) + ScaleMetric(5),
-    InputFontSize, LTextColor, False, LTextRect.Width);
-
-  LArrowRect := TRectF.Create(LRect.Right - ScaleMetric(28),
-    LRect.Top + (LRect.Height - ScaleMetric(16)) / 2,
-    LRect.Right - ScaleMetric(12),
-    LRect.Top + (LRect.Height + ScaleMetric(16)) / 2);
-  LIconStyle.Color := TDACComponentColors.ControlBorderHoverForSurface(LSurface);
-  if not Enabled then
-    LIconStyle.Color := TDACComponentColors.ControlTextDisabledForSurface(LSurface);
-  LIconStyle.Alpha := 255;
-  FIconPainter.Draw(ACanvas, LArrowRect, mikChevronDown, LIconStyle);
-
-  if HasSupportText then
-  begin
-    LSupportColor := SupportTextColor(LSurface);
-    if FHelperText.Trim <> '' then
-      FRenderer.Text(ACanvas, FHelperText,
-        TDACComponentFontInstaller.FontFamily, 0,
-        LBorderRect.Bottom + ScaleMetric(18), 11, LSupportColor, False,
-        ADest.Width);
-    if FCounterText.Trim <> '' then
-    begin
-      LCounterWidth := FRenderer.MeasureText(FCounterText,
-        TDACComponentFontInstaller.FontFamily, 11);
-      FRenderer.Text(ACanvas, FCounterText,
-        TDACComponentFontInstaller.FontFamily,
-        Max(0, ADest.Width - LCounterWidth),
-        LBorderRect.Bottom + ScaleMetric(18), 11,
-        TDACComponentColors.ControlTextDisabledForSurface(LSurface),
-        False, LCounterWidth);
-    end;
-  end;
+  LArrowRect := TRectF.Create(LRect.Right - Pixels(Round(LTokens.ComboBoxIconColumnWidth)),
+    LRect.Top + (LRect.Height - Pixels(Round(LTokens.ComboBoxIconSize))) / 2,
+    LRect.Right - Pixels(Round(LTokens.ComboBoxIconRightInset)),
+    LRect.Top + (LRect.Height + Pixels(Round(LTokens.ComboBoxIconSize))) / 2);
+  LIconStyle.Color := LTokens.ComboBoxIcon;
+  if not Enabled or FLoading then
+    LIconStyle.Color := LTokens.ComboBoxIconDisabled;
+  LIconStyle.Alpha := LTokens.ComboBoxIconAlpha;
+  if FLoading then
+    FIconPainter.Draw(ACanvas, LArrowRect, mikRefresh, LIconStyle)
+  else if DropDownVisible then
+    FIconPainter.Draw(ACanvas, LArrowRect, mikChevronUp, LIconStyle)
+  else
+    FIconPainter.Draw(ACanvas, LArrowRect, mikChevronDown, LIconStyle);
 end;
 
 procedure TDACComboBox.PaintBoxMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  LWasOpen: Boolean;
 begin
+  LWasOpen := DropDownVisible;
   MouseDown(Button, Shift, X, Y);
   if Button = mbLeft then
-    ShowDropDown;
+  begin
+    // Focusing the native editor deactivates (and closes) the modeless popup
+    // before this handler resumes. Preserve the click's initial meaning:
+    // a click that started while open is always a close, never a close/reopen.
+    if LWasOpen then
+    begin
+      FOwnerClickCloseLatch := False;
+      if DropDownVisible then
+        CloseDropDown;
+      Exit;
+    end;
+    if FOwnerClickCloseLatch then
+    begin
+      FOwnerClickCloseLatch := False;
+      Exit;
+    end;
+    ToggleDropDown;
+  end;
 end;
 
 function TDACComboBox.ParentSurfaceColor: TAlphaColor;
 begin
+  { The chrome needs to blend with the real host at its rounded corners.
+    Tokens determine the field surface itself, not the background outside it. }
   Result := TDACComponentColors.ResolveParentSurface(Self);
+end;
+
+function TDACComboBox.PopupVisible: Boolean;
+begin
+  Result := DropDownVisible;
+end;
+
+procedure TDACComboBox.OpenDropDown;
+begin
+  ShowDropDown;
 end;
 
 procedure TDACComboBox.Redraw;
 begin
+  UpdateChildBounds;
+  UpdateNativeLabel;
   UpdatePaintBoxBounds;
-  if (FPaintBox <> nil) and HandleAllocated then
+  if (FPaintBox = nil) or (csDestroying in ComponentState) then
+    Exit;
+  if csDesigning in ComponentState then
+  begin
     FPaintBox.Redraw;
+    Invalidate;
+    Exit;
+  end;
+  if (Parent <> nil) and HandleAllocated and Parent.HandleAllocated then
+    FPaintBox.Redraw;
+end;
+
+function TDACComboBox.ResolvedChromeColor: TAlphaColor;
+begin
+  Result := ResolvedTokens.ComboBoxChromeBackground;
+end;
+
+function TDACComboBox.ResolvedPopupBackground: TAlphaColor;
+begin
+  Result := ResolvedTokens.ComboBoxPopupBackground;
 end;
 
 procedure TDACComboBox.Resize;
@@ -737,20 +1207,53 @@ begin
   Redraw;
 end;
 
-function TDACComboBox.ScaleFactor: Single;
+procedure TDACComboBox.SetBounds(ALeft, ATop, AWidth, AHeight: Integer);
+var
+  LMinimumHeight: Integer;
 begin
-  Result := 1;
-  if FPaintBox <> nil then
-    Result := FPaintBox.ScaleFactor;
-  if Result <= 0 then
-    Result := 1;
+  { Keep native label/helper rows outside the selector chrome even when the
+    final DFM Height is streamed after the textual properties. }
+  LMinimumHeight := DACFieldTotalHeight(HasLabel, HasSupportText,
+    ControlHeight, ResolvedTokens);
+  inherited SetBounds(ALeft, ATop, AWidth, Max(AHeight, LMinimumHeight));
 end;
 
-function TDACComboBox.ScaleMetric(const AValue: Integer): Integer;
+function TDACComboBox.Pixels(const AValue: Integer): Integer;
 begin
-  Result := Round(AValue * ScaleFactor);
-  if (AValue > 0) and (Result < 1) then
-    Result := 1;
+  Result := AValue;
+end;
+
+function TDACComboBox.ResolvedTokens: TDACControlTokens;
+begin
+  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+end;
+
+procedure TDACComboBox.ResolveTextState(const AValue: string);
+var
+  LIndex: Integer;
+begin
+  LIndex := FItems.IndexOf(AValue);
+  if LIndex >= 0 then
+  begin
+    FItemIndex := LIndex;
+    FText := FItems[LIndex];
+  end
+  else
+  begin
+    FItemIndex := -1;
+    if FStyle = csDropDown then
+      FText := AValue
+    else
+      FText := '';
+  end;
+end;
+
+function TDACComboBox.ResolvedFieldState: TDACResolvedFieldState;
+begin
+  Result := TDACFieldStateResolver.Resolve(Enabled, FLoading,
+    FReadOnly or not FBindingCanModify,
+    NativeFocused or DropDownVisible, FMouseInside, FText <> '',
+    TDACFieldValidation(Ord(FStatus)));
 end;
 
 procedure TDACComboBox.SetCornerRadius(const AValue: Integer);
@@ -771,15 +1274,31 @@ begin
   LHadSupport := HasSupportText;
   FCounterText := AValue;
   if (not LHadSupport) and HasSupportText and (Height <= ChromeTop + ControlHeight) then
-    Height := ChromeTop + ControlHeight + ScaleMetric(24);
+    Height := DACFieldTotalHeight(HasLabel, HasSupportText, ControlHeight,
+      ResolvedTokens);
   Redraw;
 end;
 
 procedure TDACComboBox.SetDropDownCount(const AValue: Integer);
 begin
-  FCombo.DropDownCount := Max(1, AValue);
+  FDropDownCount := Max(1, AValue);
   if DropDownVisible and (FDropDownPaintBox <> nil) then
     ShowDropDown;
+end;
+
+procedure TDACComboBox.SetErrorText(const AValue: string);
+var
+  LHadSupport: Boolean;
+begin
+  if FErrorText = AValue then
+    Exit;
+  LHadSupport := HasSupportText;
+  FErrorText := AValue;
+  if (not LHadSupport) and HasSupportText and
+    (Height <= ChromeTop + ControlHeight) then
+    Height := DACFieldTotalHeight(HasLabel, True, ControlHeight,
+      ResolvedTokens);
+  Redraw;
 end;
 
 procedure TDACComboBox.SetHelperText(const AValue: string);
@@ -792,40 +1311,92 @@ begin
   LHadSupport := HasSupportText;
   FHelperText := AValue;
   if (not LHadSupport) and HasSupportText and (Height <= ChromeTop + ControlHeight) then
-    Height := ChromeTop + ControlHeight + ScaleMetric(24);
+    Height := DACFieldTotalHeight(HasLabel, HasSupportText, ControlHeight,
+      ResolvedTokens);
   Redraw;
 end;
 
 procedure TDACComboBox.SetInputSize(const AValue: TDACInputSize);
 begin
-  if FInputSize = AValue then
+  { Match TDACEdit: the persisted enum remains for old DFMs, while all new
+    and streamed instances use the one compact Small density. }
+  if FInputSize = misSmall then
     Exit;
 
-  FInputSize := AValue;
+  FInputSize := misSmall;
   if not HasLabel and not HasSupportText then
     Height := ControlHeight
   else
-    Height := ChromeTop + ControlHeight + IfThen(HasSupportText, ScaleMetric(24), 0);
+    Height := DACFieldTotalHeight(HasLabel, HasSupportText, ControlHeight,
+      ResolvedTokens);
   UpdateComboStyle;
   Redraw;
 end;
 
 procedure TDACComboBox.SetFocus;
 begin
-  if CanFocus then
+  if FLoading or not Enabled then
+    Exit;
+  if FStyle = csDropDownList then
+  begin
+    inherited SetFocus;
+    Exit;
+  end;
+  AttachComboToHost;
+  if (FCombo <> nil) and FCombo.Visible and FCombo.Enabled and
+    FCombo.CanFocus then
+    FCombo.SetFocus
+  else if CanFocus then
     inherited;
 end;
 
-procedure TDACComboBox.SetItemIndex(const AValue: Integer);
+procedure TDACComboBox.SimulateDropDownClick(const AIndex: Integer);
 begin
-  FCombo.ItemIndex := AValue;
+  if not CanModifyValue or (FCombo = nil) or
+    (AIndex < 0) or (AIndex >= FItems.Count) then
+    Exit;
+  if not DropDownVisible then
+    OpenDropDown;
+  if not DropDownVisible then
+    Exit;
+  DropDownPaintBoxMouseUp(FDropDownPaintBox, mbLeft, [], 0,
+    (AIndex * DropDownItemHeight) + (DropDownItemHeight div 2));
+end;
+
+procedure TDACComboBox.SimulateDropDownExternalDeactivate;
+begin
+  DropDownDeactivate(Self);
+end;
+
+procedure TDACComboBox.SimulateDropDownKey(const AKey: Word);
+var
+  LKey: Word;
+begin
+  LKey := AKey;
+  DropDownKeyDown(Self, LKey, []);
+end;
+
+procedure TDACComboBox.SetItemIndex(const AValue: Integer);
+var
+  LValue: Integer;
+begin
+  LValue := Max(-1, Min(AValue, FItems.Count - 1));
+  if (FItemIndex = LValue) and
+    (((LValue < 0) and (FText = '')) or
+      ((LValue >= 0) and (FText = FItems[LValue]))) then
+    Exit;
+  FItemIndex := LValue;
+  if FItemIndex >= 0 then
+    FText := FItems[FItemIndex]
+  else
+    FText := '';
+  SynchronizeNative;
   Redraw;
 end;
 
 procedure TDACComboBox.SetItems(const AValue: TStrings);
 begin
-  FCombo.Items.Assign(AValue);
-  Redraw;
+  FItems.Assign(AValue);
 end;
 
 procedure TDACComboBox.SetLabelText(const AValue: string);
@@ -838,8 +1409,50 @@ begin
   LHadLabel := HasLabel;
   FLabelText := AValue;
   if (not LHadLabel) and HasLabel and (Height <= ControlHeight) then
-    Height := ChromeTop + ControlHeight + IfThen(HasSupportText, ScaleMetric(24), 0);
+    Height := DACFieldTotalHeight(HasLabel, HasSupportText, ControlHeight,
+      ResolvedTokens);
   UpdateChildBounds;
+  Redraw;
+end;
+
+procedure TDACComboBox.SetLoading(const AValue: Boolean);
+begin
+  if FLoading = AValue then
+    Exit;
+  FLoading := AValue;
+  if AValue then
+  begin
+    DACFieldBeginLoadingTabPolicy(Self, FTabStopBeforeLoading,
+      FLoadingTabStopCaptured);
+    DACFieldRelinquishFocus(Self, FCombo);
+    CloseDropDown;
+  end
+  else
+    DACFieldEndLoadingTabPolicy(Self, FTabStopBeforeLoading,
+      FLoadingTabStopCaptured);
+  UpdateComboStyle;
+  Redraw;
+end;
+
+procedure TDACComboBox.SetReadOnly(const AValue: Boolean);
+begin
+  if FReadOnly = AValue then
+    Exit;
+  FReadOnly := AValue;
+  if FReadOnly then
+    CloseDropDown;
+  UpdateComboStyle;
+  Redraw;
+end;
+
+procedure TDACComboBox.SetBindingCanModify(const AValue: Boolean);
+begin
+  if FBindingCanModify = AValue then
+    Exit;
+  FBindingCanModify := AValue;
+  if not FBindingCanModify then
+    CloseDropDown;
+  UpdateComboStyle;
   Redraw;
 end;
 
@@ -861,15 +1474,37 @@ end;
 
 procedure TDACComboBox.SetStyle(const AValue: TComboBoxStyle);
 begin
-  if FCombo.Style = AValue then
+  if FStyle = AValue then
     Exit;
-  FCombo.Style := AValue;
+  FStyle := AValue;
+  ResolveTextState(FText);
+  SynchronizeNative;
   UpdateChildBounds;
 end;
 
 procedure TDACComboBox.SetText(const AValue: string);
 begin
-  FCombo.Text := AValue;
+  ResolveTextState(AValue);
+  SynchronizeNative;
+  Redraw;
+end;
+
+procedure TDACComboBox.SetThemeMode(const AValue: TDACThemeMode);
+begin
+  if FThemeMode = AValue then
+  begin
+    ThemeChanged(Self);
+    Exit;
+  end;
+  FThemeMode := AValue;
+  ThemeChanged(Self);
+end;
+
+procedure TDACComboBox.ThemeChanged(Sender: TObject);
+begin
+  UpdateComboStyle;
+  if DropDownVisible then
+    CloseDropDown;
   Redraw;
 end;
 
@@ -889,116 +1524,275 @@ var
   LItemCount: Integer;
   LPoint: TPoint;
 begin
-  if (csDesigning in ComponentState) or not Enabled or (FCombo = nil) then
+  if (csDesigning in ComponentState) or (csDestroying in ComponentState) or
+    (csLoading in ComponentState) or not CanModifyValue or
+    (FCombo = nil) then
     Exit;
-  if FCombo.Items.Count = 0 then
+  if (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated then
+    Exit;
+  if FItems.Count = 0 then
     Exit;
 
-  if DropDownVisible then
-  begin
-    CloseDropDown;
+  if FDropDownState in [cdsOpening, cdsOpen] then
     Exit;
-  end;
 
+  FDropDownState := cdsOpening;
   EnsureDropDown;
-  LItemCount := Min(FCombo.Items.Count, Max(1, FCombo.DropDownCount));
+  LItemCount := Min(FItems.Count, Max(1, FDropDownCount));
   LHeight := LItemCount * DropDownItemHeight;
-  LPoint := ClientToScreen(Point(0, ChromeTop + ControlHeight + ScaleMetric(2)));
-  FDropDownHotIndex := FCombo.ItemIndex;
-  FDropDownForm.Color := TDACComponentColors.ToVclColor(
-    TDACComponentColors.ControlBackgroundForSurface(ParentSurfaceColor));
+  LPoint := ClientToScreen(Point(0, ChromeTop + ControlHeight +
+    Pixels(Round(ResolvedTokens.ComboBoxPopupOffset))));
+  FDropDownHotIndex := FItemIndex;
+  FDropDownForm.Color := ComboBoxVclColor(ResolvedTokens.ComboBoxPopupBackground);
   FDropDownForm.SetBounds(LPoint.X, LPoint.Y, Width, LHeight);
   FDropDownForm.Show;
   FDropDownForm.BringToFront;
+  FDropDownState := cdsOpen;
   if FDropDownPaintBox <> nil then
     FDropDownPaintBox.Redraw;
   Redraw;
+  if Assigned(FOnDropDown) then
+    FOnDropDown(Self);
 end;
 
-function TDACComboBox.SupportTextColor(const ASurface: TAlphaColor): TAlphaColor;
+procedure TDACComboBox.ToggleDropDown;
 begin
-  case FStatus of
-    mesSuccess:
-      Result := TDACComponentColors.PrimaryDark;
-    mesWarning:
-      Result := TDACComponentColors.WarningDark;
-    mesDanger:
-      Result := TDACComponentColors.Danger;
+  if DropDownVisible then
+    CloseDropDown
   else
-    Result := TDACComponentColors.ControlTextDisabledForSurface(ASurface);
-  end;
+    ShowDropDown;
 end;
 
 procedure TDACComboBox.UpdateChildBounds;
 var
   LHorizontalPadding: Integer;
   LInputHeight: Integer;
+  LTextHeight: Integer;
   LTop: Integer;
+  LTokens: TDACControlTokens;
 begin
-  if FCombo = nil then
+  if (FCombo = nil) or (csDestroying in ComponentState) then
     Exit;
 
-  LHorizontalPadding := ScaleMetric(8);
+  if csDesigning in ComponentState then
+  begin
+    { Never leave the native drop-down HWND parented to the form designer.
+      It may otherwise repaint stale themed pixels over the Skia chrome. }
+    FCombo.Visible := False;
+    if FCombo.Parent <> nil then
+      FCombo.Parent := nil;
+    UpdateDesignValuePreview;
+    UpdateNativeLabel;
+    Exit;
+  end;
+
+  if csLoading in ComponentState then
+    Exit;
+
+  if not CanUpdateChildren then
+    Exit;
+
+  if FStyle = csDropDownList then
+  begin
+    { The list-style selector has no editable surface. Showing the native
+      ComboBox here would also show its own button; a native label keeps the
+      selected text crisp while Skia owns the arrow and border. }
+    FCombo.Visible := False;
+    FFieldText.SetFocusControl(Self);
+    UpdateDesignValuePreview;
+    UpdateNativeLabel;
+    Exit;
+  end;
+
+  if FCombo.Parent <> Self then
+    FCombo.Parent := Self;
+  FCombo.Visible := True;
+  FFieldText.SetFocusControl(FCombo);
+  if FDesignValueLabel <> nil then
+    FDesignValueLabel.Visible := False;
+
+  LTokens := ResolvedTokens;
+  LHorizontalPadding := Pixels(Round(LTokens.ComboBoxNativeHorizontalPadding));
   LInputHeight := Min(ControlHeight, Max(0, Height - ChromeTop));
-  LTop := ChromeTop + Max(0, (LInputHeight - ScaleMetric(24)) div 2);
-  FCombo.SetBounds(LHorizontalPadding, LTop, 0, 0);
+  case FInputSize of
+    misSmall: LTextHeight := Pixels(Round(LTokens.ComboBoxSmallEditorHeight));
+    misLarge: LTextHeight := Pixels(Round(LTokens.ComboBoxLargeEditorHeight));
+  else
+    LTextHeight := Pixels(Round(LTokens.ComboBoxMediumEditorHeight));
+  end;
+  LTextHeight := Min(LInputHeight, LTextHeight);
+  LTop := ChromeTop + Max(0, (LInputHeight - LTextHeight) div 2) +
+    Pixels(Round(LTokens.InputNativeVerticalOffset));
+  LTop := Min(ChromeTop + Max(0, LInputHeight - LTextHeight), LTop);
+  FCombo.SetBounds(LHorizontalPadding, LTop,
+    Max(0, Width - LHorizontalPadding), LTextHeight);
+  TDACNativeComboBox(FCombo).DropDownClipWidth :=
+    Pixels(Round(LTokens.ComboBoxNativeRightReserve));
+  TDACNativeComboBox(FCombo).VerticalClipInset :=
+    Pixels(Round(LTokens.ComboBoxNativeVerticalClipInset));
+  // The native combo may negotiate a taller edit window for the active VCL
+  // font. Center that effective height in the same 24..64 chrome used by
+  // the other inputs instead of trusting the requested bounds height.
+  FCombo.Top := ChromeTop + Max(0, (LInputHeight - FCombo.Height) div 2) +
+    Pixels(Round(LTokens.InputNativeVerticalOffset));
+  FCombo.Top := Min(ChromeTop + Max(0, LInputHeight - FCombo.Height),
+    FCombo.Top);
+  UpdateNativeLabel;
+end;
+
+procedure TDACComboBox.SynchronizeNative;
+begin
+  if FSyncingNative or (FCombo = nil) or not CanUpdateChildren then
+    Exit;
+  FSyncingNative := True;
+  try
+    if FCombo.Style <> FStyle then
+      FCombo.Style := FStyle;
+    FCombo.Items.Assign(FItems);
+    FCombo.ItemIndex := FItemIndex;
+    if FStyle = csDropDown then
+    begin
+      FCombo.Text := FText;
+      FCombo.ItemIndex := FItemIndex;
+    end;
+  finally
+    FSyncingNative := False;
+  end;
+end;
+
+procedure TDACComboBox.UpdateNativeLabel;
+begin
+  if FFieldText = nil then
+    Exit;
+  FFieldText.Update(FLabelText, FHelperText, FErrorText, FCounterText,
+    FRequired, ResolvedFieldState, Width, ChromeTop, ControlHeight,
+    ResolvedTokens);
 end;
 
 procedure TDACComboBox.UpdateComboStyle;
 var
-  LSurface: TAlphaColor;
+  LTokens: TDACControlTokens;
   LTextColor: TColor;
 begin
-  if FCombo = nil then
+  if (FCombo = nil) or (csDestroying in ComponentState) then
     Exit;
 
-  LSurface := ParentSurfaceColor;
-  FCombo.Enabled := Enabled;
-  FCombo.Visible := False;
+  if csDesigning in ComponentState then
+  begin
+    UpdateDesignValuePreview;
+    UpdateNativeLabel;
+    Exit;
+  end;
+
+  if not CanUpdateChildren then
+    Exit;
+
+  LTokens := ResolvedTokens;
+  FCombo.Enabled := Enabled and not FLoading;
+  TDACNativeComboBox(FCombo).InteractionLocked :=
+    not CanModifyValue;
+  SynchronizeNative;
+  FCombo.Visible := Showing;
   FCombo.TabStop := False;
   if FVariant = mivUnderlined then
-    FCombo.Color := TDACComponentColors.ToVclColor(LSurface)
+    FCombo.Color := ComboBoxVclColor(LTokens.ComboBoxUnderlinedBackground)
   else
-    FCombo.Color := TDACComponentColors.ToVclColor(
-      TDACComponentColors.ControlBackgroundForSurface(LSurface));
-  if not Enabled then
-    FCombo.Color := TDACComponentColors.ToVclColor(
-      TDACComponentColors.ControlBackgroundDisabledForSurface(LSurface));
+    FCombo.Color := ComboBoxVclColor(LTokens.ComboBoxBackground);
+  if not Enabled or FLoading then
+    FCombo.Color := ComboBoxVclColor(LTokens.ComboBoxDisabledBackground);
   FCombo.Font.Name := TDACComponentFontInstaller.FontFamily;
   FCombo.Font.Size := InputFontSize;
   FCombo.Font.Style := [];
-  LTextColor := TDACComponentColors.ToVclColor(
-    TDACComponentColors.ControlTextForSurface(LSurface));
-  if not Enabled then
-    LTextColor := TDACComponentColors.ToVclColor(
-      TDACComponentColors.ControlTextDisabledForSurface(LSurface));
+  LTextColor := ComboBoxVclColor(LTokens.ComboBoxText);
+  if not Enabled or FLoading then
+    LTextColor := ComboBoxVclColor(LTokens.ComboBoxDisabledText);
   FCombo.Font.Color := LTextColor;
-  if not Enabled then
+  { A native TComboBox can renegotiate its effective height after Font
+    changes. Recenter that final height in the shared input chrome. }
+  UpdateChildBounds;
+  UpdateNativeLabel;
+  UpdateZOrder;
+  if not CanModifyValue then
     Cursor := crDefault;
   if FDropDownForm <> nil then
-    FDropDownForm.Color := TDACComponentColors.ToVclColor(
-      TDACComponentColors.ControlBackgroundForSurface(LSurface));
+    FDropDownForm.Color := ComboBoxVclColor(LTokens.ComboBoxPopupBackground);
+end;
+
+procedure TDACComboBox.UpdateDesignValuePreview;
+var
+  LHorizontalPadding: Integer;
+  LInputHeight: Integer;
+  LTextHeight: Integer;
+  LText: string;
+  LTokens: TDACControlTokens;
+  LTop: Integer;
+begin
+  if FDesignValueLabel = nil then
+    Exit;
+  if not (csDesigning in ComponentState) and (FStyle <> csDropDownList) then
+  begin
+    FDesignValueLabel.Visible := False;
+    Exit;
+  end;
+
+  LTokens := ResolvedTokens;
+  LText := FText;
+  if (LText = '') and (FItemIndex >= 0) and (FItemIndex < FItems.Count) then
+    LText := FItems[FItemIndex];
+  FDesignValueLabel.Caption := LText;
+  FDesignValueLabel.Font.Name := TDACComponentStyle.FontFamily;
+  FDesignValueLabel.Font.Size := InputFontSize;
+  FDesignValueLabel.Font.Style := [];
+  if not Enabled or FLoading then
+    FDesignValueLabel.Font.Color := ComboBoxVclColor(LTokens.ComboBoxDisabledText)
+  else
+    FDesignValueLabel.Font.Color := ComboBoxVclColor(LTokens.ComboBoxText);
+  FDesignValueLabel.Visible := Showing and (LText <> '');
+
+  LHorizontalPadding := Pixels(Round(LTokens.ComboBoxNativeHorizontalPadding));
+  LInputHeight := Min(ControlHeight, Max(0, Height - ChromeTop));
+  case FInputSize of
+    misSmall: LTextHeight := Pixels(Round(LTokens.ComboBoxSmallEditorHeight));
+    misLarge: LTextHeight := Pixels(Round(LTokens.ComboBoxLargeEditorHeight));
+  else
+    LTextHeight := Pixels(Round(LTokens.ComboBoxMediumEditorHeight));
+  end;
+  LTextHeight := Min(LInputHeight, LTextHeight);
+  LTop := ChromeTop + Max(0, (LInputHeight - LTextHeight) div 2) +
+    Pixels(Round(LTokens.InputNativeVerticalOffset));
+  LTop := Min(ChromeTop + Max(0, LInputHeight - LTextHeight), LTop);
+  FDesignValueLabel.SetBounds(LHorizontalPadding, LTop,
+    Max(0, Width - LHorizontalPadding -
+      Pixels(Round(LTokens.ComboBoxNativeRightReserve))), LTextHeight);
 end;
 
 procedure TDACComboBox.UpdatePaintBoxBounds;
 var
   LWidth: Integer;
   LHeight: Integer;
+  LTop: Integer;
 begin
-  if FPaintBox = nil then
+  if (FPaintBox = nil) or (csDestroying in ComponentState) or
+    ((csLoading in ComponentState) and not (csDesigning in ComponentState)) then
     Exit;
 
+  { Width/Height work while the component is being streamed into the form
+    designer. Reading ClientRect here could force an invalid HWND chain. }
   LWidth := Width;
   LHeight := Height;
-  if HandleAllocated then
+  if not (csDesigning in ComponentState) and HandleAllocated then
   begin
     LWidth := ClientWidth;
     LHeight := ClientHeight;
   end;
 
-  if (FPaintBox.Left <> 0) or (FPaintBox.Top <> 0) or
+  LTop := ChromeTop;
+  { Only the selector chrome is Skia-backed.  Label/helper rows must retain
+    the host surface painted by VCL and cannot be cleared by this child. }
+  LHeight := Min(ControlHeight, Max(0, LHeight - LTop));
+  if (FPaintBox.Left <> 0) or (FPaintBox.Top <> LTop) or
     (FPaintBox.Width <> LWidth) or (FPaintBox.Height <> LHeight) then
-    FPaintBox.SetBounds(0, 0, LWidth, LHeight);
+    FPaintBox.SetBounds(0, LTop, LWidth, LHeight);
 end;
 
 procedure TDACComboBox.UpdateZOrder;
@@ -1007,18 +1801,43 @@ begin
     Exit;
   if csDesigning in ComponentState then
     Exit;
-  if not HandleAllocated then
-    Exit;
-  if (Parent = nil) or not Parent.HandleAllocated then
+  if (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated or
+    not Showing then
     Exit;
 
   if FPaintBox <> nil then
-    FPaintBox.BringToFront;
+    FPaintBox.SendToBack;
+  if FCombo <> nil then
+    FCombo.BringToFront;
+  if FDesignValueLabel <> nil then
+    FDesignValueLabel.BringToFront;
 end;
 
 procedure TDACComboBox.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+var
+  LBrush: HBRUSH;
+  LColor: TColor;
 begin
+  LColor := DACFieldVclColor(TDACComponentColors.ResolveParentSurface(Self));
+  LBrush := CreateSolidBrush(ColorToRGB(LColor));
+  try
+    FillRect(AMessage.DC, ClientRect, LBrush);
+  finally
+    DeleteObject(LBrush);
+  end;
   AMessage.Result := 1;
+end;
+
+procedure TDACComboBox.WMSetFocus(var AMessage: TWMSetFocus);
+begin
+  inherited;
+  if FLoading or not Enabled then
+  begin
+    DACFieldRelinquishFocus(Self, FCombo);
+    Exit;
+  end;
+  if not NativeFocused then
+    SetFocus;
 end;
 
 end.

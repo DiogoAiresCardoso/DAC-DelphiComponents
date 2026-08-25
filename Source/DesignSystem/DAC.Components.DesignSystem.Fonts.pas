@@ -12,7 +12,7 @@ type
   TDACComponentFontInstaller = class sealed
   public
     class function FontFamily: string; static;
-    class function InterTypeface: ISkTypeface; static;
+    class function InterTypeface(const ASemiBold: Boolean = False): ISkTypeface; static;
     class procedure InstallInter; static;
     class procedure Uninstall; static;
   end;
@@ -80,10 +80,18 @@ begin
   Result := DACComponentFontFamily;
 end;
 
-class function TDACComponentFontInstaller.InterTypeface: ISkTypeface;
+class function TDACComponentFontInstaller.InterTypeface(
+  const ASemiBold: Boolean): ISkTypeface;
 begin
   InstallInter;
-  Result := GInterTypeface;
+  Result := nil;
+  // Windows exposes the weight instances of the installed Inter variable
+  // face. Skia receives that Inter instance for semibold/bold text; it never
+  // substitutes a non-Inter family for component rendering.
+  if ASemiBold then
+    Result := TSkTypeface.MakeFromName(DACComponentFontFamily, TSkFontStyle.Bold);
+  if Result = nil then
+    Result := GInterTypeface;
 end;
 
 class procedure TDACComponentFontInstaller.InstallInter;

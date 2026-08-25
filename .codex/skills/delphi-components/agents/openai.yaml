@@ -1,0 +1,9 @@
+interface:
+  display_name: "Delphi VCL StyleHook Design System"
+  short_description: "15 famílias VCL, Skia obrigatório e StyleHooks locais"
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"
+  brand_color: "#2F9E22"
+  default_prompt: "Use $delphi-vcl-stylehook-design-system para implementar ou completar a suíte Delphi VCL de 15 famílias com Skia obrigatório e design system Ancoragem, sem TreeView/menu lateral e sem Toolbar/topbar."
+policy:
+  allow_implicit_invocation: true

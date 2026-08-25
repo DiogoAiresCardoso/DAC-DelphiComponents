@@ -26,11 +26,40 @@ type
     Danger: TAlphaColor;
     UserMenuHighlight: TAlphaColor;
     UserMenuDanger: TAlphaColor;
+    ControlBackground: TAlphaColor;
+    ControlBackgroundDisabled: TAlphaColor;
+    ControlBorder: TAlphaColor;
+    ControlBorderHover: TAlphaColor;
+    ControlText: TAlphaColor;
+    ControlTextDisabled: TAlphaColor;
+    ButtonLoadingBackground: TAlphaColor;
+    ButtonLoadingText: TAlphaColor;
+    PrimaryFocus: TAlphaColor;
+    DangerDark: TAlphaColor;
+    DangerLight: TAlphaColor;
+    WarningDark: TAlphaColor;
+    WarningLight: TAlphaColor;
+    SuiteSectionSubtitle: TAlphaColor;
+    SuiteSectionTitle: TAlphaColor;
+    GridHeader: TAlphaColor;
+    Info: TAlphaColor;
+    InfoDark: TAlphaColor;
+    InfoLight: TAlphaColor;
+    InfoSoftBackground: TAlphaColor;
+    InfoText: TAlphaColor;
+    InfoBorder: TAlphaColor;
+    Neutral: TAlphaColor;
+    NeutralDark: TAlphaColor;
+    NeutralLight: TAlphaColor;
+    NeutralSoftBackground: TAlphaColor;
     class function Default: TDACColorTokens; static;
   end;
 
+  TDACColorTokensProvider = function: TDACColorTokens;
+
   TDACComponentColors = class sealed
   public
+    class procedure SetTokensProvider(const AProvider: TDACColorTokensProvider); static;
     class function Alpha(const ARed, AGreen, ABlue: Byte;
       const AAlpha: Byte = 255): TAlphaColor; static;
     class function Normalize(const AColor: TAlphaColor): TAlphaColor; static;
@@ -70,6 +99,18 @@ type
     class function ControlBorderHover: TAlphaColor; static;
     class function ControlText: TAlphaColor; static;
     class function ControlTextDisabled: TAlphaColor; static;
+    class function ContrastRatio(const AForeground, ABackground: TAlphaColor): Double; static;
+    class function GridHeader: TAlphaColor; static;
+    class function Info: TAlphaColor; static;
+    class function InfoDark: TAlphaColor; static;
+    class function InfoLight: TAlphaColor; static;
+    class function InfoSoftBackground: TAlphaColor; static;
+    class function InfoText: TAlphaColor; static;
+    class function InfoBorder: TAlphaColor; static;
+    class function Neutral: TAlphaColor; static;
+    class function NeutralDark: TAlphaColor; static;
+    class function NeutralLight: TAlphaColor; static;
+    class function NeutralSoftBackground: TAlphaColor; static;
     class function IsDarkSurface(const AColor: TAlphaColor): Boolean; static;
     class function ControlBackgroundForSurface(const ASurface: TAlphaColor): TAlphaColor; static;
     class function ControlBackgroundDisabledForSurface(const ASurface: TAlphaColor): TAlphaColor; static;
@@ -80,6 +121,20 @@ type
   end;
 
 implementation
+
+uses
+  System.Math;
+
+var
+  GTokensProvider: TDACColorTokensProvider;
+
+function CurrentTokens: TDACColorTokens;
+begin
+  if Assigned(GTokensProvider) then
+    Result := GTokensProvider()
+  else
+    Result := TDACColorTokens.Default;
+end;
 
 function TryReadPublishedColor(const AControl: TControl; out AColor: TColor): Boolean;
 var
@@ -101,22 +156,51 @@ end;
 
 class function TDACColorTokens.Default: TDACColorTokens;
 begin
-  Result.Background := TDACComponentColors.Background;
-  Result.SurfaceDark := TDACComponentColors.SurfaceDark;
-  Result.Panel := TDACComponentColors.Panel;
-  Result.Border := TDACComponentColors.Border;
-  Result.Text := TDACComponentColors.Text;
-  Result.TextSecondary := TDACComponentColors.TextSecondary;
-  Result.White := TDACComponentColors.White;
-  Result.PrimaryDark := TDACComponentColors.PrimaryDark;
-  Result.Primary := TDACComponentColors.Primary;
-  Result.PrimaryLight := TDACComponentColors.PrimaryLight;
-  Result.InteractionHover := TDACComponentColors.InteractionHover;
-  Result.Warning := TDACComponentColors.Warning;
-  Result.Orange := TDACComponentColors.Alpha(217, 139, 40);
-  Result.Danger := TDACComponentColors.Danger;
-  Result.UserMenuHighlight := TDACComponentColors.Alpha(18, 63, 24);
-  Result.UserMenuDanger := TDACComponentColors.Alpha(255, 138, 138);
+  Result.Background := TAlphaColor($FF07130C);
+  Result.SurfaceDark := TAlphaColor($FF08140D);
+  Result.Panel := TAlphaColor($FF102417);
+  Result.Border := TAlphaColor($FF2B3D31);
+  Result.Text := TAlphaColor($FFE8EEE8);
+  Result.TextSecondary := TAlphaColor($FFB8C4B8);
+  Result.White := TAlphaColor($FFFFFFFF);
+  Result.PrimaryDark := TAlphaColor($FF2F9E22);
+  Result.Primary := TAlphaColor($FF3DB82A);
+  Result.PrimaryLight := TAlphaColor($FF74D64A);
+  Result.InteractionHover := TAlphaColor($FF1F3B23);
+  Result.Warning := TAlphaColor($FFF5C842);
+  Result.Orange := TAlphaColor($FFD98B28);
+  Result.Danger := TAlphaColor($FFD94A3A);
+  Result.UserMenuHighlight := TAlphaColor($FF123F18);
+  Result.UserMenuDanger := TAlphaColor($FFFF8A8A);
+  Result.ControlBackground := Result.White;
+  // Disabled controls need to be visibly inactive without turning their
+  // label into low-contrast placeholder text. These opaque values are also
+  // safe to use when the control chrome is painted by Skia.
+  Result.ControlBackgroundDisabled := TAlphaColor($FFE2E8E2);
+  Result.ControlBorder := TAlphaColor($FFD5DBE6);
+  Result.ControlBorderHover := Result.TextSecondary;
+  Result.ControlText := TAlphaColor($FF111827);
+  Result.ControlTextDisabled := TAlphaColor($FF475569);
+  Result.ButtonLoadingBackground := TAlphaColor($FF1D6B18);
+  Result.ButtonLoadingText := Result.White;
+  Result.PrimaryFocus := TAlphaColor($FF48C934);
+  Result.DangerDark := TAlphaColor($FFB93428);
+  Result.DangerLight := TAlphaColor($FFE85C4A);
+  Result.WarningDark := Result.Orange;
+  Result.WarningLight := TAlphaColor($FFFFD54F);
+  Result.SuiteSectionSubtitle := TAlphaColor($FF475569);
+  Result.SuiteSectionTitle := TAlphaColor($FF0F172A);
+  Result.GridHeader := TAlphaColor($FF111827);
+  Result.Info := TAlphaColor($FF2B7DE9);
+  Result.InfoDark := TAlphaColor($FF1C5EA8);
+  Result.InfoLight := TAlphaColor($FF60A5FA);
+  Result.InfoSoftBackground := TAlphaColor($FFE5F1FF);
+  Result.InfoText := TAlphaColor($FF1D4ED8);
+  Result.InfoBorder := TAlphaColor($FFAECEFF);
+  Result.Neutral := Result.SuiteSectionSubtitle;
+  Result.NeutralDark := TAlphaColor($FF334155);
+  Result.NeutralLight := Result.ControlBorderHover;
+  Result.NeutralSoftBackground := TAlphaColor($FFF1F5F9);
 end;
 
 class function TDACComponentColors.Alpha(const ARed, AGreen, ABlue: Byte;
@@ -126,44 +210,82 @@ begin
     (Cardinal(ARed) shl 16) or (Cardinal(AGreen) shl 8) or Cardinal(ABlue));
 end;
 
+class procedure TDACComponentColors.SetTokensProvider(
+  const AProvider: TDACColorTokensProvider);
+begin
+  GTokensProvider := AProvider;
+end;
+
 class function TDACComponentColors.Background: TAlphaColor;
 begin
-  Result := TAlphaColor($FF07130C);
+  Result := CurrentTokens.Background;
 end;
 
 class function TDACComponentColors.Border: TAlphaColor;
 begin
-  Result := TAlphaColor($FF2B3D31);
+  Result := CurrentTokens.Border;
 end;
 
 class function TDACComponentColors.ControlBackground: TAlphaColor;
 begin
-  Result := White;
+  Result := CurrentTokens.ControlBackground;
 end;
 
 class function TDACComponentColors.ControlBackgroundDisabled: TAlphaColor;
 begin
-  Result := Alpha(244, 247, 244);
+  Result := CurrentTokens.ControlBackgroundDisabled;
 end;
 
 class function TDACComponentColors.ControlBorder: TAlphaColor;
 begin
-  Result := Alpha(213, 219, 230);
+  Result := CurrentTokens.ControlBorder;
 end;
 
 class function TDACComponentColors.ControlBorderHover: TAlphaColor;
 begin
-  Result := TextSecondary;
+  Result := CurrentTokens.ControlBorderHover;
 end;
 
 class function TDACComponentColors.ControlText: TAlphaColor;
 begin
-  Result := Alpha(17, 24, 39);
+  Result := CurrentTokens.ControlText;
 end;
 
 class function TDACComponentColors.ControlTextDisabled: TAlphaColor;
 begin
-  Result := Alpha(148, 163, 184);
+  Result := CurrentTokens.ControlTextDisabled;
+end;
+
+class function TDACComponentColors.ContrastRatio(const AForeground,
+  ABackground: TAlphaColor): Double;
+  function ChannelLuminance(const AValue: Byte): Double;
+  var
+    LChannel: Double;
+  begin
+    LChannel := AValue / 255;
+    if LChannel <= 0.04045 then
+      Exit(LChannel / 12.92);
+    Result := Power((LChannel + 0.055) / 1.055, 2.4);
+  end;
+  function RelativeLuminance(const AColor: TAlphaColor): Double;
+  var
+    LColor: Cardinal;
+  begin
+    LColor := Cardinal(Normalize(AColor));
+    Result := (0.2126 * ChannelLuminance(Byte((LColor shr 16) and $FF))) +
+      (0.7152 * ChannelLuminance(Byte((LColor shr 8) and $FF))) +
+      (0.0722 * ChannelLuminance(Byte(LColor and $FF)));
+  end;
+var
+  LForeground: Double;
+  LBackground: Double;
+begin
+  LForeground := RelativeLuminance(AForeground);
+  LBackground := RelativeLuminance(ABackground);
+  if LForeground < LBackground then
+    Result := (LBackground + 0.05) / (LForeground + 0.05)
+  else
+    Result := (LForeground + 0.05) / (LBackground + 0.05);
 end;
 
 class function TDACComponentColors.ControlBackgroundForSurface(
@@ -202,7 +324,7 @@ class function TDACComponentColors.ControlTextDisabledForSurface(
   const ASurface: TAlphaColor): TAlphaColor;
 begin
   if IsDarkSurface(ASurface) then
-    Exit(Alpha(112, 130, 116));
+    Exit(TextSecondary);
   Result := ControlTextDisabled;
 end;
 
@@ -216,22 +338,22 @@ end;
 
 class function TDACComponentColors.Danger: TAlphaColor;
 begin
-  Result := TAlphaColor($FFD94A3A);
+  Result := CurrentTokens.Danger;
 end;
 
 class function TDACComponentColors.DangerDark: TAlphaColor;
 begin
-  Result := TAlphaColor($FFB93428);
+  Result := CurrentTokens.DangerDark;
 end;
 
 class function TDACComponentColors.DangerLight: TAlphaColor;
 begin
-  Result := TAlphaColor($FFE85C4A);
+  Result := CurrentTokens.DangerLight;
 end;
 
 class function TDACComponentColors.DarkPanelBackground: TAlphaColor;
 begin
-  Result := Panel;
+  Result := CurrentTokens.Panel;
 end;
 
 class function TDACComponentColors.DarkPanelBorder: TAlphaColor;
@@ -251,7 +373,42 @@ end;
 
 class function TDACComponentColors.InteractionHover: TAlphaColor;
 begin
-  Result := TAlphaColor($FF1F3B23);
+  Result := CurrentTokens.InteractionHover;
+end;
+
+class function TDACComponentColors.GridHeader: TAlphaColor;
+begin
+  Result := CurrentTokens.GridHeader;
+end;
+
+class function TDACComponentColors.Info: TAlphaColor;
+begin
+  Result := CurrentTokens.Info;
+end;
+
+class function TDACComponentColors.InfoBorder: TAlphaColor;
+begin
+  Result := CurrentTokens.InfoBorder;
+end;
+
+class function TDACComponentColors.InfoDark: TAlphaColor;
+begin
+  Result := CurrentTokens.InfoDark;
+end;
+
+class function TDACComponentColors.InfoLight: TAlphaColor;
+begin
+  Result := CurrentTokens.InfoLight;
+end;
+
+class function TDACComponentColors.InfoSoftBackground: TAlphaColor;
+begin
+  Result := CurrentTokens.InfoSoftBackground;
+end;
+
+class function TDACComponentColors.InfoText: TAlphaColor;
+begin
+  Result := CurrentTokens.InfoText;
 end;
 
 class function TDACComponentColors.IsDarkSurface(
@@ -280,29 +437,49 @@ begin
     Result := TAlphaColor(Cardinal(Result) or $FF000000);
 end;
 
+class function TDACComponentColors.Neutral: TAlphaColor;
+begin
+  Result := CurrentTokens.Neutral;
+end;
+
+class function TDACComponentColors.NeutralDark: TAlphaColor;
+begin
+  Result := CurrentTokens.NeutralDark;
+end;
+
+class function TDACComponentColors.NeutralLight: TAlphaColor;
+begin
+  Result := CurrentTokens.NeutralLight;
+end;
+
+class function TDACComponentColors.NeutralSoftBackground: TAlphaColor;
+begin
+  Result := CurrentTokens.NeutralSoftBackground;
+end;
+
 class function TDACComponentColors.Panel: TAlphaColor;
 begin
-  Result := TAlphaColor($FF102417);
+  Result := CurrentTokens.Panel;
 end;
 
 class function TDACComponentColors.Primary: TAlphaColor;
 begin
-  Result := TAlphaColor($FF3DB82A);
+  Result := CurrentTokens.Primary;
 end;
 
 class function TDACComponentColors.PrimaryDark: TAlphaColor;
 begin
-  Result := TAlphaColor($FF2F9E22);
+  Result := CurrentTokens.PrimaryDark;
 end;
 
 class function TDACComponentColors.PrimaryFocus: TAlphaColor;
 begin
-  Result := TAlphaColor($FF48C934);
+  Result := CurrentTokens.PrimaryFocus;
 end;
 
 class function TDACComponentColors.PrimaryLight: TAlphaColor;
 begin
-  Result := TAlphaColor($FF74D64A);
+  Result := CurrentTokens.PrimaryLight;
 end;
 
 class function TDACComponentColors.ResolveParentSurface(
@@ -311,7 +488,7 @@ var
   LControl: TControl;
   LColor: TColor;
 begin
-  Result := White;
+  Result := CurrentTokens.White;
   LControl := nil;
   if AControl <> nil then
     LControl := AControl.Parent;
@@ -339,27 +516,27 @@ end;
 
 class function TDACComponentColors.SuiteSectionSubtitle: TAlphaColor;
 begin
-  Result := Alpha(71, 85, 105);
+  Result := CurrentTokens.SuiteSectionSubtitle;
 end;
 
 class function TDACComponentColors.SuiteSectionTitle: TAlphaColor;
 begin
-  Result := Alpha(15, 23, 42);
+  Result := CurrentTokens.SuiteSectionTitle;
 end;
 
 class function TDACComponentColors.SurfaceDark: TAlphaColor;
 begin
-  Result := TAlphaColor($FF08140D);
+  Result := CurrentTokens.SurfaceDark;
 end;
 
 class function TDACComponentColors.Text: TAlphaColor;
 begin
-  Result := TAlphaColor($FFE8EEE8);
+  Result := CurrentTokens.Text;
 end;
 
 class function TDACComponentColors.TextSecondary: TAlphaColor;
 begin
-  Result := TAlphaColor($FFB8C4B8);
+  Result := CurrentTokens.TextSecondary;
 end;
 
 class function TDACComponentColors.ToVclColor(
@@ -379,22 +556,22 @@ end;
 
 class function TDACComponentColors.Warning: TAlphaColor;
 begin
-  Result := TAlphaColor($FFF5C842);
+  Result := CurrentTokens.Warning;
 end;
 
 class function TDACComponentColors.WarningDark: TAlphaColor;
 begin
-  Result := Alpha(217, 139, 40);
+  Result := CurrentTokens.WarningDark;
 end;
 
 class function TDACComponentColors.WarningLight: TAlphaColor;
 begin
-  Result := Alpha(255, 213, 79);
+  Result := CurrentTokens.WarningLight;
 end;
 
 class function TDACComponentColors.White: TAlphaColor;
 begin
-  Result := TAlphaColor($FFFFFFFF);
+  Result := CurrentTokens.White;
 end;
 
 end.

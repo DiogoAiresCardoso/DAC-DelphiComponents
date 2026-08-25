@@ -1,0 +1,173 @@
+# Fase 1 - Auditoria Estatica do Checkout
+
+Data: 2026-07-20  
+Escopo: inventario e confronto estatico; nenhuma unit, DFM, package ou projeto
+foi alterado.  
+Checkout observado: branch `codex-sanitize-dac`, base `0951b31`. O worktree ja
+possuia mudancas alheias em `Package/DACSkiaComponentsDesign.dproj`,
+`demo/Demo.dproj` e outros artefatos nao versionados; elas nao foram absorvidas
+por esta auditoria.
+
+## 1. Resultado executivo
+
+A suite possui fundacao real de tokens, Skia, packages separados, registro
+design-time e 15 abas na demo. A cobertura de classes atinge as 15 familias ao
+nivel de nomes/variantes, com uma lacuna explicita de `Tooltip`. Contudo, a
+demo materializa somente a familia de botoes; as outras 14 abas nao possuem
+componentes no DFM nem codigo de populacao. Alem disso, tabs e grid usam
+pintura GDI direta, o que conflita com a regra do projeto de Skia obrigatorio
+para chrome visual novo. Nao existem testes/smoke projects versionados, e os
+unicos BPLs em `Build` sao copias `.__old` de 2026-06-19.
+
+Conclusao: a fundacao e apta para evolucao controlada, mas a declaracao de
+galeria completa e o criterio de Skia obrigatorio ainda nao podem ser aceitos
+como atendidos.
+
+## 2. Evidencias e inventario por camada
+
+### Runtime, design-time e toolchain
+
+| Item | Evidencia | Resultado |
+|---|---|---|
+| Runtime | `Package/DACSkiaComponentsRuntime.dpk` | 52 units; requer `rtl`, `vcl`, `vcldb`, `vclimg`, `Skia.Package.RTL` e `Skia.Package.VCL`. |
+| Design-time | `Package/DACSkiaComponentsDesign.dpk/.dproj` | package separado, depende de `designide` e `DACSkiaComponentsRuntime`; `DesignIntf` aparece somente em `Source/DesignTime/DAC.Components.Design.Register.pas`. |
+| Limites de camada | ambos `.dpk`, busca estatica por `FMX` e `DesignIntf` no runtime | nao foi encontrado `DesignIntf` ou FMX no runtime. |
+| Projetos | `Package/*.dproj`, `demo/Demo.dproj`, `demo/DemoComponentes.groupproj` | group project ordena runtime, design-time e demo. |
+| Compilador | `C:\Program Files (x86)\Embarcadero\Studio\19.0\bin\DCC32.EXE -?` | disponivel; identifica `Embarcadero Delphi for Win32 compiler version 32.0`. Nao houve build nesta fase. |
+| Python/auditor | `python <skill>/scripts/audit.py` | nao executou: `python.exe` falhou com erro de sessao de logon. |
+| Saida Build | `Build/Bpl/DACSkiaComponentsRuntime.bpl.__old`, `Build/Bpl/DACSkiaComponentsDesign.bpl.__old` | somente artefatos `.__old`, datados de 2026-06-19; nao comprovam o checkout atual. |
+| Testes | busca versionada por `*test*`, `*smoke*`, `.dpr` e `.groupproj` | nao ha projeto de teste/smoke; so `demo/Demo.dpr` e o group project. |
+
+### Design system, assets e base Skia
+
+| Area | Arquivos | Achado |
+|---|---|---|
+| Tokens | `Source/DesignSystem/DAC.Components.DesignSystem.{ColorTokens,OpacityTokens,TypographyTokens,SpacingTokens,RadiusTokens,InteractionTokens,CardTokens,Tokens,Theme,DefaultTheme}.pas` | tokens e tema centralizados; `TDACDesignTokens` agrega cor, opacidade, tipografia, espacamento, raio, interacao e card. |
+| Semantica e DPI | `SemanticColors.pas`, `ChartPalette.pas`, `Metrics.pas`, `Source/Core/DAC.Components.Dpi.pas` | ha resolvers centrais para estados semanticos, paleta de charts e metricas. |
+| Assets | `AssetResolver.pas`, `IconAssets.pas`, `assets/fonts`, `assets/svg/**`, `assets/svg-green/**` | resolver central e catalogo `TDACIconKind`; 106 SVGs por arvore de cor (acoes, agricultura, controles, dados, interface, navegacao e report viewer) e duas fontes. |
+| Skia | `Source/Skia/DAC.Components.Skia.{Renderer,BackgroundPainter,BorderPainter,IconPainter,VisualElement,Container}.pas` | renderer compartilhado, painters, elementos e container de interacao presentes. |
+| Host VCL/Skia | `Source/Controls/DAC.Components.Controls.SkiaControl.pas` | base `TCustomControl` com `TSkPaintBox`, renderer, painters e container; possui guardas para loading/design-time sem parent. |
+
+### Componentes, ancestrais e familias
+
+| Familia obrigatoria | Classes/variantes estaticamente encontradas | Situacao estatica |
+|---|---|---|
+| 1. Botoes | `TDACButton: TCustomControl`; `TDACButtonKind` e tamanhos/icone/loading | presente por variantes de uma classe. |
+| 2. Inputs | `TDACEdit: TCustomControl` com `TDACEditKind` (text, masked, password, search, numeric, date, time), `TDACMemo`, `TDACButtonEdit` composto | presente; `ButtonEdit` compoe `TDACEdit` e `TDACButton`. |
+| 3. Seletores | `TDACComboBox`, `TDACDateTimePicker` sobre `TDateTimePicker` | presente para combo/data-hora; nao ha componente spin dedicado. |
+| 4. Escolhas | `TDACSelector`, `TDACCheckBox`, `TDACRadioButton`, `TDACToggleSwitch`, `TDACSlider` | presente. |
+| 5. Tabs | `TDACTabs: TPageControl`, `TDACTabHeaderControl` | presente, mas com pintura GDI (ver P0-1). |
+| 6. Cards | `TDACContainer`, `TDACSummaryCard` | presente. |
+| 7. Tabela/grid | `TDACDataGrid: TDBGrid` | presente, mas com pintura GDI (ver P0-2). |
+| 8. Status bar | `TDACStatusBar: TCustomControl` | presente. |
+| 9. Progresso | `TDACProgress` com kind linear/circular | presente. |
+| 10. Badge/chip/tag/pill | `TDACBadge` com `TDACBadgeKind` (badge, chip, tag, pill) | presente por variantes de uma classe. |
+| 11. Toast/tooltip/modal | `TDACToast`, `TDACModalDialog: TDACToast` | tooltip nao foi encontrado no codigo, registro ou demo. |
+| 12. Paginacao | `TDACPagination: TCustomControl` | presente. |
+| 13. Loading | `TDACLoading` com spinner/dots/skeleton | presente. |
+| 14. Charts | `TDACChart`, `TDACBarChart`, `TDACLineChart`, `TDACAreaChart`, `TDACDoughnutChart` | presente. |
+| 15. Report viewer | `TDACReportViewer: TCustomControl` | presente. |
+
+As variantes data-aware tambem existem em
+`Source/Controls/DataAware/DAC.Components.Controls.DataAware.pas`:
+`TDACDBEdit`, `TDACDBMemo`, `TDACDBComboBox`, `TDACDBDateTimePicker`,
+`TDACDBCheckBox`, `TDACDBRadioButton`, `TDACDBToggleSwitch` e `TDACDBSlider`.
+
+### Skia e StyleHook reais
+
+- 18 units em `Source/Controls` importam Skia, incluindo button, edit, combo,
+  memo, selectors, cards, feedback, progress, loading, charts e report.
+- `TDACButtonEdit` nao cria renderer proprio: e composicao de `TDACEdit` e
+  `TDACButton`, ambos com Skia; isso e reutilizacao adequada.
+- Quatro units visuais nao importam Skia: `DataGrid.pas`, `Pagination.pas`,
+  `Tabs.pas` e `SystemText.pas`. `SystemText: TGraphicControl` pode usar
+  texto nativo; os tres primeiros demandam acao conforme prioridades.
+- `DAC.Components.Hooks.Register.pas` registra e remove de modo idempotente
+  hooks apenas para classes `TDAC...`; a busca nao encontrou registro direto
+  em `TButton`, `TEdit`, `TComboBox`, `TCheckBox`, `TRadioButton`,
+  `TPageControl`, `TDBGrid` ou `TScrollBox`.
+- `TDACSkiaControlStyleHook` deixa `OverridePaint`, `OverridePaintNC` e
+  `OverrideEraseBkgnd` como `False`; ele apenas invalida em hover/foco/texto.
+  Portanto, nao fornece pintura Skia por si so.
+- `DAC.Components.Hooks.Tabs.pas` sobrescreve `Paint` e desenha com
+  `TCanvas`, `Canvas.RoundRect`, `Canvas.FillRect` e `DrawText`; o proprio
+  `Tabs.pas` tambem usa `TCanvas`. Isto e a evidencia direta de GDI no chrome
+  das tabs.
+- `DataGrid.pas` declara `Vcl.Graphics`, sobrescreve `Paint`/`DrawColumnCell`
+  e usa `Canvas`; nao usa `System.Skia`/`Vcl.Skia`.
+- `Pagination.pas` cria filhos VCL para botoes/combo e nao importa Skia. Pode
+  preservar controles nativos, mas precisa de decisao arquitetural sobre como
+  o chrome e os estados visuais serao desenhados por Skia.
+
+### Design-time, runtime e demo
+
+- O registro design-time publica 29 componentes de runtime em `DAC Skia` e 8
+  variantes DB em `DAC Skia DB`, em
+  `Source/DesignTime/DAC.Components.Design.Register.pas`.
+- O DFM da demo tem 15 `TTabSheet` e 38 objetos `TDAC...`, porem todos os
+  objetos de suite estao na aba `tsButtons`. `demo/Demo.Principal.pas` nao
+  possui codigo para preencher as 14 abas restantes em runtime.
+- O DFM e o source expõem cenario rico apenas de botoes: kinds, tamanhos,
+  icones, foco, pressed, loading, disabled e composicoes. A existencia das
+  abas nao constitui smoke case das demais familias.
+- Guardas de design-time/handle aparecem em varios controles; destaque para
+  `SkiaControl.pas` e `UpdateZOrder` de Button/Edit/Combo/DateTime/Memo.
+  Isso e evidencia de intencao, nao substitui abrir/salvar DFM e executar a
+  demo no RAD Studio real.
+
+## 3. Lista priorizada de correcoes
+
+| Prioridade | Correcao | Arquivos-alvo iniciais | Criterio de aceite |
+|---|---|---|---|
+| P0-1 | Migrar o chrome de tabs de GDI para renderer Skia, mantendo `TPageControl`, streaming e teclado nativos. | `Source/Controls/DAC.Components.Controls.Tabs.pas`, `Source/Hooks/DAC.Components.Hooks.Tabs.pas`, possivelmente `Skia.Renderer/IconPainter`; demo tabs. | Nenhum `TCanvas`/`DrawText` para o chrome novo das tabs; navegacao por teclado, foco e paginas continuam funcionando em 96/120/144/192 PPI. |
+| P0-2 | Definir e implementar a estrategia Skia da `TDACDataGrid`, preservando `TDBGrid`/`TDataSource`, selecao, scroll e acoes. | `DataGrid.pas`, helpers novos de grid/painter se justificados, hooks e demo. | Headers, celulas, status e acoes desenhados pelo renderer/tokens compartilhados; nenhuma regressao de dataset, scroll, teclado ou hit-test. |
+| P1-1 | Completar a galeria: uma aba/familia com casos smoke e estados aplicaveis. | `demo/Demo.Principal.dfm/.pas`; somente units ja existentes quando necessario. | As 15 abas deixam de ser vazias; cada familia mostra normal, foco/teclado, disabled e estados semanticos aplicaveis. |
+| P1-2 | Implementar `TDACTooltip` ou ajustar formalmente o escopo das 15 familias. | nova unit de feedback, runtime `.dpk/.dproj`, registro design-time, demo e hooks somente se tecnicamente necessarios. | Tooltip com alvo, abertura/fechamento, posicionamento, foco/hover e DPI; sem sobrepor controles windowed indevidamente. |
+| P1-3 | Decidir e padronizar o chrome de `TDACPagination` em Skia, sem perder botao/combo/teclado nativos. | `Pagination.pas`, renderer/painter compartilhado se necessario, demo. | Aparencia e foco derivados de tokens/Skia; PageIndex fica sempre em `1..PageCount`; teclado e mudanca de page size funcionam. |
+| P2-1 | Criar projeto de smoke/testes e automatizar o audit estatico quando Python estiver funcional. | novo `Tests/*.dpr` ou equivalente, group project, scripts/documentacao. | Execucao repetivel para tokens/DPI, registro de hooks, criacao de controles/DFM e matriz minima de UI; resultados reais registrados. |
+| P2-2 | Dividir unidades monoliticas em etapas de baixo risco. | primeiro `DataGrid.pas` (tipos, status, acoes/painter); depois `Selectors.pas`; considerar catalogo de icones. | Nenhuma quebra publica/DFM; cada unit separa responsabilidade sem duplicar tokens/renderer. |
+
+## 4. Handoff ao especialista Delphi/Skia/VCL
+
+Estado: `ARCHITECTURE_READY` para uma demanda por vez; nao combinar P0 com a
+expansao da demo sem autorizacao do orquestrador.
+
+Pre-condicoes:
+
+1. Criar branch nova `codex/<slug>` a partir do `main` atualizado; a branch
+   observada nesta auditoria nao e automaticamente autorizada para implementacao.
+2. Registrar a demanda em `.codex/skills/knowledge/demands/<data>-<slug>.okf` e
+   referenciar este estudo.
+3. Preservar `TPageControl`/`TDBGrid` quando a semantica nativa for requisito;
+   mover apenas o chrome visual para Skia via renderer compartilhado.
+4. Nao registrar hook global. Manter os pares de
+   `RegisterStyleHook`/`UnRegisterStyleHook` centralizados e idempotentes.
+5. Proteger construtor, `Loaded`, `Resize`, `CreateWnd` e setters contra
+   Parent/handle prematuros; validar designer antes de declarar pronto.
+
+Entrega obrigatoria ao revisor:
+
+```text
+Demanda/branch e base:
+Arquivos alterados e motivo:
+Contrato VCL/DFM preservado:
+Estrategia Skia/StyleHook escolhida:
+Casos de foco, teclado, mouse, DPI e design-time:
+Build Delphi real (projeto/configuracao/plataforma/exit code):
+Smoke/testes executados:
+Limitacoes e riscos remanescentes:
+Pronto para revisao: sim/nao
+```
+
+## 5. Limitacoes honestas
+
+- Esta e uma auditoria estatica: nenhum package, demo ou DFM foi compilado,
+  aberto no designer ou executado.
+- O compilador Win32 esta disponivel, mas a existencia de Skia packages no
+  ambiente e a compilacao atual precisam ser verificadas na demanda de
+  implementacao.
+- O auditor fornecido pela skill nao executou porque `python.exe` falhou nesta
+  sessao; a lista de achados foi produzida por leitura de arquivos e buscas
+  estaticas diretas.
+- A validacao visual, foco, IME, acessibilidade, performance e High DPI e
+  responsabilidade do gate de testes de interface posterior a revisao.

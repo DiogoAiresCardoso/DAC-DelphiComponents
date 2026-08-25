@@ -1,0 +1,146 @@
+﻿2026-08-17 22:22:27.780 | InÃ­cio do empacotador MaxxRural.
+2026-08-17 22:22:27.781 | ConfiguraÃ§Ã£o carregada: M:\MaxxSoft\MaxxRural\Versões\maxxrural-update.ini
+2026-08-17 22:22:27.781 | Valor FTP enabled: true
+2026-08-17 22:22:27.781 | Modo diagnÃ³stico solicitado; empacotamento e upload serÃ£o ignorados.
+2026-08-17 22:22:27.785 | Conectando ao FTP ftp.maxxsoft.com.br:21 (passivo=True).
+2026-08-17 22:22:28.316 | ConexÃ£o e autenticaÃ§Ã£o FTP concluÃ­das.
+2026-08-17 22:22:28.328 | DiretÃ³rio inicial informado pelo servidor: /www
+2026-08-17 22:22:28.383 | DiretÃ³rio inicial jÃ¡ selecionado pelo servidor: /www
+2026-08-17 22:22:28.383 | Listando diretÃ³rio remoto atual.
+2026-08-17 22:22:28.532 | DiretÃ³rio remoto localizado com 68 item(ns).
+2026-08-17 22:22:28.532 | Item remoto: .
+2026-08-17 22:22:28.532 | Item remoto: ..
+2026-08-17 22:22:28.532 | Item remoto: 12C
+2026-08-17 22:22:28.532 | Item remoto: SIGE
+2026-08-17 22:22:28.532 | Item remoto: admin
+2026-08-17 22:22:28.532 | Item remoto: atual
+2026-08-17 22:22:28.532 | Item remoto: atualizacao
+2026-08-17 22:22:28.532 | Item remoto: banners
+2026-08-17 22:22:28.532 | Item remoto: bigua
+2026-08-17 22:22:28.532 | Item remoto: clientes
+2026-08-17 22:22:28.532 | Item remoto: downloads
+2026-08-17 22:22:28.532 | Item remoto: erros
+2026-08-17 22:22:28.532 | Item remoto: files
+2026-08-17 22:22:28.532 | Item remoto: ftp
+2026-08-17 22:22:28.532 | Item remoto: icones
+2026-08-17 22:22:28.532 | Item remoto: img
+2026-08-17 22:22:28.532 | Item remoto: include
+2026-08-17 22:22:28.532 | Item remoto: interno
+2026-08-17 22:22:28.532 | Item remoto: mantis-old
+2026-08-17 22:22:28.532 | Item remoto: mantis
+2026-08-17 22:22:28.532 | Item remoto: maxx
+2026-08-17 22:22:28.532 | Item remoto: maxxsoft06
+2026-08-17 22:22:28.532 | Item remoto: o
+2026-08-17 22:22:28.532 | Item remoto: offline
+2026-08-17 22:22:28.532 | Item remoto: portal
+2026-08-17 22:22:28.532 | Item remoto: portal2
+2026-08-17 22:22:28.532 | Item remoto: rinco
+2026-08-17 22:22:28.532 | Item remoto: robot_feeds
+2026-08-17 22:22:28.532 | Item remoto: sincarquivos
+2026-08-17 22:22:28.532 | Item remoto: site2
+2026-08-17 22:22:28.532 | Item remoto: suporte
+2026-08-17 22:22:28.532 | Item remoto: tmp
+2026-08-17 22:22:28.532 | Item remoto: Apresenta��o MaxxSFA.pdf
+2026-08-17 22:22:28.532 | Item remoto: Apresenta��o MaxxSFA.ppsx
+2026-08-17 22:22:28.532 | Item remoto: OutrosArquivos.rar
+2026-08-17 22:22:28.532 | Item remoto: RCSCliente.exe
+2026-08-17 22:22:28.532 | Item remoto: agrifocus-config-server-0.0.3-SNAPSHOT.jar
+2026-08-17 22:22:28.532 | Item remoto: agrifocus-demeter-server-0.0.3-SNAPSHOT.jar
+2026-08-17 22:22:28.532 | Item remoto: atualiza.exe
+2026-08-17 22:22:28.532 | Item remoto: catalogo.rar
+2026-08-17 22:22:28.532 | Item remoto: cidades.xls
+2026-08-17 22:22:28.532 | Item remoto: conectarShowMyPC.exe
+2026-08-17 22:22:28.532 | Item remoto: googlec2f3a7c3f9f4ec7f.html
+2026-08-17 22:22:28.532 | Item remoto: index-ant.html
+2026-08-17 22:22:28.532 | Item remoto: index.php
+2026-08-17 22:22:28.532 | Item remoto: index__.html
+2026-08-17 22:22:28.532 | Item remoto: info.php
+2026-08-17 22:22:28.532 | Item remoto: logmein.msi
+2026-08-17 22:22:28.532 | Item remoto: logo.jpg
+2026-08-17 22:22:28.532 | Item remoto: lx_350.zip
+2026-08-17 22:22:28.532 | Item remoto: maxxatualiza.exe
+2026-08-17 22:22:28.532 | Item remoto: maxxatualiza.rar
+2026-08-17 22:22:28.532 | Item remoto: maxxsoft.keystore
+2026-08-17 22:22:28.532 | Item remoto: nortonsw_0956f870-9d3b-0.html
+2026-08-17 22:22:28.532 | Item remoto: os.doc
+2026-08-17 22:22:28.532 | Item remoto: portas.html
+2026-08-17 22:22:28.532 | Item remoto: robots.txt
+2026-08-17 22:22:28.532 | Item remoto: maxxrural
+2026-08-17 22:22:28.532 | Item remoto: ead
+2026-08-17 22:22:28.532 | Item remoto: .htaccess
+2026-08-17 22:22:28.532 | Item remoto: agrifocus
+2026-08-17 22:22:28.532 | Item remoto: teste
+2026-08-17 22:22:28.532 | Item remoto: sfaplus
+2026-08-17 22:22:28.532 | Item remoto: phpinfo-13b5912b.php
+2026-08-17 22:22:28.532 | Item remoto: ruralgestor
+2026-08-17 22:22:28.532 | Item remoto: site3
+2026-08-17 22:22:28.532 | Item remoto: site
+2026-08-17 22:22:28.532 | Item remoto: ead_
+2026-08-17 22:22:28.532 | Navegando para o prÃ³ximo diretÃ³rio: atualizacao
+2026-08-17 22:22:28.594 | DiretÃ³rio confirmado pelo servidor: /www/atualizacao
+2026-08-17 22:22:28.594 | Listando diretÃ³rio remoto atual.
+2026-08-17 22:22:28.780 | DiretÃ³rio remoto localizado com 53 item(ns).
+2026-08-17 22:22:28.780 | Item remoto: .
+2026-08-17 22:22:28.780 | Item remoto: ..
+2026-08-17 22:22:28.780 | Item remoto: agroatacado
+2026-08-17 22:22:28.780 | Item remoto: agrologica
+2026-08-17 22:22:28.780 | Item remoto: agrosol
+2026-08-17 22:22:28.780 | Item remoto: agrotec
+2026-08-17 22:22:28.780 | Item remoto: ahl
+2026-08-17 22:22:28.780 | Item remoto: bc
+2026-08-17 22:22:28.780 | Item remoto: cereal
+2026-08-17 22:22:28.780 | Item remoto: cerrado
+2026-08-17 22:22:28.780 | Item remoto: cibal
+2026-08-17 22:22:28.780 | Item remoto: coopadap
+2026-08-17 22:22:28.780 | Item remoto: cowboy
+2026-08-17 22:22:28.780 | Item remoto: evolucao
+2026-08-17 22:22:28.780 | Item remoto: frigosuino
+2026-08-17 22:22:28.780 | Item remoto: futura
+2026-08-17 22:22:28.780 | Item remoto: je
+2026-08-17 22:22:28.780 | Item remoto: jotaefe
+2026-08-17 22:22:28.780 | Item remoto: krill
+2026-08-17 22:22:28.780 | Item remoto: lacel
+2026-08-17 22:22:28.780 | Item remoto: mamut
+2026-08-17 22:22:28.780 | Item remoto: mataboi
+2026-08-17 22:22:28.780 | Item remoto: maxxrural
+2026-08-17 22:22:28.780 | Item remoto: maxxsoft
+2026-08-17 22:22:28.780 | Item remoto: metalforte
+2026-08-17 22:22:28.780 | Item remoto: rinco
+2026-08-17 22:22:28.780 | Item remoto: roan
+2026-08-17 22:22:28.780 | Item remoto: ruralbrasil
+2026-08-17 22:22:28.780 | Item remoto: ruraldinamica
+2026-08-17 22:22:28.780 | Item remoto: ruralmobile
+2026-08-17 22:22:28.780 | Item remoto: ruralmt
+2026-08-17 22:22:28.780 | Item remoto: ruralrio
+2026-08-17 22:22:28.780 | Item remoto: sertaoagricola
+2026-08-17 22:22:28.780 | Item remoto: siap
+2026-08-17 22:22:28.780 | Item remoto: soloplan
+2026-08-17 22:22:28.780 | Item remoto: ss
+2026-08-17 22:22:28.780 | Item remoto: teste
+2026-08-17 22:22:28.780 | Item remoto: thatiana
+2026-08-17 22:22:28.780 | Item remoto: veradouro
+2026-08-17 22:22:28.780 | Item remoto: wr
+2026-08-17 22:22:28.780 | Item remoto: MaxxConfigDB.rar
+2026-08-17 22:22:28.780 | Item remoto: MaxxSFAPlus-release.apk
+2026-08-17 22:22:28.780 | Item remoto: MaxxSFAPlus.rar
+2026-08-17 22:22:28.780 | Item remoto: checkVersionAPK.php
+2026-08-17 22:22:28.780 | Item remoto: exe.rar
+2026-08-17 22:22:28.780 | Item remoto: solotek
+2026-08-17 22:22:28.780 | Item remoto: ferrbel
+2026-08-17 22:22:28.780 | Item remoto: coolseed
+2026-08-17 22:22:28.780 | Item remoto: casul
+2026-08-17 22:22:28.780 | Item remoto: tmf
+2026-08-17 22:22:28.780 | Item remoto: coopermil
+2026-08-17 22:22:28.780 | Item remoto: guapo
+2026-08-17 22:22:28.780 | Item remoto: nutrideal
+2026-08-17 22:22:28.780 | Navegando para o prÃ³ximo diretÃ³rio: maxxrural
+2026-08-17 22:22:28.836 | DiretÃ³rio confirmado pelo servidor: /www/atualizacao/maxxrural
+2026-08-17 22:22:28.836 | Listando diretÃ³rio remoto atual.
+2026-08-17 22:22:28.985 | DiretÃ³rio remoto localizado com 5 item(ns).
+2026-08-17 22:22:28.985 | Item remoto: .
+2026-08-17 22:22:28.985 | Item remoto: ..
+2026-08-17 22:22:28.985 | Item remoto: dlls.zip
+2026-08-17 22:22:28.985 | Item remoto: libxml2.zip
+2026-08-17 22:22:28.985 | Item remoto: maxxrural.zip
+2026-08-17 22:22:28.985 | DiagnÃ³stico FTP concluÃ­do. Nenhum arquivo foi enviado.
+2026-08-17 22:22:28.985 | Encerrando conexÃ£o FTP.

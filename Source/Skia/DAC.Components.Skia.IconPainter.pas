@@ -66,7 +66,8 @@ implementation
 uses
   System.Math,
   System.SysUtils,
-  DAC.Components.DesignSystem.DefaultTheme;
+  DAC.Components.DesignSystem.DefaultTheme,
+  DAC.Components.DesignSystem.OpacityTokens;
 
 function ResolveTheme(const ATheme: IDACComponentsTheme): IDACComponentsTheme;
 begin
@@ -83,7 +84,7 @@ var
 begin
   LTheme := ResolveTheme(ATheme);
   Result.Color := LTheme.Tokens.Colors.Text;
-  Result.Alpha := 255;
+  Result.Alpha := DACOpacityOpaque;
 end;
 
 class function TDACIconStyle.Semantic(

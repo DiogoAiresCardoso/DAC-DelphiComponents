@@ -1,0 +1,36 @@
+# Revisao de codigo - MEM-DEL-006
+
+Data: 2026-07-20  
+Status: `APPROVED_FOR_UI_TEST`
+
+## Parecer
+
+- `Tests/DACComponentsInteraction.dpr` e um executavel VCL de verdade:
+  inicializa `Application`, instancia o `TForm1` do DFM real da Demo, mostra a
+  janela e processa uma fila de mensagens limitada. Nao usa `Halt`; libera o
+  formulario, restaura `Application.OnException` e entrega o resultado por
+  `ExitCode`.
+- Falhas sincronas sao capturadas e retornam `ExitCode = 1`; excecoes
+  assincronas de VCL tambem sao registradas por `Application.OnException`.
+  Nao ha timeout interno que converta travamento em aprovacao. O limite externo
+  do executor deve sempre tratar processo que nao termine como falha.
+- A inspecao confirma as 15 familias por componentes reais do DFM e os
+  cenarios de DPI 96/120/144/192, foco/Tab, Enter/Espaco/setas, tooltip,
+  toast, modal/Esc, paginacao, resize, grid data-aware com colunas automaticas
+  e `WM_VSCROLL` sem deslocar o registro ativo.
+- O projeto copia `sk4d.dll` para o diretorio do teste. Os artefatos presentes
+  incluem `DACComponentsInteraction.exe` e a DLL Skia de 20.783.616 bytes.
+- Tres execucoes diretas, uma inicial e duas repetidas, emitiram
+  exclusivamente `DACComponentsInteraction: PASS` e retornaram `ExitCode = 0`
+  (todas em poucos segundos).
+
+## Handoff explicito ao QA de interface
+
+O teste automatizado agora pode servir como evidencia de regressao, mas nao
+substitui a validacao visual. O QA deve executar
+`Build\\Tests\\Win32\\Debug\\DACComponentsInteraction.exe`, anexar saida e
+exit code, e validar a Demo canonica quando possivel. A aceitacao final
+continua exigindo inspecao manual das 15 familias, dos quatro DPIs,
+foco/teclado, overlay/tooltip/modal e grid com dados ativos. Se aprovado, o
+orquestrador pode seguir para commit e PR; falha retorna ao especialista Delphi
+na mesma branch.

@@ -29,15 +29,20 @@ type
     TextoPrincipal: TAlphaColor;
     TextoSecundario: TAlphaColor;
     LinhaEixo: TAlphaColor;
+    class function Dark: TDACChartPalette; static;
     class function Default: TDACChartPalette; static;
+    class function Light: TDACChartPalette; static;
     function ColorByIndex(const AIndex: Integer): TAlphaColor;
     function ColorByRole(const ARole: TDACChartSemanticRole): TAlphaColor;
   end;
 
 implementation
 
-class function TDACChartPalette.Default: TDACChartPalette;
+class function TDACChartPalette.Dark: TDACChartPalette;
 begin
+  // This foundational palette is intentionally self-contained: calling the
+  // global color facade while the default theme is being constructed would
+  // recurse through the theme resolver.
   Result.VerdePrincipal := TAlphaColor($FF74D64A);
   Result.VerdeMedio := TAlphaColor($FF3DBB2A);
   Result.AmareloAgricola := TAlphaColor($FFF5C842);
@@ -53,6 +58,32 @@ begin
   Result.TextoPrincipal := TAlphaColor($FFE8EEE8);
   Result.TextoSecundario := TAlphaColor($FFB8C4B8);
   Result.LinhaEixo := TAlphaColor($FF355241);
+end;
+
+class function TDACChartPalette.Default: TDACChartPalette;
+begin
+  Result := Dark;
+end;
+
+class function TDACChartPalette.Light: TDACChartPalette;
+begin
+  // Series use darker tones on light cards so their contrast stays distinct
+  // from the surface while keeping the same semantic ordering as Dark.
+  Result.VerdePrincipal := TAlphaColor($FF2E7D32);
+  Result.VerdeMedio := TAlphaColor($FF4C9F38);
+  Result.AmareloAgricola := TAlphaColor($FFB8860B);
+  Result.AzulInformativo := TAlphaColor($FF1976D2);
+  Result.LaranjaAtencao := TAlphaColor($FFEF6C00);
+  Result.VermelhoQueda := TAlphaColor($FFC62828);
+  Result.CianoComplementar := TAlphaColor($FF00838F);
+  Result.VerdeClaroSuave := TAlphaColor($FF81C784);
+  Result.FundoGrafico := TAlphaColor($FFF5F8F4);
+  Result.Card := TAlphaColor($FFFFFFFF);
+  Result.GradePrincipal := TAlphaColor($FFD2DDD3);
+  Result.GradeSecundaria := TAlphaColor($FFE7EEE8);
+  Result.TextoPrincipal := TAlphaColor($FF17221A);
+  Result.TextoSecundario := TAlphaColor($FF526158);
+  Result.LinhaEixo := TAlphaColor($FF9BAA9E);
 end;
 
 function TDACChartPalette.ColorByIndex(const AIndex: Integer): TAlphaColor;

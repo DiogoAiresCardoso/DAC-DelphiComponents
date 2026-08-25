@@ -1,0 +1,51 @@
+# Re-revisao de codigo - MEM-DEL-010
+
+Data: 2026-07-21  
+Branch: `codex/fix-demo-visual-regressions`  
+Status: `APPROVED_FOR_FINAL_UI_QA`
+
+## Correcao dos bloqueios MEM-DEL-009
+
+- `ConfigureResponsiveButtons` le o viewport real com `GetClientRect`, calcula
+  margem escalada e aplica `SetBounds` a todos os cinco grids, incluindo a
+  grade que contem `Ghost` e `Alerta`. O gate verifica o bound externo da grid
+  e o bound de cada filho visivel, tanto no layout inicial quanto apos resize.
+- `CanApplyRuntimeLayout`, `CreateWnd`, `Resize` e `FitToWorkArea` isolam o
+  ajuste de workarea/reflow do `csDesigning`; tambem exigem `scrButtons` com
+  parent. Isto remove a mutacao de bounds do DFM durante a abertura no
+  Designer e evita acesso ao viewport antes do parent.
+- `EffectiveColumns` agora usa `Min(FColumns, 3)` como minimo condicionado.
+  Logo preserva os contratos `Columns = 1`, `2` e `3`, e reduz o layout apenas
+  dentro do teto publicado de 12 colunas. O interaction gate cria uma grid
+  real e prova os tres casos por posicao de seus filhos.
+- `WM_VSCROLL/SB_PAGEDOWN` continua exercitado com a janela visivel/handle
+  valido; tooltip e validado em show/hide. O teste permanece baseado no DFM
+  real da Demo.
+
+## Evidencia revisada
+
+- A captura
+  `Build/VisualValidation/dac-demo-144-buttons-review-final.png` foi inspecionada.
+  Em 144 PPI, Primario, Secundario, Ghost e Alerta aparecem completos, sem
+  truncamento na direita; Perigo, Transparente e a proxima secao tambem estao
+  dentro da area da janela. A borda direita da grade esta presente.
+- Recompilacao Win32/Delphi 32.0 de runtime, design-time, Demo, smoke e
+  interaction: todos `0 Warning(s)` e `0 Error(s)`.
+- `DACComponentsSmoke.exe`: `PASS`, exit code `0`.
+- Duas execucoes consecutivas de `DACComponentsInteraction.exe`: ambas
+  `PASS`, exit code `0`.
+- `git diff --check`: sem erro de whitespace (apenas avisos LF/CRLF).
+
+## Handoff ao QA final
+
+O codigo esta liberado para QA final multi-DPI. O QA deve validar visualmente
+96, 120, 144 e 192 PPI, scroll topo/meio/fim, resize, tabs horizontal/vertical,
+foco/teclado, tooltip/modal e a abertura do DFM no Designer. Esta e a ultima
+evidencia manual antes de commit e PR; uma regressao retorna ao especialista
+Delphi na mesma branch.
+
+## Observacao de worktree
+
+O build continua removendo `Package/DACSkiaComponentsRuntime.vrc`; o arquivo
+permanecia modificado antes da revisao e nao foi restaurado nem incluido pelo
+revisor. O orquestrador deve resolver explicitamente esse alvo antes do commit.

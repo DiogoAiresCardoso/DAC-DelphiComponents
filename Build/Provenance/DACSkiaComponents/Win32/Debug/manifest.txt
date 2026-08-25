@@ -1,0 +1,8 @@
+project=DACSkiaComponents
+configuration=Debug
+platform=Win32
+bplOutput=..\Build\Bpl\Win32\Debug
+dcpOutput=..\Build\Dcp\Win32\Debug
+dcuOutput=..\Build\Dcu\Win32\Debug\DACSkiaComponents
+cBuilderOutput=None
+legacyArtifacts=preserved

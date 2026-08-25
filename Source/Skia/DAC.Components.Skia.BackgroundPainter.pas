@@ -53,7 +53,8 @@ type
 implementation
 
 uses
-  DAC.Components.DesignSystem.DefaultTheme;
+  DAC.Components.DesignSystem.DefaultTheme,
+  DAC.Components.DesignSystem.OpacityTokens;
 
 function ResolveTheme(const ATheme: IDACComponentsTheme): IDACComponentsTheme;
 begin
@@ -71,13 +72,13 @@ var
 begin
   LTheme := ResolveTheme(ATheme);
   Result.Radius := 0;
-  Result.Alpha := 255;
+  Result.Alpha := DACOpacityOpaque;
 
   case AKind of
     mbgApplication:
       begin
         Result.Color := LTheme.Tokens.Colors.Background;
-        Result.Alpha := 255;
+        Result.Alpha := DACOpacityOpaque;
       end;
     mbgPanel:
       begin
@@ -105,7 +106,7 @@ begin
   else
     begin
       Result.Color := TAlphaColorRec.Null;
-      Result.Alpha := 0;
+      Result.Alpha := DACOpacityTransparent;
     end;
   end;
 end;
@@ -120,7 +121,8 @@ end;
 procedure TDACSkiaBackgroundPainter.Draw(const ACanvas: ISkCanvas;
   const ARect: TRectF; const AStyle: TDACBackgroundStyle);
 begin
-  if (FRenderer = nil) or (ACanvas = nil) or (AStyle.Alpha = 0) then
+  if (FRenderer = nil) or (ACanvas = nil) or
+    (AStyle.Alpha = DACOpacityTransparent) then
     Exit;
 
   FRenderer.FillRoundRect(ACanvas, ARect, AStyle.Color, AStyle.Radius,

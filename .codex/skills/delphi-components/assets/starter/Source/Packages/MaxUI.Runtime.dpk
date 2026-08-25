@@ -1,0 +1,60 @@
+package MaxUI_Runtime;
+
+{$CODEPAGE 65001}
+
+{$R *.res}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'MaxUI VCL runtime package'}
+{$IMPLICITBUILD OFF}
+
+requires
+  rtl,
+  vcl,
+  vcldb,
+  dbrtl;
+
+contains
+  MaxUI.Types in '..\Core\MaxUI.Types.pas',
+  MaxUI.Dpi in '..\Core\MaxUI.Dpi.pas',
+  MaxUI.Theme in '..\Core\MaxUI.Theme.pas',
+  MaxUI.Icons in '..\Core\MaxUI.Icons.pas',
+  MaxUI.Painter in '..\Core\MaxUI.Painter.pas',
+  MaxUI.Skia in '..\Core\MaxUI.Skia.pas',
+  MaxUI.Controls.Base in '..\Controls\MaxUI.Controls.Base.pas',
+  MaxUI.Controls.Buttons in '..\Controls\MaxUI.Controls.Buttons.pas',
+  MaxUI.Controls.Inputs in '..\Controls\MaxUI.Controls.Inputs.pas',
+  MaxUI.Controls.Selectors in '..\Controls\MaxUI.Controls.Selectors.pas',
+  MaxUI.Controls.Choices in '..\Controls\MaxUI.Controls.Choices.pas',
+  MaxUI.Controls.Tabs in '..\Controls\MaxUI.Controls.Tabs.pas',
+  MaxUI.Controls.Cards in '..\Controls\MaxUI.Controls.Cards.pas',
+  MaxUI.Controls.Data in '..\Controls\MaxUI.Controls.Data.pas',
+  MaxUI.Controls.Feedback in '..\Controls\MaxUI.Controls.Feedback.pas',
+  MaxUI.Controls.Charts in '..\Controls\MaxUI.Controls.Charts.pas',
+  MaxUI.Controls.Report in '..\Controls\MaxUI.Controls.Report.pas',
+  MaxUI.Hooks.Buttons in '..\Hooks\MaxUI.Hooks.Buttons.pas',
+  MaxUI.Hooks.Inputs in '..\Hooks\MaxUI.Hooks.Inputs.pas',
+  MaxUI.Hooks.Selectors in '..\Hooks\MaxUI.Hooks.Selectors.pas',
+  MaxUI.Hooks.Choices in '..\Hooks\MaxUI.Hooks.Choices.pas',
+  MaxUI.Hooks.Register in '..\Hooks\MaxUI.Hooks.Register.pas';
+
+end.

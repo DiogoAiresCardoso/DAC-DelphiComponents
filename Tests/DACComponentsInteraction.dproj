@@ -1,0 +1,40 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{3B4C5831-D1EF-4D31-96CC-8B43EE64ACD6}</ProjectGuid>
+    <MainSource>DACComponentsInteraction.dpr</MainSource>
+    <ProjectVersion>18.3</ProjectVersion>
+    <FrameworkType>VCL</FrameworkType>
+    <Config Condition="'$(Config)'==''">Debug</Config>
+    <Platform Condition="'$(Platform)'==''">Win32</Platform>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Base>true</Base>
+    <DCC_DcuOutput>..\Build\Dcu\$(Platform)\$(Config)\Tests\DACComponentsInteraction</DCC_DcuOutput>
+    <DCC_ExeOutput>..\Build\Exe\$(Platform)\$(Config)\Tests</DCC_ExeOutput>
+    <DCC_CBuilderOutput>None</DCC_CBuilderOutput>
+    <DAC_SkiaRuntimeSource>$(MSBuildProjectDirectory)\..\Build\EXE\sk4d.dll</DAC_SkiaRuntimeSource>
+    <DCC_UnitSearchPath>..\demo;..\Source\Core;..\Source\DesignSystem;..\Source\Skia;..\Source\Controls;..\Source\Hooks;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+    <DCC_UsePackage>rtl;vcl;vclimg;Skia.Package.RTL;Skia.Package.VCL;$(DCC_UsePackage)</DCC_UsePackage>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_1)'!=''">
+    <Cfg_1>true</Cfg_1>
+    <CfgParent>Base</CfgParent>
+    <Base>true</Base>
+    <DCC_Define>DEBUG;DAC_COMPONENTS_TESTS;$(DCC_Define)</DCC_Define>
+  </PropertyGroup>
+  <ItemGroup>
+    <DelphiCompile Include="$(MainSource)"><MainSource>MainSource</MainSource></DelphiCompile>
+    <BuildConfiguration Include="Base"><Key>Base</Key></BuildConfiguration>
+    <BuildConfiguration Include="Debug"><Key>Cfg_1</Key><CfgParent>Base</CfgParent></BuildConfiguration>
+  </ItemGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Delphi.Personality.12</Borland.Personality>
+    <BorlandProject><Delphi.Personality><Source><Source Name="MainSource">DACComponentsInteraction.dpr</Source></Source></Delphi.Personality><Platforms><Platform value="Win32">True</Platform></Platforms></BorlandProject>
+  </ProjectExtensions>
+  <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+  <PropertyGroup><BuildDependsOn>$(BuildDependsOn);CopySkiaRuntimeForInteraction</BuildDependsOn></PropertyGroup>
+  <Target Name="CopySkiaRuntimeForInteraction">
+    <Error Condition="!Exists('$(DAC_SkiaRuntimeSource)')" Text="sk4d.dll nao foi encontrada em $(DAC_SkiaRuntimeSource)."/>
+    <Copy SourceFiles="$(DAC_SkiaRuntimeSource)" DestinationFiles="$(DCC_ExeOutput)\sk4d.dll"/>
+  </Target>
+</Project>

@@ -1,0 +1,99 @@
+# Auditoria de assets e tokens — DAC Components
+
+Atualizado: 2026-07-23
+
+## Fontes de verdade
+
+- `assets/fonts/Inter.ttf` e `assets/fonts/Inter.OFL.txt`: Inter é a única
+  fonte aceita pela suíte.
+- Pranchas revisadas: `botões.png`, `ButtonEdit.png`, `input.png`,
+  `Combobox.png`, `DateTimepicker.png`, `DateTimepickerAberto.png`,
+  `checkbox.png`, `radiobutton.png`, `Tabs.png`, `DBGrid.png`,
+  `Design system griid.png`, `scrolls.png`, `Graficos.png`,
+  `Graficos Avancados.png` e `dashboarrd.png`.
+- `assets/design_system_componentes_agricolas.docx`: confirma escala de
+  espaçamento 4/8/12/16/20/24/32/40, raio de controles 8--10, cards 12--16,
+  primário `#43B72B`, canvas claro `#F4F6F5` e superfícies agrícolas escuras.
+
+## Mapa prancha -> contrato de componente
+
+| Asset | Familias e contrato aplicado |
+| --- | --- |
+| `botões.png` | `TDACButton`: alturas SM/MD/LG, padding, raio, estado, icone e gap em `ButtonSmall`, `ButtonMedium` e `ButtonLarge`. |
+| `ButtonEdit.png` | `TDACButtonEdit`: chrome compartilhado com Input e botao de acao com largura, icone e separador tokenizados. |
+| `input.png` | `TDACEdit` e `TDACMemo`: caption, helper, borda, foco, inset, texto nativo Inter e alinhamento vertical. |
+| `Combobox.png` | `TDACComboBox`: input, seta, popup, linha de item, estado aberto e altura de lista. |
+| `DateTimepicker.png` e `DateTimepickerAberto.png` | `TDACDateTimePicker` e popup: chrome, icone, calendario, dias, rodape e acoes. |
+| `checkbox.png` e `radiobutton.png` | `TDACCheckBox`, `TDACRadioButton`, `TDACToggleSwitch` e `TDACSlider`: caixa/anel, trilho, thumb, texto e estados. |
+| `Tabs.png` | `TDACTabs`: header horizontal/vertical, altura, padding, indicador, borda e area de conteudo. |
+| `DBGrid.png` | `TDACDataGrid`: cabecalho, linhas, densidade, selecao, acoes, footer e estados vazio/carregando. |
+| `Design system griid.png` | `TDACGridContainer`: colunas, gaps, minimos de filho e de linha. |
+| `scrolls.png` | `TDACScrollContainer`: viewport, track, thumb, largura e comportamento wheel. |
+| `Graficos.png` e `Graficos Avancados.png` | `TDACChart` e variantes: inset, frame, grade, serie, barra, linha, area e doughnut. |
+| `dashboarrd.png` | `TDACDashboardTokens`: superfícies, transparências, KPI, paineis, cards, chart e breakpoints. |
+
+`assets/svg/` e `assets/svg-green/` sao mapeados por `TDACIconAssets` por
+categoria (actions, agriculture, controls, data, interface, navigation e
+report-viewer). A posição e tamanho de cada icone vêm de `ControlTokens`, não
+do SVG ou de literais no painter.
+
+## Inventario observado em 2026-07-23
+
+- Nenhum novo layout foi encontrado depois de `DBGrid.png` (23/07 07:17).
+- O inventario ativo contem as 15 pranchas listadas acima, o documento de
+  design agricola, os dois conjuntos SVG e `assets/fonts/Inter.ttf`.
+- Constantes que permanecem nos controles são somente semanticas ou
+  matematicas: indices, limites de colecao, calendario de 7 dias e 360 graus
+  de um circulo. Nenhuma delas define dimensao, espacamento, raio, cor,
+  opacidade, fonte ou posicao visual.
+
+## Contrato de tokens
+
+- Tokens genéricos continuam em `SpacingTokens`, `TypographyTokens`,
+  `ControlTokens`, `RadiusTokens` e `InteractionTokens`.
+- `TDACDashboardTokens` contém somente métricas e superfícies específicas do
+  dashboard: breakpoints, dimensões de KPI/data/painéis/módulos/chart/status
+  e paleta clara/escura.
+- `TDACDesignTokens` expõe `Controls` e `Dashboard` para que os componentes e
+  a demo não carreguem literais visuais locais.
+- `TDACDemoTokens` centraliza a geometria do shell de demonstracao: navegacao,
+  margens, gaps de inputs e colunas da grade. Ele fica separado dos tokens de
+  renderizacao para a tela de exemplo nao criar uma escala concorrente.
+- O modo claro resolve os appearances legados `mcaDarkPanel`, `mcaDarkCard`,
+  `mcsaDashboard` e `mchaDashboard` em superfícies claras. O nome serializado
+  em DFM não congela a paleta escura.
+- Não usar APIs, propriedades ou comentários de DPI/PPI/escala. Valores de
+  layout são pixels lógicos estáveis desta versão VCL.
+
+## Tema e composição
+
+- Cada componente mantém `ThemeMode` (`dtmInherit`, `dtmDark`, `dtmLight`).
+- Após o cabeçalho de tabs estabilizar a página, a demo reaplica o tema do
+  dashboard em ordem raiz--filhos. Isso evita que um filho classifique a cor
+  anterior do pai durante a transição e elimina o flicker claro/escuro.
+- O dashboard é composto por `TDACScrollContainer`, `TDACContainer`,
+  `TDACSummaryCard`, `TDACGridContainer`, `TDACButton`, `TDACSystemText` e
+  `TDACBarChart`; não há desenho ad-hoc da tela.
+
+## Protecao automatizada
+
+- `DACComponentsInteraction` agora executa `RequireAssetContractEnforcement`.
+  A regra varre os 24 painters/hosts e falha se encontrar `TAlphaColor($...)`
+  fora do DesignSystem ou fonte Arial, Segoe UI, Roboto, Tahoma ou Calibri.
+- O contrato tambem exige os tokens `ChartDoughnutStartAngle` e
+  `ChartFullCircleDegrees`; a orientacao do doughnut nao fica em literal no
+  painter.
+
+## Evidência de validação
+
+- Build: runtime e demo Win32 Debug sem warnings/erros, com saída em `Build`.
+- Design-time: `DACComponentsDesignLifecycle` executa 3 rodadas de todas as
+  famílias, variantes DB e hosts internos; o DFM completo fecha com
+  `Parent=nil`, sem janela visível e balanço final `USER/GDI/HWND=0/0/0`.
+- Interação: `DACComponentsInteraction` cobre scroll, foco, teclado, popup,
+  dataset/grid e teardown limpo.
+- Visual: `Build/VisualValidation/AssetTokenAudit/` contém o ciclo explícito
+  claro/escuro do dashboard. `matrix-v2/` contém as 15 famílias em 1200x760
+  nos dois modos, interações físicas de rolagem, digitação, teclado, combo,
+  data grid e densidade. O ciclo dirigido em 520x560 está em
+  `narrow-dark-before.png`, `narrow-light.png` e `narrow-dark-after.png`.

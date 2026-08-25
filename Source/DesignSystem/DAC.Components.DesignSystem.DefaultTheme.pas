@@ -15,8 +15,9 @@ type
     FMetrics: TDACComponentMetrics;
     FTokens: TDACDesignTokens;
   public
-    constructor Create;
+    constructor Create(const AMode: TDACThemeMode);
     class function New: IDACComponentsTheme; static;
+    class function NewForMode(const AMode: TDACThemeMode): IDACComponentsTheme; static;
     function DisplayName: string;
     function Tokens: TDACDesignTokens;
     function Metrics: TDACComponentMetrics;
@@ -25,12 +26,18 @@ type
 
 implementation
 
-constructor TDACDefaultComponentsTheme.Create;
+constructor TDACDefaultComponentsTheme.Create(const AMode: TDACThemeMode);
 begin
   inherited Create;
-  FTokens := TDACDesignTokens.Default;
+  if AMode = dtmLight then
+    FTokens := TDACDesignTokens.Light
+  else
+    FTokens := TDACDesignTokens.Dark;
   FMetrics := TDACComponentMetrics.Default;
-  FChartPalette := TDACChartPalette.Default;
+  if AMode = dtmLight then
+    FChartPalette := TDACChartPalette.Light
+  else
+    FChartPalette := TDACChartPalette.Dark;
 end;
 
 function TDACDefaultComponentsTheme.ChartPalette: TDACChartPalette;
@@ -50,7 +57,13 @@ end;
 
 class function TDACDefaultComponentsTheme.New: IDACComponentsTheme;
 begin
-  Result := TDACDefaultComponentsTheme.Create;
+  Result := NewForMode(dtmDark);
+end;
+
+class function TDACDefaultComponentsTheme.NewForMode(
+  const AMode: TDACThemeMode): IDACComponentsTheme;
+begin
+  Result := TDACDefaultComponentsTheme.Create(AMode);
 end;
 
 function TDACDefaultComponentsTheme.Tokens: TDACDesignTokens;

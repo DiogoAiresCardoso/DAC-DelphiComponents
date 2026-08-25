@@ -1,0 +1,89 @@
+# Modelo de Memoria da Equipe
+
+Atualizado em 2026-07-20. Esta e a especificacao comum das memorias `.okf` da
+equipe. Ela nao substitui registros anteriores: os arquivos legados continuam
+validos como evidencia historica e sao indexados em `orchestrator-index.okf`.
+
+## Diretorios e autoridade
+
+```text
+.codex/skills/memory/
+  orchestrator-index.okf       indice, fila de disseminacao e estado dos gates
+  team-memory-model.okf        este contrato de formato
+  architecture.okf             memoria exclusiva do arquiteto
+  delphi_skia_vcl.okf          memoria exclusiva do desenvolvedor Delphi
+  revisao_codigo.okf           memoria exclusiva do revisor
+  testes_interface.okf         memoria exclusiva do especialista de interface
+  demands/<data>-<slug>.okf    registro completo de uma demanda
+```
+
+Cada papel escreve somente na sua memoria exclusiva e no `.okf` da demanda que
+lhe foi entregue. O orquestrador e o unico responsavel por atualizar o indice,
+decidir quais consumidores recebem uma mudanca e iniciar o proximo handoff.
+
+## Formato de registro
+
+Todo registro novo usa exatamente estes campos. Um registro pode ser uma secao
+Markdown ou um bloco de texto, desde que cada campo exista e tenha conteudo
+factual; `N/A` deve ser justificado.
+
+```text
+ID: MEM-<papel>-<sequencial>
+Data: <YYYY-MM-DD>
+Demanda/branch: <slug e branch, ou N/A>
+Fato: <observacao verificavel, sem interpretacao>
+Decisao: <regra, escolha ou ausencia deliberada de decisao>
+Evidencia: <arquivo:symbolo, comando e resultado, screenshot ou commit>
+Impacto: <API, DFM, package, UX, risco, compatibilidade ou N/A>
+Consumidores: <orquestrador, arquitetura, delphi_skia_vcl, revisao_codigo, testes_interface>
+Status: DRAFT | CONFIRMED | BLOCKED | SUPERSEDED
+Handoff: <destinatario, gatilho e artefato entregue, ou N/A>
+```
+
+`Fato` nao pode prometer comportamento futuro. `Decisao` precisa declarar o
+motivo quando alterar arquitetura, compatibilidade, escopo ou risco. Evidencia
+sempre aponta a origem; link sem resultado nao e evidencia suficiente.
+
+## Status e historico
+
+- `DRAFT`: hipotese ou registro ainda sem confirmacao.
+- `CONFIRMED`: sustentado pela evidencia indicada e apto a consumo.
+- `BLOCKED`: depende de autoridade, toolchain ou evidencia ausente; nao libera
+  o proximo gate.
+- `SUPERSEDED`: preservado para auditoria, com ponteiro para o ID substituto.
+
+Nunca apagar registro confirmado. Corrigir por novo registro que referencia o
+ID anterior. Segredos, dados de clientes e tokens nunca entram nesses arquivos.
+
+## Disseminacao orquestrada
+
+1. O papel que descobriu ou decidiu algo atualiza sua memoria e o `.okf` da
+   demanda, com `Consumidores` explicitos.
+2. Ele notifica apenas o orquestrador, com IDs e resumo objetivo.
+3. O orquestrador valida status/evidencia, atualiza `orchestrator-index.okf`
+   e chama cada consumidor indicado, no momento do gate apropriado.
+4. O consumidor confirma recebimento no seu handoff e nao replica o conteudo
+   integral: referencia o ID de origem e registra somente sua interpretacao,
+   consequencia ou novo fato.
+5. Divergencia ou evidencia insuficiente retorna ao dono do registro; nenhum
+   papel promove `DRAFT` a `CONFIRMED` de outro papel.
+
+## Handoffs minimos
+
+- Arquitetura -> Delphi: estudo por arquivos, mapa de impacto, decisao,
+  riscos, criterios de aceite e branch.
+- Delphi -> Revisao: diff/commits, contratos preservados, validacoes reais,
+  riscos e roteiro de comportamento.
+- Revisao -> Testes: veredito `APPROVED_FOR_UI_TEST`, P0/P1, cenarios e
+  ambientes obrigatorios.
+- Testes -> Orquestrador: resultado por cenario, ambiente, evidencia,
+  regressao ou aprovacao final.
+- Orquestrador -> todos: decisao de gate, destinatario, IDs de memoria e
+  proxima acao autorizada.
+
+## Retencao
+
+O `.okf` de demanda reune o historico daquele trabalho. As memorias por papel
+guardam regras e conhecimentos reutilizaveis, nao uma copia do diff. Ao fechar
+uma demanda, o orquestrador indexa apenas os IDs confirmados que devem orientar
+trabalho futuro.

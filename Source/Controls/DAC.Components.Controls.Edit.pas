@@ -15,7 +15,12 @@ uses
   Vcl.Mask,
   Vcl.Skia,
   Vcl.StdCtrls,
+  DAC.Components.Controls.FieldSupport,
   DAC.Components.DesignSystem.Fonts,
+  DAC.Components.DesignSystem.ComponentStyle,
+  DAC.Components.DesignSystem.ControlTokens,
+  DAC.Components.DesignSystem.OpacityTokens,
+  DAC.Components.DesignSystem.Theme,
   DAC.Components.DesignSystem.IconAssets,
   DAC.Components.Skia.BackgroundPainter,
   DAC.Components.Skia.BorderPainter,
@@ -52,17 +57,24 @@ type
     mivCompact
   );
 
+
+type
   TDACEdit = class(TCustomControl)
   private
     FBackgroundPainter: TDACSkiaBackgroundPainter;
+    FBindingCanModify: Boolean;
     FBorderPainter: TDACSkiaBorderPainter;
     FCornerRadius: Integer;
     FEdit: TMaskEdit;
     FEditKind: TDACEditKind;
     FEditMask: string;
     FCounterText: string;
+    FDesignValueLabel: TLabel;
+    FErrorText: string;
+    FFieldText: TDACFieldTextSupport;
     FHelperText: string;
     FIconPainter: TDACSkiaIconPainter;
+    FNativeLabel: TLabel;
     FInputSize: TDACInputSize;
     FLabelText: string;
     FMouseInside: Boolean;
@@ -71,13 +83,20 @@ type
     FPlaceholder: string;
     FRenderer: TDACSkiaRenderer;
     FRequired: Boolean;
+    FLoading: Boolean;
+    FLoadingTabStopCaptured: Boolean;
+    FReadOnly: Boolean;
+    FRightContentReserve: Integer;
     FStatus: TDACEditStatus;
+    FThemeMode: TDACThemeMode;
+    FTabStopBeforeLoading: Boolean;
     FVariant: TDACInputVariant;
     function BorderAlpha: Byte;
     function BorderColor: TAlphaColor;
     function ControlHeight: Integer;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure CMParentColorChanged(var AMessage: TMessage); message CM_PARENTCOLORCHANGED;
+    procedure CMParentFontChanged(var AMessage: TMessage); message CM_PARENTFONTCHANGED;
     procedure DoEditChange(Sender: TObject);
     procedure DoEditEnter(Sender: TObject);
     procedure DoEditExit(Sender: TObject);
@@ -94,62 +113,83 @@ type
     function HasRightIcon: Boolean;
     function HasLabel: Boolean;
     function HasSupportText: Boolean;
+    function ResolvedFieldState: TDACResolvedFieldState;
     function InputFontSize: Integer;
-    function SupportTextColor(const ASurface: TAlphaColor): TAlphaColor;
+    function ResolvedTokens: TDACControlTokens;
     function ChromeTop: Integer;
+    function ParentSurfaceColor: TAlphaColor;
     procedure InvalidateChrome;
+    procedure InvalidateParentRegion(const ABounds: TRect);
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
-    function ParentSurfaceColor: TAlphaColor;
-    function ScaleFactor: Single;
-    function ScaleMetric(const AValue: Integer): Integer;
+    function Pixels(const AValue: Integer): Integer;
     procedure SetCharCase(const AValue: TEditCharCase);
     procedure SetCornerRadius(const AValue: Integer);
     procedure SetCounterText(const AValue: string);
     procedure SetEditKind(const AValue: TDACEditKind);
     procedure SetEditMask(const AValue: string);
+    procedure SetErrorText(const AValue: string);
     procedure SetHelperText(const AValue: string);
     procedure SetInputSize(const AValue: TDACInputSize);
     procedure SetLabelText(const AValue: string);
+    procedure SetLoading(const AValue: Boolean);
     procedure SetMaxLength(const AValue: Integer);
     procedure SetPasswordChar(const AValue: Char);
     procedure SetPlaceholder(const AValue: string);
     procedure SetReadOnly(const AValue: Boolean);
     procedure SetRequired(const AValue: Boolean);
+    procedure SetRightContentReserve(const AValue: Integer);
     procedure SetStatus(const AValue: TDACEditStatus);
     procedure SetText(const AValue: string);
+    procedure SetThemeMode(const AValue: TDACThemeMode);
     procedure SetVariant(const AValue: TDACInputVariant);
+    procedure ThemeChanged(Sender: TObject);
     procedure UpdateChildBounds;
     procedure UpdateEditStyle;
+    procedure UpdateDesignValuePreview;
+    procedure UpdateNativeLabel;
     procedure UpdatePaintBoxBounds;
     procedure UpdateZOrder;
+    procedure WMSetFocus(var AMessage: TWMSetFocus); message WM_SETFOCUS;
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
   protected
-    procedure ChangeScale(M, D: Integer); override;
     procedure CreateWnd; override;
     procedure Loaded; override;
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
     procedure Resize; override;
+    procedure SetBindingCanModify(const AValue: Boolean);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    function ResolvedChromeColor: TAlphaColor;
+    function ResolvedInputSurfaceColor: TAlphaColor;
+    function InputChromeTop: Integer;
+    function InputChromeHeight: Integer;
+    function LabelFontSize: Integer;
     procedure Redraw;
     procedure SetFocus; reintroduce;
+    procedure SetBounds(ALeft, ATop, AWidth, AHeight: Integer); override;
     property EditControl: TMaskEdit read FEdit;
+    property NativeLabel: TLabel read FNativeLabel;
+    property RightContentReserve: Integer read FRightContentReserve
+      write SetRightContentReserve;
   published
     property Align;
     property Anchors;
     property CharCase: TEditCharCase read GetCharCase write SetCharCase default ecNormal;
     property Constraints;
-    property CornerRadius: Integer read FCornerRadius write SetCornerRadius default 8;
+    property CornerRadius: Integer read FCornerRadius write SetCornerRadius
+      default DACEditDefaultCornerRadius;
     property CounterText: string read FCounterText write SetCounterText;
     property EditKind: TDACEditKind read FEditKind write SetEditKind default mekText;
     property EditMask: string read FEditMask write SetEditMask;
     property Enabled;
+    property ErrorText: string read FErrorText write SetErrorText;
     property Font;
     property HelperText: string read FHelperText write SetHelperText;
-    property InputSize: TDACInputSize read FInputSize write SetInputSize default misMedium;
+    property InputSize: TDACInputSize read FInputSize write SetInputSize default misSmall;
     property LabelText: string read FLabelText write SetLabelText;
+    property Loading: Boolean read FLoading write SetLoading default False;
     property MaxLength: Integer read GetMaxLength write SetMaxLength default 0;
     property ParentFont;
     property ParentShowHint;
@@ -163,6 +203,7 @@ type
     property TabOrder;
     property TabStop default True;
     property Text: string read GetText write SetText;
+    property ThemeMode: TDACThemeMode read FThemeMode write SetThemeMode default dtmInherit;
     property Variant: TDACInputVariant read FVariant write SetVariant default mivOutlined;
     property Visible;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
@@ -183,26 +224,37 @@ type
 implementation
 
 uses
-  DAC.Components.DesignSystem.ColorTokens,
   System.Math,
-  Winapi.Windows;
+  Winapi.Windows,
+  DAC.Components.DesignSystem.ColorTokens;
+
+function EditVclColor(const AColor: TAlphaColor): TColor;
+begin
+  Result := TColor(((AColor and $00FF0000) shr 16) or
+    (AColor and $0000FF00) or ((AColor and $000000FF) shl 16));
+end;
 
 constructor TDACEdit.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  ControlStyle := ControlStyle + [csOpaque, csClickEvents, csCaptureMouse];
-  Width := 220;
-  Height := 38;
+  { Only the Skia child paints the input chrome. The wrapper itself must stay
+    transparent so label/support rows inherit the actual parent surface. }
+  ControlStyle := (ControlStyle + [csClickEvents, csCaptureMouse]) - [csOpaque];
+  FThemeMode := dtmInherit;
+  FRightContentReserve := 0;
+  Width := Round(ResolvedTokens.InputDefaultWidth);
+  Height := Round(ResolvedTokens.InputDefaultHeight);
   TabStop := True;
-  ParentColor := False;
+  ParentColor := True;
+  FBindingCanModify := True;
   StyleElements := [];
   Cursor := crIBeam;
-  Color := clWhite;
-  FCornerRadius := 8;
+  FCornerRadius := Round(ResolvedTokens.InputRadius);
   FEditKind := mekText;
-  FInputSize := misMedium;
+  FInputSize := misSmall;
   FStatus := mesNormal;
   FVariant := mivOutlined;
+  TDACThemeManager.RegisterListener(Self, ThemeChanged);
 
   FRenderer := TDACSkiaRenderer.Create;
   FBackgroundPainter := TDACSkiaBackgroundPainter.Create(FRenderer);
@@ -230,13 +282,30 @@ begin
   FEdit.OnMouseEnter := DoMouseEnter;
   FEdit.OnMouseLeave := DoMouseLeave;
 
+  { This is only the non-windowed designer presenter. Runtime values remain
+    in the real TMaskEdit, so caret, IME and accessibility are untouched. }
+  FDesignValueLabel := TLabel.Create(Self);
+  FDesignValueLabel.Parent := Self;
+  FDesignValueLabel.SetSubComponent(True);
+  FDesignValueLabel.AutoSize := False;
+  FDesignValueLabel.Transparent := True;
+  FDesignValueLabel.ParentFont := False;
+  FDesignValueLabel.Visible := False;
+
+  FFieldText := TDACFieldTextSupport.Create(Self, Self);
+  FNativeLabel := FFieldText.CaptionLabel;
+  FFieldText.SetFocusControl(FEdit);
+
   UpdateEditStyle;
   Resize;
 end;
 
 destructor TDACEdit.Destroy;
 begin
+  TDACThemeManager.UnregisterListener(Self);
+  FDesignValueLabel.Free;
   FEdit.Free;
+  FFieldText.Free;
   FPaintBox.Free;
   FIconPainter.Free;
   FBorderPainter.Free;
@@ -246,75 +315,73 @@ begin
 end;
 
 function TDACEdit.BorderAlpha: Byte;
+var
+  LTokens: TDACControlTokens;
 begin
+  LTokens := ResolvedTokens;
   if FVariant = mivUnderlined then
   begin
     if FEdit.Focused or (FStatus <> mesNormal) then
-      Exit(255);
+      Exit(LTokens.InputUnderlinedBorderAlphaFocus);
     if FMouseInside then
-      Exit(220);
-    Exit(190);
+      Exit(LTokens.InputUnderlinedBorderAlphaHover);
+    Exit(LTokens.InputUnderlinedBorderAlphaNormal);
   end;
 
-  if not Enabled then
-    Result := 130
+  if not Enabled or FLoading then
+    Result := LTokens.InputBorderAlphaDisabled
   else if FEdit.Focused then
-    Result := 255
+    Result := LTokens.InputBorderAlphaFocus
   else if FStatus <> mesNormal then
-    Result := 215
+    Result := LTokens.InputBorderAlphaStatus
   else if FMouseInside then
-    Result := 210
+    Result := LTokens.InputBorderAlphaHover
   else
-    Result := 185;
+    Result := LTokens.InputBorderAlphaNormal;
 end;
 
 function TDACEdit.BorderColor: TAlphaColor;
 var
-  LSurface: TAlphaColor;
+  LTokens: TDACControlTokens;
 begin
-  LSurface := ParentSurfaceColor;
+  LTokens := ResolvedTokens;
   case FStatus of
     mesSuccess:
-      Result := TDACComponentColors.PrimaryDark;
+      Result := LTokens.InputSuccessBorder;
     mesWarning:
-      Result := TDACComponentColors.Warning;
+      Result := LTokens.InputWarningBorder;
     mesDanger:
-      Result := TDACComponentColors.Danger;
+      Result := LTokens.InputDangerBorder;
   else
     if FEdit.Focused then
-      Result := TDACComponentColors.Primary
+      Result := LTokens.InputFocus
     else if FMouseInside then
-      Result := TDACComponentColors.ControlBorderHoverForSurface(LSurface)
+      Result := LTokens.InputBorderHover
     else
-      Result := TDACComponentColors.ControlBorderForSurface(LSurface);
+      Result := LTokens.InputBorder;
   end;
 end;
 
 function TDACEdit.ControlHeight: Integer;
+var
+  LTokens: TDACControlTokens;
 begin
-  case FInputSize of
-    misSmall:
-      Result := ScaleMetric(32);
-    misLarge:
-      Result := ScaleMetric(48);
-  else
-    Result := ScaleMetric(40);
-  end;
-
+  LTokens := ResolvedTokens;
   if FVariant = mivCompact then
-    Result := ScaleMetric(32);
-end;
-
-procedure TDACEdit.ChangeScale(M, D: Integer);
-begin
-  inherited;
-  UpdateChildBounds;
-  Redraw;
+    Exit(Round(LTokens.InputCompactChromeHeight));
+  case FInputSize of
+    misSmall: Result := Round(LTokens.InputSmallChromeHeight);
+    misLarge: Result := Round(LTokens.InputLargeChromeHeight);
+  else
+    Result := Round(LTokens.InputMediumChromeHeight);
+  end;
 end;
 
 procedure TDACEdit.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
+  if not Enabled then
+    DACFieldRelinquishFocus(Self, FEdit);
   UpdateEditStyle;
   Redraw;
 end;
@@ -326,9 +393,27 @@ begin
   Redraw;
 end;
 
+procedure TDACEdit.CMParentFontChanged(var AMessage: TMessage);
+begin
+  inherited;
+  UpdateEditStyle;
+  Redraw;
+end;
+
 procedure TDACEdit.CreateWnd;
 begin
   inherited;
+  if (csLoading in ComponentState) or (csDestroying in ComponentState) then
+    Exit;
+  if csDesigning in ComponentState then
+  begin
+    UpdatePaintBoxBounds;
+    UpdateChildBounds;
+    Exit;
+  end;
+  if (Parent = nil) or not HandleAllocated or
+    not Parent.HandleAllocated then
+    Exit;
   UpdateZOrder;
   UpdateChildBounds;
   UpdateEditStyle;
@@ -337,6 +422,7 @@ end;
 
 procedure TDACEdit.DoEditChange(Sender: TObject);
 begin
+  Redraw;
   if Assigned(OnChange) then
     OnChange(Self);
 end;
@@ -386,6 +472,23 @@ end;
 procedure TDACEdit.Loaded;
 begin
   inherited;
+  if FLoading then
+  begin
+    DACFieldBeginLoadingTabPolicy(Self, FTabStopBeforeLoading,
+      FLoadingTabStopCaptured, True);
+    DACFieldRelinquishFocus(Self, FEdit);
+  end;
+  if (csLoading in ComponentState) or (csDestroying in ComponentState) then
+    Exit;
+  if csDesigning in ComponentState then
+  begin
+    UpdatePaintBoxBounds;
+    UpdateChildBounds;
+    Exit;
+  end;
+  if (Parent = nil) or not HandleAllocated or
+    not Parent.HandleAllocated then
+    Exit;
   UpdatePaintBoxBounds;
   UpdateZOrder;
   UpdateChildBounds;
@@ -437,7 +540,7 @@ end;
 
 function TDACEdit.GetReadOnly: Boolean;
 begin
-  Result := FEdit.ReadOnly;
+  Result := FReadOnly;
 end;
 
 function TDACEdit.GetText: string;
@@ -452,6 +555,8 @@ end;
 
 function TDACEdit.RightIconKind: TDACIconKind;
 begin
+  if FLoading then
+    Exit(mikRefresh);
   case FEditKind of
     mekPassword:
       Result := mikEye;
@@ -473,11 +578,25 @@ begin
   Invalidate;
 end;
 
+procedure TDACEdit.InvalidateParentRegion(const ABounds: TRect);
+var
+  LBounds: TRect;
+begin
+  // The Skia paintbox is a graphic child. When its windowed host moves, VCL
+  // needs both regions invalidated or an old chrome/label frame can persist.
+  if (Parent = nil) or not Parent.HandleAllocated or
+    (csLoading in ComponentState) or (csDestroying in ComponentState) then
+    Exit;
+  LBounds := ABounds;
+  InflateRect(LBounds, 1, 1);
+  Winapi.Windows.InvalidateRect(Parent.Handle, @LBounds, True);
+end;
+
 procedure TDACEdit.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 begin
   inherited;
-  if (Button = mbLeft) and Enabled and (FEdit <> nil) then
+  if (Button = mbLeft) and Enabled and not FLoading and (FEdit <> nil) then
     FEdit.SetFocus;
 end;
 
@@ -488,97 +607,73 @@ var
   LBorder: TDACBorderStyle;
   LIconRect: TRectF;
   LIconStyle: TDACIconStyle;
-  LCounterWidth: Single;
-  LLabelColor: TAlphaColor;
-  LScale: Single;
   LBorderRect: TRectF;
   LControlBottom: Single;
   LRect: TRectF;
   LSurface: TAlphaColor;
-  LSupportColor: TAlphaColor;
+  LTokens: TDACControlTokens;
   LTop: Single;
 begin
   if (ACanvas = nil) or (ADest.Width <= 0) or (ADest.Height <= 0) then
     Exit;
 
-  LScale := ScaleFactor;
-  LTop := ChromeTop;
-  LControlBottom := Min(ADest.Height, LTop + ControlHeight);
+  LTop := 0;
+  LControlBottom := Min(ADest.Height, ControlHeight);
+  LTokens := ResolvedTokens;
   LBorderRect := FRenderer.SnapRect(TRectF.Create(0, LTop, ADest.Width,
-    LControlBottom), LScale);
+    LControlBottom), 1);
   LRect := LBorderRect;
-  LRect.Inflate(-0.5 / LScale, -0.5 / LScale);
+  LRect.Inflate(-LTokens.InputBorderInset, -LTokens.InputBorderInset);
 
-  LSurface := ParentSurfaceColor;
-  ACanvas.Clear(LSurface);
-
-  if HasLabel then
-  begin
-    LLabelColor := TDACComponentColors.ControlTextForSurface(LSurface);
-    if FRequired then
-      LLabelColor := TDACComponentColors.PrimaryDark;
-    FRenderer.Text(ACanvas, FLabelText,
-      TDACComponentFontInstaller.FontFamily, 0,
-      ScaleMetric(15), 12, LLabelColor, FRequired, ADest.Width);
-  end;
+  LSurface := ResolvedInputSurfaceColor;
+  { The paint box owns only the chrome row.  Its transparent corners must
+    reveal the real VCL parent surface, not a rectangular copy of the input
+    background. }
+  ACanvas.Clear(ParentSurfaceColor);
 
   LBorder.Color := BorderColor;
   LBorder.Radius := FCornerRadius;
-  LBorder.Width := 1;
+  LBorder.Width := LTokens.InputBorderWidth;
   if FEdit.Focused then
-    LBorder.Width := 1.5;
+    LBorder.Width := LTokens.InputFocusBorderWidth;
   LBorder.Alpha := BorderAlpha;
+  if csDesigning in ComponentState then
+  begin
+    { A normal light-theme stroke intentionally has low contrast at runtime.
+      The Delphi form canvas is white as well, so use the token hover stroke
+      only for the non-interactive design preview to make the chrome legible. }
+    LBorder.Color := LTokens.InputBorderHover;
+    LBorder.Alpha := DACOpacityOpaque;
+  end;
   if FVariant = mivUnderlined then
   begin
     FRenderer.StrokeRoundRect(ACanvas,
-      TRectF.Create(LRect.Left, LRect.Bottom - ScaleMetric(1), LRect.Right,
+      TRectF.Create(LRect.Left, LRect.Bottom - Pixels(Round(LTokens.InputUnderlineHeight)), LRect.Right,
         LRect.Bottom), LBorder.Color, 0, LBorder.Width, LBorder.Alpha);
   end
   else
   begin
-    LBackground.Color := TDACComponentColors.ControlBackgroundForSurface(LSurface);
-    if not Enabled then
-      LBackground.Color := TDACComponentColors.ControlBackgroundDisabledForSurface(LSurface);
+    LBackground.Color := LSurface;
     LBackground.Radius := FCornerRadius;
-    LBackground.Alpha := 255;
+    LBackground.Alpha := LTokens.InputBackgroundAlpha;
     FBackgroundPainter.Draw(ACanvas, LRect, LBackground);
     FBorderPainter.Draw(ACanvas, LBorderRect, LBorder);
   end;
 
   if HasRightIcon then
   begin
-    LIconRect := TRectF.Create(ADest.Width - ScaleMetric(30),
-      LRect.Top + (LRect.Height - ScaleMetric(16)) / 2,
-      ADest.Width - ScaleMetric(14),
-      LRect.Top + (LRect.Height + ScaleMetric(16)) / 2);
-    LIconStyle.Color := TDACComponentColors.ControlBorderHoverForSurface(LSurface);
-    LIconStyle.Alpha := 255;
-    if not Enabled then
-      LIconStyle.Color := TDACComponentColors.ControlTextDisabledForSurface(LSurface);
+    LIconRect := TRectF.Create(ADest.Width - Pixels(Round(LTokens.InputIconColumnWidth)),
+      LRect.Top + (LRect.Height - Pixels(Round(LTokens.InputIconSize))) / 2,
+      ADest.Width - Pixels(Round(LTokens.InputIconRightInset)),
+      LRect.Top + (LRect.Height + Pixels(Round(LTokens.InputIconSize))) / 2);
+    LIconStyle.Color := LTokens.InputIcon;
+    LIconStyle.Alpha := LTokens.InputIconAlpha;
+    if not Enabled or FLoading then
+      LIconStyle.Color := LTokens.InputIconDisabled;
 
     FIconPainter.Draw(ACanvas, LIconRect, RightIconKind, LIconStyle);
   end;
 
-  if HasSupportText then
-  begin
-    LSupportColor := SupportTextColor(LSurface);
-    if FHelperText.Trim <> '' then
-      FRenderer.Text(ACanvas, FHelperText,
-        TDACComponentFontInstaller.FontFamily, 0,
-        LBorderRect.Bottom + ScaleMetric(18), 11, LSupportColor, False,
-        ADest.Width);
-    if FCounterText.Trim <> '' then
-    begin
-      LCounterWidth := FRenderer.MeasureText(FCounterText,
-        TDACComponentFontInstaller.FontFamily, 11);
-      FRenderer.Text(ACanvas, FCounterText,
-        TDACComponentFontInstaller.FontFamily,
-        Max(0, ADest.Width - LCounterWidth),
-        LBorderRect.Bottom + ScaleMetric(18), 11,
-        TDACComponentColors.ControlTextDisabledForSurface(LSurface),
-        False, LCounterWidth);
-    end;
-  end;
 end;
 
 function TDACEdit.HasLabel: Boolean;
@@ -588,26 +683,68 @@ end;
 
 function TDACEdit.HasSupportText: Boolean;
 begin
-  Result := (FHelperText.Trim <> '') or (FCounterText.Trim <> '');
+  Result := (FHelperText.Trim <> '') or (FErrorText.Trim <> '') or
+    (FCounterText.Trim <> '');
 end;
 
 function TDACEdit.InputFontSize: Integer;
+var
+  LTokens: TDACControlTokens;
 begin
+  LTokens := ResolvedTokens;
   case FInputSize of
     misSmall:
-      Result := 9;
+      Result := Round(LTokens.InputSmallTextSize);
     misLarge:
-      Result := 12;
+      Result := Round(LTokens.InputLargeTextSize);
   else
-    Result := 10;
+    Result := Round(LTokens.InputMediumTextSize);
   end;
 end;
 
 function TDACEdit.ChromeTop: Integer;
 begin
-  Result := 0;
-  if HasLabel then
-    Result := ScaleMetric(24);
+  Result := DACFieldChromeTop(HasLabel, ResolvedTokens);
+end;
+
+function TDACEdit.InputChromeHeight: Integer;
+begin
+  Result := ControlHeight;
+end;
+
+function TDACEdit.InputChromeTop: Integer;
+begin
+  Result := ChromeTop;
+end;
+
+function TDACEdit.LabelFontSize: Integer;
+begin
+  Result := Round(ResolvedTokens.FieldLabelTextSize);
+end;
+
+function TDACEdit.ResolvedFieldState: TDACResolvedFieldState;
+begin
+  Result := TDACFieldStateResolver.Resolve(Enabled, FLoading, FReadOnly,
+    (FEdit <> nil) and FEdit.Focused, FMouseInside,
+    (FEdit <> nil) and (FEdit.Text <> ''),
+    TDACFieldValidation(Ord(FStatus)));
+end;
+
+function TDACEdit.ResolvedChromeColor: TAlphaColor;
+begin
+  Result := ResolvedTokens.InputChromeBackground;
+end;
+
+function TDACEdit.ResolvedInputSurfaceColor: TAlphaColor;
+var
+  LTokens: TDACControlTokens;
+begin
+  LTokens := ResolvedTokens;
+  if not Enabled or FLoading then
+    Exit(LTokens.InputDisabledBackground);
+  if FVariant = mivUnderlined then
+    Exit(LTokens.InputUnderlinedBackground);
+  Result := LTokens.InputBackground;
 end;
 
 function TDACEdit.ParentSurfaceColor: TAlphaColor;
@@ -617,34 +754,48 @@ end;
 
 procedure TDACEdit.Redraw;
 begin
+  if csDesigning in ComponentState then
+    UpdateChildBounds;
+  UpdateNativeLabel;
   UpdatePaintBoxBounds;
-  if (FPaintBox <> nil) and HandleAllocated then
+  if (FPaintBox <> nil) and (csDesigning in ComponentState) then
+  begin
+    { Invalidate preserves TSkPaintBox's raster cache. A theme inherited from
+      a parent container therefore needs Redraw to discard the old light/dark
+      chrome while keeping the native text preview untouched. }
+    FPaintBox.Redraw;
+    Invalidate;
+    Exit;
+  end;
+  if (FPaintBox <> nil) and not (csDesigning in ComponentState) and
+    not (csDestroying in ComponentState) and (Parent <> nil) and
+    HandleAllocated and Parent.HandleAllocated then
     FPaintBox.Redraw;
 end;
 
 procedure TDACEdit.Resize;
 begin
   inherited;
+  if (csLoading in ComponentState) or (csDestroying in ComponentState) then
+    Exit;
+  if csDesigning in ComponentState then
+  begin
+    UpdatePaintBoxBounds;
+    UpdateChildBounds;
+    Exit;
+  end;
+  if (Parent = nil) or not HandleAllocated or
+    not Parent.HandleAllocated then
+    Exit;
   UpdatePaintBoxBounds;
   UpdateZOrder;
   UpdateChildBounds;
   Redraw;
 end;
 
-function TDACEdit.ScaleFactor: Single;
+function TDACEdit.Pixels(const AValue: Integer): Integer;
 begin
-  Result := 1;
-  if FPaintBox <> nil then
-    Result := FPaintBox.ScaleFactor;
-  if Result <= 0 then
-    Result := 1;
-end;
-
-function TDACEdit.ScaleMetric(const AValue: Integer): Integer;
-begin
-  Result := Round(AValue * ScaleFactor);
-  if (AValue > 0) and (Result < 1) then
-    Result := 1;
+  Result := AValue;
 end;
 
 procedure TDACEdit.SetCharCase(const AValue: TEditCharCase);
@@ -670,7 +821,8 @@ begin
   LHadSupport := HasSupportText;
   FCounterText := AValue;
   if (not LHadSupport) and HasSupportText and (Height <= ChromeTop + ControlHeight) then
-    Height := ChromeTop + ControlHeight + ScaleMetric(24);
+    Height := DACFieldTotalHeight(HasLabel, HasSupportText, ControlHeight,
+      ResolvedTokens);
   InvalidateChrome;
 end;
 
@@ -691,6 +843,21 @@ begin
   UpdateEditStyle;
 end;
 
+procedure TDACEdit.SetErrorText(const AValue: string);
+var
+  LHadSupport: Boolean;
+begin
+  if FErrorText = AValue then
+    Exit;
+  LHadSupport := HasSupportText;
+  FErrorText := AValue;
+  if (not LHadSupport) and HasSupportText and
+    (Height <= ChromeTop + ControlHeight) then
+    Height := DACFieldTotalHeight(HasLabel, True, ControlHeight,
+      ResolvedTokens);
+  InvalidateChrome;
+end;
+
 procedure TDACEdit.SetHelperText(const AValue: string);
 var
   LHadSupport: Boolean;
@@ -701,20 +868,25 @@ begin
   LHadSupport := HasSupportText;
   FHelperText := AValue;
   if (not LHadSupport) and HasSupportText and (Height <= ChromeTop + ControlHeight) then
-    Height := ChromeTop + ControlHeight + ScaleMetric(24);
+    Height := DACFieldTotalHeight(HasLabel, HasSupportText, ControlHeight,
+      ResolvedTokens);
   InvalidateChrome;
 end;
 
 procedure TDACEdit.SetInputSize(const AValue: TDACInputSize);
 begin
-  if FInputSize = AValue then
+  { Single-line DAC inputs have one compact density. Keep the published enum
+    readable by old DFMs, but normalize any legacy medium/large value to the
+    Small contract. }
+  if FInputSize = misSmall then
     Exit;
 
-  FInputSize := AValue;
+  FInputSize := misSmall;
   if not HasLabel and not HasSupportText then
     Height := ControlHeight
   else
-    Height := ChromeTop + ControlHeight + IfThen(HasSupportText, ScaleMetric(24), 0);
+    Height := DACFieldTotalHeight(HasLabel, HasSupportText, ControlHeight,
+      ResolvedTokens);
   UpdateEditStyle;
   InvalidateChrome;
 end;
@@ -729,21 +901,87 @@ begin
   LHadLabel := HasLabel;
   FLabelText := AValue;
   if (not LHadLabel) and HasLabel and (Height <= ControlHeight) then
-    Height := ChromeTop + ControlHeight + IfThen(HasSupportText, ScaleMetric(24), 0);
+    Height := DACFieldTotalHeight(HasLabel, HasSupportText, ControlHeight,
+      ResolvedTokens);
   InvalidateChrome;
 end;
 
 procedure TDACEdit.SetFocus;
 begin
+  if FLoading or not Enabled then
+    Exit;
   if (FEdit <> nil) and FEdit.CanFocus then
-    FEdit.SetFocus
-  else
+    FEdit.SetFocus;
+end;
+
+procedure TDACEdit.SetBounds(ALeft, ATop, AWidth, AHeight: Integer);
+var
+  LCanLayout: Boolean;
+  LChanged: Boolean;
+  LMinimumHeight: Integer;
+  LPreviousBounds: TRect;
+begin
+  { A field with native caption/support must never accept a geometry smaller
+    than those rows.  DFM streaming can set Height after LabelText/HelperText,
+    so enforce the final layout contract here rather than clipping the text. }
+  LMinimumHeight := DACFieldTotalHeight(HasLabel, HasSupportText,
+    ControlHeight, ResolvedTokens);
+  AHeight := Max(AHeight, LMinimumHeight);
+  LPreviousBounds := BoundsRect;
+  LChanged := (LPreviousBounds.Left <> ALeft) or (LPreviousBounds.Top <> ATop) or
+    (LPreviousBounds.Width <> AWidth) or (LPreviousBounds.Height <> AHeight);
+  LCanLayout := not (csLoading in ComponentState) and
+    not (csDestroying in ComponentState) and not (csDesigning in ComponentState) and
+    (Parent <> nil) and HandleAllocated and Parent.HandleAllocated;
+  if LChanged and LCanLayout then
+  begin
+    Perform(WM_SETREDRAW, 0, 0);
+    SetWindowPos(Handle, 0, ALeft, ATop, AWidth, AHeight,
+      SWP_NOZORDER or SWP_NOACTIVATE or SWP_NOCOPYBITS or SWP_NOREDRAW);
+  end;
+  try
     inherited;
+  finally
+    if LChanged and LCanLayout then
+      Perform(WM_SETREDRAW, 1, 0);
+  end;
+  if LChanged and LCanLayout then
+  begin
+    InvalidateParentRegion(LPreviousBounds);
+    InvalidateParentRegion(BoundsRect);
+    if HandleAllocated then
+      RedrawWindow(Handle, nil, 0,
+        RDW_INVALIDATE or RDW_ERASE or RDW_FRAME or RDW_ALLCHILDREN or RDW_UPDATENOW);
+  end;
+  if LChanged and (csDesigning in ComponentState) then
+  begin
+    UpdatePaintBoxBounds;
+    UpdateChildBounds;
+    Invalidate;
+  end;
 end;
 
 procedure TDACEdit.SetMaxLength(const AValue: Integer);
 begin
   FEdit.MaxLength := Max(0, AValue);
+end;
+
+procedure TDACEdit.SetLoading(const AValue: Boolean);
+begin
+  if FLoading = AValue then
+    Exit;
+  FLoading := AValue;
+  if FLoading then
+  begin
+    DACFieldBeginLoadingTabPolicy(Self, FTabStopBeforeLoading,
+      FLoadingTabStopCaptured);
+    DACFieldRelinquishFocus(Self, FEdit);
+  end;
+  UpdateEditStyle;
+  if not FLoading then
+    DACFieldEndLoadingTabPolicy(Self, FTabStopBeforeLoading,
+      FLoadingTabStopCaptured);
+  InvalidateChrome;
 end;
 
 procedure TDACEdit.SetPasswordChar(const AValue: Char);
@@ -761,10 +999,20 @@ end;
 
 procedure TDACEdit.SetReadOnly(const AValue: Boolean);
 begin
-  if FEdit.ReadOnly = AValue then
+  if FReadOnly = AValue then
     Exit;
-  FEdit.ReadOnly := AValue;
+  FReadOnly := AValue;
   UpdateEditStyle;
+  InvalidateChrome;
+end;
+
+procedure TDACEdit.SetBindingCanModify(const AValue: Boolean);
+begin
+  if FBindingCanModify = AValue then
+    Exit;
+  FBindingCanModify := AValue;
+  UpdateEditStyle;
+  InvalidateChrome;
 end;
 
 procedure TDACEdit.SetRequired(const AValue: Boolean);
@@ -775,17 +1023,49 @@ begin
   InvalidateChrome;
 end;
 
+procedure TDACEdit.SetRightContentReserve(const AValue: Integer);
+var
+  LValue: Integer;
+begin
+  LValue := Max(0, AValue);
+  if FRightContentReserve = LValue then
+    Exit;
+  FRightContentReserve := LValue;
+  UpdateChildBounds;
+  Invalidate;
+end;
+
 procedure TDACEdit.SetStatus(const AValue: TDACEditStatus);
 begin
   if FStatus = AValue then
     Exit;
   FStatus := AValue;
-  Redraw;
+  InvalidateChrome;
 end;
 
 procedure TDACEdit.SetText(const AValue: string);
 begin
   FEdit.Text := AValue;
+  UpdateNativeLabel;
+end;
+
+procedure TDACEdit.SetThemeMode(const AValue: TDACThemeMode);
+begin
+  if FThemeMode = AValue then
+  begin
+    // A designer can reapply an identical streamed value after rebuilding the
+    // parent surface.  Re-resolve the inherited palette in that case too.
+    ThemeChanged(Self);
+    Exit;
+  end;
+  FThemeMode := AValue;
+  ThemeChanged(Self);
+end;
+
+procedure TDACEdit.ThemeChanged(Sender: TObject);
+begin
+  UpdateEditStyle;
+  Redraw;
 end;
 
 procedure TDACEdit.SetVariant(const AValue: TDACInputVariant);
@@ -798,18 +1078,9 @@ begin
   InvalidateChrome;
 end;
 
-function TDACEdit.SupportTextColor(const ASurface: TAlphaColor): TAlphaColor;
+function TDACEdit.ResolvedTokens: TDACControlTokens;
 begin
-  case FStatus of
-    mesSuccess:
-      Result := TDACComponentColors.PrimaryDark;
-    mesWarning:
-      Result := TDACComponentColors.WarningDark;
-    mesDanger:
-      Result := TDACComponentColors.Danger;
-  else
-    Result := TDACComponentColors.ControlTextDisabledForSurface(ASurface);
-  end;
+  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
 end;
 
 procedure TDACEdit.UpdateChildBounds;
@@ -819,18 +1090,119 @@ var
   LRightPadding: Integer;
   LTextHeight: Integer;
   LTop: Integer;
+  LTokens: TDACControlTokens;
 begin
-  if FEdit = nil then
+  if (FEdit = nil) or (csLoading in ComponentState) or
+    (csDestroying in ComponentState) then
     Exit;
 
-  LHorizontalPadding := ScaleMetric(12);
+  if csDesigning in ComponentState then
+  begin
+    { The transient windowed editor must not remain a child of the streamed
+      component preview. In Delphi 10.2 a hidden TMaskEdit may still receive a
+      design-surface paint with its old HWND bounds. Detaching it eliminates
+      that stale dark rectangle; runtime construction attaches a fresh native
+      editor before it needs focus, text, caret or IME. }
+    FEdit.Visible := False;
+    if FEdit.Parent <> nil then
+      FEdit.Parent := nil;
+    UpdateDesignValuePreview;
+    UpdateNativeLabel;
+    Exit;
+  end;
+
+  if (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated then
+    Exit;
+
+  if FEdit.Parent <> Self then
+    FEdit.Parent := Self;
+  FEdit.Visible := True;
+  if FDesignValueLabel <> nil then
+    FDesignValueLabel.Visible := False;
+
+  LTokens := ResolvedTokens;
+  LHorizontalPadding := Pixels(Round(LTokens.InputNativeHorizontalPadding));
   LRightPadding := LHorizontalPadding;
   if HasRightIcon then
-    LRightPadding := ScaleMetric(38);
+    LRightPadding := Pixels(Round(LTokens.InputNativeRightReserveWithIcon));
+  Inc(LRightPadding, FRightContentReserve);
   LInputHeight := Min(ControlHeight, Max(0, Height - ChromeTop));
-  LTextHeight := ScaleMetric(22);
-  LTop := ChromeTop + Max(0, (LInputHeight - LTextHeight) div 2);
+  case FInputSize of
+    misSmall: LTextHeight := Pixels(Round(LTokens.InputSmallEditorHeight));
+    misLarge: LTextHeight := Pixels(Round(LTokens.InputLargeEditorHeight));
+  else
+    LTextHeight := Pixels(Round(LTokens.InputMediumEditorHeight));
+  end;
+  LTextHeight := Min(LInputHeight, LTextHeight);
+  { The native editor remains inside the chrome's safe inset so it never
+    covers the Skia rounded border. The optical offset is tokenized and can be
+    tuned without changing the composition or native input behavior. }
+  LTop := ChromeTop + Max(0, (LInputHeight - LTextHeight) div 2) +
+    Pixels(Round(LTokens.InputNativeVerticalOffset));
+  LTop := Min(ChromeTop + Max(0, LInputHeight - LTextHeight), LTop);
   FEdit.SetBounds(LHorizontalPadding, LTop,
+    Max(0, Width - LHorizontalPadding - LRightPadding), LTextHeight);
+  UpdateNativeLabel;
+end;
+
+procedure TDACEdit.UpdateNativeLabel;
+begin
+  if FFieldText = nil then
+    Exit;
+  FFieldText.Update(FLabelText, FHelperText, FErrorText, FCounterText,
+    FRequired, ResolvedFieldState, Width, ChromeTop, ControlHeight,
+    ResolvedTokens);
+end;
+
+procedure TDACEdit.UpdateDesignValuePreview;
+var
+  LHorizontalPadding: Integer;
+  LInputHeight: Integer;
+  LRightPadding: Integer;
+  LText: string;
+  LTextHeight: Integer;
+  LTokens: TDACControlTokens;
+  LTop: Integer;
+begin
+  if FDesignValueLabel = nil then
+    Exit;
+  if not (csDesigning in ComponentState) then
+  begin
+    FDesignValueLabel.Visible := False;
+    Exit;
+  end;
+
+  LTokens := ResolvedTokens;
+  LText := FEdit.Text;
+  if LText = '' then
+    LText := FPlaceholder;
+  FDesignValueLabel.Caption := LText;
+  FDesignValueLabel.Font.Name := TDACComponentStyle.FontFamily;
+  FDesignValueLabel.Font.Size := InputFontSize;
+  FDesignValueLabel.Font.Style := [];
+  if FEdit.Text = '' then
+    FDesignValueLabel.Font.Color := EditVclColor(LTokens.InputPlaceholder)
+  else
+    FDesignValueLabel.Font.Color := EditVclColor(LTokens.InputText);
+  FDesignValueLabel.Visible := LText <> '';
+
+  LHorizontalPadding := Pixels(Round(LTokens.InputNativeHorizontalPadding));
+  LRightPadding := LHorizontalPadding;
+  if HasRightIcon then
+    LRightPadding := Pixels(Round(LTokens.InputNativeRightReserveWithIcon));
+  Inc(LRightPadding, FRightContentReserve);
+  LInputHeight := Min(ControlHeight, Max(0, Height - ChromeTop));
+  case FInputSize of
+    misSmall: LTextHeight := Pixels(Round(LTokens.InputSmallEditorHeight));
+    misLarge: LTextHeight := Pixels(Round(LTokens.InputLargeEditorHeight));
+  else
+    LTextHeight := Pixels(Round(LTokens.InputMediumEditorHeight));
+  end;
+  LTextHeight := Min(LInputHeight, LTextHeight);
+  LTop := ChromeTop + Max(0, (LInputHeight - LTextHeight) div 2) +
+    Pixels(Round(LTokens.InputNativeVerticalOffset));
+  LTop := Min(ChromeTop + Max(0, LInputHeight - LTextHeight), LTop);
+  FDesignValueLabel.SetBounds(LHorizontalPadding, LTop,
     Max(0, Width - LHorizontalPadding - LRightPadding), LTextHeight);
 end;
 
@@ -838,21 +1210,30 @@ procedure TDACEdit.UpdatePaintBoxBounds;
 var
   LWidth: Integer;
   LHeight: Integer;
+  LTop: Integer;
 begin
-  if FPaintBox = nil then
+  if (FPaintBox = nil) or (csLoading in ComponentState) or
+    (csDestroying in ComponentState) then
     Exit;
 
+  { Width/Height are safe while Delphi streams a component into the form
+    designer. ClientRect and a HWND are deliberately not required here. }
   LWidth := Width;
   LHeight := Height;
-  if HandleAllocated then
+  if not (csDesigning in ComponentState) and HandleAllocated then
   begin
     LWidth := ClientWidth;
     LHeight := ClientHeight;
   end;
 
-  if (FPaintBox.Left <> 0) or (FPaintBox.Top <> 0) or
+  LTop := ChromeTop;
+  { Label and support rows are native transparent controls.  Keeping the
+    Skia child within the chrome prevents a field-sized white rectangle from
+    being cleared behind those rows at runtime. }
+  LHeight := Min(ControlHeight, Max(0, LHeight - LTop));
+  if (FPaintBox.Left <> 0) or (FPaintBox.Top <> LTop) or
     (FPaintBox.Width <> LWidth) or (FPaintBox.Height <> LHeight) then
-    FPaintBox.SetBounds(0, 0, LWidth, LHeight);
+    FPaintBox.SetBounds(0, LTop, LWidth, LHeight);
 
 end;
 
@@ -862,9 +1243,8 @@ begin
     Exit;
   if csDesigning in ComponentState then
     Exit;
-  if not HandleAllocated then
-    Exit;
-  if (Parent = nil) or not Parent.HandleAllocated then
+  if (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated or
+    not Showing then
     Exit;
 
   if FPaintBox <> nil then
@@ -875,31 +1255,24 @@ end;
 
 procedure TDACEdit.UpdateEditStyle;
 var
-  LSurface: TAlphaColor;
+  LTokens: TDACControlTokens;
   LTextColor: TColor;
 begin
   if FEdit = nil then
     Exit;
 
-  LSurface := ParentSurfaceColor;
-  FEdit.Enabled := Enabled;
-  if FVariant = mivUnderlined then
-    FEdit.Color := TDACComponentColors.ToVclColor(LSurface)
-  else
-    FEdit.Color := TDACComponentColors.ToVclColor(
-      TDACComponentColors.ControlBackgroundForSurface(LSurface));
-  if not Enabled then
-    FEdit.Color := TDACComponentColors.ToVclColor(
-      TDACComponentColors.ControlBackgroundDisabledForSurface(LSurface));
-  FEdit.Font.Name := TDACComponentFontInstaller.FontFamily;
+  LTokens := ResolvedTokens;
+  FEdit.Enabled := Enabled and not FLoading;
+  FEdit.ReadOnly := FReadOnly or FLoading or not FBindingCanModify;
+  FEdit.Color := EditVclColor(ResolvedInputSurfaceColor);
+  FEdit.Font.Name := TDACComponentStyle.FontFamily;
   FEdit.Font.Size := InputFontSize;
   FEdit.Font.Style := [];
-  LTextColor := TDACComponentColors.ToVclColor(
-    TDACComponentColors.ControlTextForSurface(LSurface));
-  if not Enabled then
-    LTextColor := TDACComponentColors.ToVclColor(
-      TDACComponentColors.ControlTextDisabledForSurface(LSurface));
+  LTextColor := EditVclColor(LTokens.InputText);
+  if not Enabled or FLoading then
+    LTextColor := EditVclColor(LTokens.InputDisabledText);
   FEdit.Font.Color := LTextColor;
+  UpdateNativeLabel;
   FEdit.TextHint := FPlaceholder;
   if FEditKind in [mekMasked, mekNumeric, mekDate, mekTime] then
     FEdit.EditMask := EffectiveEditMask
@@ -909,7 +1282,7 @@ begin
   Cursor := crIBeam;
   FPaintBox.Cursor := crIBeam;
   FEdit.Cursor := crIBeam;
-  if not Enabled then
+  if not Enabled or FLoading then
   begin
     Cursor := crDefault;
     FPaintBox.Cursor := crDefault;
@@ -919,7 +1292,19 @@ end;
 
 procedure TDACEdit.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
 begin
-  AMessage.Result := 1;
+  inherited;
+end;
+
+procedure TDACEdit.WMSetFocus(var AMessage: TWMSetFocus);
+begin
+  inherited;
+  if FLoading or not Enabled then
+  begin
+    DACFieldRelinquishFocus(Self, FEdit);
+    Exit;
+  end;
+  if (FEdit <> nil) and not FEdit.Focused and FEdit.CanFocus then
+    FEdit.SetFocus;
 end;
 
 end.

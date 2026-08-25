@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="MaxUI">
+  <rect width="128" height="128" rx="28" fill="#FFFFFF"/>
+  <rect x="5" y="5" width="118" height="118" rx="24" fill="none" stroke="#2F9E22" stroke-width="6"/>
+  <path d="M35 78c18-3 30-15 36-38 18 8 29 22 24 38-5 17-23 26-40 19 11-5 20-12 27-23-12 9-25 14-39 15-8 0-13-4-8-11z" fill="#3DB82A"/>
+  <path d="M44 91c14-15 28-25 45-31" fill="none" stroke="#102417" stroke-width="6" stroke-linecap="round"/>
+</svg>

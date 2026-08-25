@@ -29,9 +29,9 @@ begin
   Result.BorderDefaultOpacity := 170;
   Result.BorderHoveredOpacity := 190;
   Result.BorderPressedOpacity := 210;
-  Result.HoverColor := TAlphaColor($FF3DB82A);
-  Result.PressedColor := TAlphaColor($FF2F9E22);
-  Result.FocusColor := TAlphaColor($FF74D64A);
+  Result.HoverColor := TAlphaColor($FF4DAA33);
+  Result.PressedColor := TAlphaColor($FF367A23);
+  Result.FocusColor := TAlphaColor($FF4CD964);
 end;
 
 end.

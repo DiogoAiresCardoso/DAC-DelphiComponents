@@ -1,0 +1,136 @@
+# Protocolo de Arquitetura e Handoff - DAC Skia Components
+
+Atualizado em 2026-07-20. Este arquivo e a memoria operacional do arquiteto
+para demandas da suite. Ele complementa `IMPLEMENTATION_PLAN.md`; quando houver
+conflito, a estrutura e os fontes atuais listados abaixo sao a referencia de
+verdade e a divergencia deve ser registrada no estudo da demanda.
+
+## 1. Linha de base confirmada
+
+- O runtime e o design-time estao separados em
+  `Package/DACSkiaComponentsRuntime.dpk` e
+  `Package/DACSkiaComponentsDesign.dpk`.
+- O runtime requer `Skia.Package.RTL` e `Skia.Package.VCL`; o desenho visual
+  novo usa Skia4Delphi, sem fallback GDI.
+- As camadas atuais sao `Source/Core`, `Source/DesignSystem`, `Source/Skia`,
+  `Source/Controls`, `Source/Hooks` e `Source/DesignTime`.
+- `Source/Skia/DAC.Components.Skia.Renderer.pas` centraliza a pintura Skia e
+  `Source/Controls/DAC.Components.Controls.SkiaControl.pas` e a base VCL que
+  hospeda paintbox, renderer, painters e container de interacao.
+- `Source/Hooks/DAC.Components.Hooks.Register.pas` e o unico ponto de
+  registro de hooks. Design-time nao pode vazar para o runtime.
+- Os `.dproj` reportam `ProjectVersion` 18.3 e target VCL; a versao exata do
+  RAD Studio e a disponibilidade do compilador devem ser confirmadas em cada
+  demanda, sem inferi-las desse numero.
+
+## 2. Como o arquiteto produz um estudo tecnico
+
+Antes de desenvolvimento, abrir uma demanda em
+`.codex/skills/knowledge/demands/<yyyy-mm-dd>-<slug>.okf`. O estudo precisa ser
+curto, verificavel e orientado a arquivos, com estas secoes obrigatorias:
+
+1. **Objetivo e fronteira**: comportamento pretendido, API publica afetada e
+   itens explicitamente fora do escopo.
+2. **Evidencias**: arquivos e simbolos lidos, incluindo packages, units,
+   DFM/demo e testes existentes. Nunca concluir por semelhanca de nomes.
+3. **Mapa de impacto**: arquivos a criar/alterar, dependencias entre camadas,
+   compatibilidade DFM/biblioteca e ordem de compilacao.
+4. **Decisao**: alternativa escolhida, alternativas descartadas e motivo.
+5. **Plano executavel**: passos pequenos em ordem, cada um com resultado
+   observavel e verificacao associada.
+6. **Riscos e mitigacoes**: pelo menos os riscos VCL/Skia/StyleHook aplicaveis
+   da secao 3.
+7. **Contrato de handoff**: a lista da secao 4 preenchida para o desenvolvedor.
+8. **Criterios de aceite**: build, revisao e testes de interface requeridos.
+
+O arquiteto nao implementa fontes nessa etapa. Se uma premissa nao puder ser
+confirmada, ela deve aparecer como bloqueio ou pergunta tecnica, nunca como
+fato.
+
+## 3. Riscos obrigatorios a avaliar
+
+| Area | Risco | Evidencia/mitigacao minima |
+|---|---|---|
+| Skia | Criar surface, paint, fonte ou SVG a cada frame, causando consumo e flicker. | Reutilizar `TDACSkiaRenderer`, cachear recursos e invalidar somente a area alterada. |
+| Skia | Overlay/popup ficar atras de controles windowed. | Definir host windowed, foco, captura, Escape e clique externo antes da implementacao. |
+| StyleHook | Hook global alterar controles VCL de terceiros. | Registrar/desregistrar somente classes `TDAC...`, de forma idempotente, em `DAC.Components.Hooks.Register`. |
+| StyleHook | Perder caret, IME, clipboard, undo/redo ou teclado em editor nativo. | Preservar a janela nativa; usar Skia para chrome, foco, borda e icones. |
+| VCL/design-time | `Parent = nil` ou handle prematuro causar `Control '' has no parent window`. | Em construtor, `Loaded`, `Resize` e setters, nao forcar Handle/ClientRect/z-order; respeitar loading, designing e `HandleAllocated`. |
+| DPI/foco | Escalas misturadas e foco apenas por cor. | Usar helpers de DPI/tokens, testar 96/120/144/192 PPI e garantir indicador de foco nao cromatico. |
+| Packages | Runtime depender de `DesignIntf` ou design-time faltar unit runtime. | Conferir ambos `.dpk` e `.dproj`; compilar runtime antes de design-time. |
+| DFM/API | Mudar defaults, propriedades publicadas ou classes e quebrar streaming. | Preservar defaults e testar abrir/salvar o DFM da demo no RAD Studio alvo. |
+
+## 4. Contrato de handoff para o desenvolvedor Delphi
+
+O estudo entrega ao desenvolvedor:
+
+- branch exclusiva ja criada conforme secao 5;
+- objetivo, escopo e criterios de aceite sem ambiguidades;
+- tabela `arquivo -> alteracao -> motivo -> dependencia`;
+- classes/units publicas a preservar ou introduzir e seus defaults;
+- estrategia explicitamente escolhida: controle composto, pintura Skia ou
+  StyleHook localizado;
+- ordem de build: Core/DesignSystem -> Skia -> Controls -> Hooks -> runtime
+  -> design-time -> demo/testes;
+- comandos de validacao disponiveis e a limitacao caso nao exista compilador;
+- caminho do `.okf` da demanda, que deve ser atualizado pelo desenvolvedor ao
+  finalizar com arquivos efetivamente modificados, decisoes tomadas,
+  verificacoes e limitacoes reais.
+
+O desenvolvedor informa ao orquestrador quando terminar e nao aciona revisao
+ou merge diretamente. Mudancas fora do mapa de impacto exigem atualizar o
+`.okf` e justificar a expansao antes de continuar.
+
+## 5. Branch por demanda
+
+Cada demanda de desenvolvimento usa uma branch nova a partir do `main`
+atualizado, no formato `codex/<slug-curto>`. A branch deve existir antes do
+primeiro arquivo de fonte ser alterado. O `.okf` da demanda deve registrar:
+
+- branch de origem e hash/base usados;
+- objetivo da branch e arquivos inicialmente previstos;
+- commits gerados e resultado das validacoes;
+- PR aberto, quando houver, e pendencias conhecidas.
+
+Documentacao pura pode ser feita na branch de coordenacao atual somente se nao
+acompanhar uma alteracao de produto. Nao reutilizar branch de demanda encerrada
+para uma nova necessidade. Nenhum agente deve criar branch concorrente para o
+mesmo escopo.
+
+## 6. Fluxo de orquestracao e gates
+
+1. O orquestrador chama somente o arquiteto para o estudo e o handoff.
+2. O desenvolvedor implementa exclusivamente a partir desse handoff e atualiza
+   o `.okf` da demanda ao concluir.
+3. O orquestrador chama o revisor. Reprovacao retorna ao desenvolvedor; o
+   revisor nao reimplementa a demanda.
+4. Aprovada a revisao, o orquestrador chama o especialista de interface para
+   validar comportamento, foco, teclado, mouse, resize, DPI e design-time.
+   Reprovacao retorna ao desenvolvedor.
+5. Com revisao e testes aprovados, o orquestrador confirma que o `.okf` contem
+   evidencias finais, cria o commit na branch da demanda, envia a branch e
+   abre o PR.
+
+O gate seguinte so inicia com resultado explicito do anterior. Build nao
+substitui QA de interface, e validacao estatica nao deve ser reportada como
+compilacao Delphi.
+
+## 7. Documentacao continua
+
+- Um `.okf` por demanda em `.codex/skills/knowledge/demands/`; usar UTF-8 simples e
+  manter historico por anexos datados, sem apagar decisoes relevantes.
+- Este arquivo e atualizado apenas quando a arquitetura-base, o fluxo ou o
+  contrato mudarem.
+- Todo `.okf` de demanda termina com: arquivos reais alterados, comandos e
+  resultados, versao/toolchain observados, riscos remanescentes, decisao de
+  revisao e decisao de QA.
+- Nao registrar segredos, tokens, caminhos pessoais ou dados de clientes.
+
+## 8. Verificacao inicial desta memoria
+
+- Leitura estatica executada em `README.md`, `IMPLEMENTATION_PLAN.md`, os dois
+  packages/projetos e nas units de renderer, controle Skia e registro de hooks.
+- A separacao runtime/design-time e as dependencias Skia foram confirmadas
+  pelos packages atuais.
+- O script de auditoria da skill nao rodou: `python.exe` falhou nesta sessao
+  com erro de logon indisponivel. Nenhuma compilacao Delphi foi executada.

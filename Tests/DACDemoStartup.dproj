@@ -1,0 +1,44 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{F0A75257-FD12-4A5A-A340-3FD93B4B7261}</ProjectGuid>
+    <MainSource>DACDemoStartup.dpr</MainSource>
+    <ProjectVersion>18.3</ProjectVersion>
+    <FrameworkType>VCL</FrameworkType>
+    <Config Condition="'$(Config)'==''">Debug</Config>
+    <Platform Condition="'$(Platform)'==''">Win32</Platform>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Base>true</Base>
+    <DCC_DcuOutput>..\Build\Dcu\$(Platform)\$(Config)\Tests\DACDemoStartup</DCC_DcuOutput>
+    <DCC_ExeOutput>..\Build\Exe\$(Platform)\$(Config)\Tests</DCC_ExeOutput>
+    <DCC_CBuilderOutput>None</DCC_CBuilderOutput>
+    <DCC_MapFile>3</DCC_MapFile>
+    <DCC_SymbolReferenceInfo>2</DCC_SymbolReferenceInfo>
+    <DCC_DebugInformation>2</DCC_DebugInformation>
+    <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
+    <DAC_SkiaRuntimeSource>$(MSBuildProjectDirectory)\..\Build\EXE\sk4d.dll</DAC_SkiaRuntimeSource>
+    <DCC_UnitSearchPath>..\demo;..\Source\Core;..\Source\DesignSystem;..\Source\Skia;..\Source\Controls;..\Source\Hooks;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+    <DCC_UsePackage>rtl;vcl;vclimg;Skia.Package.RTL;Skia.Package.VCL</DCC_UsePackage>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_1)'!=''">
+    <Cfg_1>true</Cfg_1>
+    <CfgParent>Base</CfgParent>
+    <Base>true</Base>
+    <DCC_Define>DEBUG;DAC_TESTING;$(DCC_Define)</DCC_Define>
+  </PropertyGroup>
+  <ItemGroup>
+    <DelphiCompile Include="$(MainSource)"><MainSource>MainSource</MainSource></DelphiCompile>
+    <BuildConfiguration Include="Base"><Key>Base</Key></BuildConfiguration>
+    <BuildConfiguration Include="Debug"><Key>Cfg_1</Key><CfgParent>Base</CfgParent></BuildConfiguration>
+  </ItemGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Delphi.Personality.12</Borland.Personality>
+    <BorlandProject><Delphi.Personality><Source><Source Name="MainSource">DACDemoStartup.dpr</Source></Source></Delphi.Personality><Platforms><Platform value="Win32">True</Platform></Platforms></BorlandProject>
+  </ProjectExtensions>
+  <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+  <PropertyGroup><BuildDependsOn>$(BuildDependsOn);CopySkiaRuntimeForDemoStartup</BuildDependsOn></PropertyGroup>
+  <Target Name="CopySkiaRuntimeForDemoStartup">
+    <Error Condition="!Exists('$(DAC_SkiaRuntimeSource)')" Text="sk4d.dll nao foi encontrada em $(DAC_SkiaRuntimeSource)."/>
+    <Copy SourceFiles="$(DAC_SkiaRuntimeSource)" DestinationFiles="$(DCC_ExeOutput)\sk4d.dll"/>
+  </Target>
+</Project>

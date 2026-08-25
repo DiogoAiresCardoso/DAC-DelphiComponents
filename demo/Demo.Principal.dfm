@@ -1,1623 +1,1994 @@
-object Form1: TForm1
+﻿object Form1: TForm1
   Left = 0
   Top = 0
-  BorderStyle = bsNone
-  Caption = 'Demo - Suite de Componentes'
-  ClientHeight = 474
-  ClientWidth = 1000
-  Color = clWhite
-  Font.Charset = DEFAULT_CHARSET
-  Font.Color = clWindowText
-  Font.Height = -11
-  Font.Name = 'Tahoma'
-  Font.Style = []
+  Caption = 'DAC Componentes - Demo'
+  ClientHeight = 760
+  ClientWidth = 1200
   OldCreateOrder = False
-  OnCreate = FormCreate
-  StyleElements = [seFont, seBorder]
+  Position = poScreenCenter
+  Scaled = False
   PixelsPerInch = 96
-  TextHeight = 13
-  object SystemBar: TDACContainer
+  TextHeight = 15
+  object GalleryTabs: TDACTabs
     Left = 0
     Top = 0
-    Width = 1000
-    Height = 56
-    Align = alTop
-    Appearance = mcaDarkPanel
-    BackgroundColor = xFF07130C
-    BorderColor = xFF2B3D31
-    BorderRadius = 0
-    ContentPadding = 0
-    CornerRadius = 0
-    HeaderHeight = 0
-    ShowHeader = False
-    TabOrder = 0
-    object SystemIcon: TDACButton
-      Left = 18
-      Top = 10
-      Width = 36
-      Height = 36
-      Cursor = crHandPoint
-      Caption = ''
-      IconKind = mikLeaf
-      IconSize = 22
-      Kind = mbkPrimary
-      ShowIcon = True
-      TabOrder = 0
-    end
-    object SystemTitle: TLabel
-      Left = 68
-      Top = 17
-      Width = 220
-      Height = 19
-      Caption = 'Demo - Suite de Componentes'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWhite
-      Font.Height = -16
-      Font.Name = 'Inter'
-      Font.Style = [fsBold]
-      ParentFont = False
-      Transparent = True
-    end
-    object WindowMinimizeButton: TDACButton
-      Left = 856
-      Top = 10
-      Width = 40
-      Height = 36
-      Anchors = [akTop, akRight]
-      Cursor = crHandPoint
-      Caption = ''
-      IconKind = mikMinus
-      IconSize = 18
-      Kind = mbkTransparent
-      ShowIcon = True
-      TabOrder = 1
-      OnClick = WindowMinimizeButtonClick
-    end
-    object WindowMaximizeButton: TDACButton
-      Left = 902
-      Top = 10
-      Width = 40
-      Height = 36
-      Anchors = [akTop, akRight]
-      Cursor = crHandPoint
-      Caption = ''
-      IconKind = mikExpand
-      IconSize = 18
-      Kind = mbkTransparent
-      ShowIcon = True
-      TabOrder = 2
-      OnClick = WindowMaximizeButtonClick
-    end
-    object WindowCloseButton: TDACButton
-      Left = 948
-      Top = 10
-      Width = 40
-      Height = 36
-      Anchors = [akTop, akRight]
-      Cursor = crHandPoint
-      Caption = ''
-      IconKind = mikClose
-      IconSize = 18
-      Kind = mbkDanger
-      ShowIcon = True
-      TabOrder = 3
-      OnClick = WindowCloseButtonClick
-    end
-  end
-  object MainTabs: TDACTabs
-    Left = 0
-    Top = 56
-    Width = 1000
-    Height = 418
-    Cursor = crHandPoint
-    ActiveIndex = 0
+    Width = 1200
+    Height = 760
+    ActivePage = tsDashboard
     Align = alClient
-    ContentColor = claWhite
-    CornerRadius = 10
-    Items = <
-      item
-        Caption = 'Botoes'
-      end
-      item
-        Caption = 'Inputs'
-      end
-      item
-        Caption = 'Controles'
-      end
-      item
-        Caption = 'Containers'
-      end
-      item
-        Caption = 'Tabs'
-      end
-      item
-        Caption = 'Cards'
-      end
-      item
-        Caption = 'Grid'
-      end
-      item
-        Caption = 'Status'
-      end
-      item
-        Caption = 'Badges'
-      end
-      item
-        Caption = 'Progress'
-      end
-      item
-        Caption = 'Paginacao'
-      end
-      item
-        Caption = 'Loading'
-      end
-      item
-        Caption = 'Feedback'
-      end
-      item
-        Caption = 'Charts'
-      end
-      item
-        Caption = 'Report'
-      end>
-    ShowContentBorder = False
-    TabHeight = 46
-    TabOrder = 1
-    TabWidth = 96
-    OnChange = MainTabsChange
-    object PageButtons: TDACScrollContainer
-      Left = 12
-      Top = 58
-      Width = 976
-      Height = 404
-      Align = alClient
-      BorderStyle = bsNone
-      BackgroundColor = claWhite
-      BorderColor = claNull
-      CornerRadius = 0
-      Color = clWhite
-      ParentColor = False
-      TabOrder = 0
-      StyleElements = [seFont, seBorder]
-      object SectionButtons: TDACContainer
-        Left = 16
-        Top = 16
-        Width = 850
-        Height = 238
-        BackgroundColor = claWhite
-        BorderColor = xFFD5DBE6
-        ContentPadding = 18
-        SectionNumber = 1
-        Subtitle = 'Variacoes de botoes da suite organizadas na tab Botoes'
-        SubtitleColor = xFF475569
-        TabOrder = 0
-        Title = 'BOTOES'
-        TitleColor = xFF111827
-        object ButtonPrimary: TDACButton
-          Left = 36
-          Top = 88
-          Width = 136
-          Height = 36
-          Cursor = crHandPoint
-          Caption = 'Primario'
-          IconSize = 18
-          ShowIcon = True
-          TabOrder = 0
-        end
-        object ButtonSecondary: TDACButton
-          Left = 188
-          Top = 88
-          Width = 136
-          Height = 36
-          Cursor = crHandPoint
-          Caption = 'Secundario'
-          Kind = mbkSecondary
-          TabOrder = 1
-        end
-        object ButtonWarning: TDACButton
-          Left = 340
-          Top = 88
-          Width = 124
-          Height = 36
-          Cursor = crHandPoint
-          Caption = 'Alerta'
-          IconKind = mikWarning
-          IconSize = 18
-          Kind = mbkWarning
-          ShowIcon = True
-          TabOrder = 2
-        end
-        object ButtonDanger: TDACButton
-          Left = 480
-          Top = 88
-          Width = 124
-          Height = 36
-          Cursor = crHandPoint
-          Caption = 'Perigo'
-          IconKind = mikDanger
-          IconSize = 18
-          Kind = mbkDanger
-          ShowIcon = True
-          TabOrder = 3
-        end
-        object ButtonGhost: TDACButton
-          Left = 620
-          Top = 88
-          Width = 124
-          Height = 36
-          Cursor = crHandPoint
-          Caption = 'Ghost'
-          IconKind = mikFilter
-          IconSize = 18
-          Kind = mbkGhost
-          ShowIcon = True
-          TabOrder = 4
-        end
-        object ButtonTransparent: TDACButton
-          Left = 760
-          Top = 88
-          Width = 42
-          Height = 36
-          Cursor = crHandPoint
-          Caption = ''
-          IconKind = mikMore
-          IconSize = 18
-          Kind = mbkTransparent
-          ShowIcon = True
-          TabOrder = 5
-        end
-        object ButtonIconAdd: TDACButton
-          Left = 36
-          Top = 152
-          Width = 42
-          Height = 42
-          Cursor = crHandPoint
-          Caption = 'Botao'
-          IconKind = mikAdd
-          IconSize = 20
-          ShowIcon = True
-          TabOrder = 5
-        end
-        object ButtonIconEdit: TDACButton
-          Left = 96
-          Top = 152
-          Width = 42
-          Height = 42
-          Cursor = crHandPoint
-          Caption = 'Botao'
-          IconKind = mikEdit
-          IconSize = 20
-          Kind = mbkSecondary
-          ShowIcon = True
-          TabOrder = 6
-        end
-        object ButtonIconDelete: TDACButton
-          Left = 156
-          Top = 152
-          Width = 42
-          Height = 42
-          Cursor = crHandPoint
-          Caption = 'Botao'
-          IconKind = mikTrash
-          IconSize = 20
-          Kind = mbkDanger
-          ShowIcon = True
-          TabOrder = 7
-        end
-      end
-    end
-    object PageInputs: TDACScrollContainer
-      Left = 12
-      Top = 58
-      Width = 976
-      Height = 404
-      Align = alClient
-      BorderStyle = bsNone
-      BackgroundColor = claWhite
-      BorderColor = claNull
-      CornerRadius = 0
-      Color = clWhite
-      ParentColor = False
-      TabOrder = 1
-      Visible = False
-      StyleElements = [seFont, seBorder]
-      object SectionInputs: TDACContainer
-        Left = 16
-        Top = 16
-        Width = 850
-        Height = 720
-        BackgroundColor = claWhite
-        BorderColor = xFFD5DBE6
-        ContentPadding = 18
-        SectionNumber = 2
-        Subtitle = 'Edits, memo e combobox agrupados na tab Inputs'
-        SubtitleColor = xFF475569
-        TabOrder = 0
-        Title = 'INPUTS'
-        TitleColor = xFF111827
-        object InputText: TDACEdit
-          Left = 36
-          Top = 82
-          Width = 240
-          Height = 82
-          Cursor = crIBeam
-          HelperText = 'Texto padrao para formularios.'
-          LabelText = 'Campo de texto'
-          Placeholder = 'Digite um valor'
-          TabOrder = 0
-          Text = ''
-        end
-        object InputRequired: TDACEdit
-          Left = 306
-          Top = 82
-          Width = 240
-          Height = 82
-          Cursor = crIBeam
-          LabelText = 'Campo obrigatorio'
-          Placeholder = 'Destaque sem asterisco'
-          Required = True
-          HelperText = 'Informacao valida.'
-          Status = mesSuccess
-          TabOrder = 1
-          Text = ''
-        end
-        object InputMasked: TDACEdit
-          Left = 576
-          Top = 82
-          Width = 220
-          Height = 60
-          Cursor = crIBeam
-          EditKind = mekMasked
-          EditMask = '(99) 99999-9999;0;_'
-          LabelText = 'Masked Input'
-          MaxLength = 15
-          Placeholder = '(11) 99999-9999'
-          TabOrder = 2
-          Text = '46999999999'
-        end
-        object InputPassword: TDACEdit
-          Left = 36
-          Top = 184
-          Width = 240
-          Height = 60
-          Cursor = crIBeam
-          EditKind = mekPassword
-          LabelText = 'Password'
-          PasswordChar = '*'
-          Placeholder = 'Senha'
-          TabOrder = 3
-          Text = '12345678'
-        end
-        object InputSearch: TDACEdit
-          Left = 306
-          Top = 184
-          Width = 240
-          Height = 60
-          Cursor = crIBeam
-          EditKind = mekSearch
-          LabelText = 'Search'
-          Placeholder = 'Pesquisar...'
-          TabOrder = 4
-          Text = ''
-        end
-        object InputCombo: TDACComboBox
-          Left = 576
-          Top = 184
-          Width = 220
-          Height = 82
-          ItemIndex = 0
-          Items.Strings = (
-            'Selecione uma opcao'
-            'Fazenda Boa Vista'
-            'Talhao 12'
-            'Soja')
-          HelperText = 'Escolha a opcao que melhor atende ao contexto.'
-          LabelText = 'ComboBox'
-          Required = True
-          Status = mesSuccess
-          TabOrder = 6
-          Text = 'Selecione uma opcao'
-        end
-        object InputMemo: TDACMemo
-          Left = 36
-          Top = 294
-          Width = 510
-          Height = 90
-          Cursor = crIBeam
-          LabelText = 'Memo / TextArea'
-          Lines.Strings = (
-            'Area para texto'
-            'com multiplas linhas.'
-            'Suporta digitacao de paragrafos completos.')
-          TabOrder = 6
-          Text =
-            'Area para texto'#13#10'com multiplas linhas.'#13#10'Suporta digitacao de par' +
-            'agrafos completos.'#13#10
-        end
-        object InputNumeric: TDACEdit
-          Left = 576
-          Top = 294
-          Width = 220
-          Height = 82
-          Cursor = crIBeam
-          EditKind = mekNumeric
-          EditMask = '999.999.999,99;1;_'
-          CounterText = '12/120'
-          LabelText = 'Mascara numerica'
-          Placeholder = '000.000.000,00'
-          TabOrder = 7
-          Text = '000.001.250,50'
-        end
-        object InputDate: TDACEdit
-          Left = 36
-          Top = 404
-          Width = 240
-          Height = 60
-          Cursor = crIBeam
-          EditKind = mekDate
-          LabelText = 'Data'
-          Placeholder = 'dd/mm/aaaa'
-          TabOrder = 8
-          Text = '24/05/2025'
-        end
-        object InputTime: TDACEdit
-          Left = 306
-          Top = 404
-          Width = 240
-          Height = 60
-          Cursor = crIBeam
-          EditKind = mekTime
-          LabelText = 'Hora'
-          Placeholder = 'hh:mm'
-          TabOrder = 9
-          Text = '14:35'
-        end
-        object InputDateTimePicker: TDACDateTimePicker
-          Left = 576
-          Top = 404
-          Width = 220
-          Height = 60
-          FormatString = 'dd/MM/yyyy HH:mm'
-          LabelText = 'DateTimePicker'
-          Required = True
-          Status = mesSuccess
-          TabOrder = 10
-        end
-        object InputButtonEditDefault: TDACButtonEdit
-          Left = 36
-          Top = 494
-          Width = 240
-          Height = 82
-          ButtonIconKind = mikSearch
-          HelperText = 'Informe o nome completo do cliente.'
-          LabelText = 'ButtonEdit'
-          Placeholder = 'Digite um valor...'
-          TabOrder = 11
-          Text = ''
-        end
-        object InputButtonEditCalendar: TDACButtonEdit
-          Left = 306
-          Top = 494
-          Width = 240
-          Height = 60
-          ButtonIconKind = mikCalendar
-          LabelText = 'Com icone'
-          Placeholder = 'Selecione uma data...'
-          TabOrder = 12
-          Text = ''
-        end
-        object InputButtonEditMore: TDACButtonEdit
-          Left = 576
-          Top = 494
-          Width = 220
-          Height = 60
-          ButtonIconKind = mikMoreVertical
-          LabelText = 'Mais opcoes'
-          Placeholder = 'Escolha uma opcao...'
-          TabOrder = 13
-          Text = ''
-        end
-        object InputButtonEditOk: TDACButtonEdit
-          Left = 36
-          Top = 584
-          Width = 240
-          Height = 60
-          ButtonCaption = 'OK'
-          ButtonIconKind = mikCheck
-          ButtonWidth = 58
-          LabelText = 'Texto no botao'
-          Placeholder = 'Informe o codigo...'
-          ShowButtonIcon = False
-          TabOrder = 14
-          Text = ''
-        end
-        object InputButtonEditDropDown: TDACButtonEdit
-          Left = 306
-          Top = 584
-          Width = 240
-          Height = 60
-          ButtonIconKind = mikChevronDown
-          LabelText = 'Com dropdown'
-          Placeholder = 'Selecione...'
-          TabOrder = 15
-          Text = ''
-        end
-        object InputButtonEditClear: TDACButtonEdit
-          Left = 576
-          Top = 584
-          Width = 220
-          Height = 82
-          ButtonIconKind = mikClose
-          HelperText = 'Informe um valor valido.'
-          LabelText = 'Com clear'
-          Status = mesDanger
-          TabOrder = 16
-          Text = 'Valor invalido'
-        end
-      end
-    end
-    object PageControls: TDACScrollContainer
-      Left = 12
-      Top = 58
-      Width = 976
-      Height = 404
-      Align = alClient
-      BorderStyle = bsNone
-      BackgroundColor = claWhite
-      BorderColor = claNull
-      CornerRadius = 0
-      Color = clWhite
-      ParentColor = False
-      TabOrder = 2
-      Visible = False
-      StyleElements = [seFont, seBorder]
-      object SectionControls: TDACContainer
-        Left = 16
-        Top = 16
-        Width = 850
-        Height = 270
-        BackgroundColor = claWhite
-        BorderColor = xFFD5DBE6
-        ContentPadding = 18
-        SectionNumber = 3
-        Subtitle = 'Checkbox, radio, toggle e slider desenhados em Skia'
-        SubtitleColor = xFF475569
-        TabOrder = 0
-        Title = 'CONTROLES'
-        TitleColor = xFF111827
-        object DemoCheckMarked: TDACCheckBox
-          Left = 36
-          Top = 86
-          Width = 220
-          Height = 28
-          Cursor = crHandPoint
-          Caption = 'CheckBox (marcado)'
-          Checked = True
-          TabOrder = 0
-        end
-        object DemoCheckUnmarked: TDACCheckBox
-          Left = 36
-          Top = 124
-          Width = 240
-          Height = 28
-          Cursor = crHandPoint
-          Caption = 'CheckBox (desmarcado)'
-          TabOrder = 1
-        end
-        object DemoRadioSelected: TDACRadioButton
-          Left = 306
-          Top = 86
-          Width = 250
-          Height = 28
-          Cursor = crHandPoint
-          Caption = 'RadioButton (selecionado)'
-          Checked = True
-          TabOrder = 2
-        end
-        object DemoRadioUnselected: TDACRadioButton
-          Left = 306
-          Top = 124
-          Width = 270
-          Height = 28
-          Cursor = crHandPoint
-          Caption = 'RadioButton (nao selecionado)'
-          TabOrder = 3
-        end
-        object DemoToggleOn: TDACToggleSwitch
-          Left = 612
-          Top = 82
-          Width = 190
-          Height = 30
-          Cursor = crHandPoint
-          Caption = 'Toggle ativo'
-          Checked = True
-          TabOrder = 4
-        end
-        object DemoToggleOff: TDACToggleSwitch
-          Left = 612
-          Top = 122
-          Width = 190
-          Height = 30
-          Cursor = crHandPoint
-          Caption = 'Toggle inativo'
-          TabOrder = 5
-        end
-        object DemoSlider: TDACSlider
-          Left = 36
-          Top = 188
-          Width = 360
-          Height = 36
-          Cursor = crHandPoint
-          TabOrder = 7
-          Value = 75
-        end
-      end
-    end
-    object PageContainers: TDACScrollContainer
-      Left = 12
-      Top = 58
-      Width = 976
-      Height = 404
-      Align = alClient
-      BorderStyle = bsNone
-      BackgroundColor = claWhite
-      BorderColor = claNull
-      CornerRadius = 0
-      Color = clWhite
-      ParentColor = False
-      TabOrder = 3
-      Visible = False
-      StyleElements = [seFont, seBorder]
-      object SectionContainers: TDACContainer
+    TabOrder = 0
+    TabHeight = 44
+    TabWidth = 132
+    ActiveIndex = 0
+    ActivePageHeaderOnly = True
+    object tsDashboard: TTabSheet
+      Caption = 'Dashboard'
+      object scrDashboard: TDACScrollContainer
         Left = 0
         Top = 0
-        Width = 976
-        Height = 404
+        Width = 1192
+        Height = 708
         Align = alClient
-        BackgroundColor = claWhite
-        BorderColor = xFFD5DBE6
-        ContentPadding = 18
-        SectionNumber = 4
-        Subtitle = 'Variacoes do container reutilizavel e hospedagem de filhos'
-        SubtitleColor = xFF475569
+        AutoScroll = True
+        BorderStyle = bsNone
+        Appearance = mscaViewport
+        ScrollBarMode = msbmVertical
         TabOrder = 0
-        Title = 'CONTAINERS'
-        TitleColor = xFF111827
-        ExplicitLeft = 16
-        ExplicitTop = 16
-        ExplicitWidth = 850
-        ExplicitHeight = 300
-        object ContainerSuiteSection: TDACContainer
-          Left = 36
-          Top = 82
-          Width = 230
-          Height = 150
-          BackgroundColor = claWhite
-          BorderColor = xFFD5DBE6
-          BorderRadius = 12
-          ContentPadding = 14
-          CornerRadius = 12
-          HeaderHeight = 40
-          Subtitle = 'Container claro com borda suave.'
-          SubtitleColor = xFF475569
-          TabOrder = 0
-          Title = 'Suite section'
-          TitleColor = xFF111827
-        end
-        object ContainerDarkPanel: TDACContainer
-          Left = 298
+        object dashWelcomeTitle: TDACSystemText
+          Left = 24
           Top = 24
-          Width = 230
-          Height = 361
+          Width = 220
+          Height = 40
+          Bold = False
+          Role = mtrDisplay
+          Text = 'Bem-vindo,'
+          Tone = mttPrimary
+        end
+        object dashWelcomeName: TDACSystemText
+          Left = 252
+          Top = 24
+          Width = 500
+          Height = 40
+          Bold = False
+          Role = mtrDisplay
+          Text = 'Administrador'
+          Tone = mttSuccess
+        end
+        object dashWelcomeSubtitle: TDACSystemText
+          Left = 24
+          Top = 66
+          Width = 430
+          Height = 24
+          Bold = False
+          Role = mtrSmall
+          Text = 'Aqui esta o resumo da sua operacao hoje.'
+          Tone = mttSecondary
+        end
+        object dashDateSummary: TDACContainer
+          Left = 960
+          Top = 24
+          Width = 210
+          Height = 72
           Appearance = mcaDarkPanel
-          BackgroundColor = xFF102417
-          BorderColor = xFF2B3D31
-          BorderRadius = 12
-          ContentPadding = 14
-          CornerRadius = 12
-          HeaderHeight = 40
-          Subtitle = 'Painel escuro para destaque.'
-          SubtitleColor = xFFB8C4B8
+          ShowHeader = False
           TabOrder = 1
-          Title = 'Dark panel'
-          TitleColor = xFFE8EEE8
-          object ButtonInsideContainer: TDACButton
-            Left = 14
-            Top = 96
-            Width = 140
-            Height = 34
-            Cursor = crHandPoint
-            Caption = 'Acao'
-            IconSize = 16
-            ShowIcon = True
+          object dashDateValue: TDACSystemText
+            Left = 20
+            Top = 18
+            Width = 160
+            Height = 20
+            Bold = True
+            Role = mtrSmall
+            Text = '24 de maio de 2025'
+            Tone = mttPrimary
+          end
+          object dashDateWeekday: TDACSystemText
+            Left = 20
+            Top = 40
+            Width = 160
+            Height = 20
+            Bold = False
+            Role = mtrCaption
+            Text = 'Sabado'
+            Tone = mttSecondary
+          end
+        end
+        object dashKpi1: TDACSummaryCard
+          Left = 24
+          Top = 96
+          Width = 214
+          Height = 108
+          Appearance = mcsaDashboard
+          FooterText = '+ 2 este mes'
+          IconKind = mikField
+          Title = 'Talhoes'
+          Value = '28'
+        end
+        object dashKpi2: TDACSummaryCard
+          Left = 254
+          Top = 96
+          Width = 214
+          Height = 108
+          Appearance = mcsaDashboard
+          FooterText = '+ 8,4% vs. safra anterior'
+          IconKind = mikLeaf
+          Title = 'Producao (safra)'
+          Value = '12.540 t'
+        end
+        object dashKpi3: TDACSummaryCard
+          Left = 484
+          Top = 96
+          Width = 214
+          Height = 108
+          Appearance = mcsaDashboard
+          FooterText = '12 itens cadastrados'
+          IconKind = mikInventoryStack
+          Title = 'Estoque'
+          Value = '3.680 t'
+        end
+        object dashKpi4: TDACSummaryCard
+          Left = 714
+          Top = 96
+          Width = 214
+          Height = 108
+          Appearance = mcsaDashboard
+          FooterText = '5 em andamento'
+          IconKind = mikClipboardOrder
+          Title = 'Ordens'
+          Value = '14'
+        end
+        object dashKpi5: TDACSummaryCard
+          Left = 944
+          Top = 96
+          Width = 214
+          Height = 108
+          Appearance = mcsaDashboard
+          FooterText = '+ 12,7% vs. mes anterior'
+          IconKind = mikMoneyCircle
+          Title = 'Financeiro (mes)'
+          Value = 'R$ 568.420'
+        end
+        object dashQuickActions: TDACContainer
+          Left = 24
+          Top = 228
+          Width = 370
+          Height = 224
+          Appearance = mcaDarkPanel
+          Title = 'Acoes rapidas'
+          TabOrder = 2
+          object dashQuickActionsGrid: TDACGridContainer
+            Left = 20
+            Top = 62
+            Width = 330
+            Height = 142
+            Align = alClient
+            Columns = 2
+            Appearance = mgcaTransparent
+            Layout = mgclActionTiles
+            TabOrder = 0
+            object dashQuickAction1: TDACButton
+              Left = 0
+              Top = 0
+              Width = 159
+              Height = 70
+              Caption = 'Nova ordem de servico'
+              ShowIcon = True
+              IconKind = mikTractor
+              IconSize = 22
+              Kind = mbkGhost
+              TabOrder = 0
+            end
+            object dashQuickAction2: TDACButton
+              Left = 171
+              Top = 0
+              Width = 159
+              Height = 70
+              Caption = 'Lancar producao'
+              ShowIcon = True
+              IconKind = mikSoybean
+              IconSize = 22
+              Kind = mbkGhost
+              TabOrder = 1
+            end
+            object dashQuickAction3: TDACButton
+              Left = 0
+              Top = 82
+              Width = 159
+              Height = 70
+              Caption = 'Entrada no estoque'
+              ShowIcon = True
+              IconKind = mikPackage
+              IconSize = 22
+              Kind = mbkGhost
+              TabOrder = 2
+            end
+            object dashQuickAction4: TDACButton
+              Left = 171
+              Top = 82
+              Width = 159
+              Height = 70
+              Caption = 'Nova despesa'
+              ShowIcon = True
+              IconKind = mikMoneyCircle
+              IconSize = 22
+              Kind = mbkGhost
+              TabOrder = 3
+            end
+          end
+        end
+        object dashAgenda: TDACContainer
+          Left = 410
+          Top = 228
+          Width = 370
+          Height = 224
+          Appearance = mcaDarkPanel
+          Title = 'Agenda'
+          TabOrder = 3
+          object dashAgendaLine1: TDACSystemText
+            Left = 20
+            Top = 70
+            Width = 320
+            Height = 32
+            Role = mtrSmall
+            Text = '24 MAI   Aplicacao de Herbicida   Hoje'
+            Tone = mttPrimary
+          end
+          object dashAgendaTodayChip: TDACBadge
+            Left = 280
+            Top = 16
+            Width = 66
+            Height = 24
+            Caption = 'HOJE'
+            Appearance = mbaOutline
             TabOrder = 0
           end
-          object DACEdit1: TDACEdit
-            Left = 7
-            Top = 152
-            Width = 220
-            Height = 38
-            Cursor = crIBeam
-            TabOrder = 1
-            Text = ''
+          object dashAgendaLine2: TDACSystemText
+            Left = 20
+            Top = 110
+            Width = 320
+            Height = 32
+            Role = mtrSmall
+            Text = '25 MAI   Irrigacao - Talhao 08   Amanha'
+            Tone = mttPrimary
           end
-          object DACMemo1: TDACMemo
-            Left = 7
-            Top = 196
-            Width = 220
-            Height = 88
-            Cursor = crIBeam
-            TabOrder = 2
-            Text = ''
+          object dashAgendaLine3: TDACSystemText
+            Left = 20
+            Top = 150
+            Width = 320
+            Height = 32
+            Role = mtrSmall
+            Text = '27 MAI   Manutencao de Equipamentos'
+            Tone = mttPrimary
           end
-          object DACComboBox1: TDACComboBox
-            Left = 3
-            Top = 300
-            Width = 220
-            Height = 38
-            TabOrder = 3
-            Text = ''
+          object dashAgendaFooter: TDACSystemText
+            Left = 20
+            Top = 190
+            Width = 320
+            Height = 24
+            Bold = True
+            Role = mtrSmall
+            Text = 'Ver agenda completa  ->'
+            Tone = mttAccent
           end
         end
-        object ContainerTransparent: TDACContainer
-          Left = 548
-          Top = 82
-          Width = 230
-          Height = 150
-          Appearance = mcaTransparent
-          BackgroundColor = claNull
-          BorderColor = claNull
-          BorderRadius = 12
-          BorderWidth = 0
-          ContentPadding = 14
-          CornerRadius = 12
-          HeaderHeight = 40
-          Subtitle = 'Area sem chrome para composicao.'
-          SubtitleColor = xFF475569
-          TabOrder = 2
-          Title = 'Transparent'
-          TitleColor = xFF0F172A
-        end
-        object DemoScrollContainer: TDACScrollContainer
-          Left = 548
-          Top = 248
-          Width = 230
-          Height = 120
-          BackgroundColor = claWhite
-          BorderColor = xFFD5DBE6
-          CornerRadius = 10
-          TabOrder = 3
-        end
-        object DemoGridContainer: TDACGridContainer
-          Left = 36
-          Top = 248
-          Width = 230
-          Height = 120
-          BackgroundColor = claWhite
-          BorderColor = xFFD5DBE6
-          Columns = 3
-          ContentPadding = 12
-          CornerRadius = 10
-          Gutter = 10
-          RowHeight = 42
+        object dashRecentActivity: TDACContainer
+          Left = 796
+          Top = 228
+          Width = 370
+          Height = 224
+          Appearance = mcaDarkPanel
+          Title = 'Atividades recentes'
           TabOrder = 4
+          object dashActivityLine1: TDACSystemText
+            Left = 52
+            Top = 70
+            Width = 320
+            Height = 32
+            Role = mtrSmall
+            Text = 'Entrada de 120 sacas de Sementes de Soja'
+            Tone = mttPrimary
+          end
+          object dashActivityLine2: TDACSystemText
+            Left = 52
+            Top = 110
+            Width = 320
+            Height = 32
+            Role = mtrSmall
+            Text = 'Ordem de servico #OS-1456 concluida'
+            Tone = mttPrimary
+          end
+          object dashActivityLine3: TDACSystemText
+            Left = 52
+            Top = 150
+            Width = 320
+            Height = 32
+            Role = mtrSmall
+            Text = 'Producao lancada: 320 t de Soja'
+            Tone = mttPrimary
+          end
+          object dashActivityIcon1: TDACButton
+            Left = 20
+            Top = 70
+            Width = 24
+            Height = 24
+            Caption = ''
+            Kind = mbkTransparent
+            ShowIcon = True
+            IconKind = mikPackage
+            IconSize = 16
+            TabOrder = 0
+          end
+          object dashActivityIcon2: TDACButton
+            Left = 20
+            Top = 110
+            Width = 24
+            Height = 24
+            Caption = ''
+            Kind = mbkTransparent
+            ShowIcon = True
+            IconKind = mikTractor
+            IconSize = 16
+            TabOrder = 1
+          end
+          object dashActivityIcon3: TDACButton
+            Left = 20
+            Top = 150
+            Width = 24
+            Height = 24
+            Caption = ''
+            Kind = mbkTransparent
+            ShowIcon = True
+            IconKind = mikSoybean
+            IconSize = 16
+            TabOrder = 2
+          end
+          object dashActivityFooter: TDACSystemText
+            Left = 20
+            Top = 190
+            Width = 320
+            Height = 24
+            Bold = True
+            Role = mtrSmall
+            Text = 'Ver todas as atividades  ->'
+            Tone = mttAccent
+          end
+        end
+        object dashProductivity: TDACContainer
+          Left = 24
+          Top = 476
+          Width = 560
+          Height = 270
+          Appearance = mcaDarkPanel
+          Title = 'Produtividade da safra'
+          TabOrder = 5
+          object dashProductivityChart: TDACChart
+            Left = 20
+            Top = 72
+            Width = 520
+            Height = 178
+            Appearance = mchaDashboard
+            DataMode = cdmManual
+            Series = <
+              item
+                Name = 'Soja 2024/25'
+                ChartType = ctBar
+                FillMode = cfLinearGradient
+                GradientAngle = 90.000000000000000000
+                Points = <
+                  item
+                    Category = 'Jan'
+                    Value = 42.000000000000000000
+                  end
+                  item
+                    Category = 'Fev'
+                    Value = 68.000000000000000000
+                  end
+                  item
+                    Category = 'Mar'
+                    Value = 57.000000000000000000
+                  end
+                  item
+                    Category = 'Abr'
+                    Value = 75.000000000000000000
+                  end>
+              end>
+            TabOrder = 0
+          end
+          object dashProductivitySelect: TDACButton
+            Left = 390
+            Top = 16
+            Width = 150
+            Height = 32
+            Caption = 'Soja 2024/25'
+            Kind = mbkGhost
+            ShowIcon = True
+            IconKind = mikChevronDown
+            IconPosition = mipRight
+            TabOrder = 1
+          end
+        end
+        object dashModules: TDACContainer
+          Left = 600
+          Top = 476
+          Width = 566
+          Height = 270
+          Appearance = mcaDarkPanel
+          Title = 'Modulos'
+          TabOrder = 6
+          object dashModule1: TDACContainer
+            Left = 20
+            Top = 56
+            Width = 125
+            Height = 172
+            Appearance = mcaDarkCard
+            ShowHeader = False
+            TabOrder = 0
+            object dashModule1Text: TDACSystemText
+              Left = 20
+              Top = 52
+              Width = 100
+              Height = 32
+              Bold = True
+              Role = mtrBody
+              Text = 'Producao'
+              Tone = mttPrimary
+            end
+            object dashModule1Icon: TDACButton
+              Left = 16
+              Top = 16
+              Width = 32
+              Height = 32
+              Caption = ''
+              Kind = mbkTransparent
+              ShowIcon = True
+              IconKind = mikSoybean
+              IconSize = 20
+              TabOrder = 0
+            end
+          end
+          object dashModule2: TDACContainer
+            Left = 157
+            Top = 56
+            Width = 125
+            Height = 172
+            Appearance = mcaDarkCard
+            ShowHeader = False
+            TabOrder = 1
+            object dashModule2Text: TDACSystemText
+              Left = 20
+              Top = 52
+              Width = 100
+              Height = 32
+              Bold = True
+              Role = mtrBody
+              Text = 'Estoque'
+              Tone = mttPrimary
+            end
+            object dashModule2Icon: TDACButton
+              Left = 16
+              Top = 16
+              Width = 32
+              Height = 32
+              Caption = ''
+              Kind = mbkTransparent
+              ShowIcon = True
+              IconKind = mikInventoryStack
+              IconSize = 20
+              TabOrder = 0
+            end
+          end
+          object dashModule3: TDACContainer
+            Left = 294
+            Top = 56
+            Width = 125
+            Height = 172
+            Appearance = mcaDarkCard
+            ShowHeader = False
+            TabOrder = 2
+            object dashModule3Text: TDACSystemText
+              Left = 20
+              Top = 52
+              Width = 100
+              Height = 32
+              Bold = True
+              Role = mtrBody
+              Text = 'Financeiro'
+              Tone = mttPrimary
+            end
+            object dashModule3Icon: TDACButton
+              Left = 16
+              Top = 16
+              Width = 32
+              Height = 32
+              Caption = ''
+              Kind = mbkTransparent
+              ShowIcon = True
+              IconKind = mikMoneyCircle
+              IconSize = 20
+              TabOrder = 0
+            end
+          end
+          object dashModule4: TDACContainer
+            Left = 431
+            Top = 56
+            Width = 125
+            Height = 172
+            Appearance = mcaDarkCard
+            ShowHeader = False
+            TabOrder = 3
+            object dashModule4Text: TDACSystemText
+              Left = 20
+              Top = 52
+              Width = 100
+              Height = 32
+              Bold = True
+              Role = mtrBody
+              Text = 'Relatorios'
+              Tone = mttPrimary
+            end
+            object dashModule4Icon: TDACButton
+              Left = 16
+              Top = 16
+              Width = 32
+              Height = 32
+              Caption = ''
+              Kind = mbkTransparent
+              ShowIcon = True
+              IconKind = mikReport
+              IconSize = 20
+              TabOrder = 0
+            end
+          end
+        end
+        object dashStatus: TDACContainer
+          Left = 24
+          Top = 770
+          Width = 1142
+          Height = 56
+          Appearance = mcaDarkPanel
+          ShowHeader = False
+          TabOrder = 7
+          object dashStatusConnection: TDACSystemText
+            Left = 20
+            Top = 18
+            Width = 130
+            Height = 20
+            Bold = True
+            Role = mtrCaption
+            Text = 'Conectado'
+            Tone = mttSuccess
+          end
+          object dashStatusFarm: TDACSystemText
+            Left = 480
+            Top = 18
+            Width = 180
+            Height = 20
+            Role = mtrCaption
+            Text = 'Fazenda Boa Vista'
+            Tone = mttPrimary
+          end
+          object dashStatusSeason: TDACSystemText
+            Left = 960
+            Top = 18
+            Width = 150
+            Height = 20
+            Role = mtrCaption
+            Text = 'Safra 2024/25'
+            Tone = mttSecondary
+          end
         end
       end
     end
-    object PageTabs: TDACScrollContainer
-      Left = 12
-      Top = 58
-      Width = 976
-      Height = 404
-      Align = alClient
-      BorderStyle = bsNone
-      BackgroundColor = claWhite
-      BorderColor = claNull
-      CornerRadius = 0
-      Color = clWhite
-      ParentColor = False
-      TabOrder = 4
-      Visible = False
-      StyleElements = [seFont, seBorder]
-      object SectionTabs: TDACContainer
+    object tsButtons: TTabSheet
+      Caption = 'Botoes'
+      object scrButtons: TDACScrollContainer
         Left = 0
         Top = 0
-        Width = 976
-        Height = 404
+        Width = 1192
+        Height = 708
         Align = alClient
-        BackgroundColor = claWhite
-        BorderColor = xFFD5DBE6
-        ContentPadding = 18
-        SectionNumber = 5
-        Subtitle = 'Abas horizontais, verticais e pills desenhadas em Skia'
-        SubtitleColor = xFF475569
+        AutoScroll = True
+        BorderStyle = bsNone
+        Appearance = mscaViewport
+        ScrollBarMode = msbmVertical
         TabOrder = 0
-        Title = 'TABS'
-        TitleColor = xFF111827
-        object DemoHorizontalTabs: TDACTabs
-          Left = 36
-          Top = 86
-          Width = 430
-          Height = 162
-          Cursor = crHandPoint
-          ActiveIndex = 0
-          ContentColor = claWhite
-          CornerRadius = 8
-          Items = <
-            item
-              Caption = 'Dados gerais'
-            end
-            item
-              Caption = 'Planejamento'
-            end
-            item
-              Caption = 'Recursos'
-            end
-            item
-              Caption = 'Anexos'
-            end>
-          TabHeight = 38
-          TabOrder = 0
-          TabWidth = 104
-          object DemoHorizontalContent: TDACContainer
-            Left = 12
-            Top = 50
-            Width = 406
-            Height = 100
-            Align = alClient
-            Appearance = mcaTransparent
-            BackgroundColor = claNull
-            BorderColor = claNull
-            BorderWidth = 0
-            ContentPadding = 12
-            HeaderHeight = 32
-            Subtitle = 'Conteudo da aba horizontal selecionada.'
-            SubtitleColor = xFF475569
-            TabOrder = 0
-            Title = 'Dados gerais'
-            TitleColor = xFF111827
-          end
+        object lblButtonsTitle: TDACSystemText
+          Left = 24
+          Top = 22
+          Width = 193
+          Height = 25
+          Bold = True
+          Role = mtrBody
+          Text = 'Botoes DACComponentes'
         end
-        object DemoVerticalTabs: TDACTabs
-          Left = 506
-          Top = 86
-          Width = 410
-          Height = 162
-          Cursor = crHandPoint
-          ActiveIndex = 0
-          Appearance = mtaPills
-          ContentColor = claWhite
-          CornerRadius = 8
-          Items = <
-            item
-              Caption = 'Resumo'
-            end
-            item
-              Caption = 'Detalhes'
-            end
-            item
-              Caption = 'Historico'
-            end
-            item
-              Caption = 'Anexos'
-            end>
-          Orientation = mtoVertical
-          TabHeight = 32
-          TabOrder = 1
-          TabWidth = 124
-          object DemoVerticalContent: TDACContainer
-            Left = 136
-            Top = 12
-            Width = 262
-            Height = 138
-            Align = alClient
-            Appearance = mcaTransparent
-            BackgroundColor = claNull
-            BorderColor = claNull
-            BorderWidth = 0
-            ContentPadding = 12
-            HeaderHeight = 32
-            Subtitle = 'Conteudo lateral das abas.'
-            SubtitleColor = xFF475569
-            TabOrder = 0
-            Title = 'Resumo'
-            TitleColor = xFF111827
-          end
+        object lblButtonsSubtitle: TDACSystemText
+          Left = 24
+          Top = 53
+          Width = 857
+          Height = 15
+          MaxLines = 4
+          Role = mtrSmall
+          Text = 'Cenarios declarativos como no designer: Kind, Size, IconKind, IconPosition, Loading, Enabled, TabStop, CornerRadius e variacoes de acao.'
+          Tone = mttSecondary
         end
-        object DemoPillTabs: TDACTabs
-          Left = 36
-          Top = 254
-          Width = 530
-          Height = 132
-          Cursor = crHandPoint
-          ActiveIndex = 0
-          Appearance = mtaPills
-          ContentColor = claWhite
-          CornerRadius = 8
-          Items = <
-            item
-              Caption = 'Geral'
-            end
-            item
-              Caption = 'Financeiro'
-            end
-            item
-              Caption = 'Vendas'
-            end
-            item
-              Caption = 'Configuracoes'
-            end>
-          ShowContentBorder = False
-          TabHeight = 38
-          TabOrder = 2
-          TabWidth = 128
-          object DemoPillContent: TDACContainer
-            Left = 0
-            Top = 38
-            Width = 530
-            Height = 94
-            Align = alClient
-            Appearance = mcaTransparent
-            BackgroundColor = claNull
-            BorderColor = claNull
-            BorderWidth = 0
-            ContentPadding = 10
-            HeaderHeight = 28
-            Subtitle = 'Estado selecionado em pill.'
-            SubtitleColor = xFF475569
-            TabOrder = 0
-            Title = 'Geral'
-            TitleColor = xFF111827
-          end
-        end
-      end
-    end
-    object PageCards: TDACScrollContainer
-      Left = 12
-      Top = 58
-      Width = 976
-      Height = 404
-      Align = alClient
-      BorderStyle = bsNone
-      BackgroundColor = claWhite
-      BorderColor = claNull
-      CornerRadius = 0
-      Color = clWhite
-      ParentColor = False
-      TabOrder = 5
-      Visible = False
-      StyleElements = [seFont, seBorder]
-      object SectionCards: TDACContainer
-        Left = 16
-        Top = 16
-        Width = 850
-        Height = 230
-        BackgroundColor = claWhite
-        BorderColor = xFFD5DBE6
-        ContentPadding = 18
-        SectionNumber = 6
-        Subtitle = 'Indicadores compactos com icone, valor e variacao'
-        SubtitleColor = xFF475569
-        TabOrder = 0
-        Title = 'CARDS DE RESUMO'
-        TitleColor = xFF111827
-        object CardRevenue: TDACSummaryCard
-          Left = 36
-          Top = 86
-          Width = 185
-          Height = 116
-          AccentColor = xFF2F9E22
-          FooterText = '+12,5% vs. mes anterior'
-          IconKind = mikMoneyCircle
-          Status = mcsSuccess
-          TabOrder = 0
-          Title = 'Receita'
-          Value = 'R$ 125.430,50'
-        end
-        object CardOrders: TDACSummaryCard
-          Left = 238
-          Top = 86
-          Width = 170
-          Height = 116
-          AccentColor = xFF2B7DE9
-          FooterText = '+8,2% vs. mes anterior'
-          IconKind = mikShoppingCart
-          Status = mcsSuccess
-          TabOrder = 1
-          Title = 'Pedidos'
-          Value = '1.234'
-        end
-        object CardClients: TDACSummaryCard
-          Left = 424
-          Top = 86
-          Width = 170
-          Height = 116
-          AccentColor = xFFF5C842
-          FooterText = '-2,1% vs. mes anterior'
-          IconKind = mikUsers
-          Status = mcsDanger
-          TabOrder = 2
-          Title = 'Clientes'
-          Value = '856'
-        end
-        object CardProducts: TDACSummaryCard
-          Left = 610
-          Top = 86
-          Width = 170
-          Height = 116
-          AccentColor = xFF8B3DFF
-          FooterText = '+5,7% vs. mes anterior'
-          IconKind = mikPackage
-          Status = mcsSuccess
-          TabOrder = 3
-          Title = 'Produtos'
-          Value = '2.345'
-        end
-      end
-    end
-    object PageGrid: TDACScrollContainer
-      Left = 12
-      Top = 58
-      Width = 976
-      Height = 404
-      Align = alClient
-      BorderStyle = bsNone
-      BackgroundColor = claWhite
-      BorderColor = claNull
-      CornerRadius = 0
-      Color = clWhite
-      ParentColor = False
-      TabOrder = 6
-      Visible = False
-      StyleElements = [seFont, seBorder]
-      object SectionGrid: TDACContainer
-        Left = 16
-        Top = 16
-        Width = 850
-        Height = 284
-        BackgroundColor = claWhite
-        BorderColor = xFFD5DBE6
-        ContentPadding = 18
-        SectionNumber = 7
-        Subtitle = 'Tabela desenhada em Skia com status, totais e acoes'
-        SubtitleColor = xFF475569
-        TabOrder = 0
-        Title = 'TABELA / DATA GRID'
-        TitleColor = xFF111827
-        object DemoDataGrid: TDACDataGrid
-          Left = 36
-          Top = 86
-          Width = 760
-          Height = 170
-          FooterText = 'Total: 4 registros'
-          FooterValue = 'R$ 4.410,75'
-          TabOrder = 0
-        end
-      end
-    end
-    object PageStatus: TDACScrollContainer
-      Left = 12
-      Top = 58
-      Width = 976
-      Height = 404
-      Align = alClient
-      BorderStyle = bsNone
-      BackgroundColor = claWhite
-      BorderColor = claNull
-      CornerRadius = 0
-      Color = clWhite
-      ParentColor = False
-      TabOrder = 7
-      Visible = False
-      StyleElements = [seFont, seBorder]
-      object SectionStatus: TDACContainer
-        Left = 16
-        Top = 16
-        Width = 850
-        Height = 168
-        BackgroundColor = claWhite
-        BorderColor = xFFD5DBE6
-        ContentPadding = 18
-        SectionNumber = 10
-        Subtitle = 'Barra de status com indicador e informacoes compactas'
-        SubtitleColor = xFF475569
-        TabOrder = 0
-        Title = 'STATUS BAR'
-        TitleColor = xFF111827
-        object DemoStatusBar: TDACStatusBar
-          Left = 36
-          Top = 86
-          Width = 720
-          Height = 34
-          LeftText = 'Conectado'
-          RightText = 'Usuario: admin    Perfil: Administrador    24/05/2025    14:35'
-          TabOrder = 0
-        end
-      end
-    end
-    object PageBadges: TDACScrollContainer
-      Left = 12
-      Top = 58
-      Width = 976
-      Height = 404
-      Align = alClient
-      BorderStyle = bsNone
-      BackgroundColor = claWhite
-      BorderColor = claNull
-      CornerRadius = 0
-      Color = clWhite
-      ParentColor = False
-      TabOrder = 8
-      Visible = False
-      StyleElements = [seFont, seBorder]
-      object SectionBadges: TDACContainer
-        Left = 16
-        Top = 16
-        Width = 850
-        Height = 238
-        BackgroundColor = claWhite
-        BorderColor = xFFD5DBE6
-        ContentPadding = 18
-        SectionNumber = 12
-        Subtitle = 'Badges, chips, tags e pills com estados semanticos'
-        SubtitleColor = xFF475569
-        TabOrder = 0
-        Title = 'BADGES, CHIPS, TAGS E PILLS'
-        TitleColor = xFF111827
-        object BadgeCount: TDACBadge
-          Left = 36
-          Top = 86
-          Width = 48
-          Height = 26
-          Caption = '8'
-          Kind = mbkBadge
-          Status = mbsSuccess
-          TabOrder = 0
-        end
-        object BadgePending: TDACBadge
-          Left = 100
-          Top = 86
-          Width = 56
-          Height = 26
-          Appearance = mbaFilled
-          Caption = '23'
-          Kind = mbkBadge
-          Status = mbsWarning
-          TabOrder = 1
-        end
-        object BadgeDanger: TDACBadge
-          Left = 172
-          Top = 86
-          Width = 64
-          Height = 26
-          Appearance = mbaFilled
-          Caption = '99+'
-          Kind = mbkBadge
-          Status = mbsDanger
-          TabOrder = 2
-        end
-        object BadgeChipActive: TDACBadge
-          Left = 36
-          Top = 134
-          Width = 96
-          Height = 30
-          Caption = 'Ativo'
-          Kind = mbkChip
-          ShowClose = True
-          Status = mbsSuccess
-          TabOrder = 3
-        end
-        object BadgeChipFilter: TDACBadge
-          Left = 148
-          Top = 134
-          Width = 110
-          Height = 30
-          Appearance = mbaOutline
-          Caption = 'Filtros'
-          Kind = mbkChip
-          ShowClose = True
-          Status = mbsNeutral
-          TabOrder = 4
-        end
-        object BadgeTagNew: TDACBadge
-          Left = 306
-          Top = 86
-          Width = 90
-          Height = 30
-          Appearance = mbaFilled
-          Caption = 'Novo'
-          IconKind = mikTag
-          Kind = mbkTag
-          ShowIcon = True
-          Status = mbsSuccess
-          TabOrder = 5
-        end
-        object BadgeTagPromo: TDACBadge
-          Left = 412
-          Top = 86
-          Width = 118
-          Height = 30
-          Appearance = mbaFilled
-          Caption = 'Promocao'
-          IconKind = mikWarning
-          Kind = mbkTag
-          ShowIcon = True
-          Status = mbsWarning
-          TabOrder = 6
-        end
-        object BadgePillOpen: TDACBadge
-          Left = 306
-          Top = 134
-          Width = 112
-          Height = 32
-          Appearance = mbaFilled
-          Caption = 'Em aberto'
-          Kind = mbkPill
-          Status = mbsNeutral
-          TabOrder = 8
-        end
-        object BadgePillDone: TDACBadge
-          Left = 434
-          Top = 134
-          Width = 118
-          Height = 32
-          Caption = 'Concluidos'
-          Kind = mbkPill
-          Status = mbsSuccess
-          TabOrder = 8
-        end
-      end
-    end
-    object PageProgress: TDACScrollContainer
-      Left = 12
-      Top = 58
-      Width = 976
-      Height = 404
-      Align = alClient
-      BorderStyle = bsNone
-      BackgroundColor = claWhite
-      BorderColor = claNull
-      CornerRadius = 0
-      Color = clWhite
-      ParentColor = False
-      TabOrder = 9
-      Visible = False
-      StyleElements = [seFont, seBorder]
-      object SectionProgress: TDACContainer
-        Left = 16
-        Top = 16
-        Width = 850
-        Height = 238
-        BackgroundColor = claWhite
-        BorderColor = xFFD5DBE6
-        ContentPadding = 18
-        SectionNumber = 11
-        Subtitle = 'Indicadores lineares e circulares desenhados em Skia'
-        SubtitleColor = xFF475569
-        TabOrder = 0
-        Title = 'PROGRESSO'
-        TitleColor = xFF111827
-        object ProgressLinear: TDACProgress
-          Left = 36
-          Top = 88
-          Width = 300
-          Height = 28
-          TabOrder = 0
-          Value = 68
-        end
-        object ProgressWarning: TDACProgress
-          Left = 36
-          Top = 132
-          Width = 300
-          Height = 28
-          Status = mpsWarning
-          TabOrder = 1
-          Value = 42
-        end
-        object ProgressCircular: TDACProgress
-          Left = 404
-          Top = 78
-          Width = 96
-          Height = 96
-          Kind = mpkCircular
-          TabOrder = 2
-          Value = 68
-        end
-        object ProgressCircularDanger: TDACProgress
-          Left = 540
-          Top = 78
-          Width = 96
-          Height = 96
-          Kind = mpkCircular
-          Status = mpsDanger
-          TabOrder = 3
-          Value = 24
-        end
-      end
-    end
-    object PagePagination: TDACScrollContainer
-      Left = 12
-      Top = 58
-      Width = 976
-      Height = 404
-      Align = alClient
-      BorderStyle = bsNone
-      BackgroundColor = claWhite
-      BorderColor = claNull
-      CornerRadius = 0
-      Color = clWhite
-      ParentColor = False
-      TabOrder = 10
-      Visible = False
-      StyleElements = [seFont, seBorder]
-      object SectionPagination: TDACContainer
-        Left = 16
-        Top = 16
-        Width = 850
-        Height = 238
-        BackgroundColor = claWhite
-        BorderColor = xFFD5DBE6
-        ContentPadding = 18
-        SectionNumber = 14
-        Subtitle = 'Navegacao paginada desenhada em Skia'
-        SubtitleColor = xFF475569
-        TabOrder = 0
-        Title = 'PAGINACAO'
-        TitleColor = xFF111827
-        object PaginationMain: TDACPagination
-          Left = 36
-          Top = 88
-          Width = 520
-          Height = 40
-          Cursor = crHandPoint
-          PageCount = 12
-          PageIndex = 3
-          PageSizeText = '10 / pagina'
-          TabOrder = 0
-        end
-        object PaginationCompact: TDACPagination
-          Left = 36
-          Top = 148
-          Width = 360
-          Height = 40
-          Cursor = crHandPoint
-          PageCount = 4
-          PageIndex = 1
-          PageSizeText = '25 / pagina'
-          ShowPageSize = False
-          TabOrder = 1
-        end
-      end
-    end
-    object PageLoading: TDACScrollContainer
-      Left = 12
-      Top = 58
-      Width = 976
-      Height = 404
-      Align = alClient
-      BorderStyle = bsNone
-      BackgroundColor = claWhite
-      BorderColor = claNull
-      CornerRadius = 0
-      Color = clWhite
-      ParentColor = False
-      TabOrder = 11
-      Visible = False
-      StyleElements = [seFont, seBorder]
-      object SectionLoading: TDACContainer
-        Left = 16
-        Top = 16
-        Width = 850
-        Height = 238
-        BackgroundColor = claWhite
-        BorderColor = xFFD5DBE6
-        ContentPadding = 18
-        SectionNumber = 15
-        Subtitle = 'Spinner, dots e skeleton desenhados em Skia'
-        SubtitleColor = xFF475569
-        TabOrder = 0
-        Title = 'LOADING / SPINNER'
-        TitleColor = xFF111827
-        object LoadingSpinner: TDACLoading
-          Left = 36
-          Top = 88
-          Width = 80
-          Height = 56
-          TabOrder = 0
-        end
-        object LoadingDots: TDACLoading
-          Left = 160
-          Top = 88
-          Width = 120
-          Height = 56
-          Kind = mlkDots
-          TabOrder = 1
-        end
-        object LoadingSkeleton: TDACLoading
-          Left = 324
-          Top = 88
-          Width = 260
-          Height = 56
-          Kind = mlkSkeleton
-          TabOrder = 2
-        end
-      end
-    end
-    object PageFeedback: TDACScrollContainer
-      Left = 12
-      Top = 58
-      Width = 976
-      Height = 404
-      Align = alClient
-      BorderStyle = bsNone
-      BackgroundColor = claWhite
-      BorderColor = claNull
-      CornerRadius = 0
-      Color = clWhite
-      ParentColor = False
-      TabOrder = 12
-      Visible = False
-      StyleElements = [seFont, seBorder]
-      object SectionFeedback: TDACContainer
-        Left = 16
-        Top = 16
-        Width = 850
-        Height = 300
-        BackgroundColor = claWhite
-        BorderColor = xFFD5DBE6
-        ContentPadding = 18
-        SectionNumber = 13
-        Subtitle = 'Toast e modal de confirmacao desenhados em Skia'
-        SubtitleColor = xFF475569
-        TabOrder = 0
-        Title = 'TOAST, TOOLTIP E MODAL'
-        TitleColor = xFF111827
-        object ToastSuccess: TDACToast
-          Left = 36
-          Top = 86
-          Width = 260
-          Height = 72
-          MessageText = 'Com sucesso.'
-          Status = mssSuccess
-          TabOrder = 0
-          TitleText = 'Operacao realizada'
-        end
-        object ToastWarning: TDACToast
-          Left = 36
-          Top = 170
-          Width = 260
-          Height = 72
-          MessageText = 'Verifique as informacoes.'
-          Status = mssWarning
-          TabOrder = 1
-          TitleText = 'Atencao'
-        end
-        object ToastDanger: TDACToast
-          Left = 318
-          Top = 86
-          Width = 260
-          Height = 72
-          MessageText = 'Tente novamente.'
-          Status = mssDanger
-          TabOrder = 2
-          TitleText = 'Erro ao salvar'
-        end
-        object ModalPreview: TDACModalDialog
-          Left = 596
-          Top = 86
-          Width = 220
-          Height = 156
-          MessageText = 'Deseja confirmar esta operacao?'
-          Status = mssInfo
-          TabOrder = 3
-          TitleText = 'Confirmacao'
-        end
-      end
-    end
-    object PageCharts: TDACScrollContainer
-      Left = 12
-      Top = 58
-      Width = 976
-      Height = 404
-      Align = alClient
-      BorderStyle = bsNone
-      BackgroundColor = claWhite
-      BorderColor = claNull
-      CornerRadius = 0
-      Color = clWhite
-      ParentColor = False
-      TabOrder = 13
-      Visible = False
-      StyleElements = [seFont, seBorder]
-      object SectionCharts: TDACContainer
-        Left = 16
-        Top = 16
-        Width = 850
-        Height = 320
-        BackgroundColor = claWhite
-        BorderColor = xFFD5DBE6
-        ContentPadding = 18
-        SectionNumber = 16
-        Subtitle = 'Graficos de barra, linha, area e donut em Skia'
-        SubtitleColor = xFF475569
-        TabOrder = 0
-        Title = 'CHARTS'
-        TitleColor = xFF111827
-        object ChartBars: TDACBarChart
-          Left = 36
-          Top = 86
-          Width = 180
-          Height = 150
-          TabOrder = 0
-          ValuesText = '52;68;74;82;94;60'
-        end
-        object ChartLine: TDACLineChart
-          Left = 236
-          Top = 86
-          Width = 180
-          Height = 150
-          TabOrder = 1
-          ValuesText = '25;48;40;65;54;82'
-        end
-        object ChartArea: TDACAreaChart
-          Left = 436
-          Top = 86
-          Width = 180
-          Height = 150
-          TabOrder = 2
-          ValuesText = '42;78;63;72;58;96'
-        end
-        object ChartDoughnut: TDACDoughnutChart
-          Left = 636
-          Top = 86
+        object lblButtonKinds: TDACSystemText
+          Left = 24
+          Top = 92
           Width = 150
+          Height = 17
+          Bold = True
+          Role = mtrBody
+          Text = '1. Variantes de Kind'
+        end
+        object gcButtonKinds: TDACGridContainer
+          Left = 24
+          Top = 116
+          Width = 1128
+          Height = 148
+          Columns = 12
+          Layout = mgclDense
+          TabOrder = 0
+          object btnKindPrimary: TDACButton
+            Left = 40
+            Top = 132
+            Width = 180
+            Height = 44
+            Caption = 'Primario'
+            ShowIcon = True
+            IconKind = mikCheck
+            Tag = 3
+            TabOrder = 0
+          end
+          object btnKindSecondary: TDACButton
+            Left = 230
+            Top = 132
+            Width = 180
+            Height = 44
+            Caption = 'Secundario'
+            Kind = mbkSecondary
+            ShowIcon = True
+            IconKind = mikEdit
+            Tag = 3
+            TabOrder = 1
+          end
+          object btnKindGhost: TDACButton
+            Left = 420
+            Top = 132
+            Width = 180
+            Height = 44
+            Caption = 'Ghost'
+            Kind = mbkGhost
+            ShowIcon = True
+            IconKind = mikInfoCircle
+            Tag = 3
+            TabOrder = 2
+          end
+          object btnKindWarning: TDACButton
+            Left = 610
+            Top = 132
+            Width = 180
+            Height = 44
+            Caption = 'Alerta'
+            Kind = mbkWarning
+            ShowIcon = True
+            IconKind = mikWarning
+            Tag = 3
+            TabOrder = 3
+          end
+          object btnKindDanger: TDACButton
+            Left = 40
+            Top = 186
+            Width = 180
+            Height = 44
+            Caption = 'Perigo'
+            Kind = mbkDanger
+            ShowIcon = True
+            IconKind = mikDanger
+            Tag = 3
+            TabOrder = 4
+          end
+          object btnKindTransparent: TDACButton
+            Left = 230
+            Top = 186
+            Width = 180
+            Height = 44
+            Caption = 'Transparente'
+            Kind = mbkTransparent
+            ShowIcon = True
+            IconKind = mikExternalLink
+            Tag = 3
+            TabOrder = 5
+          end
+          object btnKindInputAction: TDACButton
+            Left = 420
+            Top = 186
+            Width = 180
+            Height = 44
+            Caption = ''
+            Hint = 'Acao de input'
+            Kind = mbkInputAction
+            ShowIcon = True
+            ShowHint = True
+            IconKind = mikSearch
+            Tag = 1
+            TabOrder = 6
+          end
+        end
+        object lblButtonSizes: TDACSystemText
+          Left = 24
+          Top = 288
+          Width = 230
+          Height = 17
+          Bold = True
+          Role = mtrBody
+          Text = '2. Tamanhos, raio e foco por teclado'
+        end
+        object gcButtonSizes: TDACGridContainer
+          Left = 24
+          Top = 312
+          Width = 1128
+          Height = 148
+          Columns = 12
+          Layout = mgclCompact
+          TabOrder = 1
+          object btnSizeSmall: TDACButton
+            Left = 40
+            Top = 328
+            Width = 180
+            Height = 30
+            Caption = 'Pequeno'
+            Size = mbsSmall
+            ShowIcon = True
+            IconKind = mikMinus
+            Tag = 3
+            TabOrder = 0
+          end
+          object btnSizeMedium: TDACButton
+            Left = 230
+            Top = 328
+            Width = 180
+            Height = 36
+            Caption = 'Medio'
+            ShowIcon = True
+            IconKind = mikCheck
+            Tag = 3
+            TabOrder = 1
+          end
+          object btnSizeLarge: TDACButton
+            Left = 420
+            Top = 328
+            Width = 180
+            Height = 42
+            Caption = 'Grande'
+            Size = mbsLarge
+            ShowIcon = True
+            IconKind = mikExpand
+            Tag = 3
+            TabOrder = 2
+          end
+          object btnRadiusSoft: TDACButton
+            Left = 610
+            Top = 328
+            Width = 180
+            Height = 46
+            Caption = 'Raio 4'
+            Kind = mbkSecondary
+            Shape = mbshCompact
+            Tag = 3
+            TabOrder = 3
+          end
+          object btnRadiusPill: TDACButton
+            Left = 40
+            Top = 384
+            Width = 180
+            Height = 46
+            Caption = 'Raio pill'
+            Shape = mbshRounded
+            ShowIcon = True
+            IconKind = mikLeaf
+            Tag = 3
+            TabOrder = 4
+          end
+          object btnNoTabStop: TDACButton
+            Left = 230
+            Top = 384
+            Width = 180
+            Height = 46
+            Caption = 'TabStop False'
+            Kind = mbkGhost
+            TabStop = False
+            Tag = 3
+            TabOrder = 5
+          end
+        end
+        object lblButtonIcons: TDACSystemText
+          Left = 24
+          Top = 484
+          Width = 218
+          Height = 17
+          Bold = True
+          Role = mtrBody
+          Text = '3. Icones, posicao e icon-only'
+        end
+        object gcButtonIcons: TDACGridContainer
+          Left = 24
+          Top = 508
+          Width = 1128
           Height = 150
+          Columns = 12
+          Layout = mgclCompact
+          TabOrder = 2
+          object btnIconLeft: TDACButton
+            Left = 40
+            Top = 524
+            Width = 180
+            Height = 46
+            Caption = 'Icone esquerda'
+            ShowIcon = True
+            IconKind = mikSave
+            Tag = 3
+            TabOrder = 0
+          end
+          object btnIconRight: TDACButton
+            Left = 230
+            Top = 524
+            Width = 180
+            Height = 46
+            Caption = 'Icone direita'
+            Kind = mbkSecondary
+            ShowIcon = True
+            IconKind = mikChevronRight
+            IconPosition = mipRight
+            Tag = 3
+            TabOrder = 1
+          end
+          object btnIconOnlyAdd: TDACButton
+            Left = 420
+            Top = 524
+            Width = 84
+            Height = 46
+            Caption = ''
+            ShowIcon = True
+            IconKind = mikAdd
+            Tag = 1
+            TabOrder = 2
+          end
+          object btnIconOnlyMore: TDACButton
+            Left = 514
+            Top = 524
+            Width = 84
+            Height = 46
+            Caption = ''
+            Kind = mbkSecondary
+            ShowIcon = True
+            IconKind = mikMoreHorizontal
+            Tag = 1
+            TabOrder = 3
+          end
+          object btnIconCustomSize: TDACButton
+            Left = 608
+            Top = 524
+            Width = 180
+            Height = 46
+            Caption = 'Icone 22'
+            Kind = mbkGhost
+            ShowIcon = True
+            IconKind = mikTractor
+            IconSize = 22
+            Tag = 3
+            TabOrder = 4
+          end
+          object btnIconDanger: TDACButton
+            Left = 798
+            Top = 524
+            Width = 180
+            Height = 46
+            Caption = 'Excluir'
+            Kind = mbkDanger
+            ShowIcon = True
+            IconKind = mikTrash
+            Tag = 3
+            TabOrder = 5
+          end
+        end
+        object lblButtonStates: TDACSystemText
+          Left = 24
+          Top = 682
+          Width = 272
+          Height = 17
+          Bold = True
+          Role = mtrBody
+          Text = '4. Estados: normal, hover, foco, pressed, loading e disabled'
+        end
+        object gcButtonStates: TDACGridContainer
+          Left = 24
+          Top = 706
+          Width = 1128
+          Height = 150
+          Columns = 12
+          Layout = mgclCompact
           TabOrder = 3
-          ValuesText = '45;25;20;10'
+          object btnStateNormal: TDACButton
+            Left = 40
+            Top = 722
+            Width = 180
+            Height = 46
+            Caption = 'Normal'
+            ShowIcon = True
+            IconKind = mikCheck
+            Tag = 3
+            TabOrder = 0
+          end
+          object btnStateHover: TDACButton
+            Left = 230
+            Top = 722
+            Width = 180
+            Height = 46
+            Caption = 'Passe o mouse'
+            Kind = mbkSecondary
+            ShowIcon = True
+            IconKind = mikEye
+            Tag = 3
+            TabOrder = 1
+          end
+          object btnStateFocus: TDACButton
+            Left = 420
+            Top = 722
+            Width = 180
+            Height = 46
+            Caption = 'Tab para foco'
+            Kind = mbkGhost
+            ShowIcon = True
+            IconKind = mikCode
+            Tag = 3
+            TabOrder = 2
+          end
+          object btnStatePressed: TDACButton
+            Left = 610
+            Top = 722
+            Width = 180
+            Height = 46
+            Caption = 'Pressione'
+            ShowIcon = True
+            IconKind = mikSettings
+            Tag = 3
+            TabOrder = 3
+          end
+          object btnStateLoading: TDACButton
+            Left = 40
+            Top = 778
+            Width = 180
+            Height = 46
+            Caption = 'Carregando'
+            Loading = True
+            ShowIcon = True
+            IconKind = mikSpinner
+            Tag = 3
+            TabOrder = 4
+          end
+          object btnStateDisabled: TDACButton
+            Left = 230
+            Top = 778
+            Width = 180
+            Height = 46
+            Caption = 'Desabilitado'
+            Enabled = False
+            Kind = mbkSecondary
+            ShowIcon = True
+            IconKind = mikLock
+            Tag = 3
+            TabOrder = 5
+          end
+        end
+        object lblButtonSpecials: TDACSystemText
+          Left = 24
+          Top = 880
+          Width = 238
+          Height = 17
+          Bold = True
+          Role = mtrBody
+          Text = '5. Cenarios compostos de botao'
+        end
+        object gcButtonSpecials: TDACGridContainer
+          Left = 24
+          Top = 904
+          Width = 1128
+          Height = 150
+          Columns = 12
+          Appearance = mgcaViewport
+          Layout = mgclCompact
+          TabOrder = 4
+          object btnSplitMain: TDACButton
+            Left = 40
+            Top = 920
+            Width = 274
+            Height = 46
+            Caption = 'Split: executar acao'
+            ShowIcon = True
+            IconKind = mikSave
+            Tag = 3
+            TabOrder = 0
+          end
+          object btnSplitMenu: TDACButton
+            Left = 324
+            Top = 920
+            Width = 84
+            Height = 46
+            Caption = ''
+            ShowIcon = True
+            IconKind = mikChevronDown
+            Tag = 1
+            TabOrder = 1
+          end
+          object btnSearchAction: TDACButton
+            Left = 418
+            Top = 920
+            Width = 180
+            Height = 46
+            Caption = 'Buscar'
+            Kind = mbkInputAction
+            ShowIcon = True
+            IconKind = mikSearch
+            Tag = 2
+            TabOrder = 2
+          end
+          object btnSaveAction: TDACButton
+            Left = 608
+            Top = 920
+            Width = 180
+            Height = 46
+            Caption = 'Salvar'
+            ShowIcon = True
+            IconKind = mikSave
+            Tag = 2
+            TabOrder = 3
+          end
+          object btnDeleteAction: TDACButton
+            Left = 798
+            Top = 920
+            Width = 180
+            Height = 46
+            Caption = 'Remover'
+            Kind = mbkDanger
+            ShowIcon = True
+            IconKind = mikTrash
+            Tag = 2
+            TabOrder = 4
+          end
+          object btnUploadAction: TDACButton
+            Left = 40
+            Top = 976
+            Width = 180
+            Height = 46
+            Caption = 'Enviar arquivo'
+            Kind = mbkGhost
+            ShowIcon = True
+            IconKind = mikUpload
+            Tag = 3
+            TabOrder = 5
+          end
         end
       end
     end
-    object PageReport: TDACScrollContainer
-      Left = 12
-      Top = 58
-      Width = 976
-      Height = 404
-      Align = alClient
-      BorderStyle = bsNone
-      BackgroundColor = claWhite
-      BorderColor = claNull
-      CornerRadius = 0
-      Color = clWhite
-      ParentColor = False
-      TabOrder = 14
-      Visible = False
-      StyleElements = [seFont, seBorder]
-      object SectionReport: TDACContainer
-        Left = 16
-        Top = 16
-        Width = 850
-        Height = 350
-        BackgroundColor = claWhite
-        BorderColor = xFFD5DBE6
-        ContentPadding = 18
-        SectionNumber = 17
-        Subtitle = 'Viewer de relatorio com preview visual em Skia'
-        SubtitleColor = xFF475569
+    object tsInputs: TTabSheet
+      Caption = 'Inputs'
+      ImageIndex = 1
+      object scrInputs: TDACScrollContainer
+        Left = 0
+        Top = 0
+        Width = 1192
+        Height = 708
+        Align = alClient
+        AutoScroll = True
+        BorderStyle = bsNone
+        Appearance = mscaViewport
+        ScrollBarMode = msbmVertical
         TabOrder = 0
-        Title = 'JANELA DE RELATORIO / REPORT VIEWER'
-        TitleColor = xFF111827
-        object ReportPreview: TDACReportViewer
-          Left = 36
-          Top = 86
-          Width = 760
-          Height = 230
-          PageCount = 5
-          PageIndex = 1
+        object gcInputStates: TDACGridContainer
+          AlignWithMargins = True
+          Left = 16
+          Top = 16
+          Width = 1144
+          Height = 1140
+          Margins.Left = 16
+          Margins.Top = 16
+          Margins.Right = 16
+          Margins.Bottom = 16
+          Align = alTop
+          AutoContentHeight = True
+          Appearance = mgcaTransparent
+          Columns = 7
+          MinimumColumnWidth = 180
+          SizeRowsToContent = True
           TabOrder = 0
-          ZoomPercent = 100
+          object lblInputs: TDACSystemText
+            Left = 12
+            Top = 12
+            Width = 1120
+            Height = 30
+            Bold = True
+            Role = mtrBody
+            Tag = 12
+            Text = 'Input e Memo - estados declarativos (hover/foco por interacao real)'
+          end
+          object lblInputEditStates: TDACSystemText
+            Left = 12
+            Top = 54
+            Width = 1120
+            Height = 22
+            Bold = True
+            Role = mtrBody
+            Tag = 12
+            Text = 'Edit'
+          end
+          object demoEdit: TDACEdit
+            Left = 12
+            Top = 88
+            Width = 300
+            Height = 64
+            Constraints.MinWidth = 180
+            LabelText = 'Input / Default'
+            Placeholder = 'Digite...'
+            TabOrder = 0
+          end
+          object demoEditFilled: TDACEdit
+            Left = 324
+            Top = 88
+            Width = 300
+            Height = 64
+            Constraints.MinWidth = 180
+            LabelText = 'Input / Filled'
+            Text = 'Valor preenchido'
+            TabOrder = 1
+          end
+          object demoEditError: TDACEdit
+            Left = 636
+            Top = 88
+            Width = 300
+            Height = 88
+            Constraints.MinWidth = 180
+            ErrorText = 'Mensagem de erro'
+            LabelText = 'Input / Error'
+            Status = mesDanger
+            Text = 'Valor invalido'
+            TabOrder = 2
+          end
+          object demoEditSuccess: TDACEdit
+            Left = 12
+            Top = 188
+            Width = 300
+            Height = 88
+            Constraints.MinWidth = 180
+            HelperText = 'Mensagem de sucesso'
+            LabelText = 'Input / Success'
+            Status = mesSuccess
+            Text = 'Valor valido'
+            TabOrder = 3
+          end
+          object demoEditDisabled: TDACEdit
+            Left = 324
+            Top = 188
+            Width = 300
+            Height = 64
+            Constraints.MinWidth = 180
+            Enabled = False
+            LabelText = 'Input / Disabled'
+            Text = 'Desabilitado'
+            TabOrder = 4
+          end
+          object demoEditReadOnly: TDACEdit
+            Left = 636
+            Top = 188
+            Width = 300
+            Height = 64
+            Constraints.MinWidth = 180
+            LabelText = 'Input / ReadOnly'
+            ReadOnly = True
+            Text = 'Somente leitura'
+            TabOrder = 5
+          end
+          object demoEditLoading: TDACEdit
+            Left = 12
+            Top = 288
+            Width = 300
+            Height = 64
+            Constraints.MinWidth = 180
+            LabelText = 'Input / Loading'
+            Loading = True
+            Text = 'Carregando...'
+            TabOrder = 6
+          end
+          object lblInputMemoStates: TDACSystemText
+            Left = 12
+            Top = 364
+            Width = 1120
+            Height = 22
+            Bold = True
+            Role = mtrBody
+            Tag = 12
+            Text = 'Memo'
+          end
+          object demoMemo: TDACMemo
+            Left = 12
+            Top = 398
+            Width = 300
+            Height = 112
+            Constraints.MinWidth = 180
+            LabelText = 'Memo / Default'
+            TabOrder = 7
+          end
+          object demoMemoFilled: TDACMemo
+            Left = 324
+            Top = 398
+            Width = 300
+            Height = 112
+            Constraints.MinWidth = 180
+            LabelText = 'Memo / Filled'
+            Lines.Strings = (
+              'Memo com selecao, clipboard e rolagem nativos.')
+            TabOrder = 8
+          end
+          object demoMemoError: TDACMemo
+            Left = 636
+            Top = 398
+            Width = 300
+            Height = 136
+            Constraints.MinWidth = 180
+            ErrorText = 'Mensagem de erro'
+            LabelText = 'Memo / Error'
+            Lines.Strings = (
+              'Valor invalido')
+            Status = mesDanger
+            TabOrder = 9
+          end
+          object demoMemoSuccess: TDACMemo
+            Left = 12
+            Top = 546
+            Width = 300
+            Height = 136
+            Constraints.MinWidth = 180
+            HelperText = 'Mensagem de sucesso'
+            LabelText = 'Memo / Success'
+            Lines.Strings = (
+              'Valor valido')
+            Status = mesSuccess
+            TabOrder = 10
+          end
+          object demoMemoDisabled: TDACMemo
+            Left = 324
+            Top = 546
+            Width = 300
+            Height = 112
+            Constraints.MinWidth = 180
+            Enabled = False
+            LabelText = 'Memo / Disabled'
+            Lines.Strings = (
+              'Desabilitado')
+            TabOrder = 11
+          end
+          object demoMemoReadOnly: TDACMemo
+            Left = 636
+            Top = 546
+            Width = 300
+            Height = 112
+            Constraints.MinWidth = 180
+            LabelText = 'Memo / ReadOnly'
+            Lines.Strings = (
+              'Somente leitura')
+            ReadOnly = True
+            TabOrder = 12
+          end
+          object demoMemoLoading: TDACMemo
+            Left = 12
+            Top = 694
+            Width = 300
+            Height = 112
+            Constraints.MinWidth = 180
+            LabelText = 'Memo / Loading'
+            Lines.Strings = (
+              'Carregando...')
+            Loading = True
+            TabOrder = 13
+          end
+          object lblInputButtonEditStates: TDACSystemText
+            Left = 12
+            Top = 818
+            Width = 1120
+            Height = 22
+            Bold = True
+            Role = mtrBody
+            Tag = 12
+            Text = 'ButtonEdit'
+          end
+          object demoButtonEdit: TDACButtonEdit
+            Left = 12
+            Top = 852
+            Width = 300
+            Height = 64
+            Constraints.MinWidth = 180
+            LabelText = 'ButtonEdit / Default'
+            Placeholder = 'Pesquisar...'
+            TabOrder = 14
+          end
+          object demoButtonEditFilled: TDACButtonEdit
+            Left = 324
+            Top = 852
+            Width = 300
+            Height = 64
+            Constraints.MinWidth = 180
+            LabelText = 'ButtonEdit / Filled'
+            Text = 'Valor'
+            TabOrder = 15
+          end
+          object demoButtonEditError: TDACButtonEdit
+            Left = 636
+            Top = 852
+            Width = 300
+            Height = 88
+            Constraints.MinWidth = 180
+            ErrorText = 'Mensagem de erro'
+            LabelText = 'ButtonEdit / Error'
+            Status = mesDanger
+            Text = 'Invalido'
+            TabOrder = 16
+          end
+          object demoButtonEditSuccess: TDACButtonEdit
+            Left = 12
+            Top = 952
+            Width = 300
+            Height = 88
+            Constraints.MinWidth = 180
+            HelperText = 'Mensagem de sucesso'
+            LabelText = 'ButtonEdit / Success'
+            Status = mesSuccess
+            Text = 'Valido'
+            TabOrder = 17
+          end
+          object demoButtonEditDisabled: TDACButtonEdit
+            Left = 324
+            Top = 952
+            Width = 300
+            Height = 64
+            Constraints.MinWidth = 180
+            Enabled = False
+            LabelText = 'ButtonEdit / Disabled'
+            Text = 'Desabilitado'
+            TabOrder = 18
+          end
+          object demoButtonEditReadOnly: TDACButtonEdit
+            Left = 636
+            Top = 952
+            Width = 300
+            Height = 64
+            Constraints.MinWidth = 180
+            LabelText = 'ButtonEdit / ReadOnly'
+            ReadOnly = True
+            Text = 'Somente leitura'
+            TabOrder = 19
+          end
+          object demoButtonEditLoading: TDACButtonEdit
+            Left = 12
+            Top = 1052
+            Width = 300
+            Height = 64
+            Constraints.MinWidth = 180
+            LabelText = 'ButtonEdit / Loading'
+            Loading = True
+            Text = 'Carregando...'
+            TabOrder = 20
+          end
         end
+      end
+    end
+    object tsSelectors: TTabSheet
+      Caption = 'Seletores'
+      ImageIndex = 2
+      object lblSelectors: TLabel
+        Left = 24
+        Top = 24
+        Caption = 'ComboBox e DateTimePicker - estados declarativos'
+      end
+      object demoCombo: TDACComboBox
+        Left = 24
+        Top = 88
+        Width = 196
+        Height = 64
+        LabelText = 'Combo / Default'
+        Items.Strings = (
+          'Opcao A'
+          'Opcao B'
+          'Opcao C')
+        TabOrder = 0
+      end
+      object demoComboFilled: TDACComboBox
+        Left = 236
+        Top = 88
+        Width = 196
+        Height = 64
+        Items.Strings = (
+          'Opcao A'
+          'Opcao B'
+          'Opcao C')
+        ItemIndex = 0
+        LabelText = 'Combo / Filled'
+        TabOrder = 1
+        Text = 'Opcao A'
+      end
+      object demoComboError: TDACComboBox
+        Left = 24
+        Top = 184
+        Width = 196
+        Height = 88
+        ErrorText = 'Mensagem de erro'
+        Items.Strings = (
+          'Opcao A'
+          'Opcao B')
+        LabelText = 'Combo / Error'
+        Status = mesDanger
+        TabOrder = 2
+      end
+      object demoComboSuccess: TDACComboBox
+        Left = 236
+        Top = 184
+        Width = 196
+        Height = 88
+        HelperText = 'Mensagem de sucesso'
+        Items.Strings = (
+          'Opcao A'
+          'Opcao B')
+        ItemIndex = 0
+        LabelText = 'Combo / Success'
+        Status = mesSuccess
+        TabOrder = 3
+        Text = 'Opcao A'
+      end
+      object demoComboDisabled: TDACComboBox
+        Left = 24
+        Top = 288
+        Width = 196
+        Height = 64
+        Enabled = False
+        LabelText = 'Combo / Disabled'
+        TabOrder = 4
+      end
+      object demoComboReadOnly: TDACComboBox
+        Left = 236
+        Top = 288
+        Width = 196
+        Height = 64
+        Items.Strings = (
+          'Opcao A')
+        ItemIndex = 0
+        LabelText = 'Combo / ReadOnly'
+        ReadOnly = True
+        TabOrder = 5
+        Text = 'Opcao A'
+      end
+      object demoComboLoading: TDACComboBox
+        Left = 24
+        Top = 384
+        Width = 196
+        Height = 64
+        LabelText = 'Combo / Loading'
+        Loading = True
+        TabOrder = 6
+        Text = 'Carregando...'
+      end
+      object demoDateTime: TDACDateTimePicker
+        Left = 520
+        Top = 88
+        Width = 220
+        Height = 64
+        LabelText = 'Date / Default'
+        TabOrder = 7
+      end
+      object demoDateTimeFilled: TDACDateTimePicker
+        Left = 756
+        Top = 88
+        Width = 220
+        Height = 64
+        DateTime = 46067.625000000000000000
+        LabelText = 'Date / Filled'
+        TabOrder = 8
+      end
+      object demoDateTimeError: TDACDateTimePicker
+        Left = 520
+        Top = 184
+        Width = 220
+        Height = 88
+        ErrorText = 'Mensagem de erro'
+        LabelText = 'Date / Error'
+        Status = mesDanger
+        TabOrder = 9
+      end
+      object demoDateTimeSuccess: TDACDateTimePicker
+        Left = 756
+        Top = 184
+        Width = 220
+        Height = 88
+        HelperText = 'Mensagem de sucesso'
+        LabelText = 'Date / Success'
+        Status = mesSuccess
+        TabOrder = 10
+      end
+      object demoDateTimeDisabled: TDACDateTimePicker
+        Left = 520
+        Top = 288
+        Width = 220
+        Height = 64
+        Enabled = False
+        LabelText = 'Date / Disabled'
+        TabOrder = 11
+      end
+      object demoDateTimeReadOnly: TDACDateTimePicker
+        Left = 756
+        Top = 288
+        Width = 220
+        Height = 64
+        LabelText = 'Date / ReadOnly'
+        ReadOnly = True
+        TabOrder = 12
+      end
+      object demoDateTimeLoading: TDACDateTimePicker
+        Left = 520
+        Top = 384
+        Width = 220
+        Height = 64
+        LabelText = 'Date / Loading'
+        Loading = True
+        TabOrder = 13
+      end
+    end
+    object tsControls: TTabSheet
+      Caption = 'Controles'
+      ImageIndex = 3
+      object lblControls: TLabel
+        Left = 24
+        Top = 24
+        Caption = 'Escolhas: teclado, foco e estados disabled'
+      end
+      object demoCheck: TDACCheckBox
+        Left = 24
+        Top = 58
+        Width = 180
+        Height = 28
+        Caption = 'Checkbox'
+        TabOrder = 0
+      end
+      object demoRadio: TDACRadioButton
+        Left = 220
+        Top = 58
+        Width = 180
+        Height = 28
+        Caption = 'Radio button'
+        TabOrder = 1
+      end
+      object demoToggle: TDACToggleSwitch
+        Left = 416
+        Top = 56
+        Width = 72
+        Height = 32
+        TabOrder = 2
+      end
+      object demoSlider: TDACSlider
+        Left = 24
+        Top = 108
+        Width = 320
+        Height = 36
+        Position = 60
+        TabOrder = 3
+      end
+    end
+    object tsTabs: TTabSheet
+      Caption = 'Tabs'
+      ImageIndex = 4
+      object lblTabs: TLabel
+        Left = 24
+        Top = 24
+        Caption = 'Tabs nativas com header Skia e navegacao por teclado'
+      end
+      object demoTabs: TDACTabs
+        Left = 24
+        Top = 56
+        Width = 560
+        Height = 260
+        ActiveIndex = 0
+        TabOrder = 0
+        object demoTabsFirst: TTabSheet
+          Caption = 'Geral'
+          object demoTabsFirstText: TDACSystemText
+            Left = 20
+            Top = 20
+            Width = 400
+            Height = 52
+            Role = mtrBody
+            MaxLines = 2
+            Text = 'Geral: foco, acoes e dados.'
+          end
+        end
+        object demoTabsSecond: TTabSheet
+          Caption = 'Detalhes'
+          object demoTabsSecondText: TDACSystemText
+            Left = 20
+            Top = 20
+            Width = 400
+            Height = 52
+            Role = mtrBody
+            MaxLines = 2
+            Text = 'Detalhes: painel independente.'
+          end
+        end
+        object demoTabsThird: TTabSheet
+          Caption = 'Historico'
+          Enabled = False
+          object demoTabsThirdText: TDACSystemText
+            Left = 20
+            Top = 20
+            Width = 400
+            Height = 52
+            Role = mtrBody
+            MaxLines = 2
+            Text = 'Historico: estado desabilitado.'
+          end
+        end
+      end
+      object demoVerticalTabs: TDACTabs
+        Left = 608
+        Top = 56
+        Width = 400
+        Height = 260
+        ActiveIndex = 0
+        Orientation = mtoVertical
+        TabOrder = 1
+        object demoVerticalTabsFirst: TTabSheet
+          Caption = 'Geral'
+          object demoVerticalTabsFirstText: TDACSystemText
+            Left = 20
+            Top = 20
+            Width = 190
+            Height = 52
+            Role = mtrBody
+            MaxLines = 2
+            Text = 'Geral: painel ativo.'
+          end
+        end
+        object demoVerticalTabsSecond: TTabSheet
+          Caption = 'Detalhes'
+          object demoVerticalTabsSecondText: TDACSystemText
+            Left = 20
+            Top = 20
+            Width = 190
+            Height = 52
+            Role = mtrBody
+            MaxLines = 2
+            Text = 'Detalhes: selecionavel.'
+          end
+        end
+        object demoVerticalTabsThird: TTabSheet
+          Caption = 'Historico'
+          object demoVerticalTabsThirdText: TDACSystemText
+            Left = 20
+            Top = 20
+            Width = 190
+            Height = 52
+            Role = mtrBody
+            MaxLines = 2
+            Text = 'Historico: conteudo proprio.'
+          end
+        end
+      end
+    end
+    object tsCards: TTabSheet
+      Caption = 'Cards'
+      ImageIndex = 5
+      object lblCards: TLabel
+        Left = 24
+        Top = 24
+        Caption = 'Card de resumo composto com tokens compartilhados'
+      end
+      object demoSummaryCard: TDACSummaryCard
+        Left = 24
+        Top = 56
+        Width = 300
+        Height = 140
+        TabOrder = 0
+      end
+    end
+    object tsStatus: TTabSheet
+      Caption = 'Status'
+      ImageIndex = 7
+      object lblStatus: TLabel
+        Left = 24
+        Top = 24
+        Caption = 'Status bar e feedback de estado'
+      end
+      object demoStatusBar: TDACStatusBar
+        Left = 24
+        Top = 56
+        Width = 720
+        Height = 38
+        TabOrder = 0
+      end
+    end
+    object tsProgress: TTabSheet
+      Caption = 'Progresso'
+      ImageIndex = 8
+      object lblProgress: TLabel
+        Left = 24
+        Top = 24
+        Caption = 'Progresso linear e circular'
+      end
+      object demoProgress: TDACProgress
+        Left = 24
+        Top = 56
+        Width = 320
+        Height = 32
+        Value = 65
+        TabOrder = 0
+      end
+      object demoCircularProgress: TDACProgress
+        Left = 370
+        Top = 48
+        Width = 84
+        Height = 84
+        Kind = mpkCircular
+        Value = 65
+        TabOrder = 1
+      end
+    end
+    object tsPills: TTabSheet
+      Caption = 'Pills'
+      ImageIndex = 9
+      object lblPills: TLabel
+        Left = 24
+        Top = 24
+        Caption = 'Badge, chip, tag e pill'
+      end
+      object demoBadge: TDACBadge
+        Left = 24
+        Top = 56
+        Width = 130
+        Height = 32
+        Caption = 'Badge'
+        TabOrder = 0
+      end
+      object demoPill: TDACBadge
+        Left = 170
+        Top = 56
+        Width = 130
+        Height = 32
+        Caption = 'Pill'
+        Kind = mbkPill
+        TabOrder = 1
+      end
+    end
+    object tsFeedback: TTabSheet
+      Caption = 'Feedback'
+      ImageIndex = 10
+      object lblFeedback: TLabel
+        Left = 24
+        Top = 24
+        Caption = 'Toast, modal e tooltip com hover'
+      end
+      object demoToast: TDACToast
+        Left = 24
+        Top = 56
+        Width = 300
+        Height = 72
+        TabOrder = 0
+      end
+      object demoModal: TDACModalDialog
+        Left = 350
+        Top = 56
+        Width = 320
+        Height = 180
+        MessageText = 'Modal declarativo demonstrando foco e fechamento com Escape.'
+        TabOrder = 1
+        TitleText = 'Confirmacao DAC'
+      end
+      object btnTooltipTarget: TDACButton
+        Left = 24
+        Top = 158
+        Width = 180
+        Height = 42
+        Caption = 'Passe o mouse'
+        TabOrder = 2
+      end
+      object demoTooltip: TDACTooltip
+        Left = 24
+        Top = 206
+        Width = 220
+        Height = 36
+        TargetControl = btnTooltipTarget
+        Text = 'Tooltip declarativo com alvo'
+        Visible = False
+      end
+    end
+    object tsPagination: TTabSheet
+      Caption = 'Paginacao'
+      ImageIndex = 11
+      object lblPagination: TLabel
+        Left = 24
+        Top = 24
+        Caption = 'Paginacao com botoes e combo nativos'
+      end
+      object demoPagination: TDACPagination
+        Left = 24
+        Top = 56
+        Width = 520
+        Height = 42
+        PageCount = 12
+        PageIndex = 3
+        TabOrder = 0
+      end
+    end
+    object tsLoading: TTabSheet
+      Caption = 'Loading'
+      ImageIndex = 12
+      object lblLoading: TLabel
+        Left = 24
+        Top = 24
+        Caption = 'Loading, spinner, dots e skeleton'
+      end
+      object demoLoading: TDACLoading
+        Left = 24
+        Top = 56
+        Width = 260
+        Height = 60
+        TabOrder = 0
+      end
+    end
+    object tsCharts: TTabSheet
+      Caption = 'Charts'
+      ImageIndex = 13
+      object lblCharts: TLabel
+        Left = 24
+        Top = 24
+        Caption = 'Charts de barra, linha, area e donut'
+      end
+      object demoBarChart: TDACChart
+        Left = 24
+        Top = 56
+        Width = 360
+        Height = 180
+        DataMode = cdmManual
+        Title.Visible = True
+        Title.Text = 'Manual: barras e linha'
+        Series = <
+          item
+            Name = 'Producao'
+            ChartType = ctBar
+            FillMode = cfLinearGradient
+            Points = <
+              item Category = 'Jan' Value = 20.000000000000000000 end
+              item Category = 'Fev' Value = 35.000000000000000000 end
+              item Category = 'Mar' Value = 27.000000000000000000 end
+              item Category = 'Abr' Value = 46.000000000000000000 end>
+          end
+          item
+            Name = 'Meta'
+            ChartType = ctLine
+            FillMode = cfSolid
+            Points = <
+              item Category = 'Jan' Value = 28.000000000000000000 end
+              item Category = 'Fev' Value = 30.000000000000000000 end
+              item Category = 'Mar' Value = 33.000000000000000000 end
+              item Category = 'Abr' Value = 39.000000000000000000 end>
+          end>
+        TabOrder = 0
+      end
+      object demoDoughnutChart: TDACChart
+        Left = 410
+        Top = 56
+        Width = 230
+        Height = 180
+        ChartType = ctDoughnut
+        DataMode = cdmManual
+        Series = <
+          item
+            Name = 'Culturas'
+            ChartType = ctDoughnut
+            FillMode = cfRadialGradient
+            Points = <
+              item Category = 'Soja' Value = 55.000000000000000000 end
+              item Category = 'Milho' Value = 30.000000000000000000 end
+              item Category = 'Feijao' Value = 15.000000000000000000 end>
+          end>
+        TabOrder = 1
+      end
+      object demoLineChart: TDACChart
+        Left = 24
+        Top = 260
+        Width = 360
+        Height = 180
+        ChartType = ctLine
+        DataMode = cdmManual
+        Series = <
+          item
+            Name = 'Umidade'
+            ChartType = ctLine
+            Points = <
+              item Category = 'Jan' Value = 16.000000000000000000 end
+              item Category = 'Fev' Value = 22.000000000000000000 end
+              item Category = 'Mar' IsNull = True end
+              item Category = 'Abr' Value = 18.000000000000000000 end>
+          end>
+        TabOrder = 2
+      end
+      object demoAreaChart: TDACChart
+        Left = 410
+        Top = 260
+        Width = 360
+        Height = 180
+        ChartType = ctArea
+        DataMode = cdmManual
+        Series = <
+          item
+            Name = 'Precipitacao'
+            ChartType = ctArea
+            FillMode = cfLinearGradient
+            GradientAngle = 0.000000000000000000
+            Points = <
+              item Category = 'Jan' Value = 12.000000000000000000 end
+              item Category = 'Fev' Value = 30.000000000000000000 end
+              item Category = 'Mar' Value = 24.000000000000000000 end
+              item Category = 'Abr' Value = 40.000000000000000000 end>
+          end>
+        TabOrder = 3
+      end
+      object demoStatusTimeline: TDACStatusTimelineChart
+        Left = 24
+        Top = 464
+        Width = 746
+        Height = 180
+        CurrentState = stsOnline
+        EmptyText = 'Sem dados de status no periodo'
+        TabOrder = 4
+        WindowFinish = 45870.666666666660000000
+        WindowStart = 45869.666666666660000000
+        Segments = <
+          item
+            StartAt = 45869.666666666660000000
+            FinishAt = 45870.020833333340000000
+            State = stsOnline
+          end
+          item
+            StartAt = 45870.020833333340000000
+            FinishAt = 45870.083333333340000000
+            State = stsOffline
+          end
+          item
+            StartAt = 45870.083333333340000000
+            FinishAt = 45870.416666666660000000
+            State = stsOnline
+          end
+          item
+            StartAt = 45870.416666666660000000
+            FinishAt = 45870.458333333340000000
+            State = stsUnstable
+          end
+          item
+            StartAt = 45870.458333333340000000
+            FinishAt = 45870.666666666660000000
+            State = stsOnline
+          end>
+      end
+    end
+    object tsReport: TTabSheet
+      Caption = 'Report'
+      ImageIndex = 14
+      object lblReport: TLabel
+        Left = 24
+        Top = 24
+        Caption = 'Report viewer com pagina e zoom'
+      end
+      object demoReportViewer: TDACReportViewer
+        Left = 24
+        Top = 56
+        Width = 760
+        Height = 340
+        TabOrder = 0
       end
     end
   end
 end
-

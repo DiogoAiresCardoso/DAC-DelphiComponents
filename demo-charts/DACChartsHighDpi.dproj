@@ -1,0 +1,73 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{B62CC2E9-6BDB-4B3C-86A6-F5C5205DA11B}</ProjectGuid>
+    <ProjectVersion>18.3</ProjectVersion>
+    <FrameworkType>VCL</FrameworkType>
+    <MainSource>DACChartsHighDpi.dpr</MainSource>
+    <Base>True</Base>
+    <Config Condition="'$(Config)'==''">Debug</Config>
+    <Platform Condition="'$(Platform)'==''">Win32</Platform>
+    <TargetedPlatforms>1</TargetedPlatforms>
+    <AppType>Application</AppType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+    <Base>true</Base>
+    <DCC_DcuOutput>..\Build\Dcu\$(Platform)\$(Config)\DACChartsHighDpi</DCC_DcuOutput>
+    <DCC_ExeOutput>..\Build\Exe\$(Platform)\$(Config)\Charts\HighDpi</DCC_ExeOutput>
+    <DCC_CBuilderOutput>None</DCC_CBuilderOutput>
+    <DCC_EnabledPackages>false</DCC_EnabledPackages>
+    <DCC_E>false</DCC_E>
+    <DCC_N>false</DCC_N>
+    <DCC_S>false</DCC_S>
+    <DCC_F>false</DCC_F>
+    <DCC_K>false</DCC_K>
+    <DCC_Define>SKIA;$(DCC_Define)</DCC_Define>
+    <DCC_UnitSearchPath>..\Source\Core;..\Source\DesignSystem;..\Source\Skia;..\Source\Controls;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+    <DCC_UsePackage>rtl;vcl;vcldb;vclimg;DataSnapClient;dbrtl;Skia.Package.RTL;Skia.Package.VCL</DCC_UsePackage>
+    <DCC_Namespace>System;Xml;Data;Datasnap;Vcl;Winapi;$(DCC_Namespace)</DCC_Namespace>
+    <DAC_SkiaRuntimeSource>..\Build\Exe\Win32\$(Config)\sk4d.dll</DAC_SkiaRuntimeSource>
+    <SanitizedProjectName>DACChartsHighDpi</SanitizedProjectName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='Win32' and '$(Base)'=='true'">
+    <Base_Win32>true</Base_Win32>
+    <CfgParent>Base</CfgParent>
+    <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
+    <AppEnableHighDPI>true</AppEnableHighDPI>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Config)'=='Debug'">
+    <Cfg_1>true</Cfg_1>
+    <CfgParent>Base</CfgParent>
+    <DCC_DebugDCUs>true</DCC_DebugDCUs>
+    <DCC_Optimize>false</DCC_Optimize>
+    <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Config)'=='Release'">
+    <Cfg_2>true</Cfg_2>
+    <CfgParent>Base</CfgParent>
+    <DCC_DebugInformation>0</DCC_DebugInformation>
+    <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+    <DCC_Optimize>true</DCC_Optimize>
+  </PropertyGroup>
+  <ItemGroup>
+    <DelphiCompile Include="$(MainSource)"><MainSource>MainSource</MainSource></DelphiCompile>
+    <DCCReference Include="DACChartsDemo.Main.pas"><Form>ChartsDemoForm</Form><FormType>dfm</FormType></DCCReference>
+    <BuildConfiguration Include="Base"><Key>Base</Key></BuildConfiguration>
+    <BuildConfiguration Include="Debug"><Key>Cfg_1</Key><CfgParent>Base</CfgParent></BuildConfiguration>
+    <BuildConfiguration Include="Release"><Key>Cfg_2</Key><CfgParent>Base</CfgParent></BuildConfiguration>
+  </ItemGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Delphi.Personality.12</Borland.Personality>
+    <Borland.ProjectType>Application</Borland.ProjectType>
+    <BorlandProject><Delphi.Personality><Source><Source Name="MainSource">DACChartsHighDpi.dpr</Source></Source></Delphi.Personality><Platforms><Platform value="Win32">True</Platform></Platforms></BorlandProject>
+    <ProjectFileVersion>12</ProjectFileVersion>
+  </ProjectExtensions>
+  <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+  <Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')"/>
+  <PropertyGroup>
+    <BuildDependsOn>$(BuildDependsOn);CopySkiaRuntimeForHighDpiDemo</BuildDependsOn>
+  </PropertyGroup>
+  <Target Name="CopySkiaRuntimeForHighDpiDemo">
+    <Error Condition="!Exists('$(DAC_SkiaRuntimeSource)')" Text="sk4d.dll nao foi encontrada em $(DAC_SkiaRuntimeSource)."/>
+    <Copy SourceFiles="$(DAC_SkiaRuntimeSource)" DestinationFiles="$(DCC_ExeOutput)\sk4d.dll"/>
+  </Target>
+</Project>

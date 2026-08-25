@@ -1,0 +1,58 @@
+# Re-revisao final de codigo - MEM-DEL-011 e MEM-DEL-012
+
+Data: 2026-07-21  
+Branch: `codex/fix-demo-visual-regressions`  
+Status: `APPROVED_FOR_FINAL_UI_QA`
+
+## Bounds VCL e captura 144 PPI
+
+- A Demo passou a usar `TForm.Monitor.WorkareaRect` e o PPI do mesmo monitor;
+  layout e bounds ficam no mesmo espaco de coordenadas VCL. `FitToWorkArea`
+  somente atua com handle/bounds validos e fora de `csDesigning`.
+- O interaction gate obtém o monitor efetivo da form e exige que todos os lados
+  de `BoundsRect` estejam dentro de `WorkareaRect`.
+- A captura PrintWindow
+  `Build/VisualValidation/dac-demo-144-monitor-workarea-printwindow-final.png`
+  foi inspecionada. Ela preserva titulo/non-client area e mostra subtitulo,
+  Ghost, Alerta e Raio 4 completos, sem corte na borda direita. A evidencia
+  registrada informa `BoundsRect=(246,117,1461,902)` dentro de
+  `WorkareaRect=(0,0,1707,1019)`.
+
+## Tooltip: estabilidade manual e hover
+
+- `ShowForTarget` passou a abrir em modo manual; `FManualVisible` impede que o
+  timer de hover o feche quando o ponteiro nao esta sobre o alvo. `HideTooltip`
+  limpa explicitamente o modo manual.
+- A rota automatico/hover permanece separada: apenas o `TrackerTimer`, quando
+  o cursor esta no alvo e o popup nao esta visivel, chama
+  `ShowForTargetInternal(False)`; ao sair, fecha somente popup automatico que
+  nao esta sobre o proprio tooltip. A leitura estatica nao identificou quebra
+  da semantica de hover.
+- O teste usa espera por condicao de ate 500 ms, nao uma pausa fixa para a
+  abertura/fechamento, e mantem a bomba de mensagens por 160 ms apos a abertura
+  manual (mais que o intervalo de 120 ms do tracker). Portanto, ele detecta a
+  antiga corrida real em vez de escondê-la por timeout.
+
+## Verificacao executada pelo revisor
+
+- Runtime, design-time, Demo, smoke e interaction recompilaram Win32/Delphi
+  32.0 com `0 Warning(s)` e `0 Error(s)`.
+- `DACComponentsSmoke.exe`: `PASS`, exit code `0`.
+- Cinco execucoes consecutivas de `DACComponentsInteraction.exe`, apos a
+  recompilacao: `PASS` e exit code `0` em todas. Nenhuma flakiness observada.
+- O interaction inclui bounds/workarea, scroll, reflow, grid 1/2/3 colunas,
+  tooltip manual, modal e outros cenarios VCL; `git diff --check` sem erro de
+  whitespace (somente avisos LF/CRLF).
+
+## Handoff ao QA final
+
+Liberado para QA visual final em 96/120/144/192 PPI. Validar scroll
+topo/meio/fim, tabs horizontal/vertical e resize, foco/teclado, hover real e
+tooltip manual, modal e abertura de DFM no Designer. Se aprovado, o
+orquestrador pode seguir para commit e PR.
+
+## Observacao de worktree
+
+O build continua removendo `Package/DACSkiaComponentsRuntime.vrc`; o revisor
+nao restaurou nem incluiu esse arquivo. O orquestrador precisa resolver esse
+alvo explicitamente antes do commit.

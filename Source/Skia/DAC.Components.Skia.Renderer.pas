@@ -6,13 +6,34 @@ uses
   System.Generics.Collections,
   System.Skia,
   System.Types,
-  System.UITypes;
+  System.UITypes,
+  DAC.Components.DesignSystem.OpacityTokens;
 
 type
+  TDACNativeTextDrawItem = record
+    Text: string;
+    Family: string;
+    Bounds: TRectF;
+    Baseline: TPointF;
+    Size: Single;
+    Color: TAlphaColor;
+    Bold: Boolean;
+    Centered: Boolean;
+    MaxWidth: Single;
+  end;
+
+  IDACNativeTextSink = interface
+    ['{9D72E5FE-52CD-4F5F-A915-73D3F0C809C5}']
+    procedure BeginNativeTextFrame;
+    procedure QueueNativeText(const AItem: TDACNativeTextDrawItem);
+    procedure EndNativeTextFrame;
+  end;
+
   TDACSkiaRenderer = class
   private
     FFillPaintCache: TDictionary<string, ISkPaint>;
     FFontCache: TDictionary<string, ISkFont>;
+    FNativeTextSink: IDACNativeTextSink;
     FStrokePaintCache: TDictionary<string, ISkPaint>;
     function BuildFillPaintKey(const AColor: TAlphaColor; const AAlpha: Byte): string;
     function BuildFontKey(const AFamily: string; const ASize: Single; const ABold: Boolean): string;
@@ -31,10 +52,19 @@ type
       const ABold: Boolean = False): Single;
     function SnapRect(const ARect: TRectF; const AScale: Single = 1): TRectF;
     procedure FillRoundRect(const ACanvas: ISkCanvas; const ARect: TRectF;
-      const AColor: TAlphaColor; const ARadius: Single; const AAlpha: Byte = 255);
+      const AColor: TAlphaColor; const ARadius: Single;
+      const AAlpha: Byte = DACOpacityOpaque);
     procedure StrokeRoundRect(const ACanvas: ISkCanvas; const ARect: TRectF;
       const AColor: TAlphaColor; const ARadius, AStrokeWidth: Single;
-      const AAlpha: Byte = 255);
+      const AAlpha: Byte = DACOpacityOpaque);
+    procedure DrawLine(const ACanvas: ISkCanvas; const AP1, AP2: TPointF;
+      const AColor: TAlphaColor; const AWidth: Single = 1;
+      const AAlpha: Byte = DACOpacityOpaque);
+    procedure StrokeLine(const ACanvas: ISkCanvas; const AP1, AP2: TPointF;
+      const AColor: TAlphaColor; const AWidth: Single = 1;
+      const AAlpha: Byte = DACOpacityOpaque);
+    procedure BeginNativeText(const ASink: IDACNativeTextSink);
+    procedure EndNativeText;
     procedure Svg(const ACanvas: ISkCanvas; const AIcon: ISkSVGDOM; const ARect: TRectF);
     procedure Text(const ACanvas: ISkCanvas; const AText, AFamily: string;
       const AX, AY, ASize: Single; const AColor: TAlphaColor;
@@ -135,6 +165,7 @@ end;
 function TDACSkiaRenderer.GetFillPaint(const AColor: TAlphaColor;
   const AAlpha: Byte): ISkPaint;
 var
+  LColorAlpha: Byte;
   LKey: string;
 begin
   LKey := BuildFillPaintKey(AColor, AAlpha);
@@ -143,7 +174,12 @@ begin
     Result := TSkPaint.Create(TSkPaintStyle.Fill);
     Result.AntiAlias := True;
     Result.Color := AColor;
-    Result.Alpha := AAlpha;
+    // AColor can carry a semantic opacity (for example a glass surface).
+    // Skia's paint alpha replaces the alpha embedded in the color, so the
+    // effective alpha must compose both values instead of discarding it.
+    LColorAlpha := Byte((Cardinal(AColor) shr 24) and $FF);
+    Result.Alpha := Round((Integer(LColorAlpha) * Integer(AAlpha)) /
+      DACOpacityOpaque);
     FFillPaintCache.Add(LKey, Result);
   end;
 end;
@@ -162,13 +198,23 @@ begin
       LStyle := TSkFontStyle.Bold
     else
       LStyle := TSkFontStyle.Normal;
-    LTypeface := nil;
-    if SameText(AFamily, DACComponentFontFamily) then
-      LTypeface := TDACComponentFontInstaller.InterTypeface;
+    // Inter remains the design-system default. A component can nevertheless
+    // request a named family (for example a chart title) and its measurement
+    // and rendering will use the same family, with Inter as a safe fallback.
+    if (AFamily <> '') and not SameText(AFamily, DACComponentFontFamily) then
+      LTypeface := TSkTypeface.MakeFromName(AFamily, LStyle)
+    else
+      LTypeface := TDACComponentFontInstaller.InterTypeface(ABold);
     if LTypeface = nil then
-      LTypeface := TSkTypeface.MakeFromName(AFamily, LStyle);
+      LTypeface := TDACComponentFontInstaller.InterTypeface(ABold);
     Result := TSkFont.Create(LTypeface, ASize, 1, 0);
+    { Make the raster surface behave as close as possible to native Windows
+      text: full hinting, native glyph outlines and subpixel antialiasing.
+      This is important for dense chart axes and legends. }
     Result.Subpixel := True;
+    Result.Edging := TSkFontEdging.SubpixelAntiAlias;
+    Result.Hinting := TSkFontHinting.Full;
+    Result.ForceAutoHinting := False;
     FFontCache.Add(LKey, Result);
   end;
 end;
@@ -176,6 +222,7 @@ end;
 function TDACSkiaRenderer.GetStrokePaint(const AColor: TAlphaColor;
   const AWidth: Single; const AAlpha: Byte): ISkPaint;
 var
+  LColorAlpha: Byte;
   LKey: string;
 begin
   LKey := BuildStrokePaintKey(AColor, AWidth, AAlpha);
@@ -185,7 +232,9 @@ begin
     Result.AntiAlias := True;
     Result.Color := AColor;
     Result.StrokeWidth := AWidth;
-    Result.Alpha := AAlpha;
+    LColorAlpha := Byte((Cardinal(AColor) shr 24) and $FF);
+    Result.Alpha := Round((Integer(LColorAlpha) * Integer(AAlpha)) /
+      DACOpacityOpaque);
     FStrokePaintCache.Add(LKey, Result);
   end;
 end;
@@ -231,6 +280,37 @@ begin
     ACanvas.DrawRect(ARect, GetStrokePaint(AColor, AStrokeWidth, AAlpha));
 end;
 
+procedure TDACSkiaRenderer.DrawLine(const ACanvas: ISkCanvas;
+  const AP1, AP2: TPointF; const AColor: TAlphaColor; const AWidth: Single;
+  const AAlpha: Byte);
+begin
+  if ACanvas = nil then
+    Exit;
+  ACanvas.DrawLine(AP1, AP2, GetStrokePaint(AColor, AWidth, AAlpha));
+end;
+
+procedure TDACSkiaRenderer.StrokeLine(const ACanvas: ISkCanvas;
+  const AP1, AP2: TPointF; const AColor: TAlphaColor; const AWidth: Single;
+  const AAlpha: Byte);
+begin
+  DrawLine(ACanvas, AP1, AP2, AColor, AWidth, AAlpha);
+end;
+
+
+procedure TDACSkiaRenderer.BeginNativeText(const ASink: IDACNativeTextSink);
+begin
+  FNativeTextSink := ASink;
+  if FNativeTextSink <> nil then
+    FNativeTextSink.BeginNativeTextFrame;
+end;
+
+procedure TDACSkiaRenderer.EndNativeText;
+begin
+  if FNativeTextSink <> nil then
+    FNativeTextSink.EndNativeTextFrame;
+  FNativeTextSink := nil;
+end;
+
 procedure TDACSkiaRenderer.Svg(const ACanvas: ISkCanvas;
   const AIcon: ISkSVGDOM; const ARect: TRectF);
 begin
@@ -251,43 +331,50 @@ procedure TDACSkiaRenderer.Text(const ACanvas: ISkCanvas; const AText,
   AFamily: string; const AX, AY, ASize: Single; const AColor: TAlphaColor;
   const ABold: Boolean; const AMaxWidth: Single);
 var
-  LFont: ISkFont;
-  LPaint: ISkPaint;
-  LText: string;
+  LItem: TDACNativeTextDrawItem;
 begin
-  if ACanvas = nil then
+  if (ACanvas = nil) or (AText = '') then
     Exit;
 
-  LFont := GetFont(AFamily, ASize, ABold);
-  LText := FitTextWithEllipsis(AText, LFont, AMaxWidth);
-  LPaint := GetFillPaint(AColor, 255);
-  ACanvas.DrawSimpleText(LText, AX, AY, LFont, LPaint);
+  { Visible glyphs are deliberately never rasterized by Skia. A component
+    must begin a native-text frame around its Skia draw and provide its owned
+    TDACSystemTextOverlay as the sink. This preserves ClearType/hinting in
+    both the designer and runtime instead of silently falling back to Skia. }
+  if FNativeTextSink = nil then
+    Exit;
+  LItem.Text := AText;
+  LItem.Family := AFamily;
+  LItem.Bounds := TRectF.Create(0, 0, 0, 0);
+  LItem.Baseline := TPointF.Create(AX, AY);
+  LItem.Size := ASize;
+  LItem.Color := AColor;
+  LItem.Bold := ABold;
+  LItem.Centered := False;
+  LItem.MaxWidth := AMaxWidth;
+  FNativeTextSink.QueueNativeText(LItem);
 end;
 
 procedure TDACSkiaRenderer.TextCentered(const ACanvas: ISkCanvas;
   const AText, AFamily: string; const ARect: TRectF; const ASize: Single;
   const AColor: TAlphaColor; const ABold: Boolean; const AMaxWidth: Single);
 var
-  LBaseline: Single;
-  LFont: ISkFont;
-  LMaxWidth: Single;
-  LPaint: ISkPaint;
-  LText: string;
-  LX: Single;
+  LItem: TDACNativeTextDrawItem;
 begin
-  if ACanvas = nil then
+  if (ACanvas = nil) or (AText = '') then
     Exit;
 
-  LFont := GetFont(AFamily, ASize, ABold);
-  LMaxWidth := AMaxWidth;
-  if LMaxWidth <= 0 then
-    LMaxWidth := ARect.Width;
-  LText := FitTextWithEllipsis(AText, LFont, LMaxWidth);
-  LX := ARect.Left + (ARect.Width - LFont.MeasureText(LText)) / 2;
-  LBaseline := ARect.Top + (ARect.Height / 2) + (ASize * 0.36);
-  LPaint := GetFillPaint(AColor, 255);
-  ACanvas.DrawSimpleText(LText, LX, LBaseline, LFont, LPaint);
+  if FNativeTextSink = nil then
+    Exit;
+  LItem.Text := AText;
+  LItem.Family := AFamily;
+  LItem.Bounds := ARect;
+  LItem.Baseline := TPointF.Create(0, 0);
+  LItem.Size := ASize;
+  LItem.Color := AColor;
+  LItem.Bold := ABold;
+  LItem.Centered := True;
+  LItem.MaxWidth := AMaxWidth;
+  FNativeTextSink.QueueNativeText(LItem);
 end;
 
 end.
-

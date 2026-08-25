@@ -1,4 +1,4 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{880B61BC-ABD9-47CF-845F-EC9FFCD41FFD}</ProjectGuid>
         <ProjectVersion>18.3</ProjectVersion>
@@ -41,15 +41,19 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
-        <DCC_DcuOutput>..\\..\\Build\\Dcu\\</DCC_DcuOutput>
-        <DCC_ExeOutput>..\\..\\Build\\EXE\\</DCC_ExeOutput>
-        <DCC_UnitSearchPath>..\\Source\\Core;..\\Source\\DesignSystem;..\\Source\\Skia;..\\Source\\Controls;..\\Source\\Controls\\DataAware;..\\Source\\Hooks;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_DcuOutput>..\Build\Dcu\$(Platform)\$(Config)\Demo</DCC_DcuOutput>
+        <DCC_ExeOutput>..\Build\Exe\$(Platform)\$(Config)</DCC_ExeOutput>
+        <DCC_CBuilderOutput>None</DCC_CBuilderOutput>
+        <DAC_SkiaRuntimeSource Condition="'$(SKIADIR)'!=''">$(SKIADIR)\Binary\Shared\Win32\sk4d.dll</DAC_SkiaRuntimeSource>
+        <DAC_SkiaRuntimeSource Condition="'$(SKIADIR)'==''">$(MSBuildProjectDirectory)\..\Build\EXE\sk4d.dll</DAC_SkiaRuntimeSource>
+        <DCC_UnitSearchPath>..\Source\Core;..\Source\DesignSystem;..\Source\Skia;..\Source\Controls;..\Source\Hooks;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DCC_E>false</DCC_E>
         <DCC_N>false</DCC_N>
         <DCC_S>false</DCC_S>
         <DCC_F>false</DCC_F>
         <DCC_K>false</DCC_K>
-        <DCC_UsePackage>RESTBackendComponents;CloudService;soaprtl;soapmidas;RESTComponents;emsclientfiredac;DataSnapFireDAC;FireDACIBDriver;emsclient;FireDACCommon;soapserver;FireDACCommonDriver;inet;FireDAC;FireDACSqliteDriver;$(DCC_UsePackage)</DCC_UsePackage>
+        <DCC_EnabledPackages>false</DCC_EnabledPackages>
+        <DCC_UsePackage>rtl;vcl;vclimg;Skia.Package.RTL;Skia.Package.VCL</DCC_UsePackage>
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
@@ -59,7 +63,6 @@
         <Custom_Styles>Windows10|VCLSTYLE|$(BDSCOMMONDIR)\Styles\Windows10.vsf</Custom_Styles>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
-        <DCC_UsePackage>DBXSqliteDriver;dxSpreadSheetCoreDialogsRS25;dxRibbonCustomizationFormRS25;DBXDb2Driver;dxPSPrVwRibbonRS25;dxSkinOffice2007PinkRS25;dxSkinMcSkinRS25;vclactnband;vclFireDAC;cxExportRS25;dxSpreadSheetInplaceRichEditRS25;dxHttpIndyRequestRS25;tethering;dxPScxCommonRS25;FireDACADSDriver;cxPivotGridOLAPRS25;JvPluginSystem;FireDACMSSQLDriver;cxSchedulerGridRS25;vcltouch;dxSkinDarkRoomRS25;dxSkinDarkSideRS25;vcldb;Intraweb;svn;JvBands;JvJans;ACBr_NFe;ACBr_NFeDanfeFR;dxGaugeControlRS25;cxLibraryRS25;ACBr_OFX;JvDotNetCtrls;dxSkinOffice2007SilverRS25;dxSkinBlackRS25;dxSkinOffice2007BlueRS25;GMLib_D_Tokyo_VCL;dxFlowChartAdvancedCustomizeFormRS25;dxSkinOffice2007BlackRS25;FireDACDBXDriver;dxSkinVS2010RS25;vclx;dxSkinFoggyRS25;ACBr_NFCom;dxSpreadSheetConditionalFormattingDialogsRS25;dxSkinSevenRS25;dxSkinSpringTimeRS25;dxTileControlRS25;dxMapControlRS25;dxPDFViewerRS25;dxDockingRS25;ACBr_Reinf;VCLRESTComponents;cxPageControlRS25;dxSkinLilianRS25;dxPSLnksRS25;GMLib_D_Tokyo;dxWizardControlRS25;dxRichEditControlRS25;GMLibEdit_D_Tokyo;Skia.Package.FMX;vclie;fs25;bindengine;dxFireDACServerModeRS25;JvHMI;FireDACMySQLDriver;dxSkinOffice2013LightGrayRS25;dxSkinMetropolisRS25;DataSnapClient;dxPSdxPDFViewerLnkRS25;dxSkinOffice2016DarkRS25;bindcompdbx;dxSkinBlueprintRS25;ACBr_TCP;dxSkinStardustRS25;DBXSybaseASEDriver;IndyIPServer;dxPSdxLCLnkRS25;ACBr_CTe;IndySystem;dxSkinOffice2007GreenRS25;ACBr_PagFor;dsnapcon;ACBre_Social;dxLayoutControlRS25;dxPSRichEditControlLnkRS25;FireDACMSAccDriver;fmxFireDAC;FireDACInfxDriver;vclimg;fsADO25;dxdbtrRS25;Jcl;dxPScxTLLnkRS25;ACBr_SPED;ACBr_SPEDImportar;emshosting;dxSpreadSheetRS25;dxSkinVisualStudio2013LightRS25;ACBr_MDFe;frxADO25;DBXOdbcDriver;FireDACTDataDriver;FMXTee;cxGridRS25;dxSpreadSheetCoreConditionalFormattingDialogsRS25;DbxCommonDriver;dxSkinTheAsphaltWorldRS25;dxorgcRS25;dxPScxSchedulerLnkRS25;JvManagedThreads;dxSkinHighContrastRS25;xmlrtl;DataSnapNativeClient;fmxobj;dxPScxGridLnkRS25;frx25;rtl;JvTimeFramework;DbxClientDriver;DBXSybaseASADriver;dxPSCoreRS25;dxmdsRS25;JvSystem;JvStdCtrls;dxSkinOffice2016ColorfulRS25;fsDB25;DCEF_DX10;appanalytics;ACBr_DebitoAutomatico;IndyIPClient;bindcompvcl;dxThemeRS25;TeeUI;ACBr_NFSeXDANFSeFR;JvDocking;JvPascalInterpreter;VclSmp;FireDACODBCDriver;JclVcl;DataSnapIndy10ServerTransport;ACBr_Boleto;DataSnapProviderClient;FireDACMongoDBDriver;cxVerticalGridRS25;dxtrmdRS25;JvControls;JvPrintPreview;ACBr_MDFeDamdfeFR;dxADOServerModeRS25;dxSkinPumpkinRS25;DelPrintDX102;DataSnapServerMidas;dxCoreRS25;cxSchedulerTreeBrowserRS25;dxRichEditControlCoreRS25;DBXInterBaseDriver;dxSkinValentineRS25;SMExportRX102;dxPSTeeChartRS25;svnui;dxSkinOffice2010BlueRS25;JvGlobus;dxSkinMoneyTwinsRS25;frxe25;dxSkinSilverRS25;DBXMSSQLDriver;dxPSdxFCLnkRS25;JvMM;dxRichEditCoreRS25;DatasnapConnectorsFreePascal;ZylIdleTimerPack;dxSkinOffice2013WhiteRS25;bindcompfmx;JvNet;DBXOracleDriver;inetdb;JvAppFrm;ACBr_Diversos;RaizeComponentsVcl;vacommPkgDXE7;dxOfficeCoreRS25;ACBr_GNREGuiaFR;FmxTeeUI;emsedge;RaizeComponentsVclDb;fmx;fmxdae;dxSkinBlueRS25;dxTabbedMDIRS25;dxBarDBNavRS25;dxPScxPivotGridLnkRS25;frxDB25;ACBr_LCDPR;frxTee25;dxSkinDevExpressDarkStyleRS25;JvWizards;ACBr_CTeDacteFR;dbexpress;IndyCore;dxFlowChartRS25;dxRichEditDocumentModelRS25;JvPageComps;dsnap;DataSnapCommon;fsTee25;dxBarRS25;dxPSDBTeeChartRS25;JvDB;dxSkinLiquidSkyRS25;ACBr_NFSeX;dxdborRS25;DataSnapConnectors;dxPScxExtCommonRS25;MiTeC_Comps_RAD19;acntDX10Tokyo_R;cxPivotGridRS25;ACBr_SAT;Skia.Package.VCL;dxPSdxSpreadSheetLnkRS25;dxSpreadSheetReportDesignerRS25;dxNavBarRS25;JclDeveloperTools;cxSchedulerRibbonStyleEventEditorRS25;dxSkinCoffeeRS25;FireDACOracleDriver;DBXMySQLDriver;JvCmp;DBXFirebirdDriver;FireDACCommonODBC;dxSkinOffice2010SilverRS25;ACBr_GNRE;cxTreeListRS25;IndyIPCommon;JvCustom;dxSkinLondonLiquidSkyRS25;vcl;dxPScxVGridLnkRS25;dxBarExtItemsRS25;JvXPCtrls;dxSkinsCoreRS25;dxComnRS25;FireDACDb2Driver;dxSkinWhiteprintRS25;dxPSdxDBTVLnkRS25;ACBr_Integrador;dxSkinVisualStudio2013BlueRS25;dxSkinGlassOceansRS25;dxSkinMetropolisDarkRS25;dxSkinOffice2013DarkGrayRS25;dxSkinSharpPlusRS25;TeeDB;dxSpreadSheetCoreRS25;dxServerModeRS25;dxPScxPCProdRS25;dxSkinCaramelRS25;JvCore;ACBr_Comum;JvCrypt;FireDACPgDriver;dxSkiniMaginaryRS25;FireDACASADriver;cxEditorsRS25;JvDlgs;JvRuntimeDesign;Tee;DataSnapServer;dxPsPrVwAdvRS25;vclwinx;FireDACDSDriver;dxSkinSevenClassicRS25;cxDataRS25;dxRichEditInplaceRS25;cxTreeListdxBarPopupMenuRS25;ACBr_OpenSSL;CustomIPTransport;vcldsnap;dxPSdxOCLnkRS25;dxSkinSharpRS25;MSICS_RAD19_Rtl;ACBr_PIXCD;bindcomp;ACBr_Serial;DBXInformixDriver;cxPivotGridChartRS25;cxSchedulerRS25;dxBarExtDBItemsRS25;dxSkinVisualStudio2013DarkRS25;dxSkinOffice2010BlackRS25;frxDBX25;dxDBXServerModeRS25;dxSkinDevExpressStyleRS25;dxGDIPlusRS25;dxPSdxGaugeControlLnkRS25;Skia.Package.RTL;dbxcds;ACBr_NFCeECFVirtual;adortl;ACBr_BoletoFR;dxPSdxDBOCLnkRS25;dxRibbonRS25;dsnapxml;dxSpellCheckerRS25;dbrtl;inetdbxpress;IndyProtocols;dxSkinSummer2008RS25;JclContainers;dxPSdxMapControlLnkRS25;dxSkinXmas2008BlueRS25;fmxase;$(DCC_UsePackage)</DCC_UsePackage>
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
         <BT_BuildType>Debug</BT_BuildType>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
@@ -80,7 +83,6 @@
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <AppEnableHighDPI>true</AppEnableHighDPI>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -90,6 +92,9 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_1_Win32)'!='' or '$(Cfg_2_Win32)'!=''">
+        <DCC_UsePackage>rtl;vcl;vclimg;Skia.Package.RTL;Skia.Package.VCL</DCC_UsePackage>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -574,5 +579,17 @@
     <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
     <Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')"/>
     <Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"/>
+    <PropertyGroup>
+        <DAC_ProvenanceOutput>..\\Build\\Provenance\\$(MSBuildProjectName)\\$(Platform)\\$(Config)</DAC_ProvenanceOutput>
+        <BuildDependsOn>$(BuildDependsOn);CopySkiaRuntimeForDemo;WriteDacBuildProvenance</BuildDependsOn>
+    </PropertyGroup>
+    <Target Name="CopySkiaRuntimeForDemo">
+        <Error Condition="!Exists('$(DAC_SkiaRuntimeSource)')" Text="sk4d.dll nao foi encontrada em $(DAC_SkiaRuntimeSource)."/>
+        <Copy SourceFiles="$(DAC_SkiaRuntimeSource)" DestinationFiles="$(DCC_ExeOutput)\sk4d.dll"/>
+    </Target>
+    <Target Name="WriteDacBuildProvenance">
+        <MakeDir Directories="$(DAC_ProvenanceOutput)"/>
+        <WriteLinesToFile File="$(DAC_ProvenanceOutput)\manifest.txt" Overwrite="true"
+            Lines="project=$(MSBuildProjectName);configuration=$(Config);platform=$(Platform);exeOutput=$(DCC_ExeOutput);runtimePackage=not-used;skiaRuntime=$(DAC_SkiaRuntimeSource);legacyArtifacts=preserved"/>
+    </Target>
 </Project>
-

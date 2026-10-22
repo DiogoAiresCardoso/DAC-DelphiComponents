@@ -1,0 +1,9 @@
+Parent=nil / setters / designer: PASS
+DFM standalone / paginas nativas / TabHeight: PASS
+Design=FALSE H=TRUE TabsShowing=TRUE TabsHandle=TRUE
+Header visible=TRUE showing=TRUE handle=TRUE bounds=0,0,600,48
+Designer=FALSE: altura, 4 appearances, 3 sizes, temas, textos longos, resize, RecreateWnd: PASS
+Design=TRUE H=TRUE TabsShowing=TRUE TabsHandle=TRUE
+Header visible=TRUE showing=TRUE handle=TRUE bounds=0,0,600,48
+Designer=TRUE: altura, 4 appearances, 3 sizes, temas, textos longos, resize, RecreateWnd: PASS
+DACComponentsTabs: PASS

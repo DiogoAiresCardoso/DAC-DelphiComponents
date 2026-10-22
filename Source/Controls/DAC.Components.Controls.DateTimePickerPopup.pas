@@ -21,12 +21,13 @@ uses
 type
   // Borderless, modeless Skia popup. This is deliberately a top-level host
   // window: it has no Parent, stays hidden until ShowFor validates a real
-  // runtime control handle, and never appears in the taskbar. The editing
-  // window remains the native TDateTimePicker, preserving caret, IME and
-  // accessibility semantics.
+  // runtime control handle, and never appears in the taskbar. The editable
+  // value remains in the native TMaskEdit inherited from TDACEdit, preserving
+  // caret, IME and accessibility semantics.
   TDACDateTimePickerPopup = class(TForm)
   private
     FAccept: TNotifyEvent;
+    FCancel: TNotifyEvent;
     FClear: TNotifyEvent;
     FMonth: TDateTime;
     FPaintBox: TSkPaintBox;
@@ -40,6 +41,8 @@ type
     procedure DrawCalendar(const ACanvas: ISkCanvas; const ADest: TRectF);
     procedure DrawTime(const ACanvas: ISkCanvas; const ADest: TRectF);
     function FooterActionRect(const AAction: Integer): TRectF;
+    function HeaderActionRect(const AAction: Integer): TRectF;
+    procedure NavigateCalendar(const AMonthDelta: Integer);
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
     procedure PaintBoxMouseUp(Sender: TObject; Button: TMouseButton;
@@ -64,6 +67,7 @@ type
     procedure SimulateFooterAction(const AAction: Integer);
     procedure SimulateExternalDeactivate;
     property OnAccept: TNotifyEvent read FAccept write FAccept;
+    property OnCancel: TNotifyEvent read FCancel write FCancel;
     property OnClear: TNotifyEvent read FClear write FClear;
     property SelectedDateTime: TDateTime read FSelected;
     property DisplayMonth: TDateTime read FMonth;
@@ -78,6 +82,12 @@ uses
   Vcl.Graphics,
   DAC.Components.DesignSystem.ComponentStyle,
   DAC.Components.DesignSystem.Fonts;
+
+const
+  DateTimeNavigationPreviousYear = 0;
+  DateTimeNavigationPreviousMonth = 1;
+  DateTimeNavigationNextMonth = 2;
+  DateTimeNavigationNextYear = 3;
 
 constructor TDACDateTimePickerPopup.Create(AOwner: TComponent);
 var
@@ -101,6 +111,11 @@ begin
   FTextOverlay.Parent := Self;
   FTextOverlay.SetSubComponent(True);
   FTextOverlay.Align := alClient;
+  { The native text layer is visually above the Skia paintbox. A disabled
+    window still wins VCL hit-testing and discards the physical click, so route
+    its mouse-up through the single popup hit-test handler. }
+  FTextOverlay.Enabled := True;
+  FTextOverlay.OnMouseUp := PaintBoxMouseUp;
   FThemeMode := dtmInherit;
   FTimeStepMinutes := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.DateTimeTimeStepMinutes;
   TDACThemeManager.RegisterListener(Self, ThemeChanged);
@@ -166,26 +181,31 @@ var
   LDay: Integer;
   LDays: Integer;
   LFirstColumn: Integer;
+  LHeaderRect: TRectF;
   LMonthText: string;
   LRect: TRectF;
   LRow: Integer;
 begin
   LControls := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
   LMonthText := FormatDateTime('mmmm yyyy', FMonth);
-  FTextOverlay.QueueCenteredText('<', TDACComponentFontInstaller.FontFamily,
-    TRectF.Create(LControls.DateTimePopupInset, LControls.DateTimePopupInset,
-      LControls.DateTimePopupInset + LControls.DateTimePopupNavigationSize,
-      LControls.DateTimePopupInset + LControls.DateTimePopupNavigationSize),
+  FTextOverlay.QueueCenteredText('<<', TDACComponentFontInstaller.FontFamily,
+    HeaderActionRect(DateTimeNavigationPreviousYear),
     LControls.DateTimePopupCaptionTextSize, LControls.DateTimePopupHeaderText, True);
+  FTextOverlay.QueueCenteredText('<', TDACComponentFontInstaller.FontFamily,
+    HeaderActionRect(DateTimeNavigationPreviousMonth),
+    LControls.DateTimePopupCaptionTextSize, LControls.DateTimePopupHeaderText, True);
+  LHeaderRect := TRectF.Create(HeaderActionRect(DateTimeNavigationPreviousMonth).Right +
+    LControls.DateTimePopupHeaderGap, LControls.DateTimePopupInset,
+    HeaderActionRect(DateTimeNavigationNextMonth).Left - LControls.DateTimePopupHeaderGap,
+    LControls.DateTimePopupHeaderHeight);
   FTextOverlay.QueueCenteredText(LMonthText, TDACComponentFontInstaller.FontFamily,
-    TRectF.Create(LControls.DateTimePopupInset + LControls.DateTimePopupNavigationSize + LControls.DateTimePopupHeaderGap,
-      LControls.DateTimePopupInset, ADest.Width - LControls.DateTimePopupInset -
-      LControls.DateTimePopupNavigationSize - LControls.DateTimePopupHeaderGap, LControls.DateTimePopupHeaderHeight),
+    LHeaderRect,
     LControls.DateTimePopupCaptionTextSize, LControls.DateTimePopupHeaderText, True);
   FTextOverlay.QueueCenteredText('>', TDACComponentFontInstaller.FontFamily,
-    TRectF.Create(ADest.Width - LControls.DateTimePopupInset - LControls.DateTimePopupNavigationSize,
-      LControls.DateTimePopupInset, ADest.Width - LControls.DateTimePopupInset,
-      LControls.DateTimePopupInset + LControls.DateTimePopupNavigationSize), LControls.DateTimePopupCaptionTextSize,
+    HeaderActionRect(DateTimeNavigationNextMonth), LControls.DateTimePopupCaptionTextSize,
+    LControls.DateTimePopupHeaderText, True);
+  FTextOverlay.QueueCenteredText('>>', TDACComponentFontInstaller.FontFamily,
+    HeaderActionRect(DateTimeNavigationNextYear), LControls.DateTimePopupCaptionTextSize,
     LControls.DateTimePopupHeaderText, True);
   LCellWidth := (ADest.Width - (LControls.DateTimePopupInset * 2)) / LControls.DateTimePopupWeekColumns;
   for LCol := 0 to LControls.DateTimePopupWeekColumns - 1 do
@@ -281,7 +301,41 @@ begin
   end;
 end;
 
+function TDACDateTimePickerPopup.HeaderActionRect(
+  const AAction: Integer): TRectF;
+var
+  LControls: TDACControlTokens;
+  LLeft: Single;
+  LSize: Single;
+begin
+  LControls := TDACComponentStyle.ResolveForSurface(Self,
+    FThemeMode).Tokens.Controls;
+  LSize := LControls.DateTimePopupNavigationSize;
+  case AAction of
+    DateTimeNavigationPreviousYear:
+      LLeft := LControls.DateTimePopupInset;
+    DateTimeNavigationPreviousMonth:
+      LLeft := LControls.DateTimePopupInset + LSize;
+    DateTimeNavigationNextMonth:
+      LLeft := Width - LControls.DateTimePopupInset - (LSize * 2);
+  else
+    LLeft := Width - LControls.DateTimePopupInset - LSize;
+  end;
+  Result := TRectF.Create(LLeft, LControls.DateTimePopupInset,
+    LLeft + LSize, LControls.DateTimePopupInset + LSize);
+end;
+
+procedure TDACDateTimePickerPopup.NavigateCalendar(
+  const AMonthDelta: Integer);
+begin
+  if AMonthDelta = 0 then
+    Exit;
+  FMonth := StartOfTheMonth(IncMonth(FMonth, AMonthDelta));
+end;
+
 procedure TDACDateTimePickerPopup.KeyDown(var Key: Word; Shift: TShiftState);
+var
+  LCallback: TNotifyEvent;
 begin
   inherited;
   if FPickerKind = dtkTime then
@@ -300,16 +354,34 @@ begin
       VK_RIGHT: AdjustSelection(1, 0, 0);
       VK_UP: AdjustSelection(-7, 0, 0);
       VK_DOWN: AdjustSelection(7, 0, 0);
-      VK_PRIOR: FMonth := IncMonth(FMonth, -1);
-      VK_NEXT: FMonth := IncMonth(FMonth, 1);
+      VK_PRIOR:
+        if (ssCtrl in Shift) or (ssShift in Shift) then
+          NavigateCalendar(-12)
+        else
+          NavigateCalendar(-1);
+      VK_NEXT:
+        if (ssCtrl in Shift) or (ssShift in Shift) then
+          NavigateCalendar(12)
+        else
+          NavigateCalendar(1);
     end;
   end;
   case Key of
-    VK_ESCAPE: Hide;
+    VK_ESCAPE:
+      begin
+        LCallback := FCancel;
+        Hide;
+        if Assigned(LCallback) then
+          LCallback(Self);
+        Exit;
+      end;
     VK_RETURN:
       begin
-        if Assigned(FAccept) then FAccept(Self);
+        LCallback := FAccept;
         Hide;
+        if Assigned(LCallback) then
+          LCallback(Self);
+        Exit;
       end;
     Ord('T'):
       begin
@@ -428,6 +500,7 @@ end;
 procedure TDACDateTimePickerPopup.PaintBoxMouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
+  LCallback: TNotifyEvent;
   LCol, LDay, LFirstColumn, LRow: Integer;
   LControls: TDACControlTokens;
   LPoint: TPointF;
@@ -438,9 +511,21 @@ begin
   if FooterActionRect(0).Contains(LPoint) then
     begin FSelected := Date + Frac(FSelected); FMonth := StartOfTheMonth(FSelected); end
   else if FooterActionRect(1).Contains(LPoint) then
-    begin if Assigned(FClear) then FClear(Self); Hide; Exit; end
+    begin
+      LCallback := FClear;
+      Hide;
+      if Assigned(LCallback) then
+        LCallback(Self);
+      Exit;
+    end
   else if FooterActionRect(2).Contains(LPoint) then
-    begin if Assigned(FAccept) then FAccept(Self); Hide; Exit; end
+    begin
+      LCallback := FAccept;
+      Hide;
+      if Assigned(LCallback) then
+        LCallback(Self);
+      Exit;
+    end
   else if FPickerKind = dtkTime then
   begin
     if (Y >= Round(LControls.DateTimePopupTimeActionTop - LControls.DateTimePopupTimeHitPadding)) and
@@ -450,8 +535,14 @@ begin
   end
   else if Y < Round(LControls.DateTimePopupHeaderHeight) then
   begin
-    if X < Round(LControls.DateTimePopupInset + LControls.DateTimePopupNavigationSize) then FMonth := IncMonth(FMonth, -1)
-    else if X > Width - Round(LControls.DateTimePopupInset + LControls.DateTimePopupNavigationSize) then FMonth := IncMonth(FMonth, 1);
+    if HeaderActionRect(DateTimeNavigationPreviousYear).Contains(LPoint) then
+      NavigateCalendar(-12)
+    else if HeaderActionRect(DateTimeNavigationPreviousMonth).Contains(LPoint) then
+      NavigateCalendar(-1)
+    else if HeaderActionRect(DateTimeNavigationNextMonth).Contains(LPoint) then
+      NavigateCalendar(1)
+    else if HeaderActionRect(DateTimeNavigationNextYear).Contains(LPoint) then
+      NavigateCalendar(12);
   end
   else if Y >= Round(LControls.DateTimePopupHeaderHeight + LControls.DateTimePopupWeekHeaderHeight + LControls.DateTimePopupCalendarTopGap) then
   begin

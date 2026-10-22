@@ -1,0 +1,2609 @@
+{
+  "schema": 1,
+  "scope": "static declarations and whitelist; not proof of rendered support",
+  "source": "Source/Controls/DAC.Components.Charts.Options.pas",
+  "sourceSha256": "7e3142f9526614e661c9ca856c340492b2f1b44066d3f59e3285eeb0df7c04c4",
+  "validationSource": "Source/Core/DAC.Components.Charts.Types.pas",
+  "validationSourceSha256": "c3b257f4cdf82412ebe421984f639c17ca939b739e2d7bdbf39a18f5d14c2a56",
+  "classes": [
+    {
+      "name": "TDACChartBoundValue",
+      "ancestor": "TPersistent",
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 52,
+      "properties": []
+    },
+    {
+      "name": "TDACChartMeasure",
+      "ancestor": "TDACChartBoundValue",
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 65,
+      "properties": [
+        {
+          "name": "Mode",
+          "visibility": "published",
+          "declaration": "property Mode: TDACChartMeasureMode read GetMode write SetMode stored False;",
+          "line": 75
+        },
+        {
+          "name": "Value",
+          "visibility": "published",
+          "declaration": "property Value: Double read GetValue write SetValue stored False;",
+          "line": 76
+        }
+      ]
+    },
+    {
+      "name": "TDACChartAxisLimit",
+      "ancestor": "TDACChartBoundValue",
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 78,
+      "properties": [
+        {
+          "name": "Mode",
+          "visibility": "published",
+          "declaration": "property Mode: TDACChartLimitMode read GetMode write SetMode stored False;",
+          "line": 85
+        },
+        {
+          "name": "Value",
+          "visibility": "published",
+          "declaration": "property Value: Double read GetValue write SetValue stored False;",
+          "line": 86
+        }
+      ]
+    },
+    {
+      "name": "TDACChartFill",
+      "ancestor": "TDACChartBoundValue",
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 88,
+      "properties": [
+        {
+          "name": "Kind",
+          "visibility": "published",
+          "declaration": "property Kind: TDACChartFillKind read GetKind write SetKind stored False;",
+          "line": 105
+        },
+        {
+          "name": "Color",
+          "visibility": "published",
+          "declaration": "property Color: TAlphaColor read GetColor write SetColor stored False;",
+          "line": 106
+        },
+        {
+          "name": "StartColor",
+          "visibility": "published",
+          "declaration": "property StartColor: TAlphaColor read GetStartColor write SetStartColor stored False;",
+          "line": 107
+        },
+        {
+          "name": "EndColor",
+          "visibility": "published",
+          "declaration": "property EndColor: TAlphaColor read GetEndColor write SetEndColor stored False;",
+          "line": 108
+        },
+        {
+          "name": "X",
+          "visibility": "published",
+          "declaration": "property X: Double index 0 read GetCoordinate write SetCoordinate stored False;",
+          "line": 109
+        },
+        {
+          "name": "Y",
+          "visibility": "published",
+          "declaration": "property Y: Double index 1 read GetCoordinate write SetCoordinate stored False;",
+          "line": 110
+        },
+        {
+          "name": "X2",
+          "visibility": "published",
+          "declaration": "property X2: Double index 2 read GetCoordinate write SetCoordinate stored False;",
+          "line": 111
+        },
+        {
+          "name": "Y2",
+          "visibility": "published",
+          "declaration": "property Y2: Double index 3 read GetCoordinate write SetCoordinate stored False;",
+          "line": 112
+        },
+        {
+          "name": "Radius",
+          "visibility": "published",
+          "declaration": "property Radius: Double index 4 read GetCoordinate write SetCoordinate stored False;",
+          "line": 113
+        }
+      ]
+    },
+    {
+      "name": "TDACChartOptionNode",
+      "ancestor": "TPersistent",
+      "file": "Source/Controls/DAC.Components.Charts.Options.pas",
+      "line": 10,
+      "properties": [
+        {
+          "name": "JSON",
+          "visibility": "published",
+          "declaration": "property JSON: string read GetJSON write SetJSON;",
+          "line": 24
+        }
+      ]
+    },
+    {
+      "name": "TDACChartOptionStore",
+      "ancestor": "TDACChartValueAccess",
+      "file": "Source/Controls/DAC.Components.Charts.Options.pas",
+      "line": 27,
+      "properties": [
+        {
+          "name": "Root",
+          "visibility": "public",
+          "declaration": "property Root: TJSONObject read FRoot;",
+          "line": 39
+        },
+        {
+          "name": "OnChange",
+          "visibility": "public",
+          "declaration": "property OnChange: TNotifyEvent read FOnChange write FOnChange;",
+          "line": 40
+        }
+      ]
+    },
+    {
+      "name": "TDACChartTextOptions",
+      "ancestor": "TDACChartOptionNode",
+      "file": "Source/Controls/DAC.Components.Charts.Options.pas",
+      "line": 42,
+      "properties": [
+        {
+          "name": "Show",
+          "visibility": "public",
+          "declaration": "property Show: Boolean read GetShow write SetShow stored False;",
+          "line": 71
+        },
+        {
+          "name": "Text",
+          "visibility": "public",
+          "declaration": "property Text: string read GetText write SetText stored False;",
+          "line": 72
+        },
+        {
+          "name": "Subtext",
+          "visibility": "public",
+          "declaration": "property Subtext: string read GetSubtext write SetSubtext stored False;",
+          "line": 73
+        },
+        {
+          "name": "FontWeight",
+          "visibility": "public",
+          "declaration": "property FontWeight: Integer read GetFontWeight write SetFontWeight stored False;",
+          "line": 74
+        },
+        {
+          "name": "FontFamily",
+          "visibility": "public",
+          "declaration": "property FontFamily: string read GetFontFamily write SetFontFamily stored False;",
+          "line": 75
+        },
+        {
+          "name": "FontSize",
+          "visibility": "public",
+          "declaration": "property FontSize: Double read GetFontSize write SetFontSize stored False;",
+          "line": 76
+        },
+        {
+          "name": "Color",
+          "visibility": "public",
+          "declaration": "property Color: TDACChartFill read GetColor write SetColor stored False;",
+          "line": 77
+        },
+        {
+          "name": "Left",
+          "visibility": "public",
+          "declaration": "property Left: TDACChartMeasure read GetLeft write SetLeft stored False;",
+          "line": 78
+        },
+        {
+          "name": "Top",
+          "visibility": "public",
+          "declaration": "property Top: TDACChartMeasure read GetTop write SetTop stored False;",
+          "line": 79
+        },
+        {
+          "name": "Position",
+          "visibility": "public",
+          "declaration": "property Position: TDACChartLabelPosition read GetPosition write SetPosition stored False;",
+          "line": 80
+        },
+        {
+          "name": "Formatter",
+          "visibility": "public",
+          "declaration": "property Formatter: string read GetFormatter write SetFormatter stored False;",
+          "line": 81
+        },
+        {
+          "name": "Rotate",
+          "visibility": "public",
+          "declaration": "property Rotate: Double read GetRotate write SetRotate stored False;",
+          "line": 82
+        },
+        {
+          "name": "Distance",
+          "visibility": "public",
+          "declaration": "property Distance: Double read GetDistance write SetDistance stored False;",
+          "line": 83
+        }
+      ]
+    },
+    {
+      "name": "TDACChartTitleOptions",
+      "ancestor": "TDACChartTextOptions",
+      "file": "Source/Controls/DAC.Components.Charts.Options.pas",
+      "line": 86,
+      "properties": [
+        {
+          "name": "Show",
+          "visibility": "published",
+          "declaration": "property Show;",
+          "line": 88
+        },
+        {
+          "name": "Text",
+          "visibility": "published",
+          "declaration": "property Text;",
+          "line": 89
+        },
+        {
+          "name": "Subtext",
+          "visibility": "published",
+          "declaration": "property Subtext;",
+          "line": 90
+        },
+        {
+          "name": "FontFamily",
+          "visibility": "published",
+          "declaration": "property FontFamily;",
+          "line": 91
+        },
+        {
+          "name": "FontWeight",
+          "visibility": "published",
+          "declaration": "property FontWeight;",
+          "line": 92
+        },
+        {
+          "name": "FontSize",
+          "visibility": "published",
+          "declaration": "property FontSize;",
+          "line": 93
+        },
+        {
+          "name": "Color",
+          "visibility": "published",
+          "declaration": "property Color;",
+          "line": 94
+        },
+        {
+          "name": "Left",
+          "visibility": "published",
+          "declaration": "property Left;",
+          "line": 95
+        },
+        {
+          "name": "Top",
+          "visibility": "published",
+          "declaration": "property Top;",
+          "line": 96
+        }
+      ]
+    },
+    {
+      "name": "TDACChartLabelOptions",
+      "ancestor": "TDACChartTextOptions",
+      "file": "Source/Controls/DAC.Components.Charts.Options.pas",
+      "line": 98,
+      "properties": [
+        {
+          "name": "FontStyle",
+          "visibility": "published",
+          "declaration": "property FontStyle: TDACChartFontStyle read GetFontStyle write SetFontStyle stored False;",
+          "line": 109
+        },
+        {
+          "name": "TextAlign",
+          "visibility": "published",
+          "declaration": "property TextAlign: TDACChartTextAlign read GetTextAlign write SetTextAlign stored False;",
+          "line": 110
+        },
+        {
+          "name": "VerticalAlign",
+          "visibility": "published",
+          "declaration": "property VerticalAlign: TDACChartVerticalAlign read GetVerticalAlign write SetVerticalAlign stored False;",
+          "line": 111
+        },
+        {
+          "name": "Overflow",
+          "visibility": "published",
+          "declaration": "property Overflow: TDACChartOverflow read GetOverflow write SetOverflow stored False;",
+          "line": 112
+        },
+        {
+          "name": "Show",
+          "visibility": "published",
+          "declaration": "property Show;",
+          "line": 113
+        },
+        {
+          "name": "FontFamily",
+          "visibility": "published",
+          "declaration": "property FontFamily;",
+          "line": 114
+        },
+        {
+          "name": "FontWeight",
+          "visibility": "published",
+          "declaration": "property FontWeight;",
+          "line": 115
+        },
+        {
+          "name": "FontSize",
+          "visibility": "published",
+          "declaration": "property FontSize;",
+          "line": 116
+        },
+        {
+          "name": "Color",
+          "visibility": "published",
+          "declaration": "property Color;",
+          "line": 117
+        },
+        {
+          "name": "Position",
+          "visibility": "published",
+          "declaration": "property Position;",
+          "line": 118
+        },
+        {
+          "name": "Formatter",
+          "visibility": "published",
+          "declaration": "property Formatter;",
+          "line": 119
+        },
+        {
+          "name": "Rotate",
+          "visibility": "published",
+          "declaration": "property Rotate;",
+          "line": 120
+        },
+        {
+          "name": "Distance",
+          "visibility": "published",
+          "declaration": "property Distance;",
+          "line": 121
+        }
+      ]
+    },
+    {
+      "name": "TDACChartAxisOptions",
+      "ancestor": "TDACChartOptionNode",
+      "file": "Source/Controls/DAC.Components.Charts.Options.pas",
+      "line": 124,
+      "properties": [
+        {
+          "name": "Show",
+          "visibility": "published",
+          "declaration": "property Show: Boolean read GetShow write SetShow stored False;",
+          "line": 143
+        },
+        {
+          "name": "AxisType",
+          "visibility": "published",
+          "declaration": "property AxisType: TDACChartAxisType read GetAxisType write SetAxisType stored False;",
+          "line": 144
+        },
+        {
+          "name": "Min",
+          "visibility": "published",
+          "declaration": "property Min: TDACChartAxisLimit read GetMin write SetMin stored False;",
+          "line": 145
+        },
+        {
+          "name": "Max",
+          "visibility": "published",
+          "declaration": "property Max: TDACChartAxisLimit read GetMax write SetMax stored False;",
+          "line": 146
+        },
+        {
+          "name": "Inverse",
+          "visibility": "published",
+          "declaration": "property Inverse: Boolean read GetInverse write SetInverse stored False;",
+          "line": 147
+        },
+        {
+          "name": "BoundaryGap",
+          "visibility": "published",
+          "declaration": "property BoundaryGap: Boolean read GetBoundaryGap write SetBoundaryGap stored False;",
+          "line": 148
+        },
+        {
+          "name": "SplitNumber",
+          "visibility": "published",
+          "declaration": "property SplitNumber: Double read GetSplitNumber write SetSplitNumber stored False;",
+          "line": 149
+        },
+        {
+          "name": "Name",
+          "visibility": "published",
+          "declaration": "property Name: string read GetName write SetName stored False;",
+          "line": 150
+        }
+      ]
+    },
+    {
+      "name": "TDACChartStyleOptions",
+      "ancestor": "TDACChartOptionNode",
+      "file": "Source/Controls/DAC.Components.Charts.Options.pas",
+      "line": 153,
+      "properties": [
+        {
+          "name": "LineType",
+          "visibility": "published",
+          "declaration": "property LineType: TDACChartLineType read GetLineType write SetLineType stored False;",
+          "line": 179
+        },
+        {
+          "name": "Color",
+          "visibility": "published",
+          "declaration": "property Color: TDACChartFill read GetColor write SetColor stored False;",
+          "line": 180
+        },
+        {
+          "name": "Opacity",
+          "visibility": "published",
+          "declaration": "property Opacity: Double read GetOpacity write SetOpacity stored False;",
+          "line": 181
+        },
+        {
+          "name": "Width",
+          "visibility": "published",
+          "declaration": "property Width: Double read GetWidth write SetWidth stored False;",
+          "line": 182
+        },
+        {
+          "name": "BorderColor",
+          "visibility": "published",
+          "declaration": "property BorderColor: TDACChartFill read GetBorderColor write SetBorderColor stored False;",
+          "line": 183
+        },
+        {
+          "name": "BorderWidth",
+          "visibility": "published",
+          "declaration": "property BorderWidth: Double read GetBorderWidth write SetBorderWidth stored False;",
+          "line": 184
+        },
+        {
+          "name": "BorderRadius",
+          "visibility": "published",
+          "declaration": "property BorderRadius: Double read GetBorderRadius write SetBorderRadius stored False;",
+          "line": 185
+        },
+        {
+          "name": "ShadowBlur",
+          "visibility": "published",
+          "declaration": "property ShadowBlur: Double read GetShadowBlur write SetShadowBlur stored False;",
+          "line": 186
+        },
+        {
+          "name": "ShadowColor",
+          "visibility": "published",
+          "declaration": "property ShadowColor: TDACChartFill read GetShadowColor write SetShadowColor stored False;",
+          "line": 187
+        },
+        {
+          "name": "ShadowOffsetX",
+          "visibility": "published",
+          "declaration": "property ShadowOffsetX: Double read GetShadowOffsetX write SetShadowOffsetX stored False;",
+          "line": 188
+        },
+        {
+          "name": "ShadowOffsetY",
+          "visibility": "published",
+          "declaration": "property ShadowOffsetY: Double read GetShadowOffsetY write SetShadowOffsetY stored False;",
+          "line": 189
+        }
+      ]
+    },
+    {
+      "name": "TDACChartLegendOptions",
+      "ancestor": "TDACChartOptionNode",
+      "file": "Source/Controls/DAC.Components.Charts.Options.pas",
+      "line": 192,
+      "properties": [
+        {
+          "name": "SelectedMode",
+          "visibility": "published",
+          "declaration": "property SelectedMode: TDACChartSelection read GetSelectedMode write SetSelectedMode stored False;",
+          "line": 214
+        },
+        {
+          "name": "Show",
+          "visibility": "published",
+          "declaration": "property Show: Boolean read GetShow write SetShow stored False;",
+          "line": 215
+        },
+        {
+          "name": "LegendType",
+          "visibility": "published",
+          "declaration": "property LegendType: TDACChartLegendType read GetLegendType write SetLegendType stored False;",
+          "line": 216
+        },
+        {
+          "name": "Orient",
+          "visibility": "published",
+          "declaration": "property Orient: TDACChartOrientation read GetOrient write SetOrient stored False;",
+          "line": 217
+        },
+        {
+          "name": "Left",
+          "visibility": "published",
+          "declaration": "property Left: TDACChartMeasure read GetLeft write SetLeft stored False;",
+          "line": 218
+        },
+        {
+          "name": "Top",
+          "visibility": "published",
+          "declaration": "property Top: TDACChartMeasure read GetTop write SetTop stored False;",
+          "line": 219
+        },
+        {
+          "name": "ItemGap",
+          "visibility": "published",
+          "declaration": "property ItemGap: Double read GetItemGap write SetItemGap stored False;",
+          "line": 220
+        },
+        {
+          "name": "ItemWidth",
+          "visibility": "published",
+          "declaration": "property ItemWidth: Double read GetItemWidth write SetItemWidth stored False;",
+          "line": 221
+        },
+        {
+          "name": "ItemHeight",
+          "visibility": "published",
+          "declaration": "property ItemHeight: Double read GetItemHeight write SetItemHeight stored False;",
+          "line": 222
+        }
+      ]
+    },
+    {
+      "name": "TDACChartTooltipOptions",
+      "ancestor": "TDACChartOptionNode",
+      "file": "Source/Controls/DAC.Components.Charts.Options.pas",
+      "line": 225,
+      "properties": [
+        {
+          "name": "RenderMode",
+          "visibility": "published",
+          "declaration": "property RenderMode: TDACChartRenderMode read GetRenderMode write SetRenderMode stored False;",
+          "line": 253
+        },
+        {
+          "name": "PointerType",
+          "visibility": "published",
+          "declaration": "property PointerType: TDACChartPointerType read GetPointerType write SetPointerType stored False;",
+          "line": 254
+        },
+        {
+          "name": "Show",
+          "visibility": "published",
+          "declaration": "property Show: Boolean read GetShow write SetShow stored False;",
+          "line": 255
+        },
+        {
+          "name": "Trigger",
+          "visibility": "published",
+          "declaration": "property Trigger: TDACChartTooltipTrigger read GetTrigger write SetTrigger stored False;",
+          "line": 256
+        },
+        {
+          "name": "TriggerOn",
+          "visibility": "published",
+          "declaration": "property TriggerOn: TDACChartTooltipEvents read GetTriggerOn write SetTriggerOn stored False;",
+          "line": 257
+        },
+        {
+          "name": "Confine",
+          "visibility": "published",
+          "declaration": "property Confine: Boolean read GetConfine write SetConfine stored False;",
+          "line": 258
+        },
+        {
+          "name": "Formatter",
+          "visibility": "published",
+          "declaration": "property Formatter: string read GetFormatter write SetFormatter stored False;",
+          "line": 259
+        },
+        {
+          "name": "ShowDelay",
+          "visibility": "published",
+          "declaration": "property ShowDelay: Double read GetShowDelay write SetShowDelay stored False;",
+          "line": 260
+        },
+        {
+          "name": "HideDelay",
+          "visibility": "published",
+          "declaration": "property HideDelay: Double read GetHideDelay write SetHideDelay stored False;",
+          "line": 261
+        },
+        {
+          "name": "BackgroundColor",
+          "visibility": "published",
+          "declaration": "property BackgroundColor: TDACChartFill read GetBackgroundColor write SetBackgroundColor stored False;",
+          "line": 262
+        },
+        {
+          "name": "BorderColor",
+          "visibility": "published",
+          "declaration": "property BorderColor: TDACChartFill read GetBorderColor write SetBorderColor stored False;",
+          "line": 263
+        },
+        {
+          "name": "Padding",
+          "visibility": "published",
+          "declaration": "property Padding: Double read GetPadding write SetPadding stored False;",
+          "line": 264
+        }
+      ]
+    },
+    {
+      "name": "TDACChartGridOptions",
+      "ancestor": "TDACChartOptionNode",
+      "file": "Source/Controls/DAC.Components.Charts.Options.pas",
+      "line": 267,
+      "properties": [
+        {
+          "name": "Left",
+          "visibility": "published",
+          "declaration": "property Left: TDACChartMeasure read GetLeft write SetLeft stored False;",
+          "line": 280
+        },
+        {
+          "name": "Right",
+          "visibility": "published",
+          "declaration": "property Right: TDACChartMeasure read GetRight write SetRight stored False;",
+          "line": 281
+        },
+        {
+          "name": "Top",
+          "visibility": "published",
+          "declaration": "property Top: TDACChartMeasure read GetTop write SetTop stored False;",
+          "line": 282
+        },
+        {
+          "name": "Bottom",
+          "visibility": "published",
+          "declaration": "property Bottom: TDACChartMeasure read GetBottom write SetBottom stored False;",
+          "line": 283
+        },
+        {
+          "name": "OuterBoundsMode",
+          "visibility": "published",
+          "declaration": "property OuterBoundsMode: TDACChartOuterBoundsMode read GetOuterBoundsMode write SetOuterBoundsMode stored False;",
+          "line": 284
+        }
+      ]
+    },
+    {
+      "name": "TDACChartOptionSeries",
+      "ancestor": "TCollectionItem",
+      "file": "Source/Controls/DAC.Components.Charts.Options.pas",
+      "line": 287,
+      "properties": [
+        {
+          "name": "Store",
+          "visibility": "public",
+          "declaration": "property Store: TDACChartOptionStore read FStore;",
+          "line": 311
+        },
+        {
+          "name": "LayoutBy",
+          "visibility": "published",
+          "declaration": "property LayoutBy: TDACChartSeriesLayout read GetLayoutBy write SetLayoutBy stored False;",
+          "line": 328
+        },
+        {
+          "name": "Step",
+          "visibility": "published",
+          "declaration": "property Step: TDACChartStep read GetStep write SetStep stored False;",
+          "line": 329
+        },
+        {
+          "name": "SmoothMonotone",
+          "visibility": "published",
+          "declaration": "property SmoothMonotone: TDACChartMonotone read GetSmoothMonotone write SetSmoothMonotone stored False;",
+          "line": 330
+        },
+        {
+          "name": "Symbol",
+          "visibility": "published",
+          "declaration": "property Symbol: TDACChartSymbol read GetSymbol write SetSymbol stored False;",
+          "line": 331
+        },
+        {
+          "name": "SelectedMode",
+          "visibility": "published",
+          "declaration": "property SelectedMode: TDACChartSelection read GetSelectedMode write SetSelectedMode stored False;",
+          "line": 332
+        },
+        {
+          "name": "StackStrategy",
+          "visibility": "published",
+          "declaration": "property StackStrategy: TDACChartStackStrategy read GetStackStrategy write SetStackStrategy stored False;",
+          "line": 333
+        },
+        {
+          "name": "Focus",
+          "visibility": "published",
+          "declaration": "property Focus: TDACChartFocus read GetFocus write SetFocus stored False;",
+          "line": 334
+        },
+        {
+          "name": "JSON",
+          "visibility": "published",
+          "declaration": "property JSON: string read GetJSON write SetJSON;",
+          "line": 335
+        },
+        {
+          "name": "Name",
+          "visibility": "published",
+          "declaration": "property Name: string read GetName write SetName stored False;",
+          "line": 336
+        },
+        {
+          "name": "Kind",
+          "visibility": "published",
+          "declaration": "property Kind: TDACChartSeriesType read GetKind write SetKind stored False;",
+          "line": 337
+        },
+        {
+          "name": "Stack",
+          "visibility": "published",
+          "declaration": "property Stack: string read GetStack write SetStack stored False;",
+          "line": 338
+        },
+        {
+          "name": "ItemStyle",
+          "visibility": "published",
+          "declaration": "property ItemStyle: TDACChartStyleOptions read FItemStyle write SetItemStyle stored False;",
+          "line": 339
+        },
+        {
+          "name": "LineStyle",
+          "visibility": "published",
+          "declaration": "property LineStyle: TDACChartStyleOptions read FLineStyle write SetLineStyle stored False;",
+          "line": 340
+        },
+        {
+          "name": "AreaStyle",
+          "visibility": "published",
+          "declaration": "property AreaStyle: TDACChartStyleOptions read FAreaStyle write SetAreaStyle stored False;",
+          "line": 341
+        },
+        {
+          "name": "LabelStyle",
+          "visibility": "published",
+          "declaration": "property LabelStyle: TDACChartLabelOptions read FLabel write SetLabel stored False;",
+          "line": 342
+        }
+      ]
+    },
+    {
+      "name": "TDACChartOptionSeriesCollection",
+      "ancestor": "TOwnedCollection",
+      "file": "Source/Controls/DAC.Components.Charts.Options.pas",
+      "line": 344,
+      "properties": [
+        {
+          "name": "Items",
+          "visibility": "public",
+          "declaration": "property Items[I: Integer]: TDACChartOptionSeries read GetItem; default;",
+          "line": 353
+        },
+        {
+          "name": "OnChange",
+          "visibility": "public",
+          "declaration": "property OnChange: TNotifyEvent read FOnChange write FOnChange;",
+          "line": 354
+        }
+      ]
+    },
+    {
+      "name": "TDACChartDatasetOptions",
+      "ancestor": "TDACChartOptionNode",
+      "file": "Source/Controls/DAC.Components.Charts.Options.pas",
+      "line": 356,
+      "properties": [
+        {
+          "name": "SourceHeader",
+          "visibility": "published",
+          "declaration": "property SourceHeader: TDACChartSwitch read GetSourceHeader write SetSourceHeader stored False;",
+          "line": 361
+        }
+      ]
+    },
+    {
+      "name": "TDACChartOptions",
+      "ancestor": "TPersistent",
+      "file": "Source/Controls/DAC.Components.Charts.Options.pas",
+      "line": 363,
+      "properties": [
+        {
+          "name": "OnChange",
+          "visibility": "public",
+          "declaration": "property OnChange: TNotifyEvent read FOnChange write FOnChange;",
+          "line": 394
+        },
+        {
+          "name": "AnimationMode",
+          "visibility": "published",
+          "declaration": "property AnimationMode: TDACChartSwitch read GetAnimationMode write SetAnimationMode stored False;",
+          "line": 403
+        },
+        {
+          "name": "AnimationEasing",
+          "visibility": "published",
+          "declaration": "property AnimationEasing: TDACChartEasing read GetAnimationEasing write SetAnimationEasing stored False;",
+          "line": 404
+        },
+        {
+          "name": "AnimationEasingUpdate",
+          "visibility": "published",
+          "declaration": "property AnimationEasingUpdate: TDACChartEasing read GetAnimationEasingUpdate write SetAnimationEasingUpdate stored False;",
+          "line": 405
+        },
+        {
+          "name": "JSON",
+          "visibility": "published",
+          "declaration": "property JSON: string read GetJSON write SetJSON;",
+          "line": 406
+        },
+        {
+          "name": "Series",
+          "visibility": "published",
+          "declaration": "property Series: TDACChartOptionSeriesCollection read FSeries write SetSeries stored False;",
+          "line": 407
+        },
+        {
+          "name": "Dataset",
+          "visibility": "published",
+          "declaration": "property Dataset: TDACChartDatasetOptions read FDataset write SetDataset stored False;",
+          "line": 408
+        },
+        {
+          "name": "Title",
+          "visibility": "published",
+          "declaration": "property Title: TDACChartTitleOptions read FTitle write SetTitle stored False;",
+          "line": 409
+        },
+        {
+          "name": "XAxis",
+          "visibility": "published",
+          "declaration": "property XAxis: TDACChartAxisOptions read FXAxis write SetXAxis stored False;",
+          "line": 410
+        },
+        {
+          "name": "YAxis",
+          "visibility": "published",
+          "declaration": "property YAxis: TDACChartAxisOptions read FYAxis write SetYAxis stored False;",
+          "line": 411
+        },
+        {
+          "name": "Grid",
+          "visibility": "published",
+          "declaration": "property Grid: TDACChartGridOptions read FGrid write SetGrid stored False;",
+          "line": 412
+        },
+        {
+          "name": "Legend",
+          "visibility": "published",
+          "declaration": "property Legend: TDACChartLegendOptions read FLegend write SetLegend stored False;",
+          "line": 413
+        },
+        {
+          "name": "Tooltip",
+          "visibility": "published",
+          "declaration": "property Tooltip: TDACChartTooltipOptions read FTooltip write SetTooltip stored False;",
+          "line": 414
+        }
+      ]
+    },
+    {
+      "name": "TDACChartDataSetAdapter",
+      "ancestor": null,
+      "file": "Source/Controls/DAC.Components.Controls.Charts.pas",
+      "line": 13,
+      "properties": []
+    },
+    {
+      "name": "TDACChartDataLink",
+      "ancestor": "TDataLink",
+      "file": "Source/Controls/DAC.Components.Controls.Charts.pas",
+      "line": 19,
+      "properties": []
+    },
+    {
+      "name": "TDACChart",
+      "ancestor": "TCustomControl",
+      "file": "Source/Controls/DAC.Components.Controls.Charts.pas",
+      "line": 32,
+      "properties": [
+        {
+          "name": "EffectiveDpi",
+          "visibility": "public",
+          "declaration": "property EffectiveDpi: Integer read FEffectiveDpi;",
+          "line": 93
+        },
+        {
+          "name": "Engine",
+          "visibility": "public",
+          "declaration": "property Engine: TDACChartEngine read FEngine;",
+          "line": 94
+        },
+        {
+          "name": "CaptureDirectory",
+          "visibility": "public",
+          "declaration": "property CaptureDirectory: string read FCaptureDirectory write FCaptureDirectory;",
+          "line": 95
+        },
+        {
+          "name": "CaptureScreenFrames",
+          "visibility": "public",
+          "declaration": "property CaptureScreenFrames: Boolean read FCaptureScreenFrames write FCaptureScreenFrames;",
+          "line": 96
+        },
+        {
+          "name": "AnimationRunning",
+          "visibility": "public",
+          "declaration": "property AnimationRunning: Boolean read FRunning;",
+          "line": 97
+        },
+        {
+          "name": "Align",
+          "visibility": "published",
+          "declaration": "property Align;",
+          "line": 99
+        },
+        {
+          "name": "Anchors",
+          "visibility": "published",
+          "declaration": "property Anchors;",
+          "line": 100
+        },
+        {
+          "name": "Constraints",
+          "visibility": "published",
+          "declaration": "property Constraints;",
+          "line": 101
+        },
+        {
+          "name": "Enabled",
+          "visibility": "published",
+          "declaration": "property Enabled;",
+          "line": 102
+        },
+        {
+          "name": "Visible",
+          "visibility": "published",
+          "declaration": "property Visible;",
+          "line": 103
+        },
+        {
+          "name": "TabOrder",
+          "visibility": "published",
+          "declaration": "property TabOrder;",
+          "line": 104
+        },
+        {
+          "name": "TabStop",
+          "visibility": "published",
+          "declaration": "property TabStop default True;",
+          "line": 105
+        },
+        {
+          "name": "Options",
+          "visibility": "published",
+          "declaration": "property Options: TDACChartOptions read FOptions write SetOptions;",
+          "line": 106
+        },
+        {
+          "name": "DataSource",
+          "visibility": "published",
+          "declaration": "property DataSource: TDataSource read FDataSource write SetDataSource;",
+          "line": 107
+        },
+        {
+          "name": "OnClick",
+          "visibility": "published",
+          "declaration": "property OnClick;",
+          "line": 108
+        },
+        {
+          "name": "OnPointHover",
+          "visibility": "published",
+          "declaration": "property OnPointHover: TDACChartPointEvent read FOnPointHover write FOnPointHover;",
+          "line": 109
+        },
+        {
+          "name": "OnPointClick",
+          "visibility": "published",
+          "declaration": "property OnPointClick: TDACChartPointEvent read FOnPointClick write FOnPointClick;",
+          "line": 110
+        },
+        {
+          "name": "OnFormat",
+          "visibility": "published",
+          "declaration": "property OnFormat: TDACChartFormatEvent read FOnFormat write FOnFormat;",
+          "line": 111
+        },
+        {
+          "name": "OnDataError",
+          "visibility": "published",
+          "declaration": "property OnDataError: TDACChartDataErrorEvent read FOnDataError write FOnDataError;",
+          "line": 112
+        }
+      ]
+    }
+  ],
+  "getters": {
+    "TDACChartOptionNode.GetJSON": {
+      "line": 515,
+      "source": "function TDACChartOptionNode.GetJSON: string;\nvar V: TJSONValue;\nbegin V := FStore.Read(FPath); if V = nil then Result := '{}' else Result := V.ToJSON; end;"
+    },
+    "TDACChartTextOptions.GetShow": {
+      "line": 527,
+      "source": "function TDACChartTextOptions.GetShow: Boolean;\nbegin Result := CB(FStore.Read(Path('show')), True); end;"
+    },
+    "TDACChartTextOptions.GetText": {
+      "line": 531,
+      "source": "function TDACChartTextOptions.GetText: string;\nbegin Result := CS(FStore.Read(Path('text')), ''); end;"
+    },
+    "TDACChartTextOptions.GetSubtext": {
+      "line": 535,
+      "source": "function TDACChartTextOptions.GetSubtext: string;\nbegin Result := CS(FStore.Read(Path('subtext')), ''); end;"
+    },
+    "TDACChartTextOptions.GetFontFamily": {
+      "line": 539,
+      "source": "function TDACChartTextOptions.GetFontFamily: string;\nbegin Result := CS(FStore.Read(Path('fontFamily')), 'Arial'); end;"
+    },
+    "TDACChartTextOptions.GetFontSize": {
+      "line": 543,
+      "source": "function TDACChartTextOptions.GetFontSize: Double;\nbegin if FPath='title' then Result := CN(FStore.Read(Path('fontSize')), 18)\n  else Result := CN(FStore.Read(Path('fontSize')), 12); end;"
+    },
+    "TDACChartTextOptions.GetColor": {
+      "line": 548,
+      "source": "function TDACChartTextOptions.GetColor: TDACChartFill;\nbegin Result := TDACChartFill(Bound('color',TDACChartFill)); end;"
+    },
+    "TDACChartTextOptions.GetLeft": {
+      "line": 552,
+      "source": "function TDACChartTextOptions.GetLeft: TDACChartMeasure;\nbegin Result := TDACChartMeasure(Bound('left',TDACChartMeasure)); end;"
+    },
+    "TDACChartTextOptions.GetTop": {
+      "line": 556,
+      "source": "function TDACChartTextOptions.GetTop: TDACChartMeasure;\nbegin Result := TDACChartMeasure(Bound('top',TDACChartMeasure)); end;"
+    },
+    "TDACChartTextOptions.GetPosition": {
+      "line": 560,
+      "source": "function TDACChartTextOptions.GetPosition: TDACChartLabelPosition;\nbegin Result := TDACChartTypes.LabelPosition(FStore.Read(Path('position')),Path('position')); end;"
+    },
+    "TDACChartTextOptions.GetFormatter": {
+      "line": 564,
+      "source": "function TDACChartTextOptions.GetFormatter: string;\nbegin Result := CS(FStore.Read(Path('formatter')), ''); end;"
+    },
+    "TDACChartTextOptions.GetRotate": {
+      "line": 568,
+      "source": "function TDACChartTextOptions.GetRotate: Double;\nbegin Result := CN(FStore.Read(Path('rotate')), 0); end;"
+    },
+    "TDACChartTextOptions.GetDistance": {
+      "line": 572,
+      "source": "function TDACChartTextOptions.GetDistance: Double;\nbegin Result := CN(FStore.Read(Path('distance')), 5); end;"
+    },
+    "TDACChartAxisOptions.GetShow": {
+      "line": 576,
+      "source": "function TDACChartAxisOptions.GetShow: Boolean;\nbegin Result := CB(FStore.Read(Path('show')), True); end;"
+    },
+    "TDACChartAxisOptions.GetAxisType": {
+      "line": 580,
+      "source": "function TDACChartAxisOptions.GetAxisType: TDACChartAxisType;\nbegin Result := TDACChartTypes.AxisType(FStore.Read(Path('type')),Path('type')); end;"
+    },
+    "TDACChartAxisOptions.GetMin": {
+      "line": 584,
+      "source": "function TDACChartAxisOptions.GetMin: TDACChartAxisLimit;\nbegin Result := TDACChartAxisLimit(Bound('min',TDACChartAxisLimit)); end;"
+    },
+    "TDACChartAxisOptions.GetMax": {
+      "line": 588,
+      "source": "function TDACChartAxisOptions.GetMax: TDACChartAxisLimit;\nbegin Result := TDACChartAxisLimit(Bound('max',TDACChartAxisLimit)); end;"
+    },
+    "TDACChartAxisOptions.GetInverse": {
+      "line": 592,
+      "source": "function TDACChartAxisOptions.GetInverse: Boolean;\nbegin Result := CB(FStore.Read(Path('inverse')), False); end;"
+    },
+    "TDACChartAxisOptions.GetBoundaryGap": {
+      "line": 596,
+      "source": "function TDACChartAxisOptions.GetBoundaryGap: Boolean;\nbegin Result := CB(FStore.Read(Path('boundaryGap')), True); end;"
+    },
+    "TDACChartAxisOptions.GetSplitNumber": {
+      "line": 600,
+      "source": "function TDACChartAxisOptions.GetSplitNumber: Double;\nbegin Result := CN(FStore.Read(Path('splitNumber')), 5); end;"
+    },
+    "TDACChartAxisOptions.GetName": {
+      "line": 604,
+      "source": "function TDACChartAxisOptions.GetName: string;\nbegin Result := CS(FStore.Read(Path('name')), ''); end;"
+    },
+    "TDACChartStyleOptions.GetColor": {
+      "line": 608,
+      "source": "function TDACChartStyleOptions.GetColor: TDACChartFill;\nbegin Result := TDACChartFill(Bound('color',TDACChartFill)); end;"
+    },
+    "TDACChartStyleOptions.GetOpacity": {
+      "line": 612,
+      "source": "function TDACChartStyleOptions.GetOpacity: Double;\nbegin Result := CN(FStore.Read(Path('opacity')), 1); end;"
+    },
+    "TDACChartStyleOptions.GetWidth": {
+      "line": 616,
+      "source": "function TDACChartStyleOptions.GetWidth: Double;\nbegin Result := CN(FStore.Read(Path('width')), 2); end;"
+    },
+    "TDACChartStyleOptions.GetBorderColor": {
+      "line": 620,
+      "source": "function TDACChartStyleOptions.GetBorderColor: TDACChartFill;\nbegin Result := TDACChartFill(Bound('borderColor',TDACChartFill)); end;"
+    },
+    "TDACChartStyleOptions.GetBorderWidth": {
+      "line": 624,
+      "source": "function TDACChartStyleOptions.GetBorderWidth: Double;\nbegin Result := CN(FStore.Read(Path('borderWidth')), 0); end;"
+    },
+    "TDACChartStyleOptions.GetBorderRadius": {
+      "line": 628,
+      "source": "function TDACChartStyleOptions.GetBorderRadius: Double;\nbegin Result := CN(FStore.Read(Path('borderRadius')), 0); end;"
+    },
+    "TDACChartStyleOptions.GetShadowBlur": {
+      "line": 632,
+      "source": "function TDACChartStyleOptions.GetShadowBlur: Double;\nbegin Result := CN(FStore.Read(Path('shadowBlur')), 0); end;"
+    },
+    "TDACChartStyleOptions.GetShadowColor": {
+      "line": 636,
+      "source": "function TDACChartStyleOptions.GetShadowColor: TDACChartFill;\nbegin Result := TDACChartFill(Bound('shadowColor',TDACChartFill)); end;"
+    },
+    "TDACChartStyleOptions.GetShadowOffsetX": {
+      "line": 640,
+      "source": "function TDACChartStyleOptions.GetShadowOffsetX: Double;\nbegin Result := CN(FStore.Read(Path('shadowOffsetX')), 0); end;"
+    },
+    "TDACChartStyleOptions.GetShadowOffsetY": {
+      "line": 644,
+      "source": "function TDACChartStyleOptions.GetShadowOffsetY: Double;\nbegin Result := CN(FStore.Read(Path('shadowOffsetY')), 0); end;"
+    },
+    "TDACChartLegendOptions.GetShow": {
+      "line": 648,
+      "source": "function TDACChartLegendOptions.GetShow: Boolean;\nbegin Result := CB(FStore.Read(Path('show')), True); end;"
+    },
+    "TDACChartLegendOptions.GetLegendType": {
+      "line": 652,
+      "source": "function TDACChartLegendOptions.GetLegendType: TDACChartLegendType;\nbegin Result := TDACChartTypes.LegendType(FStore.Read(Path('type')),Path('type')); end;"
+    },
+    "TDACChartLegendOptions.GetOrient": {
+      "line": 656,
+      "source": "function TDACChartLegendOptions.GetOrient: TDACChartOrientation;\nbegin Result := TDACChartTypes.Orientation(FStore.Read(Path('orient')),Path('orient')); end;"
+    },
+    "TDACChartLegendOptions.GetLeft": {
+      "line": 660,
+      "source": "function TDACChartLegendOptions.GetLeft: TDACChartMeasure;\nbegin Result := TDACChartMeasure(Bound('left',TDACChartMeasure)); end;"
+    },
+    "TDACChartLegendOptions.GetTop": {
+      "line": 664,
+      "source": "function TDACChartLegendOptions.GetTop: TDACChartMeasure;\nbegin Result := TDACChartMeasure(Bound('top',TDACChartMeasure)); end;"
+    },
+    "TDACChartLegendOptions.GetItemGap": {
+      "line": 668,
+      "source": "function TDACChartLegendOptions.GetItemGap: Double;\nbegin Result := CN(FStore.Read(Path('itemGap')), 10); end;"
+    },
+    "TDACChartLegendOptions.GetItemWidth": {
+      "line": 672,
+      "source": "function TDACChartLegendOptions.GetItemWidth: Double;\nbegin Result := CN(FStore.Read(Path('itemWidth')), 25); end;"
+    },
+    "TDACChartLegendOptions.GetItemHeight": {
+      "line": 676,
+      "source": "function TDACChartLegendOptions.GetItemHeight: Double;\nbegin Result := CN(FStore.Read(Path('itemHeight')), 14); end;"
+    },
+    "TDACChartTooltipOptions.GetShow": {
+      "line": 680,
+      "source": "function TDACChartTooltipOptions.GetShow: Boolean;\nbegin Result := CB(FStore.Read(Path('show')), True); end;"
+    },
+    "TDACChartTooltipOptions.GetTrigger": {
+      "line": 684,
+      "source": "function TDACChartTooltipOptions.GetTrigger: TDACChartTooltipTrigger;\nbegin Result := TDACChartTypes.TooltipTrigger(FStore.Read(Path('trigger')),Path('trigger')); end;"
+    },
+    "TDACChartTooltipOptions.GetTriggerOn": {
+      "line": 688,
+      "source": "function TDACChartTooltipOptions.GetTriggerOn: TDACChartTooltipEvents;\nbegin Result := TDACChartTypes.TooltipEvents(FStore.Read(Path('triggerOn')),Path('triggerOn')); end;"
+    },
+    "TDACChartTooltipOptions.GetConfine": {
+      "line": 692,
+      "source": "function TDACChartTooltipOptions.GetConfine: Boolean;\nbegin Result := CB(FStore.Read(Path('confine')), True); end;"
+    },
+    "TDACChartTooltipOptions.GetFormatter": {
+      "line": 696,
+      "source": "function TDACChartTooltipOptions.GetFormatter: string;\nbegin Result := CS(FStore.Read(Path('formatter')), ''); end;"
+    },
+    "TDACChartTooltipOptions.GetShowDelay": {
+      "line": 700,
+      "source": "function TDACChartTooltipOptions.GetShowDelay: Double;\nbegin Result := CN(FStore.Read(Path('showDelay')), 0); end;"
+    },
+    "TDACChartTooltipOptions.GetHideDelay": {
+      "line": 704,
+      "source": "function TDACChartTooltipOptions.GetHideDelay: Double;\nbegin Result := CN(FStore.Read(Path('hideDelay')), 100); end;"
+    },
+    "TDACChartTooltipOptions.GetBackgroundColor": {
+      "line": 708,
+      "source": "function TDACChartTooltipOptions.GetBackgroundColor: TDACChartFill;\nbegin Result := TDACChartFill(Bound('backgroundColor',TDACChartFill)); end;"
+    },
+    "TDACChartTooltipOptions.GetBorderColor": {
+      "line": 712,
+      "source": "function TDACChartTooltipOptions.GetBorderColor: TDACChartFill;\nbegin Result := TDACChartFill(Bound('borderColor',TDACChartFill)); end;"
+    },
+    "TDACChartTooltipOptions.GetPadding": {
+      "line": 716,
+      "source": "function TDACChartTooltipOptions.GetPadding: Double;\nbegin Result := CN(FStore.Read(Path('padding')), 10); end;"
+    },
+    "TDACChartGridOptions.GetLeft": {
+      "line": 720,
+      "source": "function TDACChartGridOptions.GetLeft: TDACChartMeasure;\nbegin Result := TDACChartMeasure(Bound('left',TDACChartMeasure)); end;"
+    },
+    "TDACChartGridOptions.GetRight": {
+      "line": 724,
+      "source": "function TDACChartGridOptions.GetRight: TDACChartMeasure;\nbegin Result := TDACChartMeasure(Bound('right',TDACChartMeasure)); end;"
+    },
+    "TDACChartGridOptions.GetTop": {
+      "line": 728,
+      "source": "function TDACChartGridOptions.GetTop: TDACChartMeasure;\nbegin Result := TDACChartMeasure(Bound('top',TDACChartMeasure)); end;"
+    },
+    "TDACChartGridOptions.GetBottom": {
+      "line": 732,
+      "source": "function TDACChartGridOptions.GetBottom: TDACChartMeasure;\nbegin Result := TDACChartMeasure(Bound('bottom',TDACChartMeasure)); end;"
+    },
+    "TDACChartGridOptions.GetOuterBoundsMode": {
+      "line": 736,
+      "source": "function TDACChartGridOptions.GetOuterBoundsMode: TDACChartOuterBoundsMode;\nbegin Result := TDACChartTypes.OuterBoundsMode(FStore.Read(Path('outerBoundsMode')),Path('outerBoundsMode')); end;"
+    },
+    "TDACChartOptionSeries.GetJSON": {
+      "line": 753,
+      "source": "function TDACChartOptionSeries.GetJSON: string;\nbegin Result := FStore.Root.ToJSON; end;"
+    },
+    "TDACChartOptionSeries.GetDisplayName": {
+      "line": 757,
+      "source": "function TDACChartOptionSeries.GetDisplayName: string;\nvar V: TJSONValue;\nbegin\n  Result:=GetName;\n  if Result='' then begin\n    V:=TDACChartTypes.SeriesTypeJSON(GetKind);\n    try if V=nil then Result:='Series' else Result:=V.Value; finally V.Free; end;\n  end;\nend;"
+    },
+    "TDACChartOptionSeries.GetName": {
+      "line": 768,
+      "source": "function TDACChartOptionSeries.GetName: string;\nbegin Result := CS(FStore.Read('name')); end;"
+    },
+    "TDACChartOptionSeries.GetKind": {
+      "line": 772,
+      "source": "function TDACChartOptionSeries.GetKind: TDACChartSeriesType;\nbegin Result := TDACChartTypes.SeriesType(FStore.Read('type'),'type'); end;"
+    },
+    "TDACChartOptionSeries.GetStack": {
+      "line": 776,
+      "source": "function TDACChartOptionSeries.GetStack: string;\nbegin Result := CS(FStore.Read('stack')); end;"
+    },
+    "TDACChartOptionSeriesCollection.GetItem": {
+      "line": 792,
+      "source": "function TDACChartOptionSeriesCollection.GetItem(I: Integer): TDACChartOptionSeries;\nbegin Result := TDACChartOptionSeries(inherited Items[I]); end;"
+    },
+    "TDACChartOptions.GetJSON": {
+      "line": 834,
+      "source": "function TDACChartOptions.GetJSON: string;\nvar O: TJSONObject;\nbegin O := Clone; try Result := O.ToJSON; finally O.Free; end; end;"
+    },
+    "TDACChartStyleOptions.GetLineType": {
+      "line": 870,
+      "source": "function TDACChartStyleOptions.GetLineType: TDACChartLineType;\nbegin Result:=TDACChartTypes.LineType(FStore.Read(Path('type')),Path('type')); end;"
+    },
+    "TDACChartLegendOptions.GetSelectedMode": {
+      "line": 874,
+      "source": "function TDACChartLegendOptions.GetSelectedMode: TDACChartSelection;\nbegin Result:=TDACChartTypes.Selection(FStore.Read(Path('selectedMode')),Path('selectedMode')); end;"
+    },
+    "TDACChartTooltipOptions.GetRenderMode": {
+      "line": 878,
+      "source": "function TDACChartTooltipOptions.GetRenderMode: TDACChartRenderMode;\nbegin Result:=TDACChartTypes.RenderMode(FStore.Read(Path('renderMode')),Path('renderMode')); end;"
+    },
+    "TDACChartTooltipOptions.GetPointerType": {
+      "line": 882,
+      "source": "function TDACChartTooltipOptions.GetPointerType: TDACChartPointerType;\nbegin Result:=TDACChartTypes.PointerType(FStore.Read(Path('axisPointer.type')),Path('axisPointer.type')); end;"
+    },
+    "TDACChartLabelOptions.GetFontStyle": {
+      "line": 886,
+      "source": "function TDACChartLabelOptions.GetFontStyle: TDACChartFontStyle;\nbegin Result:=TDACChartTypes.FontStyle(FStore.Read(Path('fontStyle')),Path('fontStyle')); end;"
+    },
+    "TDACChartLabelOptions.GetTextAlign": {
+      "line": 890,
+      "source": "function TDACChartLabelOptions.GetTextAlign: TDACChartTextAlign;\nbegin Result:=TDACChartTypes.TextAlign(FStore.Read(Path('align')),Path('align')); end;"
+    },
+    "TDACChartLabelOptions.GetVerticalAlign": {
+      "line": 894,
+      "source": "function TDACChartLabelOptions.GetVerticalAlign: TDACChartVerticalAlign;\nbegin Result:=TDACChartTypes.VerticalAlign(FStore.Read(Path('verticalAlign')),Path('verticalAlign')); end;"
+    },
+    "TDACChartLabelOptions.GetOverflow": {
+      "line": 898,
+      "source": "function TDACChartLabelOptions.GetOverflow: TDACChartOverflow;\nbegin Result:=TDACChartTypes.Overflow(FStore.Read(Path('overflow')),Path('overflow')); end;"
+    },
+    "TDACChartOptionSeries.GetLayoutBy": {
+      "line": 902,
+      "source": "function TDACChartOptionSeries.GetLayoutBy: TDACChartSeriesLayout;\nbegin Result:=TDACChartTypes.SeriesLayout(FStore.Read('seriesLayoutBy'),'seriesLayoutBy'); end;"
+    },
+    "TDACChartOptionSeries.GetStep": {
+      "line": 906,
+      "source": "function TDACChartOptionSeries.GetStep: TDACChartStep;\nbegin Result:=TDACChartTypes.Step(FStore.Read('step'),'step'); end;"
+    },
+    "TDACChartOptionSeries.GetSmoothMonotone": {
+      "line": 910,
+      "source": "function TDACChartOptionSeries.GetSmoothMonotone: TDACChartMonotone;\nbegin Result:=TDACChartTypes.Monotone(FStore.Read('smoothMonotone'),'smoothMonotone'); end;"
+    },
+    "TDACChartOptionSeries.GetSymbol": {
+      "line": 914,
+      "source": "function TDACChartOptionSeries.GetSymbol: TDACChartSymbol;\nbegin Result:=TDACChartTypes.Symbol(FStore.Read('symbol'),'symbol'); end;"
+    },
+    "TDACChartOptionSeries.GetSelectedMode": {
+      "line": 918,
+      "source": "function TDACChartOptionSeries.GetSelectedMode: TDACChartSelection;\nbegin Result:=TDACChartTypes.Selection(FStore.Read('selectedMode'),'selectedMode'); end;"
+    },
+    "TDACChartOptionSeries.GetStackStrategy": {
+      "line": 922,
+      "source": "function TDACChartOptionSeries.GetStackStrategy: TDACChartStackStrategy;\nbegin Result:=TDACChartTypes.StackStrategy(FStore.Read('stackStrategy'),'stackStrategy'); end;"
+    },
+    "TDACChartOptionSeries.GetFocus": {
+      "line": 926,
+      "source": "function TDACChartOptionSeries.GetFocus: TDACChartFocus;\nbegin Result:=TDACChartTypes.Focus(FStore.Read('emphasis.focus'),'emphasis.focus'); end;"
+    },
+    "TDACChartOptions.GetAnimationMode": {
+      "line": 930,
+      "source": "function TDACChartOptions.GetAnimationMode: TDACChartSwitch;\nbegin Result:=TDACChartTypes.Switch(FStore.Read('animation'),'animation'); end;"
+    },
+    "TDACChartOptions.GetAnimationEasing": {
+      "line": 934,
+      "source": "function TDACChartOptions.GetAnimationEasing: TDACChartEasing;\nbegin Result:=TDACChartTypes.Easing(FStore.Read('animationEasing'),'animationEasing'); end;"
+    },
+    "TDACChartOptions.GetAnimationEasingUpdate": {
+      "line": 938,
+      "source": "function TDACChartOptions.GetAnimationEasingUpdate: TDACChartEasing;\nbegin Result:=TDACChartTypes.Easing(FStore.Read('animationEasingUpdate'),'animationEasingUpdate'); end;"
+    },
+    "TDACChartDatasetOptions.GetSourceHeader": {
+      "line": 942,
+      "source": "function TDACChartDatasetOptions.GetSourceHeader: TDACChartSwitch;\nbegin Result:=TDACChartTypes.Switch(FStore.Read(Path('sourceHeader')),Path('sourceHeader')); end;"
+    },
+    "TDACChartTextOptions.GetFontWeight": {
+      "line": 946,
+      "source": "function TDACChartTextOptions.GetFontWeight: Integer;\nvar V: TJSONValue;\nbegin\n  V:=FStore.Read(Path('fontWeight')); if V=nil then Exit(0);\n  if V is TJSONNumber then Exit(Round(TDACChartTypes.Number(V,Path('fontWeight'))));\n  if V.Value='bold' then Result:=700 else Result:=400;\nend;"
+    }
+  },
+  "whitelists": [
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 569,
+      "contextExpression": "V,P",
+      "keys": [
+        "type",
+        "x",
+        "y",
+        "x2",
+        "y2",
+        "r",
+        "colorStops"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 587,
+      "contextExpression": "A.Items[I],Format('%s.colorStops[%d]',[P,I])",
+      "keys": [
+        "offset",
+        "color"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 597,
+      "contextExpression": "V,P",
+      "keys": [
+        "animation",
+        "animationDuration",
+        "animationDurationUpdate",
+        "animationEasing",
+        "animationEasingUpdate",
+        "animationThreshold",
+        "backgroundColor",
+        "color",
+        "useUTC",
+        "dataset",
+        "series",
+        "xAxis",
+        "yAxis",
+        "grid",
+        "title",
+        "legend",
+        "tooltip"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 598,
+      "contextExpression": "V,P",
+      "keys": [
+        "id",
+        "name",
+        "type",
+        "data",
+        "datasetIndex",
+        "seriesLayoutBy",
+        "encode",
+        "itemStyle",
+        "lineStyle",
+        "areaStyle",
+        "label",
+        "labelLine",
+        "labelLayout",
+        "emphasis",
+        "blur",
+        "select",
+        "selectedMode",
+        "selectedOffset",
+        "smooth",
+        "smoothMonotone",
+        "step",
+        "connectNulls",
+        "symbol",
+        "symbolSize",
+        "showSymbol",
+        "barWidth",
+        "barMinWidth",
+        "barMaxWidth",
+        "barMinHeight",
+        "barGap",
+        "barCategoryGap",
+        "stack",
+        "stackStrategy",
+        "center",
+        "radius",
+        "startAngle",
+        "clockwise",
+        "stillShowZeroSum",
+        "showEmptyCircle",
+        "emptyCircleStyle",
+        "percentPrecision",
+        "avoidLabelOverlap"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 600,
+      "contextExpression": "V,P",
+      "keys": [
+        "type",
+        "data",
+        "min",
+        "max",
+        "inverse",
+        "boundaryGap",
+        "splitNumber",
+        "interval",
+        "scale",
+        "show",
+        "name",
+        "nameTextStyle",
+        "axisLine",
+        "axisLabel",
+        "axisTick",
+        "splitLine"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 601,
+      "contextExpression": "V,P",
+      "keys": [
+        "show",
+        "text",
+        "subtext",
+        "left",
+        "top",
+        "itemGap",
+        "textStyle",
+        "subtextStyle"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 602,
+      "contextExpression": "V,P",
+      "keys": [
+        "show",
+        "type",
+        "orient",
+        "left",
+        "top",
+        "itemGap",
+        "itemWidth",
+        "itemHeight",
+        "textStyle",
+        "selected",
+        "selectedMode"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 603,
+      "contextExpression": "V,P",
+      "keys": [
+        "show",
+        "trigger",
+        "triggerOn",
+        "confine",
+        "renderMode",
+        "formatter",
+        "showDelay",
+        "hideDelay",
+        "backgroundColor",
+        "borderColor",
+        "padding",
+        "textStyle",
+        "axisPointer"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 604,
+      "contextExpression": "V,P",
+      "keys": [
+        "left",
+        "right",
+        "top",
+        "bottom",
+        "outerBoundsMode"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 605,
+      "contextExpression": "V,P",
+      "keys": [
+        "source",
+        "dimensions",
+        "sourceHeader"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 606,
+      "contextExpression": "V,P",
+      "keys": [
+        "color",
+        "opacity",
+        "width",
+        "type",
+        "borderColor",
+        "borderWidth",
+        "borderRadius",
+        "shadowBlur",
+        "shadowColor",
+        "shadowOffsetX",
+        "shadowOffsetY"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 607,
+      "contextExpression": "V,P",
+      "keys": [
+        "show",
+        "position",
+        "distance",
+        "formatter",
+        "rotate",
+        "color",
+        "fontFamily",
+        "fontSize",
+        "fontWeight",
+        "fontStyle",
+        "lineHeight",
+        "width",
+        "height",
+        "padding",
+        "align",
+        "verticalAlign",
+        "overflow",
+        "backgroundColor",
+        "borderColor",
+        "borderWidth",
+        "borderRadius",
+        "shadowBlur",
+        "shadowColor",
+        "shadowOffsetX",
+        "shadowOffsetY",
+        "rich",
+        "interval",
+        "margin"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 609,
+      "contextExpression": "V,P",
+      "keys": [
+        "itemStyle",
+        "focus"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 610,
+      "contextExpression": "V,P",
+      "keys": [
+        "show",
+        "onZero",
+        "lineStyle"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 611,
+      "contextExpression": "V,P",
+      "keys": [
+        "show",
+        "length",
+        "lineStyle"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 612,
+      "contextExpression": "V,P",
+      "keys": [
+        "show",
+        "lineStyle"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 613,
+      "contextExpression": "V,P",
+      "keys": [
+        "show",
+        "lineStyle"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 614,
+      "contextExpression": "V,P",
+      "keys": [
+        "hideOverlap"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 615,
+      "contextExpression": "V,P",
+      "keys": [
+        "type",
+        "lineStyle",
+        "shadowStyle"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 616,
+      "contextExpression": "V,P",
+      "keys": [
+        "x",
+        "y",
+        "value"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 617,
+      "contextExpression": "V,P",
+      "keys": [
+        "id",
+        "name",
+        "value",
+        "itemStyle",
+        "label",
+        "emphasis",
+        "blur",
+        "select"
+      ]
+    },
+    {
+      "file": "Source/Core/DAC.Components.Charts.Types.pas",
+      "line": 709,
+      "contextExpression": "A.Items[I],Format('%s[%d]',[Q,I])",
+      "keys": [
+        "name",
+        "type"
+      ]
+    }
+  ],
+  "fixtureSha256": "1cc74321269b965b25f7c03dae5ea1243fd88e972c78c1b5c73fa179659c49a2",
+  "explicitFixtureCoverage": {
+    "animation": {
+      "cases": [
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C08",
+        "C09",
+        "C10",
+        "C11",
+        "C12",
+        "C13",
+        "C14",
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V05",
+        "V06",
+        "V07",
+        "V08",
+        "V09",
+        "V10",
+        "V11",
+        "V12",
+        "V13",
+        "V14",
+        "V15"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "dataset.dimensions": {
+      "cases": [
+        "C11"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "dataset.source": {
+      "cases": [
+        "C11",
+        "C12"
+      ],
+      "distinctExplicitValues": 2
+    },
+    "dataset.sourceHeader": {
+      "cases": [
+        "C12"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "grid.bottom": {
+      "cases": [
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C11",
+        "C12",
+        "C13",
+        "C14",
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V05",
+        "V07",
+        "V08",
+        "V09",
+        "V10",
+        "V11",
+        "V12",
+        "V13",
+        "V14",
+        "V15"
+      ],
+      "distinctExplicitValues": 2
+    },
+    "grid.left": {
+      "cases": [
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C11",
+        "C12",
+        "C13",
+        "C14",
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V05",
+        "V07",
+        "V08",
+        "V09",
+        "V10",
+        "V11",
+        "V12",
+        "V13",
+        "V14",
+        "V15"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "grid.outerBoundsMode": {
+      "cases": [
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C11",
+        "C12",
+        "C13",
+        "C14",
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V05",
+        "V07",
+        "V08",
+        "V09",
+        "V10",
+        "V11",
+        "V12",
+        "V13",
+        "V14",
+        "V15"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "grid.right": {
+      "cases": [
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C11",
+        "C12",
+        "C13",
+        "C14",
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V05",
+        "V07",
+        "V08",
+        "V09",
+        "V10",
+        "V11",
+        "V12",
+        "V13",
+        "V14",
+        "V15"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "grid.top": {
+      "cases": [
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C11",
+        "C12",
+        "C13",
+        "C14",
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V05",
+        "V07",
+        "V08",
+        "V09",
+        "V10",
+        "V11",
+        "V12",
+        "V13",
+        "V14",
+        "V15"
+      ],
+      "distinctExplicitValues": 2
+    },
+    "legend.itemGap": {
+      "cases": [
+        "V04"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "legend.itemWidth": {
+      "cases": [
+        "V04"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "legend.left": {
+      "cases": [
+        "V01",
+        "V04"
+      ],
+      "distinctExplicitValues": 2
+    },
+    "legend.top": {
+      "cases": [
+        "V01",
+        "V04"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "legend.type": {
+      "cases": [
+        "V04"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].areaStyle": {
+      "cases": [
+        "C06",
+        "V05",
+        "V12"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].barMinHeight": {
+      "cases": [
+        "C07"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].barWidth": {
+      "cases": [
+        "C01",
+        "V01",
+        "V02",
+        "V03",
+        "V07"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].center": {
+      "cases": [
+        "C08",
+        "V06"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].connectNulls": {
+      "cases": [
+        "C06",
+        "V05",
+        "V14"
+      ],
+      "distinctExplicitValues": 2
+    },
+    "series[].data": {
+      "cases": [
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C08",
+        "C09",
+        "C10",
+        "C13",
+        "C14",
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V05",
+        "V06",
+        "V07",
+        "V08",
+        "V09",
+        "V10",
+        "V11",
+        "V12",
+        "V13",
+        "V14",
+        "V15"
+      ],
+      "distinctExplicitValues": 28
+    },
+    "series[].encode.x": {
+      "cases": [
+        "C11"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].encode.y": {
+      "cases": [
+        "C11"
+      ],
+      "distinctExplicitValues": 2
+    },
+    "series[].itemStyle.borderRadius": {
+      "cases": [
+        "V03"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].itemStyle.color.colorStops": {
+      "cases": [
+        "V03"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].itemStyle.color.type": {
+      "cases": [
+        "V03"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].itemStyle.color.x": {
+      "cases": [
+        "V03"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].itemStyle.color.x2": {
+      "cases": [
+        "V03"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].itemStyle.color.y": {
+      "cases": [
+        "V03"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].itemStyle.color.y2": {
+      "cases": [
+        "V03"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].itemStyle.shadowBlur": {
+      "cases": [
+        "V03"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].itemStyle.shadowColor": {
+      "cases": [
+        "V03"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].itemStyle.shadowOffsetX": {
+      "cases": [
+        "V03"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].itemStyle.shadowOffsetY": {
+      "cases": [
+        "V03"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].label.color": {
+      "cases": [
+        "V01"
+      ],
+      "distinctExplicitValues": 2
+    },
+    "series[].label.formatter": {
+      "cases": [
+        "V01",
+        "V02",
+        "V06",
+        "V15"
+      ],
+      "distinctExplicitValues": 5
+    },
+    "series[].label.overflow": {
+      "cases": [
+        "V15"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].label.position": {
+      "cases": [
+        "V01",
+        "V02",
+        "V06"
+      ],
+      "distinctExplicitValues": 3
+    },
+    "series[].label.rich.name.color": {
+      "cases": [
+        "V02"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].label.rich.name.fontWeight": {
+      "cases": [
+        "V02"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].label.rich.value.backgroundColor": {
+      "cases": [
+        "V02"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].label.rich.value.borderRadius": {
+      "cases": [
+        "V02"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].label.rich.value.color": {
+      "cases": [
+        "V02"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].label.rich.value.fontSize": {
+      "cases": [
+        "V02"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].label.rich.value.padding": {
+      "cases": [
+        "V02"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].label.show": {
+      "cases": [
+        "C08",
+        "C09",
+        "C10",
+        "V01",
+        "V02",
+        "V05",
+        "V06",
+        "V15"
+      ],
+      "distinctExplicitValues": 2
+    },
+    "series[].label.width": {
+      "cases": [
+        "V15"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].labelLine.show": {
+      "cases": [
+        "V06"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].name": {
+      "cases": [
+        "C01",
+        "C11",
+        "C13",
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V07"
+      ],
+      "distinctExplicitValues": 18
+    },
+    "series[].radius": {
+      "cases": [
+        "C08",
+        "C09",
+        "C10",
+        "V06"
+      ],
+      "distinctExplicitValues": 2
+    },
+    "series[].seriesLayoutBy": {
+      "cases": [
+        "C11",
+        "C12"
+      ],
+      "distinctExplicitValues": 2
+    },
+    "series[].showEmptyCircle": {
+      "cases": [
+        "C10"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].smooth": {
+      "cases": [
+        "V05",
+        "V11",
+        "V14"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].stack": {
+      "cases": [
+        "C13"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].stackStrategy": {
+      "cases": [
+        "C13"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].step": {
+      "cases": [
+        "V12"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].stillShowZeroSum": {
+      "cases": [
+        "C10"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "series[].type": {
+      "cases": [
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C08",
+        "C09",
+        "C10",
+        "C11",
+        "C12",
+        "C13",
+        "C14",
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V05",
+        "V06",
+        "V07",
+        "V08",
+        "V09",
+        "V10",
+        "V11",
+        "V12",
+        "V13",
+        "V14",
+        "V15"
+      ],
+      "distinctExplicitValues": 3
+    },
+    "title.left": {
+      "cases": [
+        "V01"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "title.subtext": {
+      "cases": [
+        "V01"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "title.text": {
+      "cases": [
+        "V01",
+        "V15"
+      ],
+      "distinctExplicitValues": 2
+    },
+    "title.textStyle.color": {
+      "cases": [
+        "V01"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "title.textStyle.fontFamily": {
+      "cases": [
+        "V01"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "title.textStyle.fontSize": {
+      "cases": [
+        "V01",
+        "V15"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "title.top": {
+      "cases": [
+        "V01"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "tooltip.trigger": {
+      "cases": [
+        "C08",
+        "V06"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "useUTC": {
+      "cases": [
+        "C03"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "xAxis.axisLabel.fontSize": {
+      "cases": [
+        "V07"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "xAxis.axisLabel.interval": {
+      "cases": [
+        "C01",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C13",
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V05",
+        "V07"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "xAxis.axisLabel.rotate": {
+      "cases": [
+        "V07"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "xAxis.boundaryGap": {
+      "cases": [
+        "C01",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C11",
+        "C12",
+        "C13",
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V05",
+        "V07"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "xAxis.data": {
+      "cases": [
+        "C01",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C13",
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V05",
+        "V07",
+        "V08",
+        "V09",
+        "V10",
+        "V11",
+        "V12",
+        "V13",
+        "V14",
+        "V15"
+      ],
+      "distinctExplicitValues": 8
+    },
+    "xAxis.inverse": {
+      "cases": [
+        "V13"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "xAxis.max": {
+      "cases": [
+        "C02",
+        "C03",
+        "C14"
+      ],
+      "distinctExplicitValues": 3
+    },
+    "xAxis.min": {
+      "cases": [
+        "C02",
+        "C03",
+        "C14"
+      ],
+      "distinctExplicitValues": 2
+    },
+    "xAxis.type": {
+      "cases": [
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C11",
+        "C12",
+        "C13",
+        "C14",
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V05",
+        "V07",
+        "V08",
+        "V09",
+        "V10",
+        "V11",
+        "V12",
+        "V13",
+        "V14",
+        "V15"
+      ],
+      "distinctExplicitValues": 3
+    },
+    "yAxis.axisLabel.interval": {
+      "cases": [
+        "C14"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "yAxis.boundaryGap": {
+      "cases": [
+        "C14"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "yAxis.data": {
+      "cases": [
+        "C14"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "yAxis.inverse": {
+      "cases": [
+        "V13"
+      ],
+      "distinctExplicitValues": 1
+    },
+    "yAxis.max": {
+      "cases": [
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C11",
+        "C12",
+        "C13",
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V05",
+        "V07",
+        "V08",
+        "V09",
+        "V10",
+        "V11",
+        "V12",
+        "V13",
+        "V14",
+        "V15"
+      ],
+      "distinctExplicitValues": 5
+    },
+    "yAxis.min": {
+      "cases": [
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C11",
+        "C12",
+        "C13",
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V05",
+        "V07",
+        "V08",
+        "V09",
+        "V10",
+        "V11",
+        "V12",
+        "V13",
+        "V14",
+        "V15"
+      ],
+      "distinctExplicitValues": 3
+    },
+    "yAxis.type": {
+      "cases": [
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C11",
+        "C12",
+        "C13",
+        "C14",
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V05",
+        "V07",
+        "V08",
+        "V09",
+        "V10",
+        "V11",
+        "V12",
+        "V13",
+        "V14",
+        "V15"
+      ],
+      "distinctExplicitValues": 2
+    }
+  }
+}

@@ -3,10 +3,12 @@ unit DAC.Components.Controls.NativeWindowTheme;
 interface
 
 uses
+  System.UITypes,
   Winapi.Windows,
   Vcl.Controls,
   Vcl.Graphics,
-  DAC.Components.DesignSystem.Theme;
+  DAC.Components.DesignSystem.Theme,
+  DAC.Components.Skia.ScrollBarRenderer;
 
 type
   TDACNativeScrollBarHookTicket = NativeUInt;
@@ -24,7 +26,12 @@ function DACNativeScrollBarHookAuthorityCount(
   const AWindow: HWND): Integer;
 function DACNativeScrollBarHookAuthorityTotalCount: Integer;
 procedure PaintDACNativeScrollBarTheme(const AControl: TWinControl;
-  const AMode: TDACThemeMode; const ADC: HDC);
+  const AMode: TDACThemeMode; const ADC: HDC;
+  const APaintCorner: Boolean = False);
+procedure PaintDACNativeScrollBarThemeProfile(const AControl: TWinControl;
+  const AMode: TDACThemeMode; const ADC: HDC;
+  const APaintCorner: Boolean; const AProfile: TDACScrollVisualProfile;
+  const ASurfaceColor: TAlphaColor);
 
 implementation
 
@@ -32,8 +39,7 @@ uses
   System.Classes,
   System.SysUtils,
   Winapi.UxTheme,
-  DAC.Components.DesignSystem.ComponentStyle,
-  DAC.Components.Hooks.ScrollRenderer;
+  DAC.Components.DesignSystem.ComponentStyle;
 
 type
   TDACNativeControlAccess = class(TControl);
@@ -215,15 +221,32 @@ begin
 end;
 
 procedure PaintDACNativeScrollBarTheme(const AControl: TWinControl;
-  const AMode: TDACThemeMode; const ADC: HDC);
+  const AMode: TDACThemeMode; const ADC: HDC;
+  const APaintCorner: Boolean);
 begin
   if (AControl = nil) or (ADC = 0) or
     (csDestroying in AControl.ComponentState) or
     not AControl.HandleAllocated or
     (DACNativeScrollBarHookAuthorityCount(AControl.Handle) <> 0) then
     Exit;
-  DAC.Components.Hooks.ScrollRenderer.PaintDACNativeScrollBars(AControl, ADC,
-    TDACComponentStyle.ResolveForSurface(AControl, AMode).Tokens.Controls);
+  DAC.Components.Skia.ScrollBarRenderer.PaintDACNativeScrollBars(AControl,
+    ADC, TDACComponentStyle.ResolveForSurface(AControl,
+      AMode).Tokens.Controls, APaintCorner);
+end;
+
+procedure PaintDACNativeScrollBarThemeProfile(const AControl: TWinControl;
+  const AMode: TDACThemeMode; const ADC: HDC;
+  const APaintCorner: Boolean; const AProfile: TDACScrollVisualProfile;
+  const ASurfaceColor: TAlphaColor);
+begin
+  if (AControl = nil) or (ADC = 0) or
+    (csDestroying in AControl.ComponentState) or
+    not AControl.HandleAllocated or
+    (DACNativeScrollBarHookAuthorityCount(AControl.Handle) <> 0) then
+    Exit;
+  PaintDACNativeScrollBarsProfile(AControl, ADC,
+    TDACComponentStyle.ResolveForSurface(AControl, AMode).Tokens.Controls,
+    APaintCorner, AProfile, ASurfaceColor);
 end;
 
 procedure ClearDACScrollBarHookAuthorities;

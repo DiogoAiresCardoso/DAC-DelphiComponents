@@ -1,0 +1,13 @@
+{
+  "capturedFrames": 3,
+  "uniqueBuffers": 3,
+  "bufferCompleteness": "pass",
+  "bufferErrors": [],
+  "maxCapturedIntervalMs": 63,
+  "screenFrames": 0,
+  "benchmarkDataValid": false,
+  "productionPerformance": "outside_reference_profile",
+  "desktopContinuity": "inconclusive",
+  "reason": "Screen snapshots after presentation are diagnostic; independent temporal capture is required to detect transients between presentations.",
+  "metrics": {}
+}

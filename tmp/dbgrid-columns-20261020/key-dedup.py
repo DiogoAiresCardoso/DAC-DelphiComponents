@@ -1,0 +1,2 @@
+from pathlib import Path
+p=Path('Source/Controls/DAC.Components.Controls.DBGrid.ClientDataSetSort.pas');s=p.read_bytes().decode('cp1252').replace('\r\n','\n');s=s.replace("not SameText(Name, AFieldName) then Fields := Fields + ';' + KeyField.FieldName;", "(KeyField.FieldKind = fkData) and\n        (Pos(';' + UpperCase(KeyField.FieldName) + ';', ';' + UpperCase(Fields) + ';') = 0) then\n        Fields := Fields + ';' + KeyField.FieldName;");p.write_bytes(s.replace('\n','\r\n').encode('cp1252'))

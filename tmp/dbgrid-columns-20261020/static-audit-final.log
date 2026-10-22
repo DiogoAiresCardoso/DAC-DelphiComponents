@@ -1,0 +1,13 @@
+Relatório JSON: M:\Delphi Componentes\DAC-DelphiComponents\tmp\dbgrid-columns-20261020\static-audit-final.json
+Arquivos analisados: 235
+Hooks register/unregister: 32/32
+Famílias detectadas: 15/15
+Riscos: 8
+[warning] Tests\DACComponentsInteraction.dpr TODO encontrado
+[warning] Tests\DACDBGridTests.dpr TODO encontrado
+[warning] Tests\DACPhysicalQAController.dpr TODO encontrado
+[warning] Source\Controls\DAC.Components.Controls.DBGrid.SelectionController.pas TODO encontrado
+[warning] Source\Controls\DAC.Components.Controls.FieldChrome.pas TODO encontrado
+[warning] Source\Skia\DAC.Components.Skia.ChartPainter.pas TODO encontrado
+[warning] tmp\chart-implementation\Interaction.before-migration.dpr TODO encontrado
+[warning] tmp\dbgrid-columns-20261020\before\DAC.Components.Controls.DBGrid.SelectionController.pas TODO encontrado

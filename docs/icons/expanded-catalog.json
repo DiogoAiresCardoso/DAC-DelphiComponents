@@ -1,0 +1,443 @@
+[
+  {
+    "kind": "mikFileCheck",
+    "category": "files",
+    "name": "file-check",
+    "path": "files/file-check.svg",
+    "label": "Arquivo validado"
+  },
+  {
+    "kind": "mikFileCode",
+    "category": "files",
+    "name": "file-code",
+    "path": "files/file-code.svg",
+    "label": "Arquivo código"
+  },
+  {
+    "kind": "mikFileExport",
+    "category": "files",
+    "name": "file-export",
+    "path": "files/file-export.svg",
+    "label": "Exportar arquivo"
+  },
+  {
+    "kind": "mikFileImage",
+    "category": "files",
+    "name": "file-image",
+    "path": "files/file-image.svg",
+    "label": "Arquivo imagem"
+  },
+  {
+    "kind": "mikFileJson",
+    "category": "files",
+    "name": "file-json",
+    "path": "files/file-json.svg",
+    "label": "Arquivo JSON"
+  },
+  {
+    "kind": "mikFileLock",
+    "category": "files",
+    "name": "file-lock",
+    "path": "files/file-lock.svg",
+    "label": "Arquivo protegido"
+  },
+  {
+    "kind": "mikFileMinus",
+    "category": "files",
+    "name": "file-minus",
+    "path": "files/file-minus.svg",
+    "label": "Remover arquivo"
+  },
+  {
+    "kind": "mikFilesPdf",
+    "category": "files",
+    "name": "file-pdf",
+    "path": "files/file-pdf.svg",
+    "label": "Documento PDF"
+  },
+  {
+    "kind": "mikFilePlus",
+    "category": "files",
+    "name": "file-plus",
+    "path": "files/file-plus.svg",
+    "label": "Novo arquivo"
+  },
+  {
+    "kind": "mikFileSearch",
+    "category": "files",
+    "name": "file-search",
+    "path": "files/file-search.svg",
+    "label": "Buscar arquivo"
+  },
+  {
+    "kind": "mikFileText",
+    "category": "files",
+    "name": "file-text",
+    "path": "files/file-text.svg",
+    "label": "Arquivo texto"
+  },
+  {
+    "kind": "mikFileWarning",
+    "category": "files",
+    "name": "file-warning",
+    "path": "files/file-warning.svg",
+    "label": "Arquivo com alerta"
+  },
+  {
+    "kind": "mikFileXml",
+    "category": "files",
+    "name": "file-xml",
+    "path": "files/file-xml.svg",
+    "label": "Arquivo XML"
+  },
+  {
+    "kind": "mikFileZip",
+    "category": "files",
+    "name": "file-zip",
+    "path": "files/file-zip.svg",
+    "label": "Arquivo ZIP"
+  },
+  {
+    "kind": "mikFile",
+    "category": "files",
+    "name": "file",
+    "path": "files/file.svg",
+    "label": "Arquivo"
+  },
+  {
+    "kind": "mikFilesStack",
+    "category": "files",
+    "name": "files-stack",
+    "path": "files/files-stack.svg",
+    "label": "Arquivos"
+  },
+  {
+    "kind": "mikDirectorySync",
+    "category": "folders-paths",
+    "name": "directory-sync",
+    "path": "folders-paths/directory-sync.svg",
+    "label": "Sincronizar diretório"
+  },
+  {
+    "kind": "mikDirectoryUp",
+    "category": "folders-paths",
+    "name": "directory-up",
+    "path": "folders-paths/directory-up.svg",
+    "label": "Diretório superior"
+  },
+  {
+    "kind": "mikFolderLock",
+    "category": "folders-paths",
+    "name": "folder-lock",
+    "path": "folders-paths/folder-lock.svg",
+    "label": "Pasta protegida"
+  },
+  {
+    "kind": "mikFolderOpen",
+    "category": "folders-paths",
+    "name": "folder-open",
+    "path": "folders-paths/folder-open.svg",
+    "label": "Abrir pasta"
+  },
+  {
+    "kind": "mikFolderPlus",
+    "category": "folders-paths",
+    "name": "folder-plus",
+    "path": "folders-paths/folder-plus.svg",
+    "label": "Nova pasta"
+  },
+  {
+    "kind": "mikFolderSearch",
+    "category": "folders-paths",
+    "name": "folder-search",
+    "path": "folders-paths/folder-search.svg",
+    "label": "Localizar pasta"
+  },
+  {
+    "kind": "mikFolderTree",
+    "category": "folders-paths",
+    "name": "folder-tree",
+    "path": "folders-paths/folder-tree.svg",
+    "label": "Árvore de pastas"
+  },
+  {
+    "kind": "mikFolder",
+    "category": "folders-paths",
+    "name": "folder",
+    "path": "folders-paths/folder.svg",
+    "label": "Pasta"
+  },
+  {
+    "kind": "mikLinkFile",
+    "category": "folders-paths",
+    "name": "link-file",
+    "path": "folders-paths/link-file.svg",
+    "label": "Vínculo de arquivo"
+  },
+  {
+    "kind": "mikPathAbsolute",
+    "category": "folders-paths",
+    "name": "path-absolute",
+    "path": "folders-paths/path-absolute.svg",
+    "label": "Caminho absoluto"
+  },
+  {
+    "kind": "mikPathBreadcrumb",
+    "category": "folders-paths",
+    "name": "path-breadcrumb",
+    "path": "folders-paths/path-breadcrumb.svg",
+    "label": "Caminho hierárquico"
+  },
+  {
+    "kind": "mikPathRelative",
+    "category": "folders-paths",
+    "name": "path-relative",
+    "path": "folders-paths/path-relative.svg",
+    "label": "Caminho relativo"
+  },
+  {
+    "kind": "mikPathSlash",
+    "category": "folders-paths",
+    "name": "path-slash",
+    "path": "folders-paths/path-slash.svg",
+    "label": "Separador de caminho"
+  },
+  {
+    "kind": "mikPath",
+    "category": "folders-paths",
+    "name": "path",
+    "path": "folders-paths/path.svg",
+    "label": "Caminho"
+  },
+  {
+    "kind": "mikApi",
+    "category": "system",
+    "name": "api",
+    "path": "system/api.svg",
+    "label": "API"
+  },
+  {
+    "kind": "mikArchiveBox",
+    "category": "system",
+    "name": "archive-box",
+    "path": "system/archive-box.svg",
+    "label": "Arquivo morto"
+  },
+  {
+    "kind": "mikBug",
+    "category": "system",
+    "name": "bug",
+    "path": "system/bug.svg",
+    "label": "Depuração"
+  },
+  {
+    "kind": "mikCertificate",
+    "category": "system",
+    "name": "certificate",
+    "path": "system/certificate.svg",
+    "label": "Certificado"
+  },
+  {
+    "kind": "mikClipboardList",
+    "category": "system",
+    "name": "clipboard-list",
+    "path": "system/clipboard-list.svg",
+    "label": "Lista de tarefas"
+  },
+  {
+    "kind": "mikCloudDownload",
+    "category": "system",
+    "name": "cloud-download",
+    "path": "system/cloud-download.svg",
+    "label": "Baixar nuvem"
+  },
+  {
+    "kind": "mikCloudUpload",
+    "category": "system",
+    "name": "cloud-upload",
+    "path": "system/cloud-upload.svg",
+    "label": "Enviar nuvem"
+  },
+  {
+    "kind": "mikCloud",
+    "category": "system",
+    "name": "cloud",
+    "path": "system/cloud.svg",
+    "label": "Nuvem"
+  },
+  {
+    "kind": "mikCodeBrackets",
+    "category": "system",
+    "name": "code-brackets",
+    "path": "system/code-brackets.svg",
+    "label": "Código-fonte"
+  },
+  {
+    "kind": "mikCommandLine",
+    "category": "system",
+    "name": "command-line",
+    "path": "system/command-line.svg",
+    "label": "Linha de comando"
+  },
+  {
+    "kind": "mikComputer",
+    "category": "system",
+    "name": "computer",
+    "path": "system/computer.svg",
+    "label": "Computador"
+  },
+  {
+    "kind": "mikConfig",
+    "category": "system",
+    "name": "config",
+    "path": "system/config.svg",
+    "label": "Configuração"
+  },
+  {
+    "kind": "mikDatabaseBackup",
+    "category": "system",
+    "name": "database-backup",
+    "path": "system/database-backup.svg",
+    "label": "Backup de banco"
+  },
+  {
+    "kind": "mikDatabase",
+    "category": "system",
+    "name": "database",
+    "path": "system/database.svg",
+    "label": "Banco de dados"
+  },
+  {
+    "kind": "mikDll",
+    "category": "system",
+    "name": "dll",
+    "path": "system/dll.svg",
+    "label": "Biblioteca DLL"
+  },
+  {
+    "kind": "mikEnvironment",
+    "category": "system",
+    "name": "environment",
+    "path": "system/environment.svg",
+    "label": "Ambiente"
+  },
+  {
+    "kind": "mikEventLog",
+    "category": "system",
+    "name": "event-log",
+    "path": "system/event-log.svg",
+    "label": "Log de eventos"
+  },
+  {
+    "kind": "mikFirewall",
+    "category": "system",
+    "name": "firewall",
+    "path": "system/firewall.svg",
+    "label": "Firewall"
+  },
+  {
+    "kind": "mikHardDrive",
+    "category": "system",
+    "name": "hard-drive",
+    "path": "system/hard-drive.svg",
+    "label": "Disco rígido"
+  },
+  {
+    "kind": "mikKey",
+    "category": "system",
+    "name": "key",
+    "path": "system/key.svg",
+    "label": "Chave de acesso"
+  },
+  {
+    "kind": "mikLogs",
+    "category": "system",
+    "name": "logs",
+    "path": "system/logs.svg",
+    "label": "Logs"
+  },
+  {
+    "kind": "mikNetwork",
+    "category": "system",
+    "name": "network",
+    "path": "system/network.svg",
+    "label": "Rede"
+  },
+  {
+    "kind": "mikSystemPackage",
+    "category": "system",
+    "name": "package",
+    "path": "system/package.svg",
+    "label": "Pacote"
+  },
+  {
+    "kind": "mikProcess",
+    "category": "system",
+    "name": "process",
+    "path": "system/process.svg",
+    "label": "Processo"
+  },
+  {
+    "kind": "mikRegistry",
+    "category": "system",
+    "name": "registry",
+    "path": "system/registry.svg",
+    "label": "Registro do sistema"
+  },
+  {
+    "kind": "mikScheduler",
+    "category": "system",
+    "name": "scheduler",
+    "path": "system/scheduler.svg",
+    "label": "Agendador"
+  },
+  {
+    "kind": "mikServer",
+    "category": "system",
+    "name": "server",
+    "path": "system/server.svg",
+    "label": "Servidor"
+  },
+  {
+    "kind": "mikService",
+    "category": "system",
+    "name": "service",
+    "path": "system/service.svg",
+    "label": "Serviço"
+  },
+  {
+    "kind": "mikSsd",
+    "category": "system",
+    "name": "ssd",
+    "path": "system/ssd.svg",
+    "label": "Unidade SSD"
+  },
+  {
+    "kind": "mikTerminal",
+    "category": "system",
+    "name": "terminal",
+    "path": "system/terminal.svg",
+    "label": "Terminal"
+  },
+  {
+    "kind": "mikUpdate",
+    "category": "system",
+    "name": "update",
+    "path": "system/update.svg",
+    "label": "Atualização"
+  },
+  {
+    "kind": "mikUsbDrive",
+    "category": "system",
+    "name": "usb-drive",
+    "path": "system/usb-drive.svg",
+    "label": "Pendrive"
+  },
+  {
+    "kind": "mikWindows",
+    "category": "system",
+    "name": "windows",
+    "path": "system/windows.svg",
+    "label": "Windows"
+  }
+]

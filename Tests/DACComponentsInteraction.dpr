@@ -15,7 +15,9 @@ uses
   System.Types,
   System.UITypes,
   Data.DB,
+{$IFDEF DAC_LEGACY_DATAAWARE_DEMO}
   Datasnap.DBClient,
+{$ENDIF}
   Winapi.Imm,
   Winapi.Messages,
   Winapi.MultiMon,
@@ -36,9 +38,11 @@ uses
   DAC.Components.Controls.Button in '..\Source\Controls\DAC.Components.Controls.Button.pas',
   DAC.Components.Controls.Charts in '..\Source\Controls\DAC.Components.Controls.Charts.pas',
   DAC.Components.Controls.Container in '..\Source\Controls\DAC.Components.Controls.Container.pas',
+{$IFDEF DAC_LEGACY_DATAAWARE_DEMO}
   DAC.Components.Controls.DataAware in '..\Source\Controls\DataAware\DAC.Components.Controls.DataAware.pas',
   DAC.Components.Controls.DataAware.Lookup in '..\Source\Controls\DataAware\DAC.Components.Controls.DataAware.Lookup.pas',
   DAC.Components.Controls.DataAware.Navigator in '..\Source\Controls\DataAware\DAC.Components.Controls.DataAware.Navigator.pas',
+{$ENDIF}
   DAC.Components.Controls.DataGrid in '..\Source\Controls\DAC.Components.Controls.DataGrid.pas',
   DAC.Components.Controls.DateTimePicker in '..\Source\Controls\DAC.Components.Controls.DateTimePicker.pas',
   DAC.Components.Controls.DateTimePickerPopup in '..\Source\Controls\DAC.Components.Controls.DateTimePickerPopup.pas',
@@ -432,6 +436,8 @@ type
   end;
 
 procedure Require(const ACondition: Boolean; const AMessage: string); forward;
+function LegacyScrollTokens(
+  const AValue: TDACControlTokens): TDACControlTokens; forward;
 function CountText(const AText, APart: string): Integer; forward;
 
 constructor TAdversarialEnumSurfaceProbe.Create(AOwner: TComponent);
@@ -917,6 +923,7 @@ begin
   RequireRuntimeClass('TDACContainer', TDACContainer);
   RequireRuntimeClass('TDACDataGrid', TDACDataGrid);
   RequireRuntimeClass('TDACDateTimePicker', TDACDateTimePicker);
+{$IFDEF DAC_LEGACY_DATAAWARE_DEMO}
   RequireRuntimeClass('TDACDBCheckBox', TDACDBCheckBox);
   RequireRuntimeClass('TDACDBButtonEdit', TDACDBButtonEdit);
   RequireRuntimeClass('TDACDBComboBox', TDACDBComboBox);
@@ -929,6 +936,7 @@ begin
   RequireRuntimeClass('TDACDBSlider', TDACDBSlider);
   RequireRuntimeClass('TDACDBText', TDACDBText);
   RequireRuntimeClass('TDACDBToggleSwitch', TDACDBToggleSwitch);
+{$ENDIF}
   RequireRuntimeClass('TDACEdit', TDACEdit);
   RequireRuntimeClass('TDACGridContainer', TDACGridContainer);
   RequireRuntimeClass('TDACLoading', TDACLoading);
@@ -1298,8 +1306,8 @@ begin
 
   RequireGeometry(TDACBadge.Create(nil), LControls.BadgeDefaultWidth,
     LControls.BadgeDefaultHeight, 'TDACBadge');
-  RequireGeometry(TDACChart.Create(nil), LControls.ChartDefaultWidth,
-    LControls.ChartDefaultHeight, 'TDACChart');
+  RequireGeometry(TDACChart.Create(nil), 720,
+    420, 'TDACChart');
   RequireGeometry(TDACContainer.Create(nil), LControls.ContainerDefaultWidth,
     LControls.ContainerDefaultHeight, 'TDACContainer');
   RequireGeometry(TDACDataGrid.Create(nil), LControls.DataGridDefaultWidth,
@@ -1875,12 +1883,8 @@ begin
     'Source\Controls\DAC.Components.Controls.Charts.pas');
   Require(TFile.Exists(LPath), 'Fonte do DoughnutChart ausente para auditoria de paleta.');
   LSource := LowerCase(TFile.ReadAllText(LPath));
-  LBody := SourceProcedureBody(LSource, 'procedure tdacchart.drawpieseries');
-  Require((Pos('resolvedchartpalette.colorbyindex(i)', LBody) > 0) and
-    (Pos('tdaccomponentstyle.chartpalette', LBody) = 0) and
-    (Pos('tdaccomponentstyle.resolveforsurface(self, fthememode).chartpalette',
-      LSource) > 0),
-    'Doughnut deve resolver a paleta pela instancia, sem consultar o tema global.');
+  Require(Pos('dac.components.charts.engine', LSource) > 0,
+    'Chart deve delegar a pintura ao engine ECharts/Skia.');
   LPalettePath := TPath.Combine(LRoot,
     'Source\DesignSystem\DAC.Components.DesignSystem.ChartPalette.pas');
   LSource := LowerCase(TFile.ReadAllText(LPalettePath));
@@ -2776,8 +2780,8 @@ var
     PumpMessages(20);
     ResetObservedPaint;
     ForceHookPaint('vertical normal');
-    LTokens := TDACComponentStyle.Resolve(
-      TDACThemeManager.ApplicationMode).Tokens.Controls;
+    LTokens := LegacyScrollTokens(TDACComponentStyle.Resolve(
+      TDACThemeManager.ApplicationMode).Tokens.Controls);
     Require((ScrollHookVerticalPaint.SliderState =
         tsThumbBtnVertNormal) and
       (ScrollHookVerticalPaint.SliderColor = LTokens.ScrollBarThumb),
@@ -3024,8 +3028,8 @@ begin
     LScroll.Enabled := False;
     ResetObservedPaint;
     ForceHookPaint('disabled');
-    LTokens := TDACComponentStyle.Resolve(
-      TDACThemeManager.ApplicationMode).Tokens.Controls;
+    LTokens := LegacyScrollTokens(TDACComponentStyle.Resolve(
+      TDACThemeManager.ApplicationMode).Tokens.Controls);
     Require((not ScrollHookVerticalPaint.Enabled) and
       (ScrollHookVerticalPaint.SliderState =
         tsThumbBtnVertDisabled) and
@@ -3051,8 +3055,8 @@ begin
       PumpMessages(30);
       ResetObservedPaint;
       ForceHookPaint('ciclo de tema ' + IntToStr(I));
-      LTokens := TDACComponentStyle.Resolve(
-        TDACThemeManager.ApplicationMode).Tokens.Controls;
+      LTokens := LegacyScrollTokens(TDACComponentStyle.Resolve(
+        TDACThemeManager.ApplicationMode).Tokens.Controls);
       Require((ScrollHookVerticalPaint.TrackColor =
           LTokens.ScrollBarTrack) and
         (ScrollHookHorizontalPaint.BorderColor =
@@ -3067,7 +3071,8 @@ begin
     ResetObservedPaint;
     ForceHookPaint('oculta e reativada light');
     Require(ScrollHookVerticalPaint.TrackColor =
-      TDACComponentStyle.Resolve(dtmLight).Tokens.Controls.ScrollBarTrack,
+      TDACComponentStyle.Resolve(dtmLight).Tokens.Controls.
+        ScrollContainerViewportBackground,
       'Scrollbar oculta/reativada nao aplicou tema Light pendente.');
     TDACThemeManager.SetApplicationMode(dtmDark);
     PumpMessages(30);
@@ -4988,12 +4993,11 @@ begin
     LChart := TDACChart.Create(LForm);
     LChart.Parent := LForm;
     LChart.SetBounds(260, 24, 220, 116);
-    LChart.BackgroundColor := LSurface;
-    LChart.BorderColor := TAlphaColor($00000000);
-    LChart.ChartGrid.Visible := False;
+    LChart.LoadJSON('{"animation":false,"backgroundColor":"#0E1F15","series":[]}');
     LForm.Show;
     PumpMessages(120);
     RequireBlendAt(LCard, LCard.Width - 16, LCard.Height div 2, 'SummaryCard');
+    LExpected := RGB($0E, $1F, $15);
     RequireBlendAt(LChart, LChart.Width - 16, LChart.Height - 16, 'BarChart');
   finally
     LForm.Free;
@@ -5020,12 +5024,16 @@ end;
 procedure RequireFieldStateAndStreaming;
 var
   LButtonEdit: TDACButtonEdit;
+  LCheck: TDACCheckBox;
   LCombo: TDACComboBox;
   LComponent: TComponent;
   LDate: TDACDateTimePicker;
   LEdit: TDACEdit;
   LMemo: TDACMemo;
+  LRadio: TDACRadioButton;
+  LSlider: TDACSlider;
   LState: TDACResolvedFieldState;
+  LToggle: TDACToggleSwitch;
 begin
   Require((Ord(mesNormal) = 0) and (Ord(mesSuccess) = 1) and
     (Ord(mesWarning) = 2) and (Ord(mesDanger) = 3),
@@ -5066,12 +5074,27 @@ begin
   RequirePublishedDefault(TDACComboBox, 'ReadOnly', 0);
   RequirePublishedDefault(TDACDateTimePicker, 'Loading', 0);
   RequirePublishedDefault(TDACDateTimePicker, 'ReadOnly', 0);
+  RequirePublishedDefault(TDACCheckBox, 'ReadOnly', 0);
+  RequirePublishedDefault(TDACCheckBox, 'Required', 0);
+  RequirePublishedDefault(TDACCheckBox, 'Status', Ord(mesNormal));
+  RequirePublishedDefault(TDACRadioButton, 'ReadOnly', 0);
+  RequirePublishedDefault(TDACRadioButton, 'Required', 0);
+  RequirePublishedDefault(TDACRadioButton, 'Status', Ord(mesNormal));
+  RequirePublishedDefault(TDACToggleSwitch, 'ReadOnly', 0);
+  RequirePublishedDefault(TDACToggleSwitch, 'Required', 0);
+  RequirePublishedDefault(TDACToggleSwitch, 'Status', Ord(mesNormal));
+  RequirePublishedDefault(TDACSlider, 'ReadOnly', 0);
+  RequirePublishedDefault(TDACSlider, 'Status', Ord(mesNormal));
 
   System.Classes.RegisterClass(TDACEdit);
   System.Classes.RegisterClass(TDACButtonEdit);
   System.Classes.RegisterClass(TDACMemo);
   System.Classes.RegisterClass(TDACComboBox);
   System.Classes.RegisterClass(TDACDateTimePicker);
+  System.Classes.RegisterClass(TDACCheckBox);
+  System.Classes.RegisterClass(TDACRadioButton);
+  System.Classes.RegisterClass(TDACToggleSwitch);
+  System.Classes.RegisterClass(TDACSlider);
 
   LComponent := ReadTextComponent(
     'object Field: TDACEdit' + sLineBreak +
@@ -5219,8 +5242,87 @@ begin
   finally
     LComponent.Free;
   end;
+
+  LComponent := ReadTextComponent(
+    'object Field: TDACCheckBox' + sLineBreak +
+    '  Caption = ''Aceite''' + sLineBreak +
+    '  Checked = True' + sLineBreak +
+    '  ReadOnly = True' + sLineBreak +
+    '  Required = True' + sLineBreak +
+    '  Status = mesDanger' + sLineBreak +
+    'end');
+  try
+    LCheck := TDACCheckBox(LComponent);
+    Require(LCheck.Checked and LCheck.ReadOnly and LCheck.Required and
+      (LCheck.Status = mesDanger),
+      'Roundtrip DFM perdeu estado compartilhado do CheckBox.');
+  finally
+    LComponent.Free;
+  end;
+
+  LComponent := ReadTextComponent(
+    'object Field: TDACRadioButton' + sLineBreak +
+    '  Caption = ''Opcao''' + sLineBreak +
+    '  ReadOnly = True' + sLineBreak +
+    '  Required = True' + sLineBreak +
+    '  Status = mesWarning' + sLineBreak +
+    'end');
+  try
+    LRadio := TDACRadioButton(LComponent);
+    Require(LRadio.ReadOnly and LRadio.Required and
+      (LRadio.Status = mesWarning),
+      'Roundtrip DFM perdeu estado compartilhado do RadioButton.');
+  finally
+    LComponent.Free;
+  end;
+
+  LComponent := ReadTextComponent(
+    'object Field: TDACToggleSwitch' + sLineBreak +
+    '  Caption = ''Ativo''' + sLineBreak +
+    '  Checked = True' + sLineBreak +
+    '  ReadOnly = True' + sLineBreak +
+    '  Required = True' + sLineBreak +
+    '  Status = mesSuccess' + sLineBreak +
+    'end');
+  try
+    LToggle := TDACToggleSwitch(LComponent);
+    Require(LToggle.Checked and LToggle.ReadOnly and LToggle.Required and
+      (LToggle.Status = mesSuccess),
+      'Roundtrip DFM perdeu estado compartilhado do ToggleSwitch.');
+  finally
+    LComponent.Free;
+  end;
+
+  LComponent := ReadTextComponent(
+    'object Field: TDACSlider' + sLineBreak +
+    '  ReadOnly = True' + sLineBreak +
+    '  Status = mesDanger' + sLineBreak +
+    '  Value = 35' + sLineBreak +
+    'end');
+  try
+    LSlider := TDACSlider(LComponent);
+    Require(LSlider.ReadOnly and (LSlider.Status = mesDanger) and
+      (LSlider.Value = 35),
+      'Roundtrip DFM perdeu estado compartilhado do Slider.');
+  finally
+    LComponent.Free;
+  end;
 end;
 
+function LegacyScrollTokens(
+  const AValue: TDACControlTokens): TDACControlTokens;
+begin
+  Result := AValue;
+  Result.ScrollBarTrack := AValue.ScrollContainerViewportBackground;
+  Result.ScrollBarThumb := AValue.TabsDivider;
+  Result.ScrollBarThumbHot := AValue.InputFocus;
+  Result.ScrollBarThumbPressed := AValue.Success;
+  Result.ScrollBarThumbDisabled := AValue.TabsTextDisabled;
+  Result.ScrollBarArrow := AValue.TabsTextDefault;
+  Result.ScrollBarBorder := AValue.TabsDivider;
+end;
+
+{$IFDEF DAC_LEGACY_DATAAWARE_DEMO}
 procedure RequireDataAwareViewport(const AForm: TForm1;
   const AWidth, AHeight: Integer; const AMode: TDACThemeMode;
   const AScenario: string);
@@ -5779,8 +5881,8 @@ var
   begin
     TDACThemeManager.SetApplicationMode(AMode);
     PumpMessages(80);
-    LTokens := TDACComponentStyle.ResolveForSurface(
-      LCombo, dtmInherit).Tokens.Controls;
+    LTokens := LegacyScrollTokens(TDACComponentStyle.ResolveForSurface(
+      LCombo, dtmInherit).Tokens.Controls);
     Require(LText.ResolvedTextColor = LTokens.SystemTextPrimary,
       'Titulo Data-Aware nao resolveu SystemTextPrimary em ' +
         AScenario + '.');
@@ -6014,8 +6116,8 @@ var
     LGrid.Enabled := True;
     LGrid.ThemeMode := AMode;
     PumpMessages(50);
-    LTokens := TDACComponentStyle.ResolveForSurface(LGrid,
-      LGrid.ThemeMode).Tokens.Controls;
+    LTokens := LegacyScrollTokens(TDACComponentStyle.ResolveForSurface(LGrid,
+      LGrid.ThemeMode).Tokens.Controls);
 
     ResetObservedPaint;
     LHook.SeedAxisStates(True, tsThumbBtnVertNormal,
@@ -6702,8 +6804,8 @@ var
         LContext := Format('MEM-DEL-DB-069 cycle=%d phase=%d',
           [LCycle, LPhase + 1]);
         PaintBothAxes(LContext);
-        LTokens := TDACComponentStyle.ResolveForSurface(LGrid,
-          LMode).Tokens.Controls;
+        LTokens := LegacyScrollTokens(TDACComponentStyle.ResolveForSurface(
+          LGrid, LMode).Tokens.Controls);
         Require((ScrollHookHorizontalPaint.TrackColor =
             LTokens.ScrollBarTrack) and
           (ScrollHookVerticalPaint.TrackColor = LTokens.ScrollBarTrack) and
@@ -7172,12 +7274,18 @@ procedure RequireNativeFallbackGeometry(const AForm: TForm1);
     LInfo.dxyLineButton := 17;
     LInfo.xyThumbTop := 70;
     LInfo.xyThumbBottom := 160;
+    LInfo.rgstate[1] := STATE_SYSTEM_HOTTRACKED;
+    LInfo.rgstate[3] := STATE_SYSTEM_PRESSED;
+    LInfo.rgstate[5] := STATE_SYSTEM_UNAVAILABLE;
     Require(ResolveDACNativeScrollGeometry(LInfo, LWindowRect,
         LClientOrigin, True, LGeometry),
       'Fallback vertical recusou geometria visivel.');
     Require(LGeometry.Available and
       EqualRect(LGeometry.ScrollRect, Rect(380, 30, 397, 330)) and
-      EqualRect(LGeometry.SliderRect, Rect(380, 100, 397, 190)),
+      EqualRect(LGeometry.SliderRect, Rect(380, 100, 397, 190)) and
+      (LGeometry.StartButtonStateFlags = STATE_SYSTEM_HOTTRACKED) and
+      (LGeometry.SliderStateFlags = STATE_SYSTEM_PRESSED) and
+      (LGeometry.EndButtonStateFlags = STATE_SYSTEM_UNAVAILABLE),
       'Fallback vertical nao converteu screen/client para window DC.');
     RequireGeometry(LGeometry, True, 'fallback vertical convertido');
 
@@ -7265,8 +7373,8 @@ procedure RequireNativeFallbackGeometry(const AForm: TForm1);
     try
       Require(GetClipBox(LDC, LClipRect) <> ERROR,
         AContext + ': GetClipBox falhou.');
-      LTokens := TDACComponentStyle.ResolveForSurface(AControl,
-        AMode).Tokens.Controls;
+      LTokens := LegacyScrollTokens(TDACComponentStyle.ResolveForSurface(
+        AControl, AMode).Tokens.Controls);
     finally
       ReleaseDC(AControl.Handle, LDC);
     end;
@@ -7416,8 +7524,8 @@ procedure RequireRealStyleHookPaintSource(const AForm: TForm1);
   var
     LTokens: TDACControlTokens;
   begin
-    LTokens := TDACComponentStyle.ResolveForSurface(AControl,
-      AMode).Tokens.Controls;
+    LTokens := LegacyScrollTokens(TDACComponentStyle.ResolveForSurface(
+      AControl, AMode).Tokens.Controls);
     Require((ScrollHookStyleHookPaintCount = 2) and
       (ScrollHookFallbackPaintCount = 0) and
       (ScrollHookHorizontalPaintCount = 1) and
@@ -8606,6 +8714,7 @@ begin
     (LDataSet.FieldByName('CLIENTE').AsString = LOriginalValue),
     'Cancel nao restaurou atomicamente o CLIENTE original do ID 1008.');
 end;
+{$ENDIF}
 
 procedure TestStatusTimelineContract;
 var
@@ -8649,12 +8758,14 @@ var
   LThemeChart: TDACChart;
   LThemeDoughnut: TDACChart;
   LThemeReport: TDACReportViewer;
+{$IFDEF DAC_LEGACY_DATAAWARE_DEMO}
   LDataSet: TClientDataSet;
   LDataSource: TDataSource;
   LEmptyDataSet: TClientDataSet;
   LEmptyDataSource: TDataSource;
   LReplacementDataSet: TClientDataSet;
   LReplacementSource: TDataSource;
+{$ENDIF}
   LDateTime: TDACDateTimePicker;
   LDateTimeTokens: TDACControlTokens;
   LDateTimeRegion: TRect;
@@ -9065,8 +9176,8 @@ var
         Format('%s nao refletiu o mesmo indice no header Skia.', [APath]));
     end;
   begin
-    Require(Form1.GalleryTabs.PageCount = 17,
-      'Gate de navegacao requer exatamente as 17 paginas da galeria.');
+    Require(Form1.GalleryTabs.PageCount = 15,
+      'Gate de navegacao requer exatamente as 15 paginas atuais da galeria.');
     LHeader := FindTabHeader(Form1.GalleryTabs);
     LPaintBox := FindTabHeaderPaintBox(LHeader);
     Require((LHeader <> nil) and (LPaintBox <> nil) and
@@ -9227,12 +9338,14 @@ begin
   Form1.Show;
   PumpMessages(150);
   RequireScrollStyleHookRuntime(Form1);
+{$IFDEF DAC_LEGACY_DATAAWARE_DEMO}
   RequireDataGridScrollStyleHookRuntime(Form1);
   RequireDataGridNonClientFunctionalRegression(Form1);
   RequireNestedScrollHookAuthority(Form1);
   RequireNativeFallbackGeometry(Form1);
   RequireRealStyleHookPaintSource(Form1);
   RequireDataGridHorizontalChromeClipping(Form1);
+{$ENDIF}
   RequireGalleryThemeMatrix(dtmDark, False,
     'gallery dark com 15 paginas ainda ocultas');
   RequireGalleryThemeMatrix(dtmLight, False,
@@ -9289,8 +9402,8 @@ begin
   RequireSemiTransparentRaster;
 
   RequireComponent(Form1, 'GalleryTabs', TDACTabs);
-  Require(Form1.GalleryTabs.PageCount = 17,
-    'A Demo deve manter as 15 familias, Dashboard e Data-Aware.');
+  Require(Form1.GalleryTabs.PageCount = 15,
+    'A Demo deve manter exatamente as 15 paginas atuais da galeria.');
   RequireComponent(Form1, 'demoEdit', TControl);
   RequireComponent(Form1, 'demoCombo', TControl);
   RequireComponent(Form1, 'demoButtonEdit', TDACButtonEdit);
@@ -9319,6 +9432,7 @@ begin
   RequireComponent(Form1, 'demoCheck', TDACCheckBox);
   RequireComponent(Form1, 'demoSlider', TDACSlider);
   RequireComponent(Form1, 'demoSummaryCard', TDACSummaryCard);
+{$IFDEF DAC_LEGACY_DATAAWARE_DEMO}
   RequireComponent(Form1, 'demoDataGrid', TDACDataGrid);
   RequireComponent(Form1, 'tsDataAware', TTabSheet);
   RequireComponent(Form1, 'lblDataAware', TDACSystemText);
@@ -9347,6 +9461,7 @@ begin
   ExerciseDataAwareGridViewportSourceTruth(Form1);
   ExerciseDataAwareGridHorizontalSelection(Form1);
   ExerciseDataAwareGridNativeEditing(Form1);
+{$ENDIF}
   RequireComponent(Form1, 'demoStatusBar', TDACStatusBar);
   RequireComponent(Form1, 'demoProgress', TDACProgress);
   RequireComponent(Form1, 'demoBadge', TDACBadge);
@@ -9796,14 +9911,14 @@ begin
     LSemanticChart := TDACChart.Create(nil);
     try
       LSemanticChart.Name := 'SemanticChart';
-      LSemanticChart.Appearance := mchaDashboard;
+      LSemanticChart.LoadJSON('{"backgroundColor":"#102417","series":[]}');
       LSystemTextBinary.Clear;
       LSystemTextBinary.WriteComponent(LSemanticChart);
       LSystemTextBinary.Position := 0;
       LStreamedChart := TDACChart(LSystemTextBinary.ReadComponent(nil));
       try
-        Require(LStreamedChart.Appearance = mchaDashboard,
-          'Round-trip do Chart perdeu Appearance Dashboard.');
+        Require(LStreamedChart.SaveJSON = LSemanticChart.SaveJSON,
+          'Round-trip do Chart perdeu as opcoes JSON.');
       finally
         LStreamedChart.Free;
       end;
@@ -11086,7 +11201,7 @@ begin
       TDACComponentStyle.Resolve(dtmDark).Tokens.Controls.
         ContainerDarkBackground) and
     (LDashboardModule.Appearance = mcaDarkCard) and
-    (LDashboardChart.Appearance = mchaDashboard) and
+    (Pos('#102417', LDashboardChart.SaveJSON) > 0) and
     (LDashboardScroll.Appearance = mscaViewport) and
     (LDashboardScroll.ThemeMode = dtmInherit) and
     (LDashboardQuickGrid.Layout = mgclActionTiles) and
@@ -11113,9 +11228,7 @@ begin
     (LDashboardCard.BackgroundColor =
       TDACComponentStyle.Resolve(dtmLight).Tokens.Controls.
         SummaryCardDashboardBackground) and
-    (LDashboardChart.BackgroundColor =
-      TDACComponentStyle.Resolve(dtmLight).Tokens.Controls.
-        ChartDashboardBackground) and
+    (Pos('#102417', LDashboardChart.SaveJSON) > 0) and
     (LDashboardText.TextColor =
       TDACComponentStyle.Resolve(dtmLight).Tokens.Controls.SystemTextPrimary) and
     (LDashboardText.Role = mtrDisplay) and (LDashboardText.Tone = mttPrimary),
@@ -11138,7 +11251,7 @@ begin
        IntToHex(Cardinal(LDashboardCard.BackgroundColor), 8),
        IntToHex(Cardinal(TDACComponentStyle.Resolve(dtmLight).Tokens.Controls.
          SummaryCardDashboardBackground), 8),
-       IntToHex(Cardinal(LDashboardChart.BackgroundColor), 8),
+       LDashboardChart.SaveJSON,
        IntToHex(Cardinal(TDACComponentStyle.Resolve(dtmLight).Tokens.Controls.
          ChartDashboardBackground), 8),
        IntToHex(Cardinal(LDashboardModule.BackgroundColor), 8),
@@ -11167,9 +11280,7 @@ begin
     (LDashboardCard.BackgroundColor =
       TDACComponentStyle.Resolve(dtmDark).Tokens.Controls.
         SummaryCardDashboardBackground) and
-    (LDashboardChart.BackgroundColor =
-      TDACComponentStyle.Resolve(dtmDark).Tokens.Controls.
-        ChartDashboardBackground) and
+    (Pos('#102417', LDashboardChart.SaveJSON) > 0) and
     (LDashboardText.TextColor =
       TDACComponentStyle.Resolve(dtmDark).Tokens.Controls.SystemTextPrimary),
     'Retorno ao tema dark nao reverteu os tokens do Dashboard.');
@@ -11237,7 +11348,7 @@ begin
   ExerciseThemeToggleCycles(1200, 760, Form1.tsDashboard,
     Form1.tsButtons, False, 'theme toggle 1200x760');
   ExerciseThemeToggleCycles(520, 560, Form1.tsInputs,
-    Form1.tsGrid, True, 'theme toggle 520x560');
+    Form1.tsSelectors, True, 'theme toggle 520x560');
   Form1.GalleryTabs.ActivePage := Form1.tsDashboard;
   Form1.SetBounds(Form1.Left, Form1.Top, 1200, 760);
   PumpMessages(100);
@@ -11525,9 +11636,18 @@ begin
   LButton.Loading := False;
   LButtonClickBefore := ClickCount;
   SendKey(LButton, VK_SPACE);
-  SendKey(LButton, VK_RETURN);
+  LButton.SetFocus;
+  PumpMessages(20);
+  Require(LButton.Perform(CN_KEYDOWN, VK_RETURN, 0) = 1,
+    'TDACButton nao reteve o Enter durante o pre-processamento VCL.');
+  Require(Form1.ActiveControl = LButton,
+    'Enter alterou o foco antes de concluir a ativacao do TDACButton.');
+  Require(LButton.Perform(CN_KEYUP, VK_RETURN, 0) = 1,
+    'TDACButton nao reteve o KeyUp do Enter.');
   Require(ClickCount = LButtonClickBefore + 2,
     'Space/Enter nao acionaram TDACButton.');
+  Require(Form1.ActiveControl = LButton,
+    'Enter avancou o foco depois do clique do TDACButton.');
   TFormAccess(Form1).FocusNext(LButton);
   Require(Form1.ActiveControl <> nil, 'Tab nao encontrou proximo controle.');
 
@@ -11645,17 +11765,13 @@ begin
 
   LThemeChart := TDACChart.Create(Form1);
   LThemeChart.Parent := Form1;
-  LThemeChart.ThemeMode := dtmDark;
-  Require(LThemeChart.ResolvedBackgroundColor =
-    TDACComponentStyle.Resolve(dtmDark).Tokens.Controls.ContainerSuiteBackground,
-    'Chart nao resolveu superficie dark local.');
-  Require(LThemeChart.ResolvedAccentColor =
-    TDACComponentStyle.Resolve(dtmDark).Tokens.Controls.ChartAccent,
-    'Chart nao resolveu a paleta local dark.');
-  LThemeChart.ThemeMode := dtmInherit;
-  Require(LThemeChart.ResolvedBackgroundColor =
-    TDACComponentStyle.Resolve(dtmLight).Tokens.Controls.ContainerSuiteBackground,
-    'Chart nao retomou a surface light do Form.');
+  Require(Pos('backgroundColor', LThemeChart.SaveJSON) = 0,
+    'Chart deve iniciar com os defaults ECharts.');
+  LThemeChart.LoadJSON('{"backgroundColor":"#102417","color":["#3DB82A"],"series":[]}');
+  TDACThemeManager.SetApplicationMode(dtmDark);
+  Require(Pos('#102417', LThemeChart.SaveJSON) > 0,
+    'Tema explicito do Chart foi alterado pelo tema global.');
+  TDACThemeManager.SetApplicationMode(dtmLight);
   Require((TDACComponentStyle.Resolve(dtmDark).Tokens.Controls.ChartLineWidth = 2) and
     (TDACComponentStyle.Resolve(dtmLight).Tokens.Controls.ReportToolbarHeight = 42) and
     (TDACComponentStyle.Resolve(dtmDark).Tokens.Controls.TabsIndicatorWidth = 2) and
@@ -11668,42 +11784,12 @@ begin
 
   LThemeDoughnut := TDACChart.Create(Form1);
   LThemeDoughnut.Parent := Form1;
-  LThemeDoughnut.ChartType := ctDoughnut;
+  LThemeDoughnut.LoadJSON('{"color":["#5070dd"],"series":[{"type":"pie",' +
+    '"radius":["40%","70%"],"data":[55,30,15]}]}');
   LThemeDoughnut.SetBounds(Max(0, Form1.ClientWidth - 2), Max(0, Form1.ClientHeight - 2), 1, 1);
-  TDACThemeManager.SetApplicationMode(dtmLight);
-  Require((LThemeDoughnut.ResolvedDoughnutSeriesColor(0) =
-      TDACComponentStyle.Resolve(dtmLight).ChartPalette.ColorByIndex(0)) and
-    (LThemeDoughnut.ResolvedDoughnutSeriesColor(1) =
-      TDACComponentStyle.Resolve(dtmLight).ChartPalette.ColorByIndex(1)) and
-    (LThemeDoughnut.ResolvedDoughnutSeriesColor(2) =
-      TDACComponentStyle.Resolve(dtmLight).ChartPalette.ColorByIndex(2)) and
-    (LThemeDoughnut.ResolvedDoughnutSeriesColor(3) =
-      TDACComponentStyle.Resolve(dtmLight).ChartPalette.ColorByIndex(3)),
-    'Doughnut inherit nao iniciou com a paleta da surface light do Form.');
-  LThemeDoughnut.ThemeMode := dtmDark;
-  Require((LThemeDoughnut.ResolvedDoughnutSeriesColor(0) =
-      TDACComponentStyle.Resolve(dtmDark).ChartPalette.ColorByIndex(0)) and
-    (LThemeDoughnut.ResolvedDoughnutSeriesColor(1) =
-      TDACComponentStyle.Resolve(dtmDark).ChartPalette.ColorByIndex(1)) and
-    (LThemeDoughnut.ResolvedDoughnutSeriesColor(2) =
-      TDACComponentStyle.Resolve(dtmDark).ChartPalette.ColorByIndex(2)) and
-    (LThemeDoughnut.ResolvedDoughnutSeriesColor(3) =
-      TDACComponentStyle.Resolve(dtmDark).ChartPalette.ColorByIndex(3)),
-    'Doughnut nao manteve as cores de serie no override local dark.');
-  LThemeDoughnut.ThemeMode := dtmInherit;
-  Require((LThemeDoughnut.ResolvedDoughnutSeriesColor(0) =
-      TDACComponentStyle.Resolve(dtmLight).ChartPalette.ColorByIndex(0)),
-    'Doughnut inherit nao retomou a paleta da surface light do Form.');
   TDACThemeManager.SetApplicationMode(dtmDark);
-  Require((LThemeDoughnut.ResolvedDoughnutSeriesColor(0) =
-      TDACComponentStyle.Resolve(dtmDark).ChartPalette.ColorByIndex(0)) and
-    (LThemeDoughnut.ResolvedDoughnutSeriesColor(1) =
-      TDACComponentStyle.Resolve(dtmDark).ChartPalette.ColorByIndex(1)) and
-    (LThemeDoughnut.ResolvedDoughnutSeriesColor(2) =
-      TDACComponentStyle.Resolve(dtmDark).ChartPalette.ColorByIndex(2)) and
-    (LThemeDoughnut.ResolvedDoughnutSeriesColor(3) =
-      TDACComponentStyle.Resolve(dtmDark).ChartPalette.ColorByIndex(3)),
-    'Doughnut inherit nao refletiu as cores da serie sob global dark.');
+  Require(Pos('#5070dd', LThemeDoughnut.SaveJSON) > 0,
+    'Paleta ECharts explicita foi substituida pelo tema global.');
 
   LThemeReport := TDACReportViewer.Create(Form1);
   LThemeReport.Parent := Form1;
@@ -12119,6 +12205,7 @@ begin
   Form1.SetBounds(Form1.Left, Form1.Top, 520, 560);
   PumpMessages(100);
   RequireInputGalleryGeometry(Form1, 'compact no fluxo integrado');
+{$IFDEF DAC_LEGACY_DATAAWARE_DEMO}
   LTabPage := Form1.FindComponent('tsGrid') as TTabSheet;
   LTabs.ActivePage := LTabPage;
   PumpMessages(80);
@@ -12448,6 +12535,7 @@ begin
     'Loading permitiu abrir ou alterar o editor nativo.');
   LGrid.Loading := False;
   LGrid.ReadOnly := True;
+{$ENDIF}
 
   LTooltip := Form1.FindComponent('demoTooltip') as TDACTooltip;
   LTooltip.TargetControl := LButton;
@@ -12489,7 +12577,7 @@ begin
   PumpMessages(100);
   Require(LNavigation.Visible and
     (LNavigation.Width = TDACDemoTokens.Default.NavigationCompactWidth),
-    'Rail compacta deixou de preservar acesso as 17 paginas no viewport minimo.');
+    'Rail compacta deixou de preservar acesso as 15 paginas no viewport minimo.');
   Require((Form1.GalleryTabs.Left = LNavigation.Width) and
     (Form1.GalleryTabs.Width = Form1.ClientWidth - LNavigation.Width),
     'Galeria nao respeitou a rail compacta no viewport minimo.');

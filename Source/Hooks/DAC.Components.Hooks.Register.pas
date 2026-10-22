@@ -12,11 +12,10 @@ uses
   Vcl.Themes,
   DAC.Components.Controls.Badges,
   DAC.Components.Controls.Button,
-  DAC.Components.Controls.ButtonEdit,
   DAC.Components.Controls.Charts,
   DAC.Components.Controls.ComboBox,
   DAC.Components.Controls.Container,
-  DAC.Components.Controls.DateTimePicker,
+  DAC.Components.Controls.DBGrid,
   DAC.Components.Controls.Edit,
   DAC.Components.Controls.Feedback,
   DAC.Components.Controls.GridContainer,
@@ -36,6 +35,7 @@ uses
   DAC.Components.Controls.StatusTimelineChart,
   DAC.Components.Controls.SummaryCard,
   DAC.Components.Controls.Tabs,
+  DAC.Components.Hooks.DBGridScroll,
   DAC.Components.Hooks.ScrollContainer,
   DAC.Components.Hooks.SkiaControls;
 
@@ -49,12 +49,12 @@ begin
 
   TCustomStyleEngine.RegisterStyleHook(TDACScrollContainer,
     TDACScrollContainerStyleHook);
+  TCustomStyleEngine.RegisterStyleHook(TDACDBGrid,
+    TDACDBGridScrollStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACContainer, TDACSkiaControlStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACGridContainer, TDACSkiaControlStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACButton, TDACSkiaControlStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACEdit, TDACSkiaControlStyleHook);
-  TCustomStyleEngine.RegisterStyleHook(TDACButtonEdit, TDACSkiaControlStyleHook);
-  TCustomStyleEngine.RegisterStyleHook(TDACDateTimePicker, TDACSkiaControlStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACComboBox, TDACSkiaControlStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACMemo, TDACSkiaControlStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACCheckBox, TDACSkiaControlStyleHook);
@@ -84,6 +84,8 @@ begin
   if not GHooksRegistered then
     Exit;
 
+  TCustomStyleEngine.UnRegisterStyleHook(TDACDBGrid,
+    TDACDBGridScrollStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACScrollContainer,
     TDACScrollContainerStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACReportViewer, TDACSkiaControlStyleHook);
@@ -106,8 +108,6 @@ begin
   TCustomStyleEngine.UnRegisterStyleHook(TDACCheckBox, TDACSkiaControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACMemo, TDACSkiaControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACComboBox, TDACSkiaControlStyleHook);
-  TCustomStyleEngine.UnRegisterStyleHook(TDACDateTimePicker, TDACSkiaControlStyleHook);
-  TCustomStyleEngine.UnRegisterStyleHook(TDACButtonEdit, TDACSkiaControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACEdit, TDACSkiaControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACButton, TDACSkiaControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACGridContainer, TDACSkiaControlStyleHook);

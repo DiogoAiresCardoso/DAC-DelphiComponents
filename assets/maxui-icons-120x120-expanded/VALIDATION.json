@@ -1,0 +1,17 @@
+{
+  "icons": 106,
+  "valid_xml": true,
+  "all_width_120": true,
+  "all_height_120": true,
+  "all_viewBox_0_0_120_120": true,
+  "all_rendered": true,
+  "categories": [
+    "actions",
+    "agriculture",
+    "controls",
+    "data",
+    "interface",
+    "navigation",
+    "report-viewer"
+  ]
+}

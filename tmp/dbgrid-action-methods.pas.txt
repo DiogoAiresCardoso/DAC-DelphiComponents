@@ -1,0 +1,339 @@
+procedure TDACDBGrid.CancelActionInteraction(const AExitMode: Boolean);
+begin
+  FPressedActionId := '';
+  FPressedActionColumn := '';
+  FPressedActionRow := -1;
+  FHotActionIndex := -1;
+  if AExitMode then
+  begin
+    FActionMode := False;
+    FActionKeyDown := False;
+    FFocusedActionId := '';
+    FFocusedActionColumn := '';
+  end;
+  if FActionMouse and HandleAllocated and (GetCapture = Handle) then
+    MouseCapture := False;
+end;
+
+procedure TDACDBGrid.SetActionKeyFields(const AValue: string);
+begin
+  if FActionKeyFields = AValue then Exit;
+  FActionKeyFields := AValue;
+  CancelActionInteraction(True);
+  Redraw;
+end;
+
+function TDACDBGrid.BuildActionViews(AColumn: TDACDBGridColumn;
+  const ARect: TRect; const AContext: TDACDBGridActionContext): TArray<TDACDBGridActionView>;
+var
+  I, X, W, H, Gap, Inset, Count: Integer;
+  Visible, ActionEnabled: Boolean;
+  Action: TDACDBGridAction;
+  Context: TDACDBGridActionContext;
+  Tokens: TDACControlTokens;
+  Revision: Cardinal;
+begin
+  Result := nil;
+  if AColumn = nil then Exit;
+  Tokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  Inset := Pixels(Round(Tokens.DataGridActionInset));
+  Gap := Pixels(Round(Tokens.ButtonContentGap));
+  H := Min(Pixels(Round(Tokens.ButtonSmall.Height)), ARect.Height - Inset);
+  if H <= 0 then Exit;
+  X := ARect.Left + Inset;
+  SetLength(Result, AColumn.Actions.Count);
+  Count := 0;
+  for I := 0 to AColumn.Actions.Count - 1 do
+  begin
+    Action := AColumn.Actions[I];
+    Visible := Action.Visible;
+    ActionEnabled := Action.Enabled and Enabled and not FLoading;
+    Context := AContext;
+    Context.ActionId := Action.ActionId;
+    if Visible and not FLoading and not (csDesigning in ComponentState) and
+      Assigned(FOnActionState) and not FQueryingAction then
+    begin
+      Revision := FDataRevision;
+      FQueryingAction := True;
+      try
+        FOnActionState(Self, AColumn, Action, Context, Visible, ActionEnabled);
+      finally FQueryingAction := False; end;
+      if Revision <> FDataRevision then
+        raise EInvalidOperation.Create('OnActionState must not navigate or modify the dataset.');
+    end;
+    Visible := Visible and Action.Visible;
+    ActionEnabled := ActionEnabled and Action.Enabled and Enabled and not FLoading;
+    if not Visible then Continue;
+    W := Pixels(Action.Width);
+    // Never display or activate a button partially outside its own cell.
+    if X + W > ARect.Right - Inset then Break;
+    Result[Count].ActionIndex := I;
+    Result[Count].Bounds := Rect(X, ARect.Top + (ARect.Height - H) div 2,
+      X + W, ARect.Top + (ARect.Height + H) div 2);
+    Result[Count].Enabled := ActionEnabled;
+    Inc(Count);
+    Inc(X, W + Gap);
+  end;
+  SetLength(Result, Count);
+end;
+
+function TDACDBGrid.ActionCell(const ACol, ARow: Integer;
+  out AColumn: TDACDBGridColumn; out AContext: TDACDBGridActionContext): TArray<TDACDBGridActionView>;
+var I, OldRecord: Integer;
+begin
+  Result := nil;
+  AColumn := nil;
+  AContext := Default(TDACDBGridActionContext);
+  if FLoading or FQueryingAction or not Enabled or
+    ([csLoading, csDestroying, csDesigning] * ComponentState <> []) or
+    not DataLink.Active or (DataLink.DataSet = nil) or
+    (DataLink.DataSet.State <> dsBrowse) or (DataLink.RecordCount <= 0) or
+    (ARow < FixedRows) or (ARow >= RowCount) or
+    (ARow - FixedRows >= DataLink.RecordCount) or
+    (ACol < 0) or (ACol >= ColCount) then Exit;
+  if FSelectionOptions.Enabled and (ACol = 0) then Exit;
+  I := RawToDataColumn(ACol);
+  if (I < 0) or (I >= GetColumns.Count) then Exit;
+  AColumn := GetColumns[I];
+  if not AColumn.Visible or (AColumn.Actions.Count = 0) then Exit;
+  OldRecord := DataLink.ActiveRecord;
+  try
+    DataLink.ActiveRecord := ARow - FixedRows;
+    AContext := TDACDBGridActionContext.Capture(DataLink.DataSet,
+      FActionKeyFields, AColumn.EffectiveLayoutKey);
+    Result := BuildActionViews(AColumn, CellRect(ACol, ARow), AContext);
+  finally DataLink.ActiveRecord := OldRecord; end;
+end;
+
+function TDACDBGrid.ActionHit(const X, Y: Integer; out AColumn: TDACDBGridColumn;
+  out AView: TDACDBGridActionView; out AContext: TDACDBGridActionContext): Boolean;
+var Cell: TGridCoord; View: TDACDBGridActionView;
+begin
+  Result := False;
+  AColumn := nil;
+  AView := Default(TDACDBGridActionView);
+  AContext := Default(TDACDBGridActionContext);
+  if not HandleAllocated or (X < 0) or (Y < 0) or (X >= ClientWidth) or
+    (Y >= ClientHeight) then Exit;
+  Cell := MouseCoord(X, Y);
+  for View in ActionCell(Cell.X, Cell.Y, AColumn, AContext) do
+    if PtInRect(View.Bounds, Point(X, Y)) then
+    begin
+      AView := View;
+      AContext.ActionId := AColumn.Actions[View.ActionIndex].ActionId;
+      Exit(True);
+    end;
+end;
+
+procedure TDACDBGrid.CMHintShow(var AMessage: TCMHintShow);
+var Column: TDACDBGridColumn; View: TDACDBGridActionView;
+  Context: TDACDBGridActionContext;
+begin
+  if ActionHit(AMessage.HintInfo^.CursorPos.X, AMessage.HintInfo^.CursorPos.Y,
+    Column, View, Context) then
+  begin
+    AMessage.HintInfo^.HintStr := Column.Actions[View.ActionIndex].Hint;
+    AMessage.HintInfo^.CursorRect := View.Bounds;
+    AMessage.Result := Ord(AMessage.HintInfo^.HintStr = '');
+  end
+  else inherited;
+end;
+
+function TDACDBGrid.FocusAction(const ADirection: Integer;
+  const AEnterMode: Boolean): Boolean;
+var I, J, Current, Next: Integer;
+  Column: TDACDBGridColumn; Context: TDACDBGridActionContext;
+  Views: TArray<TDACDBGridActionView>;
+  Eligible: TList<Integer>;
+begin
+  Result := False;
+  if not HandleAllocated then Exit;
+  Eligible := TList<Integer>.Create;
+  try
+    for I := 0 to GetColumns.Count - 1 do
+    begin
+      if not GetColumns[I].Visible then Continue;
+      if not AEnterMode and (GetColumns[I].EffectiveLayoutKey <> FFocusedActionColumn) then Continue;
+      if AEnterMode and (SelectedIndex >= 0) and (SelectedIndex < GetColumns.Count) and
+        (GetColumns[SelectedIndex].Actions.Count > 0) and (I <> SelectedIndex) then Continue;
+      Views := ActionCell(DataToRawColumn(I), Row, Column, Context);
+      Eligible.Clear;
+      Current := -1;
+      for J := 0 to Length(Views) - 1 do
+        if Views[J].Enabled then
+        begin
+          if GetColumns[I].Actions[Views[J].ActionIndex].ActionId = FFocusedActionId then
+            Current := Eligible.Count;
+          Eligible.Add(Views[J].ActionIndex);
+        end;
+      if Eligible.Count = 0 then Continue;
+      if AEnterMode then Next := 0
+      else Next := (Current + ADirection + Eligible.Count) mod Eligible.Count;
+      FActionMode := True;
+      FFocusedActionColumn := Column.EffectiveLayoutKey;
+      FFocusedActionId := Column.Actions[Eligible[Next]].ActionId;
+      SelectedIndex := I;
+      Redraw;
+      Exit(True);
+    end;
+  finally Eligible.Free; end;
+end;
+
+procedure TDACDBGrid.ExecuteFocusedAction;
+var I: Integer; Column: TDACDBGridColumn; View: TDACDBGridActionView;
+  Context: TDACDBGridActionContext;
+begin
+  if not FActionMode then Exit;
+  for I := 0 to GetColumns.Count - 1 do
+    if GetColumns[I].EffectiveLayoutKey = FFocusedActionColumn then
+    begin
+      for View in ActionCell(DataToRawColumn(I), Row, Column, Context) do
+        if View.Enabled and (Column.Actions[View.ActionIndex].ActionId = FFocusedActionId) then
+        begin
+          Context.ActionId := FFocusedActionId;
+          if Assigned(FOnActionExecute) then
+            FOnActionExecute(Self, Column, Column.Actions[View.ActionIndex], Context);
+          Exit;
+        end;
+      Exit;
+    end;
+end;
+
+procedure TDACDBGrid.Click;
+begin
+  if not FActionMouse then inherited;
+end;
+
+procedure TDACDBGrid.KeyDown(var Key: Word; Shift: TShiftState);
+var Direction: Integer;
+begin
+  if (Key = VK_F2) and (Shift = []) and FocusAction(1, True) then
+  begin Key := 0; Exit; end;
+  if FActionMode then
+  begin
+    case Key of
+      VK_ESCAPE:
+        begin CancelActionInteraction(True); Redraw; Key := 0; Exit; end;
+      VK_LEFT, VK_RIGHT, VK_TAB:
+        if not (ssCtrl in Shift) and not (ssAlt in Shift) then
+        begin
+          Direction := 1;
+          if (Key = VK_LEFT) or ((Key = VK_TAB) and (ssShift in Shift)) then Direction := -1;
+          FocusAction(Direction, False);
+          Key := 0; Exit;
+        end;
+      VK_RETURN, VK_SPACE:
+        if Shift = [] then
+        begin
+          Key := 0;
+          if not FActionKeyDown then
+          begin
+            FActionKeyDown := True;
+            ExecuteFocusedAction;
+          end;
+          Exit;
+        end;
+    else
+      CancelActionInteraction(True);
+    end;
+  end;
+  if (Key = VK_SPACE) and FSelectionOptions.Enabled and Enabled and not FLoading then
+  begin
+    ToggleCurrentSelection;
+    Key := 0; Exit;
+  end;
+  inherited;
+end;
+
+procedure TDACDBGrid.KeyUp(var Key: Word; Shift: TShiftState);
+begin
+  if Key in [VK_RETURN, VK_SPACE] then FActionKeyDown := False;
+  inherited;
+end;
+
+procedure TDACDBGrid.MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var Cell: TGridCoord; Column: TDACDBGridColumn; View: TDACDBGridActionView;
+  Context: TDACDBGridActionContext;
+begin
+  CancelActionInteraction;
+  FActionMouse := False;
+  Cell := MouseCoord(X, Y);
+  if (Button = mbLeft) and ActionHit(X, Y, Column, View, Context) then
+  begin
+    FActionMouse := True;
+    if not View.Enabled or (ssDouble in Shift) or not CanFocus then Exit;
+    SetFocus;
+    // Commit the same row navigation used by the native grid, before arming.
+    DataLink.MoveBy(Cell.Y - Row);
+    if not ActionHit(X, Y, Column, View, Context) or not View.Enabled or
+      (MouseCoord(X, Y).Y <> Row) then Exit;
+    SelectedIndex := Column.Index;
+    FActionMode := True;
+    FFocusedActionId := Context.ActionId;
+    FFocusedActionColumn := Context.ColumnKey;
+    FPressedActionId := Context.ActionId;
+    FPressedActionColumn := Context.ColumnKey;
+    FPressedActionRow := Row;
+    FPressedActionRevision := FDataRevision;
+    MouseCapture := True;
+    Redraw;
+    Exit;
+  end;
+  FActionMode := False;
+  if (Button = mbLeft) and (Cell.Y = 0) then FPressedTitleColumn := Cell.X;
+  inherited;
+  Redraw;
+end;
+
+procedure TDACDBGrid.MouseMove(Shift: TShiftState; X, Y: Integer);
+var Cell: TGridCoord; Column: TDACDBGridColumn; View: TDACDBGridActionView;
+  Context: TDACDBGridActionContext; HotIndex: Integer; Hit: Boolean;
+begin
+  if not FActionMouse then inherited;
+  Cell := MouseCoord(X, Y);
+  Hit := ActionHit(X, Y, Column, View, Context);
+  HotIndex := -1;
+  if Hit then HotIndex := View.ActionIndex;
+  if FActionMouse and (FPressedActionId <> '') and
+    (not Hit or not View.Enabled or (Context.ActionId <> FPressedActionId) or
+      (Context.ColumnKey <> FPressedActionColumn) or (Cell.Y <> FPressedActionRow)) then
+    CancelActionInteraction;
+  if not SameGridCoord(Cell, FHotCell) or (HotIndex <> FHotActionIndex) then
+  begin
+    FHotCell := Cell;
+    FHotActionIndex := HotIndex;
+    if Hit and View.Enabled then Cursor := crHandPoint else Cursor := crDefault;
+    Redraw;
+  end;
+end;
+
+procedure TDACDBGrid.MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var Cell: TGridCoord; Column: TDACDBGridColumn; View: TDACDBGridActionView;
+  Context: TDACDBGridActionContext; Execute: Boolean;
+begin
+  if FActionMouse and (Button = mbLeft) then
+  begin
+    Execute := (FPressedActionId <> '') and (FPressedActionRevision = FDataRevision) and
+      ActionHit(X, Y, Column, View, Context);
+    if Execute then
+      Execute := View.Enabled and (Context.ActionId = FPressedActionId) and
+        (Context.ColumnKey = FPressedActionColumn) and
+        (MouseCoord(X, Y).Y = FPressedActionRow) and (FPressedActionRow = Row);
+    CancelActionInteraction;
+    FActionMouse := False;
+    Redraw;
+    if Execute and Assigned(FOnActionExecute) then
+      FOnActionExecute(Self, Column, Column.Actions[View.ActionIndex], Context);
+    Exit;
+  end;
+  Cell := MouseCoord(X, Y);
+  inherited;
+  if (Button = mbLeft) and FSelectionOptions.Enabled and (Cell.X = 0) and
+    Enabled and not FLoading then
+  begin
+    if (Cell.Y = 0) and FSelectionOptions.AllowSelectAll then ToggleSelectAll
+    else if Cell.Y >= FixedRows then ToggleCurrentSelection;
+  end;
+  FPressedTitleColumn := -1;
+  Redraw;
+end;

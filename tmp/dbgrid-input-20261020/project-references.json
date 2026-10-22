@@ -1,0 +1,18 @@
+[
+  "MaxxRDNBarter\\MaxxRDNBarter.dpr",
+  "MaxxRDNBarter\\MaxxAGRO\\MaxxAGRO.dpr",
+  "MaxxRDNBarter\\MaxxCRM\\MaxxCRM.dpr",
+  "MaxxRDNBarter\\Novos projetos barter\\MaxxCRM.dpr",
+  "MaxxRural\\MaxxADM\\MaxxRural.dpr",
+  "MaxxRural\\MaxxARM\\MaxxARM.dpr",
+  "MaxxRural\\MaxxBarter\\MaxxBarter.dpr",
+  "MaxxRural\\MaxxCFiscal\\MaxxCFiscal.dpr",
+  "MaxxRural\\MaxxCOM\\MaxxCOM.dpr",
+  "MaxxRural\\MaxxCORG\\MaxxCORG.dpr",
+  "MaxxRural\\MaxxFIN\\MaxxFIN.dpr",
+  "MaxxRural\\MaxxGCI\\MaxxGCI.dpr",
+  "MaxxRural\\MaxxGRP\\MaxxGRP.dpr",
+  "MaxxRural\\MaxxMaps\\MaxxMaps.dpr",
+  "MaxxRural\\MaxxOFFLINE\\MaxxOFFLINE.dpr",
+  "MaxxRural\\MaxxRES\\MaxxRES.dpr"
+]

@@ -1,0 +1,109 @@
+--- Button.before.pas
++++ Button.pas
+@@ -78,6 +78,8 @@
+     FTextLabel: TDACSystemText;
+     FThemeMode: TDACThemeMode;
+     function ButtonFontSize: Single;
++    function CaptionFontFamily: string;
++    function CaptionFontBold: Boolean;
+     function CanvasBackground(
+       const ATokens: TDACControlTokens): TAlphaColor;
+     procedure CalculateContentLayout(const ADest: TRectF;
+@@ -88,6 +90,7 @@
+     procedure CMFocusChanged(var AMessage: TMessage); message CM_FOCUSCHANGED;
+     procedure CMParentColorChanged(var AMessage: TMessage); message CM_PARENTCOLORCHANGED;
+     procedure CMTextChanged(var AMessage: TMessage); message CM_TEXTCHANGED;
++    procedure CMFontChanged(var AMessage: TMessage); message CM_FONTCHANGED;
+     function ContentPadding: Integer;
+     function CursorInside: Boolean;
+     function EffectiveIconSize: Integer;
+@@ -392,7 +395,9 @@
+ var
+   LTokens: TDACControlTokens;
+ begin
++  if not ParentFont then Exit(Max(1, Font.Size));
+   LTokens := ResolvedTokens;
++  if FKind = mbkInputAction then Exit(LTokens.ButtonInputActionCaptionTextSize);
+   case FSize of
+     mbsSmall:
+       Result := LTokens.ButtonSmall.NativeFontSize;
+@@ -403,6 +408,19 @@
+   end;
+ end;
+ 
++function TDACButton.CaptionFontFamily: string;
++begin
++  if not ParentFont and (Trim(Font.Name) <> '') then Result := Font.Name
++  else Result := TDACComponentFontInstaller.FontFamily;
++end;
++
++function TDACButton.CaptionFontBold: Boolean;
++begin
++  if not ParentFont then Result := fsBold in Font.Style
++  else if FKind = mbkInputAction then Result := True
++  else Result := ResolvedTokens.ButtonCaptionBold;
++end;
++
+ function TDACButton.CanvasBackground(
+   const ATokens: TDACControlTokens): TAlphaColor;
+ begin
+@@ -449,7 +467,7 @@
+   end
+   else if FTextLabel <> nil then
+     LTextWidth := FTextLabel.MeasureTextWidth(Caption,
+-      TDACComponentFontInstaller.FontFamily, Round(ButtonFontSize), True)
++      CaptionFontFamily, Round(ButtonFontSize), CaptionFontBold)
+   else
+     LTextWidth := 0;
+   LAvailableWidth := Max(0, ADest.Width - (ContentPadding * 2));
+@@ -632,7 +650,15 @@
+ procedure TDACButton.CMTextChanged(var AMessage: TMessage);
+ begin
+   inherited;
+-  UpdateLabel;
++  // Both layers depend on caption width. Invalidate the cached Skia frame
++  // together with the native label, even if the button bounds stay the same.
++  InvalidateButton;
++end;
++
++procedure TDACButton.CMFontChanged(var AMessage: TMessage);
++begin
++  inherited;
++  InvalidateButton;
+ end;
+ 
+ function TDACButton.ContentPadding: Integer;
+@@ -791,7 +817,7 @@
+     LTextWidth := 0;
+     if FTextLabel <> nil then
+       LTextWidth := FTextLabel.MeasureTextWidth(Caption,
+-      TDACComponentFontInstaller.FontFamily, Round(ButtonFontSize), True);
++      CaptionFontFamily, Round(ButtonFontSize), CaptionFontBold);
+     Inc(LWidth, Ceil(LTextWidth));
+   end;
+   if FShowIcon then
+@@ -1221,9 +1247,9 @@
+     FTextLabel.SetBounds(0, 0,
+       Max(0, Width - Round(LTokens.ButtonInputActionCaptionRightInset)), Height);
+     FTextLabel.Text := Caption;
+-    FTextLabel.FontFamily := TDACComponentFontInstaller.FontFamily;
+-    FTextLabel.FontSize := Round(LTokens.ButtonInputActionCaptionTextSize);
+-    FTextLabel.Bold := True;
++    FTextLabel.FontFamily := CaptionFontFamily;
++    FTextLabel.FontSize := Round(ButtonFontSize);
++    FTextLabel.Bold := CaptionFontBold;
+     FTextLabel.TextColor := LPalette.Text;
+     FTextLabel.HorzAlign := mthaCenter;
+     FTextLabel.VertAlign := mtvaCenter;
+@@ -1243,9 +1269,9 @@
+   LLabelWidth := Min(LLabelWidth, Width - LLabelLeft);
+   FTextLabel.SetBounds(LLabelLeft, 0, LLabelWidth, Height);
+   FTextLabel.Text := Caption;
+-  FTextLabel.FontFamily := TDACComponentFontInstaller.FontFamily;
++  FTextLabel.FontFamily := CaptionFontFamily;
+   FTextLabel.FontSize := Round(ButtonFontSize);
+-  FTextLabel.Bold := LTokens.ButtonCaptionBold;
++  FTextLabel.Bold := CaptionFontBold;
+   FTextLabel.TextColor := LPalette.Text;
+   FTextLabel.HorzAlign := mthaCenter;
+   FTextLabel.VertAlign := mtvaCenter;

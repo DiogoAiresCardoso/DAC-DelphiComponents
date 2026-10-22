@@ -96,13 +96,15 @@ begin
   LTheme := ResolveTheme(ATheme);
   Result := FromTheme(LTheme);
   case AKind of
-    mikWarning:
+    mikWarning,
+    mikFileWarning:
       Result.Color := LTheme.Tokens.Colors.Warning;
     mikDanger,
     mikTrash,
     mikClose:
       Result.Color := LTheme.Tokens.Colors.Danger;
     mikCheck,
+    mikFileCheck,
     mikClipboardCheck,
     mikStatusConnected,
     mikSuccessCircle:

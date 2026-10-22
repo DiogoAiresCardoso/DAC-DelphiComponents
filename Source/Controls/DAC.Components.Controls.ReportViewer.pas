@@ -7,6 +7,7 @@ uses
   System.Skia,
   System.Types,
   System.UITypes,
+  Winapi.Windows,
   Winapi.Messages,
   Vcl.Controls,
   Vcl.Graphics,
@@ -25,6 +26,8 @@ type
     FTextOverlay: TDACSystemTextOverlay;
     FThemeMode: TDACThemeMode;
     FZoomPercent: Integer;
+    function ParentSurfaceColor: TAlphaColor;
+    procedure CMParentColorChanged(var AMessage: TMessage); message CM_PARENTCOLORCHANGED;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
     procedure SetPageCount(const AValue: Integer);
@@ -105,6 +108,12 @@ begin
   inherited;
 end;
 
+procedure TDACReportViewer.CMParentColorChanged(var AMessage: TMessage);
+begin
+  inherited;
+  Redraw;
+end;
+
 procedure TDACReportViewer.CreateWnd;
 begin
   inherited;
@@ -132,6 +141,7 @@ begin
   FRenderer.BeginNativeText(FTextOverlay);
   try
   LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  ACanvas.Clear(ParentSurfaceColor);
   FRenderer.FillRoundRect(ACanvas, TRectF.Create(0, 0, ADest.Width, ADest.Height),
     LTokens.ContainerSuiteBackground, LTokens.ReportRadius, LTokens.AlphaOpaque);
   FRenderer.StrokeRoundRect(ACanvas, TRectF.Create(LTokens.ReportBorderWidth / 2, LTokens.ReportBorderWidth / 2, ADest.Width - LTokens.ReportBorderWidth / 2, ADest.Height - LTokens.ReportBorderWidth / 2),
@@ -175,6 +185,11 @@ begin
   finally
     FRenderer.EndNativeText;
   end;
+end;
+
+function TDACReportViewer.ParentSurfaceColor: TAlphaColor;
+begin
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
 procedure TDACReportViewer.Redraw;
@@ -229,7 +244,11 @@ end;
 
 procedure TDACReportViewer.SetThemeMode(const AValue: TDACThemeMode);
 begin
-  if FThemeMode = AValue then Exit;
+  if FThemeMode = AValue then
+  begin
+    ThemeChanged(Self);
+    Exit;
+  end;
   FThemeMode := AValue;
   ThemeChanged(Self);
 end;
@@ -259,7 +278,16 @@ begin
 end;
 
 procedure TDACReportViewer.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+var
+  LBrush: HBRUSH;
 begin
+  LBrush := CreateSolidBrush(ColorToRGB(
+    TDACComponentColors.ToVclColor(ParentSurfaceColor)));
+  try
+    Winapi.Windows.FillRect(AMessage.DC, ClientRect, LBrush);
+  finally
+    DeleteObject(LBrush);
+  end;
   AMessage.Result := 1;
 end;
 

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Financeiro" style="color:#2F9E22">
+  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="60" cy="60" r="46"/><path d="M74 40 C68 34 52 34 46 42 C39 52 48 58 60 60 C72 62 81 68 74 80 C68 90 50 88 44 82"/><line x1="60" y1="28" x2="60" y2="92"/>
+  </g>
+</svg>

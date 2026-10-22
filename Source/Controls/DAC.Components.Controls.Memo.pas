@@ -19,6 +19,7 @@ uses
   DAC.Components.DesignSystem.Fonts,
   DAC.Components.DesignSystem.ComponentStyle,
   DAC.Components.DesignSystem.ControlTokens,
+  DAC.Components.DesignSystem.OpacityTokens,
   DAC.Components.DesignSystem.Theme,
   DAC.Components.Skia.BackgroundPainter,
   DAC.Components.Skia.BorderPainter,
@@ -49,6 +50,7 @@ type
     FMouseInside: Boolean;
     FOnChange: TNotifyEvent;
     FPaintBox: TSkPaintBox;
+    FDesignValueLabel: TLabel;
     FNativeLabel: TLabel;
     FLoading: Boolean;
     FLoadingTabStopCaptured: Boolean;
@@ -61,8 +63,7 @@ type
     FText: string;
     FUpdatingLines: Boolean;
     procedure ApplyTextToMemo;
-    function BorderAlpha: Byte;
-    function BorderColor: TAlphaColor;
+    function ParentSurfaceColor: TAlphaColor;
     function CanUpdateChildren: Boolean;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure CMParentColorChanged(var AMessage: TMessage); message CM_PARENTCOLORCHANGED;
@@ -86,6 +87,8 @@ type
     procedure LinesChanged(Sender: TObject);
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
+    procedure PaintBoxMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
     function Pixels(const AValue: Integer): Integer;
     function ResolvedTokens: TDACControlTokens;
     procedure SetCornerRadius(const AValue: Integer);
@@ -103,6 +106,7 @@ type
     procedure SetWordWrap(const AValue: Boolean);
     procedure ThemeChanged(Sender: TObject);
     procedure UpdateChildBounds;
+    procedure UpdateDesignValuePreview;
     procedure UpdateMemoStyle;
     procedure UpdatePaintBoxBounds;
     procedure UpdateZOrder;
@@ -168,7 +172,8 @@ implementation
 uses
   System.Math,
   Winapi.Windows,
-  DAC.Components.Controls.ScrollContainer;
+  DAC.Components.Controls.ScrollContainer,
+  DAC.Components.DesignSystem.ColorTokens;
 
 {$IFNDEF DAC_COMPONENTS_TESTS}
 type
@@ -386,15 +391,16 @@ end;
 constructor TDACMemo.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  ControlStyle := ControlStyle + [csOpaque, csClickEvents, csCaptureMouse];
+  { Match TDACEdit: only the Skia child owns the memo chrome. The wrapper must
+    expose the physical parent behind caption/support rows and rounded corners. }
+  ControlStyle := (ControlStyle + [csClickEvents, csCaptureMouse]) - [csOpaque];
   Width := Round(ResolvedTokens.MemoDefaultWidth);
   Height := Round(ResolvedTokens.MemoDefaultHeight);
   TabStop := True;
-  ParentColor := False;
+  ParentColor := True;
   FBindingCanModify := True;
   StyleElements := [];
   Cursor := crIBeam;
-  Color := MemoVclColor(ResolvedTokens.MemoChromeBackground);
   FCornerRadius := Round(ResolvedTokens.MemoCornerRadius);
   FStatus := mesNormal;
   FThemeMode := dtmInherit;
@@ -413,6 +419,7 @@ begin
   FPaintBox.StyleElements := [];
   FPaintBox.Cursor := crIBeam;
   FPaintBox.OnDraw := PaintBoxDraw;
+  FPaintBox.OnMouseDown := PaintBoxMouseDown;
   FPaintBox.OnMouseEnter := DoMouseEnter;
   FPaintBox.OnMouseLeave := DoMouseLeave;
 
@@ -429,6 +436,17 @@ begin
   FMemo.OnMouseEnter := DoMouseEnter;
   FMemo.OnMouseLeave := DoMouseLeave;
 
+  { Non-windowed presenter used only by the form designer. The real TMemo is
+    detached there, matching TDACEdit and avoiding stale HWND painting. }
+  FDesignValueLabel := TLabel.Create(Self);
+  FDesignValueLabel.Parent := Self;
+  FDesignValueLabel.SetSubComponent(True);
+  FDesignValueLabel.AutoSize := False;
+  FDesignValueLabel.Transparent := True;
+  FDesignValueLabel.ParentFont := False;
+  FDesignValueLabel.WordWrap := True;
+  FDesignValueLabel.Visible := False;
+
   FFieldText := TDACFieldTextSupport.Create(Self, Self);
   FNativeLabel := FFieldText.CaptionLabel;
   FFieldText.SetFocusControl(FMemo);
@@ -442,6 +460,7 @@ begin
   TDACThemeManager.UnregisterListener(Self);
   FLines.OnChange := nil;
   FFieldText.Free;
+  FDesignValueLabel.Free;
   FMemo.Free;
   FPaintBox.Free;
   FLines.Free;
@@ -464,44 +483,11 @@ begin
   end;
 end;
 
-function TDACMemo.BorderAlpha: Byte;
-var
-  LTokens: TDACControlTokens;
+function TDACMemo.ParentSurfaceColor: TAlphaColor;
 begin
-  LTokens := ResolvedTokens;
-  if not Enabled or FLoading then
-    Result := LTokens.MemoBorderAlphaDisabled
-  else if FMemo.Focused then
-    Result := LTokens.MemoBorderAlphaFocus
-  else if FStatus <> mesNormal then
-    Result := LTokens.MemoBorderAlphaStatus
-  else if FMouseInside then
-    Result := LTokens.MemoBorderAlphaHover
-  else
-    Result := LTokens.MemoBorderAlphaNormal;
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
-function TDACMemo.BorderColor: TAlphaColor;
-var
-  LTokens: TDACControlTokens;
-begin
-  LTokens := ResolvedTokens;
-  case FStatus of
-    mesSuccess:
-      Result := LTokens.MemoSuccessBorder;
-    mesWarning:
-      Result := LTokens.MemoWarningBorder;
-    mesDanger:
-      Result := LTokens.MemoDangerBorder;
-  else
-    if FMemo.Focused then
-      Result := LTokens.MemoFocusBorder
-    else if FMouseInside then
-      Result := LTokens.MemoBorderHover
-    else
-      Result := LTokens.MemoBorder;
-  end;
-end;
 procedure TDACMemo.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
@@ -513,7 +499,8 @@ end;
 
 function TDACMemo.CanUpdateChildren: Boolean;
 begin
-  Result := not (csDestroying in ComponentState) and (Parent <> nil) and
+  Result := not (csDesigning in ComponentState) and
+    not (csDestroying in ComponentState) and (Parent <> nil) and
     HandleAllocated and Parent.HandleAllocated;
 end;
 
@@ -543,17 +530,19 @@ end;
 
 procedure TDACMemo.DoMemoChange(Sender: TObject);
 begin
-  if not FUpdatingLines and (FMemo <> nil) and FMemo.HandleAllocated then
-  begin
-    FUpdatingLines := True;
-    try
-  FText := FMemo.Text;
-  FLines.Text := FText;
-  Redraw;
-    finally
-      FUpdatingLines := False;
-    end;
+  if FUpdatingLines then
+    Exit;
+  if (FMemo = nil) or not FMemo.HandleAllocated then
+    Exit;
+
+  FUpdatingLines := True;
+  try
+    FText := FMemo.Text;
+    FLines.Text := FText;
+  finally
+    FUpdatingLines := False;
   end;
+  Redraw;
   if Assigned(FOnChange) then
     FOnChange(Self);
 end;
@@ -655,6 +644,7 @@ begin
     Exit;
   FText := FLines.Text;
   ApplyTextToMemo;
+  Redraw;
 end;
 
 function TDACMemo.LabelFontSize: Integer;
@@ -709,6 +699,7 @@ var
   LBackground: TDACBackgroundStyle;
   LBorder: TDACBorderStyle;
   LBorderRect: TRectF;
+  LChrome: TDACFieldChromeResult;
   LRect: TRectF;
   LScale: Single;
   LTokens: TDACControlTokens;
@@ -718,36 +709,52 @@ begin
     Exit;
 
   LScale := 1;
-  LTop := ChromeTop;
+  LTop := 0;
   LBorderRect := FRenderer.SnapRect(TRectF.Create(0, LTop, ADest.Width,
     Min(ADest.Height, LTop + ChromeHeight)), LScale);
   LRect := LBorderRect;
   LTokens := ResolvedTokens;
-  LRect.Inflate(-LTokens.MemoBorderInset / LScale,
-    -LTokens.MemoBorderInset / LScale);
+  LRect.Inflate(-LTokens.InputBorderInset / LScale,
+    -LTokens.InputBorderInset / LScale);
 
-  ACanvas.Clear(LTokens.MemoChromeBackground);
+  ACanvas.Clear(ParentSurfaceColor);
+  LChrome := TDACFieldChromeResolver.Resolve(ResolvedFieldState, LTokens);
 
-  LBackground.Color := LTokens.MemoBackground;
-  if not Enabled or FLoading then
-    LBackground.Color := LTokens.MemoDisabledBackground
-  else if FMemo.ReadOnly then
-    LBackground.Color := LTokens.MemoReadOnlyBackground;
+  LBackground.Color := LChrome.BackgroundColor;
   LBackground.Radius := FCornerRadius;
-  LBackground.Alpha := LTokens.MemoBackgroundAlpha;
+  LBackground.Alpha := LChrome.BackgroundAlpha;
   FBackgroundPainter.Draw(ACanvas, LRect, LBackground);
 
-  LBorder.Color := BorderColor;
+  LBorder.Color := LChrome.BorderColor;
   LBorder.Radius := FCornerRadius;
-  LBorder.Width := LTokens.MemoBorderWidth;
-  if FMemo.Focused then
-    LBorder.Width := LTokens.MemoFocusBorderWidth;
-  LBorder.Alpha := BorderAlpha;
+  LBorder.Width := LChrome.BorderWidth;
+  LBorder.Alpha := LChrome.BorderAlpha;
+  if csDesigning in ComponentState then
+  begin
+    { Keep the same legible, non-interactive preview used by TDACEdit. }
+    LBorder.Color := LTokens.InputBorderHover;
+    LBorder.Alpha := DACOpacityOpaque;
+  end;
   FBorderPainter.Draw(ACanvas, LBorderRect, LBorder);
+end;
+
+procedure TDACMemo.PaintBoxMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if csDesigning in ComponentState then
+    Exit;
+  if Sender is TControl then
+  begin
+    Inc(X, TControl(Sender).Left);
+    Inc(Y, TControl(Sender).Top);
+  end;
+  MouseDown(Button, Shift, X, Y);
 end;
 
 procedure TDACMemo.Redraw;
 begin
+  if csDesigning in ComponentState then
+    UpdateChildBounds;
   { Native labels are designer-visible TLabel controls. Their token-backed
     layout must be refreshed even while the embedded memo HWND is deliberately
     detached in design-time. }
@@ -800,7 +807,8 @@ end;
 
 function TDACMemo.ResolvedFieldState: TDACResolvedFieldState;
 begin
-  Result := TDACFieldStateResolver.Resolve(Enabled, FLoading, FReadOnly,
+  Result := TDACFieldStateResolver.Resolve(Enabled, FLoading,
+    FReadOnly or not FBindingCanModify,
     (FMemo <> nil) and FMemo.Focused, FMouseInside, GetText <> '',
     TDACFieldValidation(Ord(FStatus)));
 end;
@@ -982,8 +990,6 @@ procedure TDACMemo.ThemeChanged(Sender: TObject);
 begin
   if (FThemeMode <> dtmInherit) and (Sender <> Self) then
     Exit;
-  if ResolvedTokens.MemoBorderWidth <= 0 then
-    Exit;
   UpdateMemoStyle;
   Redraw;
 end;
@@ -993,8 +999,26 @@ var
   LPadding: Integer;
   LTop: Integer;
 begin
-  if (FMemo = nil) or not CanUpdateChildren then
+  if (FMemo = nil) or (csLoading in ComponentState) or
+    (csDestroying in ComponentState) then
     Exit;
+
+  if csDesigning in ComponentState then
+  begin
+    FMemo.Visible := False;
+    if FMemo.Parent <> nil then
+      FMemo.Parent := nil;
+    UpdateDesignValuePreview;
+    Exit;
+  end;
+
+  if not CanUpdateChildren then
+    Exit;
+  if FMemo.Parent <> Self then
+    FMemo.Parent := Self;
+  FMemo.Visible := True;
+  if FDesignValueLabel <> nil then
+    FDesignValueLabel.Visible := False;
 
   LPadding := Pixels(Round(ResolvedTokens.MemoPadding));
   LTop := ChromeTop + LPadding;
@@ -1003,25 +1027,59 @@ begin
     Max(0, ChromeTop + ChromeHeight - LTop - LPadding));
 end;
 
+procedure TDACMemo.UpdateDesignValuePreview;
+var
+  LPadding: Integer;
+  LTop: Integer;
+  LTokens: TDACControlTokens;
+begin
+  if FDesignValueLabel = nil then
+    Exit;
+  if not (csDesigning in ComponentState) then
+  begin
+    FDesignValueLabel.Visible := False;
+    Exit;
+  end;
+
+  LTokens := ResolvedTokens;
+  LPadding := Pixels(Round(LTokens.MemoPadding));
+  LTop := ChromeTop + LPadding;
+  FDesignValueLabel.Caption := FText;
+  FDesignValueLabel.Font.Name := TDACComponentStyle.FontFamily;
+  FDesignValueLabel.Font.Size := Round(LTokens.MemoTextSize);
+  FDesignValueLabel.Font.Style := [];
+  FDesignValueLabel.Font.Color := MemoVclColor(
+    TDACFieldChromeResolver.Resolve(ResolvedFieldState, LTokens).TextColor);
+  FDesignValueLabel.SetBounds(LPadding, LTop,
+    Max(0, Width - (LPadding * 2)),
+    Max(0, ChromeTop + ChromeHeight - LTop - LPadding));
+  FDesignValueLabel.Visible := FText <> '';
+  if FDesignValueLabel.Visible then
+    FDesignValueLabel.BringToFront;
+end;
+
 procedure TDACMemo.UpdatePaintBoxBounds;
 var
   LWidth: Integer;
   LHeight: Integer;
+  LTop: Integer;
 begin
-  if (FPaintBox = nil) or not CanUpdateChildren then
+  if (FPaintBox = nil) or (csDestroying in ComponentState) then
     Exit;
 
   LWidth := Width;
   LHeight := Height;
-  if HandleAllocated then
+  if not (csDesigning in ComponentState) and (Parent <> nil) and
+    HandleAllocated and Parent.HandleAllocated then
   begin
     LWidth := ClientWidth;
     LHeight := ClientHeight;
   end;
-
-  if (FPaintBox.Left <> 0) or (FPaintBox.Top <> 0) or
+  LTop := ChromeTop;
+  LHeight := Min(ChromeHeight, Max(0, LHeight - LTop));
+  if (FPaintBox.Left <> 0) or (FPaintBox.Top <> LTop) or
     (FPaintBox.Width <> LWidth) or (FPaintBox.Height <> LHeight) then
-    FPaintBox.SetBounds(0, 0, LWidth, LHeight);
+    FPaintBox.SetBounds(0, LTop, LWidth, LHeight);
 
 end;
 
@@ -1044,6 +1102,7 @@ end;
 
 procedure TDACMemo.UpdateMemoStyle;
 var
+  LChrome: TDACFieldChromeResult;
   LTokens: TDACControlTokens;
   LTextColor: TColor;
 begin
@@ -1051,20 +1110,11 @@ begin
     Exit;
 
   LTokens := ResolvedTokens;
+  LChrome := TDACFieldChromeResolver.Resolve(ResolvedFieldState, LTokens);
   FMemo.Enabled := Enabled and not FLoading;
   FMemo.ReadOnly := FReadOnly or FLoading or not FBindingCanModify;
-  FMemo.Color := MemoVclColor(LTokens.MemoBackground);
-  LTextColor := MemoVclColor(LTokens.MemoText);
-  if not Enabled or FLoading then
-  begin
-    FMemo.Color := MemoVclColor(LTokens.MemoDisabledBackground);
-    LTextColor := MemoVclColor(LTokens.MemoDisabledText);
-  end
-  else if FReadOnly or not FBindingCanModify then
-  begin
-    FMemo.Color := MemoVclColor(LTokens.MemoReadOnlyBackground);
-    LTextColor := MemoVclColor(LTokens.MemoReadOnlyText);
-  end;
+  FMemo.Color := MemoVclColor(LChrome.BackgroundColor);
+  LTextColor := MemoVclColor(LChrome.TextColor);
   FMemo.Font.Name := TDACComponentStyle.FontFamily;
   FMemo.Font.Size := Round(LTokens.MemoTextSize);
   FMemo.Font.Style := [];
@@ -1081,8 +1131,18 @@ begin
 end;
 
 procedure TDACMemo.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+var
+  LBrush: HBRUSH;
+  LColor: TColor;
 begin
-  inherited;
+  LColor := MemoVclColor(TDACComponentColors.ResolveParentSurface(Self));
+  LBrush := CreateSolidBrush(ColorToRGB(LColor));
+  try
+    Winapi.Windows.FillRect(AMessage.DC, ClientRect, LBrush);
+  finally
+    DeleteObject(LBrush);
+  end;
+  AMessage.Result := 1;
 end;
 
 procedure TDACMemo.WMSetFocus(var AMessage: TWMSetFocus);

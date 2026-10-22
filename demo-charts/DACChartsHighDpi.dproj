@@ -50,6 +50,7 @@
   </PropertyGroup>
   <ItemGroup>
     <DelphiCompile Include="$(MainSource)"><MainSource>MainSource</MainSource></DelphiCompile>
+    <DCCReference Include="DACChartsDemo.Startup.pas"/>
     <DCCReference Include="DACChartsDemo.Main.pas"><Form>ChartsDemoForm</Form><FormType>dfm</FormType></DCCReference>
     <BuildConfiguration Include="Base"><Key>Base</Key></BuildConfiguration>
     <BuildConfiguration Include="Debug"><Key>Cfg_1</Key><CfgParent>Base</CfgParent></BuildConfiguration>
@@ -69,5 +70,6 @@
   <Target Name="CopySkiaRuntimeForHighDpiDemo">
     <Error Condition="!Exists('$(DAC_SkiaRuntimeSource)')" Text="sk4d.dll nao foi encontrada em $(DAC_SkiaRuntimeSource)."/>
     <Copy SourceFiles="$(DAC_SkiaRuntimeSource)" DestinationFiles="$(DCC_ExeOutput)\sk4d.dll"/>
+    <Copy SourceFiles="..\Tests\Charts.Visual\fixtures.json" DestinationFiles="$(DCC_ExeOutput)\reference-cases.json"/>
   </Target>
 </Project>

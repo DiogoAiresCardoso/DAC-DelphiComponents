@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Gráfico de área" style="color:#2F9E22">
+  <g stroke="#2F9E22" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="18" y1="100" x2="104" y2="100"/><line x1="18" y1="100" x2="18" y2="20"/><path d="M24 82 L44 54 L60 68 L82 34 L100 48 V100 H24 Z" fill="#2F9E22" fill-opacity="0.18"/><polyline points="24,82 44,54 60,68 82,34 100,48"/>
+  </g>
+</svg>

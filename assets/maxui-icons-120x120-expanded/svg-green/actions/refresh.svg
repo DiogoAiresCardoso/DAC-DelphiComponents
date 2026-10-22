@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Atualizar" style="color:#2F9E22">
+  <g stroke="#2F9E22" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M94 44 A38 38 0 0 0 28 32"/><polyline points="26,18 26,38 46,38"/><path d="M26 76 A38 38 0 0 0 92 88"/><polyline points="94,102 94,82 74,82"/>
+  </g>
+</svg>

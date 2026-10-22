@@ -2,6 +2,23 @@
 
 Package base para a nova suite de componentes VCL desenhada com Skia4Delphi.
 
+## Documentacao da DBGrid
+
+- [TDACDBGrid: multiplas acoes por celula, eventos e teclado](docs/dbgrid/actions.md).
+
+## Documentacao dos cards
+
+- [TDACSummaryCard: fontes, cores e layout em runtime](docs/cards/README.md).
+
+## Documentacao dos graficos
+
+- [TDACChart: manual tecnico consolidado](docs/charts/README.md) — arquitetura,
+  API/DFM/JSON, desenho Skia, texto Windows, fontes, demo e testes.
+- [Demo exclusivo de graficos](demo-charts/README.md).
+- [Evidencias e comparacoes preservadas](docs/charts/evidence/2026-09-22/README.md).
+- [Consolidacao atual — 23/09/2026](docs/charts/consolidation-2026-09-23.md): API tipada,
+  validacao transacional, espaco do titulo e evidencias por etapa.
+
 ## Estrutura
 
 ```text

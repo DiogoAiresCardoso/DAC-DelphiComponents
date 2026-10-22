@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Expandir" style="color:#2F9E22">
+  <g stroke="#2F9E22" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M48 22 H22 V48"/><line x1="22" y1="22" x2="50" y2="50"/><path d="M72 22 H98 V48"/><line x1="98" y1="22" x2="70" y2="50"/><path d="M22 72 V98 H48"/><line x1="22" y1="98" x2="50" y2="70"/><path d="M98 72 V98 H72"/><line x1="98" y1="98" x2="70" y2="70"/>
+  </g>
+</svg>

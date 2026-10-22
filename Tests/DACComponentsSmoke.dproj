@@ -1,7 +1,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ProjectGuid>{B6E2851A-A7C4-44F3-9F7F-1A6E4319A44D}</ProjectGuid>
-    <MainSource>DACComponentsSmoke.dpr</MainSource>
+    <MainSource>DACComponentsSmoke.Current.dpr</MainSource>
     <ProjectVersion>18.3</ProjectVersion>
     <FrameworkType>VCL</FrameworkType>
     <Config Condition="'$(Config)'==''">Debug</Config>
@@ -30,7 +30,7 @@
   </ItemGroup>
   <ProjectExtensions>
     <Borland.Personality>Delphi.Personality.12</Borland.Personality>
-    <BorlandProject><Delphi.Personality><Source><Source Name="MainSource">DACComponentsSmoke.dpr</Source></Source></Delphi.Personality><Platforms><Platform value="Win32">True</Platform></Platforms></BorlandProject>
+    <BorlandProject><Delphi.Personality><Source><Source Name="MainSource">DACComponentsSmoke.Current.dpr</Source></Source></Delphi.Personality><Platforms><Platform value="Win32">True</Platform></Platforms></BorlandProject>
   </ProjectExtensions>
   <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
 </Project>

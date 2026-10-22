@@ -1,0 +1,51 @@
+**********************************************************************
+*        DUnitX - (c) 2015 Vincent Parrett & Contributors            *
+*                    vincent@finalbuilder.com                        *
+*                                                                    *
+*        License - http://www.apache.org/licenses/LICENSE-2.0        *
+**********************************************************************
+
+DUnitX - [ApiTestes.exe] - Starting Tests.
+
+.........................F.F.F.F.F.F.F.F.F.F..........................................................................................
+
+Tests Found   : 67
+Tests Ignored : 0
+Tests Passed  : 57
+Tests Leaked  : 0
+Tests Failed  : 10
+Tests Errored : 0
+
+Failing Tests
+
+  Teste.MovimentoBancario.ColunasGrid.TMovimentoBancarioColunasGridTests.FundoDaLinhaContinuaAteOpcoes.claro96
+  Message: Expected 14872799 but got 16777215 Fundo interrompido: linha=0 x=721 PPI=96 tema=1
+
+  Teste.MovimentoBancario.ColunasGrid.TMovimentoBancarioColunasGridTests.FundoDaLinhaContinuaAteOpcoes.escuro96
+  Message: Expected 2112023 but got 1516560 Fundo interrompido: linha=0 x=721 PPI=96 tema=0
+
+  Teste.MovimentoBancario.ColunasGrid.TMovimentoBancarioColunasGridTests.FundoDaLinhaContinuaAteOpcoes.claro120
+  Message: Expected 14872799 but got 16777215 Fundo interrompido: linha=0 x=676 PPI=120 tema=1
+
+  Teste.MovimentoBancario.ColunasGrid.TMovimentoBancarioColunasGridTests.FundoDaLinhaContinuaAteOpcoes.escuro120
+  Message: Expected 2112023 but got 1516560 Fundo interrompido: linha=0 x=676 PPI=120 tema=0
+
+  Teste.MovimentoBancario.ColunasGrid.TMovimentoBancarioColunasGridTests.FundoDaLinhaContinuaAteOpcoes.claro144
+  Message: Expected 14872799 but got 16777215 Fundo interrompido: linha=0 x=541 PPI=144 tema=1
+
+  Teste.MovimentoBancario.ColunasGrid.TMovimentoBancarioColunasGridTests.FundoDaLinhaContinuaAteOpcoes.escuro144
+  Message: Expected 2112023 but got 1516560 Fundo interrompido: linha=0 x=541 PPI=144 tema=0
+
+  Teste.MovimentoBancario.ColunasGrid.TMovimentoBancarioColunasGridTests.FundoDaLinhaContinuaAteOpcoes.claro192
+  Message: Expected 14872799 but got 16777215 Fundo interrompido: linha=0 x=361 PPI=192 tema=1
+
+  Teste.MovimentoBancario.ColunasGrid.TMovimentoBancarioColunasGridTests.FundoDaLinhaContinuaAteOpcoes.escuro192
+  Message: Expected 2112023 but got 1516560 Fundo interrompido: linha=0 x=361 PPI=192 tema=0
+
+  Teste.MovimentoBancario.ColunasGrid.TMovimentoBancarioColunasGridTests.FundoDaLinhaContinuaAteOpcoes.desabilitadoClaro
+  Message: Expected 14213335 but got 16777215 Separador interrompido: linha=0 x=721
+
+  Teste.MovimentoBancario.ColunasGrid.TMovimentoBancarioColunasGridTests.FundoDaLinhaContinuaAteOpcoes.desabilitadoEscuro
+  Message: Expected 3096106 but got 1516560 Separador interrompido: linha=0 x=721
+
+

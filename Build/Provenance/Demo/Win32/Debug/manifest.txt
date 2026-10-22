@@ -1,0 +1,7 @@
+project=Demo
+configuration=Debug
+platform=Win32
+exeOutput=C:\Users\DIOGOC~1\AppData\Local\Temp\DACValidation\ExeDemo
+runtimePackage=not-used
+skiaRuntime=M:\Delphi Componentes\DAC-DelphiComponents\Build\Exe\Win32\Debug\sk4d.dll
+legacyArtifacts=preserved

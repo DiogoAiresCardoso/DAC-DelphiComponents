@@ -1,4 +1,4 @@
-﻿object Form1: TForm1
+object Form1: TForm1
   Left = 0
   Top = 0
   Caption = 'DAC Componentes - Demo'
@@ -366,32 +366,8 @@
             Top = 72
             Width = 520
             Height = 178
-            Appearance = mchaDashboard
-            DataMode = cdmManual
-            Series = <
-              item
-                Name = 'Soja 2024/25'
-                ChartType = ctBar
-                FillMode = cfLinearGradient
-                GradientAngle = 90.000000000000000000
-                Points = <
-                  item
-                    Category = 'Jan'
-                    Value = 42.000000000000000000
-                  end
-                  item
-                    Category = 'Fev'
-                    Value = 68.000000000000000000
-                  end
-                  item
-                    Category = 'Mar'
-                    Value = 57.000000000000000000
-                  end
-                  item
-                    Category = 'Abr'
-                    Value = 75.000000000000000000
-                  end>
-              end>
+            Options.JSON =
+              '{"backgroundColor":"#102417","color":["#3DB82A"],"grid":{"left":45,"right":15,"top":15,"bottom":30},"xAxis":{"type":"category","data":["Jan","Fev","Mar","Abr"]},"yAxis":{"type":"value"},"tooltip":{"trigger":"axis","confine":true,"renderMode":"richText"},"series":[{"type":"bar","name":"Soja 2024/25","data":[42,68,57,75]}]}'
             TabOrder = 0
           end
           object dashProductivitySelect: TDACButton
@@ -889,6 +865,42 @@
             IconKind = mikTrash
             Tag = 3
             TabOrder = 5
+          end
+          object btnIconFileJson: TDACButton
+            Left = 40
+            Top = 580
+            Width = 180
+            Height = 46
+            Caption = 'Arquivo JSON'
+            Kind = mbkSecondary
+            ShowIcon = True
+            IconKind = mikFileJson
+            Tag = 3
+            TabOrder = 6
+          end
+          object btnIconFolderOpen: TDACButton
+            Left = 230
+            Top = 580
+            Width = 180
+            Height = 46
+            Caption = 'Pasta aberta'
+            Kind = mbkSecondary
+            ShowIcon = True
+            IconKind = mikFolderOpen
+            Tag = 3
+            TabOrder = 7
+          end
+          object btnIconDatabase: TDACButton
+            Left = 420
+            Top = 580
+            Width = 180
+            Height = 46
+            Caption = 'Banco de dados'
+            Kind = mbkSecondary
+            ShowIcon = True
+            IconKind = mikDatabase
+            Tag = 3
+            TabOrder = 8
           end
         end
         object lblButtonStates: TDACSystemText
@@ -1681,17 +1693,52 @@
     object tsCards: TTabSheet
       Caption = 'Cards'
       ImageIndex = 5
-      object lblCards: TLabel
+      object lblCards: TDACSystemText
         Left = 24
         Top = 24
-        Caption = 'Card de resumo composto com tokens compartilhados'
+        Width = 780
+        Height = 24
+        Role = mtrBody
+        Text = 'Fontes independentes para titulo, valor e rodape'
+      end
+      object btnCardTypography: TDACButton
+        Left = 24
+        Top = 56
+        Width = 260
+        Height = 40
+        Caption = 'Alterar fontes em runtime'
+        TabOrder = 0
+        OnClick = CardTypographyClick
       end
       object demoSummaryCard: TDACSummaryCard
         Left = 24
-        Top = 56
-        Width = 300
+        Top = 112
+        Width = 360
+        Height = 100
+        Title = 'Saldo da conta'
+        Value = 'R$ 555.920,56'
+        FooterText = 'No inicio do periodo'
+        Status = mcsNeutral
+        TabOrder = 1
+      end
+      object demoCardCustomFonts: TDACSummaryCard
+        Left = 408
+        Top = 112
+        Width = 360
         Height = 140
-        TabOrder = 0
+        Title = 'Saidas - fontes definidas no DFM'
+        Value = 'R$ -10,00'
+        FooterText = 'Rodape personalizado, independente do status'
+        Status = mcsDanger
+        TitleFont.Size = 11
+        TitleFont.Style = [fsItalic]
+        ValueFont.Size = 20
+        ValueFont.Style = [fsBold]
+        ValueFont.Color = clRed
+        FooterFont.Size = 10
+        FooterFont.Style = [fsUnderline]
+        FooterFont.Color = clGray
+        TabOrder = 2
       end
     end
     object tsStatus: TTabSheet
@@ -1851,30 +1898,9 @@
         Top = 56
         Width = 360
         Height = 180
-        DataMode = cdmManual
-        Title.Visible = True
-        Title.Text = 'Manual: barras e linha'
-        Series = <
-          item
-            Name = 'Producao'
-            ChartType = ctBar
-            FillMode = cfLinearGradient
-            Points = <
-              item Category = 'Jan' Value = 20.000000000000000000 end
-              item Category = 'Fev' Value = 35.000000000000000000 end
-              item Category = 'Mar' Value = 27.000000000000000000 end
-              item Category = 'Abr' Value = 46.000000000000000000 end>
-          end
-          item
-            Name = 'Meta'
-            ChartType = ctLine
-            FillMode = cfSolid
-            Points = <
-              item Category = 'Jan' Value = 28.000000000000000000 end
-              item Category = 'Fev' Value = 30.000000000000000000 end
-              item Category = 'Mar' Value = 33.000000000000000000 end
-              item Category = 'Abr' Value = 39.000000000000000000 end>
-          end>
+        Options.JSON =
+          '{"title":{"text":"Manual: barras e linha","textStyle":{"fontSize":12}},"grid":{"top":40,"bottom":25},"xAxis":{"type":"category","data":["Jan","Fev","Mar","Abr"]},"yAxis":{"type":"v' +
+          'alue"},"series":[{"type":"bar","name":"Producao","data":[20,35,27,46]},{"type":"line","name":"Meta","data":[28,30,33,39]}],"animation":false}'
         TabOrder = 0
       end
       object demoDoughnutChart: TDACChart
@@ -1882,18 +1908,9 @@
         Top = 56
         Width = 230
         Height = 180
-        ChartType = ctDoughnut
-        DataMode = cdmManual
-        Series = <
-          item
-            Name = 'Culturas'
-            ChartType = ctDoughnut
-            FillMode = cfRadialGradient
-            Points = <
-              item Category = 'Soja' Value = 55.000000000000000000 end
-              item Category = 'Milho' Value = 30.000000000000000000 end
-              item Category = 'Feijao' Value = 15.000000000000000000 end>
-          end>
+        Options.JSON =
+          '{"series":[{"type":"pie","name":"Culturas","radius":["35%","65%"],"label":{"show":false},"data":[{"name":"Soja","value":55},{"name":"Milho","value":30},{"name":"Feijao","value":15}' +
+          ']}],"animation":false}'
         TabOrder = 1
       end
       object demoLineChart: TDACChart
@@ -1901,18 +1918,9 @@
         Top = 260
         Width = 360
         Height = 180
-        ChartType = ctLine
-        DataMode = cdmManual
-        Series = <
-          item
-            Name = 'Umidade'
-            ChartType = ctLine
-            Points = <
-              item Category = 'Jan' Value = 16.000000000000000000 end
-              item Category = 'Fev' Value = 22.000000000000000000 end
-              item Category = 'Mar' IsNull = True end
-              item Category = 'Abr' Value = 18.000000000000000000 end>
-          end>
+        Options.JSON =
+          '{"grid":{"top":20,"bottom":25},"xAxis":{"type":"category","data":["Jan","Fev","Mar","Abr"]},"yAxis":{"type":"value"},"series":[{"type":"line","name":"Umidade","data":[16,22,null,18' +
+          ']}],"animation":false}'
         TabOrder = 2
       end
       object demoAreaChart: TDACChart
@@ -1920,20 +1928,9 @@
         Top = 260
         Width = 360
         Height = 180
-        ChartType = ctArea
-        DataMode = cdmManual
-        Series = <
-          item
-            Name = 'Precipitacao'
-            ChartType = ctArea
-            FillMode = cfLinearGradient
-            GradientAngle = 0.000000000000000000
-            Points = <
-              item Category = 'Jan' Value = 12.000000000000000000 end
-              item Category = 'Fev' Value = 30.000000000000000000 end
-              item Category = 'Mar' Value = 24.000000000000000000 end
-              item Category = 'Abr' Value = 40.000000000000000000 end>
-          end>
+        Options.JSON =
+          '{"grid":{"top":20,"bottom":25},"xAxis":{"type":"category","data":["Jan","Fev","Mar","Abr"]},"yAxis":{"type":"value"},"series":[{"type":"line","name":"Precipitacao","areaStyle":{},"' +
+          'data":[12,30,24,40]}],"animation":false}'
         TabOrder = 3
       end
       object demoStatusTimeline: TDACStatusTimelineChart

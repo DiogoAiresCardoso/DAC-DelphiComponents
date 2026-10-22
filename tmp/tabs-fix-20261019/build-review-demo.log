@@ -1,0 +1,5 @@
+  Embarcadero Delphi for Win32 compiler version 32.0
+  Copyright (c) 1983,2017 Embarcadero Technologies, Inc.
+M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(610): Hint warning H2077: Value assigned to 'V' never used [M:\Delphi Componentes\DAC-DelphiComponents\demo\Demo.dproj]
+M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(982): Hint warning H2164: Variable 'T' is declared but never used in 'TDACChartEngine.HitTest' [M:\Delphi Componentes\DAC-DelphiComponents\demo\Demo.dproj]
+  70885 lines, 1.25 seconds, 4419444 bytes code, 153436 bytes data.

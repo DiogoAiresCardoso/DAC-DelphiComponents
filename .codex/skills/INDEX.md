@@ -11,6 +11,13 @@ Codex neste checkout.
   reutilizáveis.
 - `knowledge/`: estudos, auditorias e demandas estruturadas em `.okf`.
 
+## Catálogo de conhecimento
+
+- `knowledge/dbgrid-design-system-reference.okf`: abstração tecnológica neutra
+  da prancha MaxxRural de DbGrid, incluindo princípios, anatomia, densidades,
+  variantes, estados, tokens, alinhamentos, comportamentos, lacunas e critérios
+  de aceite.
+
 Novos arquivos de memória ou `.okf` devem ser adicionados em `memory/` ou
 `knowledge/`, conforme o papel do registro. Não recrie diretórios legados de
 memória ou conhecimento fora desta pasta central.

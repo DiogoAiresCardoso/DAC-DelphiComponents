@@ -198,11 +198,7 @@ begin
     FCustomBorderColor := False;
     FCustomCornerRadius := False;
   end;
-  if FBackgroundColor = LTokens.TransparentSurfaceFallback then
-    Color := TDACComponentColors.ToVclColor(ParentSurfaceColor)
-  else
-    Color := TDACComponentColors.ToVclColor(
-      TDACComponentColors.Normalize(FBackgroundColor));
+  Color := TDACComponentColors.ToVclColor(ResolvedBackgroundColor);
   ParentColor := False;
   ParentBackground := False;
   ParentFont := False;
@@ -365,14 +361,11 @@ var
   LTokens: TDACControlTokens;
 begin
   LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
-  if FBackgroundColor = LTokens.TransparentSurfaceFallback then
-    LBackground := ParentSurfaceColor
-  else
-    LBackground := TDACComponentColors.Normalize(FBackgroundColor);
+  LBackground := ResolvedBackgroundColor;
 
   LScale := LTokens.ScrollContainerBorderWidth;
 
-  ACanvas.Clear(LBackground);
+  ACanvas.Clear(ParentSurfaceColor);
   LRect := FRenderer.SnapRect(TRectF.Create(0, 0, ADest.Width, ADest.Height), LScale);
   LRect.Inflate(-(LTokens.ScrollContainerBorderWidth / 2),
     -(LTokens.ScrollContainerBorderWidth / 2));
@@ -385,7 +378,7 @@ end;
 
 function TDACScrollContainer.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.PopupBackground;
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
 function TDACScrollContainer.IsPageActive: Boolean;
@@ -419,18 +412,28 @@ end;
 function TDACScrollContainer.ResolvedBackgroundColor: TAlphaColor;
 var
   LAppearance: TDACScrollAppearance;
+  LBackground: TAlphaColor;
   LTokens: TDACControlTokens;
 begin
   if (FAppearance = mscaCustom) and FCustomBackgroundColor then
-    Exit(FBackgroundColor);
-  LAppearance := FAppearance;
-  if LAppearance = mscaCustom then
-    LAppearance := FBaseAppearance;
-  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
-  if LAppearance = mscaViewport then
-    Result := LTokens.ScrollContainerViewportBackground
+    LBackground := FBackgroundColor
   else
-    Result := LTokens.ScrollContainerBackground;
+  begin
+    LAppearance := FAppearance;
+    if LAppearance = mscaCustom then
+      LAppearance := FBaseAppearance;
+    LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+    if LAppearance = mscaViewport then
+      LBackground := LTokens.ScrollContainerViewportBackground
+    else
+      LBackground := LTokens.ScrollContainerBackground;
+  end;
+  if LBackground = TDACComponentStyle.ResolveForSurface(Self,
+    FThemeMode).Tokens.Controls.TransparentSurfaceFallback then
+    Result := ParentSurfaceColor
+  else
+    Result := TDACComponentColors.CompositeOver(LBackground,
+      ParentSurfaceColor);
 end;
 
 procedure TDACScrollContainer.ScrollVertically(const ACode: Word);
@@ -496,12 +499,7 @@ begin
   if FBackgroundColor = AValue then
     Exit;
   FBackgroundColor := AValue;
-  if FBackgroundColor = TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.
-    TransparentSurfaceFallback then
-    Color := TDACComponentColors.ToVclColor(ParentSurfaceColor)
-  else
-    Color := TDACComponentColors.ToVclColor(
-      TDACComponentColors.Normalize(FBackgroundColor));
+  Color := TDACComponentColors.ToVclColor(ResolvedBackgroundColor);
   Redraw;
 end;
 
@@ -675,7 +673,8 @@ begin
   // pixels during the native scroll.  Paint the same token surface here to
   // prevent the default black brush from becoming visible between grids.
   // Em design-time tambem preenche para evitar pixels fantasma ao mover.
-  LBrush := CreateSolidBrush(ColorToRGB(Color));
+  LBrush := CreateSolidBrush(ColorToRGB(
+    TDACComponentColors.ToVclColor(ResolvedBackgroundColor)));
   try
     Winapi.Windows.FillRect(AMessage.DC, ClientRect, LBrush);
   finally

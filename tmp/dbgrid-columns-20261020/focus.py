@@ -1,0 +1,2 @@
+from pathlib import Path
+p=Path('Source/Controls/DAC.Components.Controls.DBGrid.CellPainter.pas');s=p.read_bytes().decode('cp1252').replace('\r\n','\n');s=s.replace('  FRenderer.StrokeRoundRect(ACanvas, TRectF.Create(ARect.Left + Inset,\n    ARect.Top + Inset, ARect.Right - Inset, ARect.Bottom - Inset),', '  FRenderer.StrokeRoundRect(ACanvas, TRectF.Create(ARect.Left + Inset * 1.5,\n    ARect.Top + Inset * 1.5, ARect.Right - Inset * 1.5, ARect.Bottom - Inset * 1.5),');p.write_bytes(s.replace('\n','\r\n').encode('cp1252'))

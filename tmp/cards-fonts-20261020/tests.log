@@ -1,0 +1,5 @@
+Parent=nil / designer / fontes / reset: PASS
+DFM antigo/default e novas fontes: PASS
+CAPTURE M:\Delphi Componentes\DAC-DelphiComponents\tmp\cards-fonts-20261020\card-tests-exe\card-runtime-fonts.png
+Runtime / temas / status / layout / pixels / redraw: PASS
+DACSummaryCardFonts: PASS

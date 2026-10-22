@@ -1,0 +1,39 @@
+**********************************************************************
+*        DUnitX - (c) 2015 Vincent Parrett & Contributors            *
+*                    vincent@finalbuilder.com                        *
+*                                                                    *
+*        License - http://www.apache.org/licenses/LICENSE-2.0        *
+**********************************************************************
+
+DUnitX - [ApiTestes.exe] - Starting Tests.
+
+.................F.F.F.F.F.....F............................................................................
+
+Tests Found   : 54
+Tests Ignored : 0
+Tests Passed  : 48
+Tests Leaked  : 0
+Tests Failed  : 6
+Tests Errored : 0
+
+Failing Tests
+
+  Teste.MovimentoBancario.ColunasGrid.TMovimentoBancarioColunasGridTests.FixasNaoMovemNemRecebemPixelsDoCentro.claro144
+  Message: Expected 294 but got 196 
+
+  Teste.MovimentoBancario.ColunasGrid.TMovimentoBancarioColunasGridTests.FixasNaoMovemNemRecebemPixelsDoCentro.escuro144
+  Message: Expected 294 but got 196 
+
+  Teste.MovimentoBancario.ColunasGrid.TMovimentoBancarioColunasGridTests.FixasNaoMovemNemRecebemPixelsDoCentro.claro192
+  Message: Expected 392 but got 196 
+
+  Teste.MovimentoBancario.ColunasGrid.TMovimentoBancarioColunasGridTests.FixasNaoMovemNemRecebemPixelsDoCentro.escuro192
+  Message: Expected 392 but got 196 
+
+  Teste.MovimentoBancario.ColunasGrid.TMovimentoBancarioColunasGridTests.FixasMantemAcoesMouseTecladoEIdentidade
+  Message: Condition is True when False expected. 
+
+  Teste.MovimentoBancario.ColunasGrid.TMovimentoBancarioColunasGridTests.FixasSelecaoCheckboxEsquerda
+  Message: Expected 0000000002 is not equal to actual 0000000001 
+
+

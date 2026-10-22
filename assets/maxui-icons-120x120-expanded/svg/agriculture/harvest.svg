@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Colheita" style="color:#2F9E22">
+  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="60" y1="102" x2="60" y2="20"/><path d="M60 38 C44 36 34 28 30 18 C44 16 56 24 60 38"/><path d="M60 52 C76 50 86 42 90 32 C76 30 64 38 60 52"/><path d="M60 68 C44 66 34 58 30 48 C44 46 56 54 60 68"/><path d="M60 82 C76 80 86 72 90 62 C76 60 64 68 60 82"/>
+  </g>
+</svg>

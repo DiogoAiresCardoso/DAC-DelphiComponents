@@ -8,6 +8,7 @@ uses
   System.Types,
   System.UITypes,
   Winapi.Messages,
+  Winapi.Windows,
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
@@ -32,6 +33,12 @@ type
     mcsaCustom
   );
 
+  TDACSummaryCardTextLayout = record
+    TitleBounds, ValueBounds, FooterBounds: TRect;
+    TitleText, ValueText, FooterText: string;
+    RequiredHeight: Integer;
+  end;
+
   TDACSummaryCard = class(TCustomControl)
   private
     FAppearance: TDACSummaryCardAppearance;
@@ -49,14 +56,34 @@ type
     FIconPainter: TDACSkiaIconPainter;
     FPaintBox: TSkPaintBox;
     FRenderer: TDACSkiaRenderer;
-    FTextOverlay: TDACSystemTextOverlay;
+    FTextOverlay: TGraphicControl;
+    FTitleFont, FValueFont, FFooterFont: TFont;
+    FCustomTitleFont, FCustomValueFont, FCustomFooterFont: Boolean;
+    FUpdatingFonts, FAdjustingTextHeight: Boolean;
+    FAutoTextHeight: Boolean;
+    FMeasureBitmap: TBitmap;
     FStatus: TDACSummaryCardStatus;
     FTitle: string;
     FThemeMode: TDACThemeMode;
     FValue: string;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
+    procedure CMParentColorChanged(var AMessage: TMessage); message CM_PARENTCOLORCHANGED;
     function EffectiveAccentColor: TAlphaColor;
     function FooterColor: TAlphaColor;
+    procedure InitializeTextFont(const AFont: TFont; const ASize: Single;
+      const ABold: Boolean);
+    procedure TextFontChanged(Sender: TObject);
+    procedure SetTitleFont(const AValue: TFont);
+    procedure SetValueFont(const AValue: TFont);
+    procedure SetFooterFont(const AValue: TFont);
+    procedure SetAutoTextHeight(const AValue: Boolean);
+    function WrappedText(const AText: string; const AFont: TFont;
+      const AWidth: Integer): string;
+    function MeasureText(const AText: string; const AFont: TFont;
+      const AWidth: Integer; out ADisplayText: string): Integer;
+    function CalculateTextLayout(const AWidth, AHeight: Integer): TDACSummaryCardTextLayout;
+    procedure DrawNativeText(const ACanvas: TCanvas);
+    procedure UpdateTextHeight;
     procedure ApplyAppearance;
     function IsAccentColorStored: Boolean;
     function IsBackgroundColorStored: Boolean;
@@ -85,16 +112,26 @@ type
     procedure Loaded; override;
     procedure Resize; override;
   public
+    procedure GetChildren(Proc: TGetChildProc; Root: TComponent); override;
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     function ResolvedBackgroundColor: TAlphaColor;
     procedure Redraw;
+    function TextLayout: TDACSummaryCardTextLayout;
+    procedure ResetTitleFont;
+    procedure ResetValueFont;
+    procedure ResetFooterFont;
+    procedure ResetTextFonts;
   published
     property Align;
     property Anchors;
     property Appearance: TDACSummaryCardAppearance read FAppearance
       write SetAppearance default mcsaDefault;
     property Constraints;
+    property AutoTextHeight: Boolean read FAutoTextHeight write SetAutoTextHeight default True;
+    property TitleFont: TFont read FTitleFont write SetTitleFont stored FCustomTitleFont;
+    property ValueFont: TFont read FValueFont write SetValueFont stored FCustomValueFont;
+    property FooterFont: TFont read FFooterFont write SetFooterFont stored FCustomFooterFont;
     property AccentColor: TAlphaColor read FAccentColor write SetAccentColor
       stored IsAccentColorStored;
     property BackgroundColor: TAlphaColor read FBackgroundColor
@@ -131,9 +168,35 @@ implementation
 
 uses
   System.Math,
+  System.SysUtils,
   DAC.Components.DesignSystem.ColorTokens,
   DAC.Components.DesignSystem.Fonts,
   DAC.Components.DesignSystem.ComponentStyle;
+
+type
+  { The card owns this native text layer. Measuring and painting consume the
+    same TFont, including italic/underline/strikeout; Skia owns only chrome. }
+  TDACSummaryCardTextOverlay = class(TGraphicControl)
+  private
+    FCard: TDACSummaryCard;
+  protected
+    procedure Paint; override;
+  public
+    constructor CreateForCard(ACard: TDACSummaryCard);
+  end;
+
+constructor TDACSummaryCardTextOverlay.CreateForCard(ACard: TDACSummaryCard);
+begin
+  inherited Create(ACard);
+  FCard := ACard;
+  Enabled := False;
+  SetSubComponent(True);
+end;
+
+procedure TDACSummaryCardTextOverlay.Paint;
+begin
+  FCard.DrawNativeText(Canvas);
+end;
 
 constructor TDACSummaryCard.Create(AOwner: TComponent);
 begin
@@ -151,6 +214,15 @@ begin
   FFooterText := '+0,0% vs. mes anterior';
   FIconKind := mikMoneyCircle;
   FStatus := mcsSuccess;
+  FAutoTextHeight := True;
+  FMeasureBitmap := TBitmap.Create;
+  FTitleFont := TFont.Create;
+  FValueFont := TFont.Create;
+  FFooterFont := TFont.Create;
+  ResetTextFonts;
+  FTitleFont.OnChange := TextFontChanged;
+  FValueFont.OnChange := TextFontChanged;
+  FFooterFont.OnChange := TextFontChanged;
   ApplyAppearance;
   FTitle := 'Receita';
   FValue := 'R$ 0,00';
@@ -161,7 +233,7 @@ begin
   FPaintBox := TSkPaintBox.Create(Self);
   FPaintBox.Parent := Self;
   FPaintBox.OnDraw := PaintBoxDraw;
-  FTextOverlay := TDACSystemTextOverlay.Create(Self);
+  FTextOverlay := TDACSummaryCardTextOverlay.CreateForCard(Self);
   FTextOverlay.Parent := Self;
   FTextOverlay.SetSubComponent(True);
   FTextOverlay.Align := alClient;
@@ -206,6 +278,9 @@ begin
   end;
   if not FCustomAccentColor then
     FAccentColor := LTokens.SummaryCardSuccess;
+  { Publish the already-composited opaque surface so native descendants use
+    the same background that Skia paints inside the card. }
+  Color := TDACComponentColors.ToVclColor(ResolvedBackgroundColor);
 end;
 
 destructor TDACSummaryCard.Destroy;
@@ -214,12 +289,32 @@ begin
   FTextOverlay.Free;
   FIconPainter.Free;
   FRenderer.Free;
+  FTitleFont.Free;
+  FValueFont.Free;
+  FFooterFont.Free;
+  FMeasureBitmap.Free;
   inherited;
 end;
 procedure TDACSummaryCard.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
   Redraw;
+end;
+
+procedure TDACSummaryCard.CMParentColorChanged(var AMessage: TMessage);
+begin
+  inherited;
+  ApplyAppearance;
+  Redraw;
+end;
+
+procedure TDACSummaryCard.GetChildren(Proc: TGetChildProc; Root: TComponent);
+var
+  I: Integer;
+begin
+  for I := 0 to ControlCount - 1 do
+    if (Controls[I] <> FPaintBox) and (Controls[I] <> FTextOverlay) and
+      (Controls[I].Owner = Root) then Proc(Controls[I]);
 end;
 
 procedure TDACSummaryCard.CreateWnd;
@@ -278,24 +373,30 @@ end;
 
 function TDACSummaryCard.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.PopupBackground;
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
 function TDACSummaryCard.ResolvedBackgroundColor: TAlphaColor;
 var
   LAppearance: TDACSummaryCardAppearance;
+  LBackground: TAlphaColor;
   LTokens: TDACControlTokens;
 begin
   if (FAppearance = mcsaCustom) and FCustomBackgroundColor then
-    Exit(FBackgroundColor);
-  LAppearance := FAppearance;
-  if LAppearance = mcsaCustom then
-    LAppearance := FBaseAppearance;
-  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
-  if LAppearance = mcsaDashboard then
-    Result := LTokens.SummaryCardDashboardBackground
+    LBackground := FBackgroundColor
   else
-    Result := LTokens.SummaryCardBackground;
+  begin
+    LAppearance := FAppearance;
+    if LAppearance = mcsaCustom then
+      LAppearance := FBaseAppearance;
+    LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+    if LAppearance = mcsaDashboard then
+      LBackground := LTokens.SummaryCardDashboardBackground
+    else
+      LBackground := LTokens.SummaryCardBackground;
+  end;
+  Result := TDACComponentColors.CompositeOver(LBackground,
+    ParentSurfaceColor);
 end;
 
 function TDACSummaryCard.IsAccentColorStored: Boolean;
@@ -327,23 +428,16 @@ var
   LCardBackground: TAlphaColor;
   LCardBorder: TAlphaColor;
   LCardRect: TRectF;
-  LFooterY: Single;
   LIconRect: TRectF;
   LIconStyle: TDACIconStyle;
   LPadding: Single;
   LRadius: Single;
   LScale: Single;
   LSurface: TAlphaColor;
-  LTextColor: TAlphaColor;
-  LTitleColor: TAlphaColor;
-  LTextLeft: Single;
   LTokens: TDACControlTokens;
 begin
   if ACanvas = nil then
     Exit;
-
-  FRenderer.BeginNativeText(FTextOverlay);
-  try
 
   LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
   LScale := LTokens.BorderWidth;
@@ -354,10 +448,7 @@ begin
   LCardRect.Inflate(-(LTokens.BorderWidth / 2) / LScale,
     -(LTokens.BorderWidth / 2) / LScale);
   LRadius := Pixels(FCornerRadius);
-  if FCustomBackgroundColor then
-    LCardBackground := FBackgroundColor
-  else
-    LCardBackground := LTokens.SummaryCardBackground;
+  LCardBackground := ResolvedBackgroundColor;
   if FCustomBorderColor then
     LCardBorder := FBorderColor
   else
@@ -384,41 +475,229 @@ begin
   LIconRect.Inflate(-Pixels(Round(LTokens.SummaryCardIconInset)), -Pixels(Round(LTokens.SummaryCardIconInset)));
   FIconPainter.Draw(ACanvas, LIconRect, FIconKind, LIconStyle);
 
-  LTextLeft := LBadgeRect.Right + Pixels(Round(LTokens.SummaryCardTextGap));
-  LTitleColor := LTokens.SummaryCardTitle;
-  LTextColor := LTokens.SummaryCardText;
-  FRenderer.Text(ACanvas, FTitle, TDACComponentStyle.FontFamily,
-    LTextLeft, LCardRect.Top + Pixels(Round(LTokens.SummaryCardTitleBaseline)),
-    LTokens.SummaryCardTitleTextSize, LTitleColor, False,
-    LCardRect.Right - LTextLeft - Pixels(Round(LTokens.SummaryCardTextGap)));
-  FRenderer.Text(ACanvas, FValue, TDACComponentStyle.FontFamily,
-    LTextLeft, LCardRect.Top + Pixels(Round(LTokens.SummaryCardValueBaseline)),
-    LTokens.SummaryCardValueTextSize, LTextColor, True,
-    LCardRect.Right - LTextLeft - Pixels(Round(LTokens.SummaryCardTextGap)));
+  FTextOverlay.Invalidate;
+end;
 
-  LFooterY := LCardRect.Bottom - Pixels(Round(LTokens.SummaryCardFooterInset));
-  FRenderer.Text(ACanvas, FFooterText, TDACComponentStyle.FontFamily,
-    LCardRect.Left + LPadding, LFooterY, LTokens.SummaryCardFooterTextSize, FooterColor, True,
-    LCardRect.Width - (LPadding * 2));
+procedure TDACSummaryCard.InitializeTextFont(const AFont: TFont;
+  const ASize: Single; const ABold: Boolean);
+begin
+  FUpdatingFonts := True;
+  try
+    AFont.Name := TDACComponentStyle.FontFamily;
+    AFont.Height := -Max(1, Round(ASize));
+    AFont.Charset := DEFAULT_CHARSET;
+    AFont.Pitch := fpDefault;
+    AFont.Quality := fqClearType;
+    AFont.Color := clDefault;
+    if ABold then AFont.Style := [fsBold] else AFont.Style := [];
   finally
-    FRenderer.EndNativeText;
+    FUpdatingFonts := False;
   end;
+end;
+
+procedure TDACSummaryCard.ResetTitleFont;
+begin
+  InitializeTextFont(FTitleFont,
+    TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.SummaryCardTitleTextSize, False);
+  FCustomTitleFont := False;
+  Redraw;
+end;
+
+procedure TDACSummaryCard.ResetValueFont;
+begin
+  InitializeTextFont(FValueFont,
+    TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.SummaryCardValueTextSize, True);
+  FCustomValueFont := False;
+  Redraw;
+end;
+
+procedure TDACSummaryCard.ResetFooterFont;
+begin
+  InitializeTextFont(FFooterFont,
+    TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.SummaryCardFooterTextSize, True);
+  FCustomFooterFont := False;
+  Redraw;
+end;
+
+procedure TDACSummaryCard.ResetTextFonts;
+begin
+  ResetTitleFont;
+  ResetValueFont;
+  ResetFooterFont;
+end;
+
+procedure TDACSummaryCard.TextFontChanged(Sender: TObject);
+begin
+  if FUpdatingFonts or (csDestroying in ComponentState) then Exit;
+  if Sender = FTitleFont then FCustomTitleFont := True
+  else if Sender = FValueFont then FCustomValueFont := True
+  else if Sender = FFooterFont then FCustomFooterFont := True;
+  Redraw;
+end;
+
+procedure TDACSummaryCard.SetTitleFont(const AValue: TFont);
+begin
+  FTitleFont.Assign(AValue);
+end;
+
+procedure TDACSummaryCard.SetValueFont(const AValue: TFont);
+begin
+  FValueFont.Assign(AValue);
+end;
+
+procedure TDACSummaryCard.SetFooterFont(const AValue: TFont);
+begin
+  FFooterFont.Assign(AValue);
+end;
+
+procedure TDACSummaryCard.SetAutoTextHeight(const AValue: Boolean);
+begin
+  if FAutoTextHeight = AValue then Exit;
+  FAutoTextHeight := AValue;
+  Redraw;
+end;
+
+function TDACSummaryCard.WrappedText(const AText: string; const AFont: TFont;
+  const AWidth: Integer): string;
+var
+  I, Count: Integer;
+  Word, Glyph: string;
+begin
+  FMeasureBitmap.Canvas.Font.Assign(AFont);
+  Result := '';
+  Word := '';
+  I := 1;
+  while I <= Length(AText) do
+  begin
+    Count := 1;
+    if (Ord(AText[I]) >= $D800) and (Ord(AText[I]) <= $DBFF) and
+      (I < Length(AText)) and (Ord(AText[I + 1]) >= $DC00) and
+      (Ord(AText[I + 1]) <= $DFFF) then Count := 2;
+    Glyph := Copy(AText, I, Count);
+    if AText[I] <= ' ' then
+    begin
+      Result := Result + Word + Glyph;
+      Word := '';
+    end
+    else
+    begin
+      if (Word <> '') and (FMeasureBitmap.Canvas.TextWidth(Word + Glyph) > AWidth) then
+      begin
+        Result := Result + Word + sLineBreak;
+        Word := '';
+      end;
+      Word := Word + Glyph;
+    end;
+    Inc(I, Count);
+  end;
+  Result := Result + Word;
+end;
+
+function TDACSummaryCard.MeasureText(const AText: string; const AFont: TFont;
+  const AWidth: Integer; out ADisplayText: string): Integer;
+var
+  R: TRect;
+begin
+  ADisplayText := WrappedText(AText, AFont, Max(1, AWidth));
+  if ADisplayText = '' then Exit(0);
+  R := Rect(0, 0, Max(1, AWidth), 0);
+  DrawText(FMeasureBitmap.Canvas.Handle, PChar(ADisplayText), Length(ADisplayText), R,
+    DT_CALCRECT or DT_WORDBREAK or DT_NOPREFIX);
+  Result := R.Height;
+end;
+
+function TDACSummaryCard.CalculateTextLayout(const AWidth,
+  AHeight: Integer): TDACSummaryCardTextLayout;
+var
+  Tokens: TDACControlTokens;
+  Padding, Gap, Left, Right, Top, H, FooterH, FooterOffset: Integer;
+begin
+  Result := Default(TDACSummaryCardTextLayout);
+  if (FMeasureBitmap = nil) or (FTitleFont = nil) or (FValueFont = nil) or
+    (FFooterFont = nil) then Exit;
+  Tokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  Padding := Round(Tokens.SummaryCardPadding);
+  Gap := Max(1, Round(Tokens.SummaryCardTextGap / 2));
+  Left := Padding + Round(Tokens.SummaryCardBadgeSize + Tokens.SummaryCardTextGap);
+  Right := Max(Left + 1, AWidth - Padding);
+  Top := Max(Padding, Round(Tokens.SummaryCardTitleBaseline - Tokens.SummaryCardTitleTextSize));
+  H := MeasureText(FTitle, FTitleFont, Right - Left, Result.TitleText);
+  Result.TitleBounds := Rect(Left, Top, Right, Top + H);
+  if H > 0 then Inc(Top, H + Gap);
+  if FTitle <> '' then Top := Max(Top,
+    Round(Tokens.SummaryCardValueBaseline - Tokens.SummaryCardValueTextSize));
+  H := MeasureText(FValue, FValueFont, Right - Left, Result.ValueText);
+  Result.ValueBounds := Rect(Left, Top, Right, Top + H);
+  Inc(Top, H);
+  FooterH := MeasureText(FFooterText, FFooterFont,
+    Right - Left, Result.FooterText);
+  if FooterH > 0 then
+  begin
+    Inc(Top, Gap);
+    FooterOffset := Max(FooterH, Abs(FFooterFont.Height) + Round(Tokens.SummaryCardFooterInset));
+    Result.RequiredHeight := Top + FooterOffset;
+    Top := Max(Top, AHeight - FooterOffset);
+  end
+  else Result.RequiredHeight := Top + Padding;
+  Result.FooterBounds := Rect(Left, Top, Right, Top + FooterH);
+  Result.RequiredHeight := Max(Result.RequiredHeight,
+    2 * Padding + Round(Tokens.SummaryCardBadgeSize));
+end;
+
+function TDACSummaryCard.TextLayout: TDACSummaryCardTextLayout;
+begin
+  Result := CalculateTextLayout(Width, Height);
+end;
+
+procedure TDACSummaryCard.UpdateTextHeight;
+var
+  Layout: TDACSummaryCardTextLayout;
+begin
+  if not FAutoTextHeight or FAdjustingTextHeight or (Width <= 0) or
+    (csLoading in ComponentState) or (csDestroying in ComponentState) then Exit;
+  Layout := TextLayout;
+  if Layout.RequiredHeight <= Height then Exit;
+  FAdjustingTextHeight := True;
+  try
+    Height := Layout.RequiredHeight;
+  finally
+    FAdjustingTextHeight := False;
+  end;
+end;
+
+procedure TDACSummaryCard.DrawNativeText(const ACanvas: TCanvas);
+var
+  Layout: TDACSummaryCardTextLayout;
+  Tokens: TDACControlTokens;
+  procedure Draw(const AText: string; const AFont: TFont; R: TRect;
+    const ADefaultColor: TAlphaColor);
+  begin
+    if AText = '' then Exit;
+    ACanvas.Font.Assign(AFont);
+    if AFont.Color = clDefault then
+      ACanvas.Font.Color := TDACComponentColors.ToVclColor(ADefaultColor);
+    SetBkMode(ACanvas.Handle, TRANSPARENT);
+    DrawText(ACanvas.Handle, PChar(AText), Length(AText), R,
+      DT_WORDBREAK or DT_NOPREFIX);
+  end;
+begin
+  Layout := TextLayout;
+  Tokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  Draw(Layout.TitleText, FTitleFont, Layout.TitleBounds, Tokens.SummaryCardTitle);
+  Draw(Layout.ValueText, FValueFont, Layout.ValueBounds, Tokens.SummaryCardText);
+  Draw(Layout.FooterText, FFooterFont, Layout.FooterBounds, FooterColor);
 end;
 
 procedure TDACSummaryCard.Redraw;
 begin
-  if (FPaintBox = nil) or (csDestroying in ComponentState) then
-    Exit;
+  if (FPaintBox = nil) or (csDestroying in ComponentState) then Exit;
+  UpdateTextHeight;
   UpdatePaintBoxBounds;
-  if csDesigning in ComponentState then
-  begin
-    if Parent <> nil then
-      FPaintBox.Redraw;
-    Invalidate;
-    Exit;
-  end;
   if (Parent <> nil) and HandleAllocated and Parent.HandleAllocated then
-    FPaintBox.Redraw;
+    FPaintBox.Redraw
+  else FPaintBox.Invalidate;
+  if FTextOverlay <> nil then FTextOverlay.Invalidate;
+  Invalidate;
 end;
 
 procedure TDACSummaryCard.Resize;
@@ -473,7 +752,10 @@ end;
 procedure TDACSummaryCard.SetThemeMode(const AValue: TDACThemeMode);
 begin
   if FThemeMode = AValue then
+  begin
+    ThemeChanged(Self);
     Exit;
+  end;
   FThemeMode := AValue;
   ThemeChanged(Self);
 end;
@@ -491,6 +773,7 @@ begin
   if FBackgroundColor = AValue then
     Exit;
   FBackgroundColor := AValue;
+  Color := TDACComponentColors.ToVclColor(ResolvedBackgroundColor);
   Redraw;
 end;
 
@@ -591,7 +874,16 @@ begin
 end;
 
 procedure TDACSummaryCard.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+var
+  LBrush: HBRUSH;
 begin
+  LBrush := CreateSolidBrush(ColorToRGB(
+    TDACComponentColors.ToVclColor(ParentSurfaceColor)));
+  try
+    Winapi.Windows.FillRect(AMessage.DC, ClientRect, LBrush);
+  finally
+    DeleteObject(LBrush);
+  end;
   AMessage.Result := 1;
 end;
 

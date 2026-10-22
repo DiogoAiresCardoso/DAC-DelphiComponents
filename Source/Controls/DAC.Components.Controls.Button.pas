@@ -12,6 +12,7 @@ uses
   Vcl.Graphics,
   Vcl.Skia,
   DAC.Components.Controls.SystemText,
+  DAC.Components.DesignSystem.ColorTokens,
   DAC.Components.DesignSystem.Fonts,
   DAC.Components.DesignSystem.ControlTokens,
   DAC.Components.DesignSystem.ComponentStyle,
@@ -77,13 +78,19 @@ type
     FTextLabel: TDACSystemText;
     FThemeMode: TDACThemeMode;
     function ButtonFontSize: Single;
+    function CaptionFontFamily: string;
+    function CaptionFontBold: Boolean;
     function CanvasBackground(
       const ATokens: TDACControlTokens): TAlphaColor;
     procedure CalculateContentLayout(const ADest: TRectF;
       out AIconRect, ATextRect: TRectF);
+    procedure CNKeyDown(var AMessage: TWMKeyDown); message CN_KEYDOWN;
+    procedure CNKeyUp(var AMessage: TWMKeyUp); message CN_KEYUP;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure CMFocusChanged(var AMessage: TMessage); message CM_FOCUSCHANGED;
+    procedure CMParentColorChanged(var AMessage: TMessage); message CM_PARENTCOLORCHANGED;
     procedure CMTextChanged(var AMessage: TMessage); message CM_TEXTCHANGED;
+    procedure CMFontChanged(var AMessage: TMessage); message CM_FONTCHANGED;
     function ContentPadding: Integer;
     function CursorInside: Boolean;
     function EffectiveIconSize: Integer;
@@ -190,7 +197,8 @@ implementation
 uses
   System.Math,
   System.SysUtils,
-  Winapi.Windows;
+  Winapi.Windows,
+  Vcl.Forms;
 
 type
   TButtonPalette = record
@@ -387,7 +395,9 @@ function TDACButton.ButtonFontSize: Single;
 var
   LTokens: TDACControlTokens;
 begin
+  if not ParentFont then Exit(Max(1, Font.Size));
   LTokens := ResolvedTokens;
+  if FKind = mbkInputAction then Exit(LTokens.ButtonInputActionCaptionTextSize);
   case FSize of
     mbsSmall:
       Result := LTokens.ButtonSmall.NativeFontSize;
@@ -398,11 +408,24 @@ begin
   end;
 end;
 
+function TDACButton.CaptionFontFamily: string;
+begin
+  if not ParentFont and (Trim(Font.Name) <> '') then Result := Font.Name
+  else Result := TDACComponentFontInstaller.FontFamily;
+end;
+
+function TDACButton.CaptionFontBold: Boolean;
+begin
+  if not ParentFont then Result := fsBold in Font.Style
+  else if FKind = mbkInputAction then Result := True
+  else Result := ResolvedTokens.ButtonCaptionBold;
+end;
+
 function TDACButton.CanvasBackground(
   const ATokens: TDACControlTokens): TAlphaColor;
 begin
   if FKind <> mbkInputAction then
-    Exit(ATokens.ButtonCanvasBackground);
+    Exit(TDACComponentColors.ResolveParentSurface(Self));
   Result := ATokens.ButtonInputActionCanvasBackground;
   if Assigned(FInputActionSurfaceProvider) then
     FInputActionSurfaceProvider(Self, Result);
@@ -444,7 +467,7 @@ begin
   end
   else if FTextLabel <> nil then
     LTextWidth := FTextLabel.MeasureTextWidth(Caption,
-      TDACComponentFontInstaller.FontFamily, Round(ButtonFontSize), True)
+      CaptionFontFamily, Round(ButtonFontSize), CaptionFontBold)
   else
     LTextWidth := 0;
   LAvailableWidth := Max(0, ADest.Width - (ContentPadding * 2));
@@ -575,6 +598,36 @@ begin
   inherited;
 end;
 
+procedure TDACButton.CNKeyDown(var AMessage: TWMKeyDown);
+var
+  LKey: Word;
+begin
+  if (AMessage.CharCode in [VK_RETURN, VK_EXECUTE]) and
+    not (csDesigning in ComponentState) then
+  begin
+    AMessage.Result := 1;
+    LKey := AMessage.CharCode;
+    KeyDown(LKey, KeyDataToShiftState(AMessage.KeyData));
+    Exit;
+  end;
+  inherited;
+end;
+
+procedure TDACButton.CNKeyUp(var AMessage: TWMKeyUp);
+var
+  LKey: Word;
+begin
+  if (AMessage.CharCode in [VK_RETURN, VK_EXECUTE]) and
+    not (csDesigning in ComponentState) then
+  begin
+    AMessage.Result := 1;
+    LKey := AMessage.CharCode;
+    KeyUp(LKey, KeyDataToShiftState(AMessage.KeyData));
+    Exit;
+  end;
+  inherited;
+end;
+
 procedure TDACButton.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
@@ -588,10 +641,24 @@ begin
   Redraw;
 end;
 
+procedure TDACButton.CMParentColorChanged(var AMessage: TMessage);
+begin
+  inherited;
+  Redraw;
+end;
+
 procedure TDACButton.CMTextChanged(var AMessage: TMessage);
 begin
   inherited;
-  UpdateLabel;
+  // Both layers depend on caption width. Invalidate the cached Skia frame
+  // together with the native label, even if the button bounds stay the same.
+  InvalidateButton;
+end;
+
+procedure TDACButton.CMFontChanged(var AMessage: TMessage);
+begin
+  inherited;
+  InvalidateButton;
 end;
 
 function TDACButton.ContentPadding: Integer;
@@ -670,7 +737,8 @@ end;
 procedure TDACButton.KeyDown(var Key: Word; Shift: TShiftState);
 begin
   inherited;
-  if (Key in [VK_RETURN, VK_SPACE]) and Enabled and not FLoading then
+  if (Key in [VK_RETURN, VK_EXECUTE, VK_SPACE]) and Enabled and
+    not FLoading then
   begin
     FPressed := True;
     Redraw;
@@ -680,7 +748,7 @@ end;
 procedure TDACButton.KeyUp(var Key: Word; Shift: TShiftState);
 begin
   inherited;
-  if (Key in [VK_RETURN, VK_SPACE]) and FPressed then
+  if (Key in [VK_RETURN, VK_EXECUTE, VK_SPACE]) and FPressed then
   begin
     FPressed := False;
     Redraw;
@@ -749,7 +817,7 @@ begin
     LTextWidth := 0;
     if FTextLabel <> nil then
       LTextWidth := FTextLabel.MeasureTextWidth(Caption,
-      TDACComponentFontInstaller.FontFamily, Round(ButtonFontSize), True);
+      CaptionFontFamily, Round(ButtonFontSize), CaptionFontBold);
     Inc(LWidth, Ceil(LTextWidth));
   end;
   if FShowIcon then
@@ -968,7 +1036,10 @@ begin
     { Invalidate alone retains the cached Skia frame in the VCL designer.
       Redraw clears that cache and repaints the current token palette without
       requiring a HWND or changing the composition order. }
-    FPaintBox.Redraw;
+    if (Parent <> nil) and HandleAllocated and Parent.HandleAllocated then
+      FPaintBox.Redraw
+    else
+      FPaintBox.Invalidate;
     if (FTextLabel <> nil) and (FTextLabel.Parent = Self) then
       FTextLabel.Invalidate;
     Invalidate;
@@ -1121,7 +1192,10 @@ end;
 procedure TDACButton.SetThemeMode(const AValue: TDACThemeMode);
 begin
   if FThemeMode = AValue then
+  begin
+    ThemeChanged(Self);
     Exit;
+  end;
   FThemeMode := AValue;
   ThemeChanged(Self);
 end;
@@ -1173,9 +1247,9 @@ begin
     FTextLabel.SetBounds(0, 0,
       Max(0, Width - Round(LTokens.ButtonInputActionCaptionRightInset)), Height);
     FTextLabel.Text := Caption;
-    FTextLabel.FontFamily := TDACComponentFontInstaller.FontFamily;
-    FTextLabel.FontSize := Round(LTokens.ButtonInputActionCaptionTextSize);
-    FTextLabel.Bold := True;
+    FTextLabel.FontFamily := CaptionFontFamily;
+    FTextLabel.FontSize := Round(ButtonFontSize);
+    FTextLabel.Bold := CaptionFontBold;
     FTextLabel.TextColor := LPalette.Text;
     FTextLabel.HorzAlign := mthaCenter;
     FTextLabel.VertAlign := mtvaCenter;
@@ -1195,9 +1269,9 @@ begin
   LLabelWidth := Min(LLabelWidth, Width - LLabelLeft);
   FTextLabel.SetBounds(LLabelLeft, 0, LLabelWidth, Height);
   FTextLabel.Text := Caption;
-  FTextLabel.FontFamily := TDACComponentFontInstaller.FontFamily;
+  FTextLabel.FontFamily := CaptionFontFamily;
   FTextLabel.FontSize := Round(ButtonFontSize);
-  FTextLabel.Bold := LTokens.ButtonCaptionBold;
+  FTextLabel.Bold := CaptionFontBold;
   FTextLabel.TextColor := LPalette.Text;
   FTextLabel.HorzAlign := mthaCenter;
   FTextLabel.VertAlign := mtvaCenter;
@@ -1258,7 +1332,7 @@ begin
     O botao usa csOpaque, mas o fill aqui garante que qualquer pixel
     exposto durante move/resize seja pintado com a cor correta. }
   LBrush := CreateSolidBrush(ColorToRGB(
-    ButtonVclColor(ResolvedTokens.ButtonCanvasBackground)));
+    ButtonVclColor(CanvasBackground(ResolvedTokens))));
   try
     Winapi.Windows.FillRect(AMessage.DC, ClientRect, LBrush);
   finally
@@ -1269,4 +1343,3 @@ end;
 
 
 end.
-

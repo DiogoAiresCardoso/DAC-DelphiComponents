@@ -29,6 +29,8 @@ type
     FStatus: TDACFeedbackStatus;
     FThemeMode: TDACThemeMode;
     FTitleText: string;
+    function ParentSurfaceColor: TAlphaColor;
+    procedure CMParentColorChanged(var AMessage: TMessage); message CM_PARENTCOLORCHANGED;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
     procedure SetMessageText(const AValue: string);
@@ -82,6 +84,8 @@ type
     FTracker: TTimer;
     FManualVisible: Boolean;
     function MouseInControl(AControl: TControl): Boolean;
+    function ParentSurfaceColor: TAlphaColor;
+    procedure CMParentColorChanged(var AMessage: TMessage); message CM_PARENTCOLORCHANGED;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
     procedure SetTargetControl(const AValue: TControl);
@@ -187,6 +191,13 @@ begin
   FRenderer.Free;
   inherited;
 end;
+
+procedure TDACToast.CMParentColorChanged(var AMessage: TMessage);
+begin
+  inherited;
+  Redraw;
+end;
+
 procedure TDACToast.CreateWnd;
 begin
   inherited;
@@ -213,6 +224,7 @@ begin
   FRenderer.BeginNativeText(FTextOverlay);
   try
   LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  ACanvas.Clear(ParentSurfaceColor);
   LRect := TRectF.Create(LTokens.BorderWidth / 2, LTokens.BorderWidth / 2,
     ADest.Width - (LTokens.BorderWidth / 2), ADest.Height - (LTokens.BorderWidth / 2));
   FRenderer.FillRoundRect(ACanvas, LRect, ToastBackground(FStatus, LTokens),
@@ -232,6 +244,11 @@ begin
   finally
     FRenderer.EndNativeText;
   end;
+end;
+
+function TDACToast.ParentSurfaceColor: TAlphaColor;
+begin
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
 function TDACToast.ResolvedBackgroundColor: TAlphaColor;
@@ -275,7 +292,10 @@ end;
 procedure TDACToast.SetThemeMode(const AValue: TDACThemeMode);
 begin
   if FThemeMode = AValue then
+  begin
+    ThemeChanged(Self);
     Exit;
+  end;
   FThemeMode := AValue;
   ThemeChanged(Self);
 end;
@@ -308,7 +328,7 @@ var
   LColor: TAlphaColor;
 begin
   { Fill com cor de fundo para eliminar pixels fantasma em design-time. }
-  LColor := ResolvedBackgroundColor;
+  LColor := ParentSurfaceColor;
   LBrush := CreateSolidBrush(ColorToRGB(
     TColor(((LColor and $00FF0000) shr 16) or
     (LColor and $0000FF00) or ((LColor and $000000FF) shl 16))));
@@ -379,6 +399,19 @@ begin
   FRenderer.Free;
   inherited;
 end;
+
+procedure TDACTooltip.CMParentColorChanged(var AMessage: TMessage);
+begin
+  inherited;
+  if (FPaintBox <> nil) and not (csDestroying in ComponentState) then
+  begin
+    if (csDesigning in ComponentState) or
+      ((Parent <> nil) and HandleAllocated and Parent.HandleAllocated) then
+      FPaintBox.Redraw;
+    Invalidate;
+  end;
+end;
+
 procedure TDACTooltip.HideTooltip;
 begin
   FManualVisible := False;
@@ -422,7 +455,7 @@ begin
   FRenderer.BeginNativeText(FTextOverlay);
   try
   LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
-  ACanvas.Clear(LTokens.TransparentSurfaceFallback);
+  ACanvas.Clear(ParentSurfaceColor);
   LRect := TRectF.Create(LTokens.BorderWidth / 2, LTokens.BorderWidth / 2,
     ADest.Width - (LTokens.BorderWidth / 2), ADest.Height - (LTokens.BorderWidth / 2));
   FRenderer.FillRoundRect(ACanvas, LRect, LTokens.TooltipBackground,
@@ -436,6 +469,11 @@ begin
   finally
     FRenderer.EndNativeText;
   end;
+end;
+
+function TDACTooltip.ParentSurfaceColor: TAlphaColor;
+begin
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
 function TDACTooltip.ResolvedBackgroundColor: TAlphaColor;
@@ -481,7 +519,10 @@ end;
 procedure TDACTooltip.SetThemeMode(const AValue: TDACThemeMode);
 begin
   if FThemeMode = AValue then
+  begin
+    ThemeChanged(Self);
     Exit;
+  end;
   FThemeMode := AValue;
   ThemeChanged(Self);
 end;
@@ -566,7 +607,7 @@ var
   LBrush: HBRUSH;
   LColor: TAlphaColor;
 begin
-  LColor := ResolvedBackgroundColor;
+  LColor := ParentSurfaceColor;
   LBrush := CreateSolidBrush(ColorToRGB(
     TColor(((LColor and $00FF0000) shr 16) or
     (LColor and $0000FF00) or ((LColor and $000000FF) shl 16))));

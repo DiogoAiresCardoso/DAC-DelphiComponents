@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Baixar / Exportar" style="color:#2F9E22">
+  <g stroke="#2F9E22" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="60" y1="18" x2="60" y2="72"/><polyline points="38,52 60,74 82,52"/><path d="M24 84 V100 H96 V84"/>
+  </g>
+</svg>

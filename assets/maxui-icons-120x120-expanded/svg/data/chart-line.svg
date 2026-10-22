@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Gráfico de linha" style="color:#2F9E22">
+  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="20" y1="100" x2="104" y2="100"/><line x1="20" y1="100" x2="20" y2="20"/><polyline points="30,78 48,58 64,68 82,38 100,50"/><circle cx="30" cy="78" r="4" fill="currentColor" stroke="none"/><circle cx="48" cy="58" r="4" fill="currentColor" stroke="none"/><circle cx="64" cy="68" r="4" fill="currentColor" stroke="none"/><circle cx="82" cy="38" r="4" fill="currentColor" stroke="none"/><circle cx="100" cy="50" r="4" fill="currentColor" stroke="none"/>
+  </g>
+</svg>

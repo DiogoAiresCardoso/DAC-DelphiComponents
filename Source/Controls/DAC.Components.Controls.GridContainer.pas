@@ -230,11 +230,7 @@ begin
     FCustomBackgroundColor := False;
     FCustomBorderColor := False;
   end;
-  if FBackgroundColor = LTokens.TransparentSurfaceFallback then
-    Color := TDACComponentColors.ToVclColor(ParentSurfaceColor)
-  else
-    Color := TDACComponentColors.ToVclColor(
-      TDACComponentColors.Normalize(FBackgroundColor));
+  Color := TDACComponentColors.ToVclColor(ResolvedBackgroundColor);
   ParentColor := False;
   ParentBackground := False;
   ParentFont := False;
@@ -567,11 +563,9 @@ var
   LTokens: TDACControlTokens;
 begin
   LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
-  if FBackgroundColor = LTokens.TransparentSurfaceFallback then
-    LBackground := ParentSurfaceColor
-  else
-    LBackground := TDACComponentColors.Normalize(FBackgroundColor);
+  LBackground := ResolvedBackgroundColor;
 
+  ACanvas.Clear(ParentSurfaceColor);
   LRect := TRectF.Create(0, 0, ADest.Width, ADest.Height);
   LRect := FRenderer.SnapRect(LRect, LTokens.GridContainerBorderWidth);
   LRect.Inflate(-(LTokens.GridContainerBorderWidth / 2),
@@ -585,29 +579,38 @@ end;
 
 function TDACGridContainer.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TDACComponentStyle.ResolveForSurface(Self,
-    FThemeMode).Tokens.Controls.PopupBackground;
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
 function TDACGridContainer.ResolvedBackgroundColor: TAlphaColor;
 var
   LAppearance: TDACGridContainerAppearance;
+  LBackground: TAlphaColor;
   LTokens: TDACControlTokens;
 begin
   if (FAppearance = mgcaCustom) and FCustomBackgroundColor then
-    Exit(FBackgroundColor);
-  LAppearance := FAppearance;
-  if LAppearance = mgcaCustom then
-    LAppearance := FBaseAppearance;
-  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
-  case LAppearance of
-    mgcaTransparent:
-      Result := LTokens.GridContainerTransparentBackground;
-    mgcaViewport:
-      Result := LTokens.ScrollContainerViewportBackground;
+    LBackground := FBackgroundColor
   else
-    Result := LTokens.GridContainerBackground;
+  begin
+    LAppearance := FAppearance;
+    if LAppearance = mgcaCustom then
+      LAppearance := FBaseAppearance;
+    LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+    case LAppearance of
+      mgcaTransparent:
+        LBackground := LTokens.GridContainerTransparentBackground;
+      mgcaViewport:
+        LBackground := LTokens.ScrollContainerViewportBackground;
+    else
+      LBackground := LTokens.GridContainerBackground;
+    end;
   end;
+  if LBackground = TDACComponentStyle.ResolveForSurface(Self,
+    FThemeMode).Tokens.Controls.TransparentSurfaceFallback then
+    Result := ParentSurfaceColor
+  else
+    Result := TDACComponentColors.CompositeOver(LBackground,
+      ParentSurfaceColor);
 end;
 
 procedure TDACGridContainer.Redraw;
@@ -693,12 +696,7 @@ begin
   if FBackgroundColor = AValue then
     Exit;
   FBackgroundColor := AValue;
-  if FBackgroundColor = TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.
-    TransparentSurfaceFallback then
-    Color := TDACComponentColors.ToVclColor(ParentSurfaceColor)
-  else
-    Color := TDACComponentColors.ToVclColor(
-      TDACComponentColors.Normalize(FBackgroundColor));
+  Color := TDACComponentColors.ToVclColor(ResolvedBackgroundColor);
   Redraw;
 end;
 
@@ -857,7 +855,8 @@ begin
   // A grid can be exposed while its scrollbox parent moves child HWNDs.  Its
   // Skia surface redraws afterward, so the native erase must already carry
   // the same token color instead of leaving the default black background.
-  LBrush := CreateSolidBrush(ColorToRGB(Color));
+  LBrush := CreateSolidBrush(ColorToRGB(
+    TDACComponentColors.ToVclColor(ParentSurfaceColor)));
   try
     Winapi.Windows.FillRect(AMessage.DC, ClientRect, LBrush);
   finally

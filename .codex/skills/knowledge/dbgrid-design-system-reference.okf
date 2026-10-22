@@ -1,0 +1,665 @@
+# Base de conhecimento — MaxxRural Design System de DbGrid
+
+Atualizado: 2026-09-01
+
+## 1. Fonte, escopo e nível de autoridade
+
+Esta base abstrai exclusivamente a prancha visual fornecida com o título
+`MaxxRural — Design System de DbGrid` e o subtítulo
+`Biblioteca de grade de dados para uso consistente no sistema`.
+
+- Dimensões observadas: `1448 x 1086 px`.
+- SHA-256 da imagem recebida:
+  `82BC2E74B41823BE98CB2DF45DF54576BDF6357C77A915F976770A7CED99B2B0`.
+- A abstração é independente de tecnologia: aplica-se a `TDBGrid`, `TcxGrid`,
+  `TJvDBUltimGrid`, uma futura grid DAC ou outra implementação equivalente.
+- A prancha é fonte de verdade para intenção visual, anatomia, densidades,
+  estados, tokens, alinhamentos e boas práticas descritos neste arquivo.
+- A prancha não define API Delphi, herança, eventos, persistência, datasource,
+  estratégia de pintura, StyleHook ou biblioteca concreta.
+- Nenhum fonte de componente foi alterado como parte desta extração.
+
+### Convenção epistemológica
+
+- **Observado**: texto, métrica, cor ou comportamento explicitamente mostrado
+  na prancha.
+- **Abstraído**: regra tecnológica neutra derivada de vários elementos
+  observados.
+- **Não definido**: decisão que a prancha não permite confirmar.
+
+Não promover uma abstração ou lacuna a requisito literal sem validação de
+produto.
+
+## 2. Propósito do componente
+
+A DbGrid é uma superfície de leitura e operação sobre dados tabulares. Seu
+objetivo é manter consistência entre telas, tornar grandes volumes
+escaneáveis, preservar hierarquia clara e oferecer feedback imediato para
+seleção, foco, edição, estado, carregamento e ausência de dados.
+
+O componente deve equilibrar cinco responsabilidades:
+
+1. organizar dados em linhas e colunas previsíveis;
+2. permitir leitura horizontal e comparação vertical;
+3. indicar estado sem poluir o conteúdo;
+4. oferecer ações e navegação sem competir com os dados;
+5. adaptar densidade ao contexto sem criar uma segunda linguagem visual.
+
+## 3. Princípios visuais observados
+
+### 3.1 Consistência
+
+Padrões unificados em toda a grade para previsibilidade. Cabeçalho, linha,
+seleção, ordenação, filtros, ações, rodapé e paginação devem repetir o mesmo
+vocabulário em todas as telas.
+
+### 3.2 Legibilidade
+
+Texto claro, contraste adequado e espaçamento equilibrado. A grade não deve
+comprimir a tipografia apenas para exibir mais dados.
+
+### 3.3 Hierarquia
+
+Estrutura visual clara para guiar a leitura das informações. Cabeçalho,
+conteúdo primário, conteúdo secundário, estado e controles operacionais têm
+pesos distintos.
+
+### 3.4 Escaneabilidade
+
+Dados organizados para leitura rápida e eficiente. Zebra sutil, alinhamento
+por tipo de dado e separadores discretos ajudam a comparar valores.
+
+### 3.5 Feedback imediato
+
+Estados e interações mostram o que está acontecendo: hover, foco, seleção,
+edição, sucesso, erro, disabled, loading e vazio são visualmente distinguíveis.
+
+## 4. Anatomia canônica
+
+```text
+DbGrid
+├── moldura externa
+│   ├── raio
+│   └── borda
+├── viewport tabular
+│   ├── cabeçalho
+│   │   ├── indicador/seleção global opcional
+│   │   ├── títulos de coluna
+│   │   ├── ordenação
+│   │   ├── filtro opcional
+│   │   └── limites/redimensionamento de coluna
+│   └── corpo
+│       ├── indicador de seleção por linha
+│       ├── células
+│       ├── zebra
+│       ├── hover
+│       ├── seleção
+│       ├── edição opcional
+│       ├── expansão mestre-detalhe opcional
+│       └── ações por linha
+├── scrollbar horizontal
+└── rodapé/status
+    ├── contagem ou resumo
+    ├── totais opcionais
+    └── paginação opcional
+```
+
+### Elementos nomeados na prancha
+
+- indicador de seleção;
+- cabeçalho;
+- título da coluna;
+- ordenação;
+- célula;
+- linha;
+- zebra;
+- linha hover;
+- linha selecionada;
+- ações por linha;
+- scrollbar horizontal;
+- rodapé/status;
+- paginação opcional.
+
+### Relações visuais
+
+- O cabeçalho forma uma faixa contínua, e não cards independentes por coluna.
+- As linhas compartilham uma mesma superfície tabular.
+- Separadores são finos e subordinados ao conteúdo.
+- Seleção atua sobre a linha inteira e possui acento verde próprio.
+- Ações ficam na extremidade da linha e são visualmente secundárias.
+- Rodapé e paginação pertencem ao mesmo frame da grid.
+- Scrollbar não deve parecer uma seção externa ou uma toolbar.
+
+## 5. Especificação de tamanho e densidade
+
+### 5.1 Densidades observadas
+
+| Tamanho | Altura da linha | Altura do header | Fonte | Intensidade visual | Uso recomendado |
+| --- | ---: | ---: | ---: | --- | --- |
+| SM | 32 px | 36 px | 12 px | compacta | listas compactas e secundárias |
+| MD | 36 px | 40 px | 13 px | padrão | padrão do sistema, maioria dos casos |
+| LG | 44 px | 44 px | 14 px | confortável | listas amplas ou dados densos |
+
+### 5.2 Especificação destacada para MD
+
+- altura do header: `40 px`;
+- altura da linha: `36 px`;
+- padding de célula: `8 px / 12 px`;
+- raio: `8 px`;
+- borda: `1 px`;
+- grid-base: `8 px`.
+
+### 5.3 Interpretação correta das unidades
+
+Os tamanhos de fonte acima estão escritos em `px` na prancha. Eles não devem
+ser copiados automaticamente para `TFont.Size`, que usa pontos. A conversão
+para VCL, CSS, FMX ou outra tecnologia é uma etapa posterior e deve preservar
+a aparência e a densidade, não o número bruto.
+
+### 5.4 Regra de escolha
+
+- Usar MD por padrão.
+- Usar SM quando a lista é auxiliar, secundária ou precisa ser compacta.
+- Usar LG quando o conteúdo requer maior área de leitura ou interação.
+- Densidade não muda semântica, cores de estado ou ordem dos elementos.
+- Uma mesma tela não deve misturar densidades sem uma justificativa clara.
+
+## 6. Tipos de DbGrid
+
+### 6.1 Simples
+
+Grade básica para listagens convencionais. Não depende de zebra, seleção
+múltipla, ações, agrupamento ou edição.
+
+### 6.2 Zebrado
+
+Alterna suavemente a superfície das linhas para melhorar a leitura horizontal
+e o retorno visual entre colunas distantes.
+
+### 6.3 Com seleção
+
+Permite seleção de uma ou mais linhas. A seleção combina checkbox/indicador,
+fundo selecionado e acento verde.
+
+### 6.4 Com ações
+
+Oferece ações rápidas por linha, preferencialmente concentradas em uma área de
+ação ou menu contextual, sem transformar cada célula em uma toolbar.
+
+### 6.5 Editável
+
+Permite edição inline de células. O editor possui contorno de foco claro e
+permanece contido na célula.
+
+### 6.6 Mestre-detalhe
+
+Uma linha pai expande uma região de detalhes. A expansão não deve destruir a
+leitura das demais colunas nem confundir detalhe com uma nova linha comum.
+
+### 6.7 Com totais no rodapé
+
+Exibe resumo e totais na barra inferior. Totais seguem o alinhamento e o tipo
+da coluna a que pertencem.
+
+### 6.8 Com agrupamento
+
+Agrupa dados por coluna ou contexto. O agrupador cria hierarquia própria e
+deve continuar distinguível de linhas de dados e mestre-detalhe.
+
+### 6.9 Composição de capacidades
+
+Os tipos são capacidades combináveis, não classes visualmente incompatíveis.
+Uma grid pode ser zebrada, selecionável, editável, agrupada e possuir totais,
+desde que preserve a hierarquia e evite excesso de sinalização.
+
+## 7. Estados visuais
+
+### 7.1 Estados de linha/célula observados
+
+- default;
+- hover;
+- focus;
+- selected;
+- ativo/célula editando;
+- success;
+- error;
+- disabled;
+- loading;
+- vazio/sem dados.
+
+### 7.2 Default
+
+Linha em superfície base, texto primário e bordas discretas. Não deve parecer
+desabilitada nem competir com linhas interativas.
+
+### 7.3 Hover
+
+Realce sutil aplicado à linha sob o ponteiro. O hover preserva contraste do
+texto e não deve ser confundido com seleção persistente.
+
+### 7.4 Focus
+
+Contorno verde identifica a célula ou elemento com foco de teclado. Foco e
+seleção são estados distintos: a linha pode estar selecionada enquanto uma
+célula específica mantém foco.
+
+### 7.5 Selected
+
+Fundo verde suave, checkbox/indicador marcado e acento verde. A seleção deve
+continuar legível com hover e com foco.
+
+### 7.6 Ativo/editando
+
+A célula ativa ganha affordance de edição, como editor inline ou seletor. O
+restante da linha mantém contexto suficiente para o usuário não perder a
+posição.
+
+### 7.7 Success e ativo semântico
+
+Usa verde e texto semântico, podendo aparecer como badge/status. Não confundir
+`success` de operação com `selected` de navegação.
+
+### 7.8 Error
+
+Usa fundo suave vermelho, texto vermelho e indicação semântica. O erro precisa
+permanecer identificável sem depender apenas da cor.
+
+### 7.9 Disabled
+
+Reduz contraste do conteúdo e remove affordances de alteração. A informação
+continua legível.
+
+### 7.10 Loading
+
+Exibe feedback de carregamento dentro da região da grid. O estado não deve
+parecer uma lista vazia nem deixar ações mutáveis disponíveis.
+
+### 7.11 Vazio
+
+Substitui o corpo por uma área vazia centralizada com ícone neutro e a mensagem
+`Nenhum registro encontrado.`. O cabeçalho pode permanecer para conservar o
+contexto estrutural das colunas.
+
+### 7.12 Modelo de estado abstraído
+
+Para implementação futura, tratar separadamente:
+
+```text
+estado estrutural: normal | loading | empty | disabled
+estado de ponteiro: none | hover
+estado de navegação: none | focused | selected
+estado de edição: readonly | editable | editing | invalid
+estado semântico: neutral | active | success | warning | error
+```
+
+Esta decomposição é uma abstração. A prancha demonstra coexistência de estados,
+mas não declara formalmente uma precedência de pintura.
+
+## 8. Cabeçalho, ordenação, filtros e descoberta
+
+### 8.1 Cabeçalho
+
+- Títulos de coluna são mais fortes que o conteúdo de linha.
+- Cabeçalho possui fundo próprio e altura estável por densidade.
+- Colunas mantêm divisores discretos.
+- O título não deve ser comprimido por glyphs de ordenação ou filtro.
+
+### 8.2 Ordenação ascendente
+
+O título mostra indicador ascendente. A lista resultante mantém as mesmas
+regras de linha, seleção e zebra.
+
+### 8.3 Ordenação descendente
+
+O título mostra indicador descendente, visualmente pareado ao ascendente.
+
+### 8.4 Filtro na linha do cabeçalho
+
+Uma área de filtro pode existir abaixo ou integrada ao cabeçalho. Cada coluna
+pode oferecer campo, seletor e affordance de filtro.
+
+### 8.5 Busca rápida global
+
+Campo `Buscar...` ou equivalente procura em toda a grade. A busca global é
+conceitualmente diferente do filtro de uma coluna.
+
+### 8.6 Colunas fixas/pinadas
+
+Colunas essenciais podem permanecer fixas durante scroll horizontal. O limite
+entre região fixa e rolável deve ser perceptível, mas discreto.
+
+### 8.7 Menu de contexto observado
+
+- classificar ascendente;
+- classificar descendente;
+- filtrar coluna;
+- ocultar coluna;
+- fixar coluna;
+- configurações.
+
+O menu oferece operações secundárias e não deve esconder a ação primária da
+tela.
+
+## 9. Cores e tokens observados
+
+### 9.1 Linhas, cabeçalho, texto e bordas
+
+| Token observado | Valor | Uso |
+| --- | --- | --- |
+| `grid.row.bg.default` | `#FFFFFF` | fundo padrão da linha |
+| `grid.row.bg.zebra` | `#F7FAF8` | linha alternada |
+| `grid.row.bg.hover` | `#E8F6F1` | linha sob hover |
+| `grid.row.bg.selected` | `#E2F1E7` | linha selecionada |
+| `grid.row.bg.selectedHover` | `#D8ECDF` | selecionada sob hover |
+| `grid.row.border` | `#E2E8E3` | separadores e bordas discretas |
+| `grid.row.accent.selected` | `#0F8B4C` | acento de seleção |
+| `grid.header.bg` | `#F3F6F4` | fundo do cabeçalho |
+| `grid.header.text` | `#1F2A24` | texto do cabeçalho |
+| `grid.text.primary` | `#1F2A24` | texto principal |
+| `grid.text.secondary` | `#5F6B63` | texto secundário |
+
+### 9.2 Status e foco
+
+| Token observado | Valor | Uso |
+| --- | --- | --- |
+| `status.success.bg` | `#E8F7EE` | fundo de status positivo |
+| `status.success.text` | `#0F8B4C` | texto/ícone de sucesso |
+| `status.warning.bg` | `#FFF4E5` | fundo de atenção |
+| `status.warning.text` | `#C08A00` | texto/ícone de atenção |
+| `status.error.bg` | `#FDE8E8` | fundo de erro |
+| `status.error.text` | `#E53935` | texto/ícone de erro |
+| `focus.ring` | `#0F8B4C` | contorno de foco |
+
+### 9.3 Regras de aplicação
+
+- Tokens de linha não devem ser substituídos por cores ad hoc da tela.
+- Zebra é uma diferença sutil entre superfícies, não uma faixa saturada.
+- Hover e seleção têm tokens diferentes.
+- `selectedHover` evita perder hover sobre uma linha já selecionada.
+- Status usa pares fundo/texto para manter contraste.
+- O acento de seleção não substitui o fundo selecionado nem o checkbox.
+- A borda de `1 px` é a regra dominante; não duplicar separadores.
+
+### 9.4 Limite temático observado
+
+A prancha usa uma shell documental escura, mas os tokens tabulares transcritos
+são de superfície clara. A seção `Superfícies claras (modo claro)` confirma o
+contrato claro. Uma paleta funcional de DbGrid escura não está especificada na
+imagem e não deve ser inferida das cores do painel de documentação.
+
+## 10. Espaçamento e alinhamento
+
+### Métricas observadas
+
+- grid base: `8 px`;
+- padding da célula: `8 px` vertical e `12 px` horizontal;
+- gap entre toolbar e grid: `12 px`;
+- margem entre blocos: `16 px`.
+
+### Alinhamento por conteúdo
+
+- texto: alinhado à esquerda;
+- números: alinhados à direita;
+- datas: centralizadas ou alinhadas consistentemente em toda a coluna;
+- ícones: centralizados verticalmente;
+- checkbox/indicador: centralizado em sua coluna;
+- ações: agrupadas na extremidade da linha;
+- totais: alinhados à coluna correspondente.
+
+### Regras de consistência
+
+- Uma coluna usa o mesmo alinhamento no header, corpo e footer quando a
+  semântica permitir.
+- Não alternar datas entre esquerda e centro dentro da mesma grid.
+- Não aproximar texto das bordas para compensar uma coluna estreita.
+- Ajustar largura, ellipsis ou detalhe acessível antes de reduzir padding.
+
+## 11. Rodapé, status e paginação
+
+### Rodapé/status
+
+- Pertence à moldura da grid.
+- Pode informar quantidade de registros, itens ou resumo.
+- Pode hospedar totais relevantes.
+- Não precisa existir quando não houver informação útil.
+
+### Paginação
+
+- É opcional.
+- Demonstra primeira, anterior, páginas numeradas, próxima e última.
+- Página atual recebe destaque verde.
+- Controles ficam agrupados e alinhados à direita do rodapé.
+- A navegação não altera o vocabulário visual das linhas.
+
+### Scroll
+
+- Scrollbar horizontal aparece dentro da composição da grid.
+- Colunas fixas permanecem estáveis enquanto o conteúdo rolável se move.
+- Scroll não deve deslocar cabeçalho fixo nem rodapé quando esses recursos
+  estiverem habilitados.
+
+## 12. Regras de comportamento e boas práticas
+
+### Faça
+
+- manter cabeçalho fixo em listas longas;
+- usar zebra sutil para melhorar a escaneabilidade;
+- destacar a seleção sem comprometer a legibilidade;
+- usar agrupamento para contextualizar grandes volumes;
+- exibir totais e resumos quando relevante;
+- usar ícones e cores de status com moderação.
+
+### Não faça
+
+- não usar bordas pesadas ou múltiplas linhas de grade;
+- não usar muitas cores que poluem a leitura;
+- não esconder ações importantes em menus excessivos;
+- não truncar informações importantes sem opção de visualização completa;
+- não usar fontes pequenas que dificultem a leitura;
+- não quebrar o padrão de alinhamento da grade.
+
+### Contrato comportamental abstraído
+
+- Hover acompanha o ponteiro sem alterar o registro corrente por si só.
+- Seleção é persistente até uma ação explícita do usuário ou mudança de dados.
+- Foco deve ser navegável por teclado e permanecer visível.
+- Ordenação, filtro, busca, scroll e paginação preservam indicação de loading.
+- Ações por linha atuam sobre a linha inequívoca que as contém.
+- Edição inline preserva confirmação, cancelamento e indicação de erro.
+- Empty e loading são mutuamente distinguíveis.
+- Disabled bloqueia mutação sem tornar o conteúdo ilegível.
+
+As frases acima normalizam a intenção da prancha; eventos e atalhos concretos
+dependem da tecnologia escolhida.
+
+## 13. Exemplos de uso observados
+
+### A. Listagem de talhões
+
+Colunas: código, talhão, área em hectares e cultura. Exemplo orientado a
+consulta de unidades produtivas, com contagem e paginação.
+
+### B. Cadastro com itens relacionados
+
+Colunas: código, descrição, quantidade e unidade. Exemplo de detalhe tabular
+associado a um cadastro principal.
+
+### C. Financeiro / lançamentos
+
+Colunas: data, descrição, tipo e valor. Valores monetários usam alinhamento à
+direita e sinal/formatação coerente.
+
+### D. Estoque / insumos
+
+Colunas: código, descrição, estoque e unidade. Quantidade e unidade mantêm
+semânticas distintas.
+
+### Generalização dos exemplos
+
+- identificadores curtos ficam à esquerda;
+- descrições recebem a maior área flexível;
+- medidas e valores ficam à direita;
+- unidades não são misturadas ao valor quando precisam ser ordenadas ou
+  filtradas separadamente;
+- paginação e contagem são independentes do domínio de negócio.
+
+## 14. Superfícies claras demonstradas
+
+### Padrão
+
+Header claro, linhas brancas, separadores discretos e rodapé com contagem.
+
+### Zebrado
+
+Alternância entre `grid.row.bg.default` e `grid.row.bg.zebra`.
+
+### Selecionado
+
+Linha com `grid.row.bg.selected`, checkbox marcado e acento verde.
+
+### Editável
+
+Célula ativa com editor e foco verde, mantendo linha e colunas ao redor.
+
+### Vazio
+
+Header preservado e corpo substituído pela mensagem centralizada de ausência
+de registros.
+
+## 15. Modelo conceitual independente de implementação
+
+```text
+GridModel
+├── columns[]
+│   ├── identity
+│   ├── caption
+│   ├── data kind
+│   ├── alignment
+│   ├── width/min/max
+│   ├── sortable/filterable/editable
+│   ├── pinned/visible
+│   └── formatter
+├── rows[] / datasource viewport
+├── selection
+├── focus
+├── sorting[]
+├── filters[]
+├── grouping[]
+├── master-detail state
+├── paging/record count
+├── totals[]
+└── presentation
+    ├── density
+    ├── zebra
+    ├── hover
+    ├── actions
+    └── semantic status
+```
+
+### Separações obrigatórias na abstração
+
+- dados não são tokens visuais;
+- seleção não é status de negócio;
+- foco não é seleção;
+- hover não é foco;
+- ordenação não é filtro;
+- busca global não é filtro de coluna;
+- paginação não é scroll;
+- agrupamento não é mestre-detalhe;
+- empty não é loading;
+- disabled não é readonly;
+- ação por linha não é conteúdo da célula.
+
+## 16. Acessibilidade e leitura
+
+A prancha enfatiza legibilidade, feedback e consistência. Como abstração para
+implementações futuras:
+
+- não representar sucesso, warning ou erro somente por cor;
+- manter contraste de texto nos fundos suaves;
+- expor foco visível para teclado;
+- manter checkbox e estado selecionado semanticamente acessíveis;
+- fornecer texto completo para conteúdo truncado;
+- manter ordem de Tab previsível entre grid, toolbar, filtros e paginação;
+- anunciar loading, vazio, quantidade e erro por mecanismos da plataforma;
+- não reduzir fonte abaixo da densidade definida para encaixar colunas.
+
+Os mecanismos concretos de acessibilidade não são mostrados na imagem.
+
+## 17. Critérios de aceite derivados da prancha
+
+### Estrutura
+
+- [ ] Cabeçalho, corpo e rodapé pertencem à mesma moldura.
+- [ ] Borda externa tem `1 px` e raio de `8 px` em MD.
+- [ ] Header MD mede `40 px` e linha MD mede `36 px`.
+- [ ] Padding de célula respeita `8 px / 12 px`.
+
+### Conteúdo
+
+- [ ] Texto, números, datas, ícones e ações seguem alinhamentos canônicos.
+- [ ] Descrição mantém área de leitura maior que códigos e estados.
+- [ ] Truncamento possui forma de revelar o conteúdo integral.
+
+### Estado
+
+- [ ] Default, hover, focus e selected são distinguíveis.
+- [ ] Selected + hover possui token próprio.
+- [ ] Loading é diferente de vazio.
+- [ ] Disabled permanece legível.
+- [ ] Success, warning e error usam semântica além da cor.
+
+### Recursos opcionais
+
+- [ ] Ordenação indica direção.
+- [ ] Filtro por coluna e busca global não são confundidos.
+- [ ] Colunas fixas permanecem estáveis no scroll horizontal.
+- [ ] Ações por linha não poluem o conteúdo.
+- [ ] Edição inline preserva contexto e foco.
+- [ ] Agrupamento, mestre-detalhe e totais mantêm hierarquia.
+- [ ] Paginação e contagem permanecem dentro do rodapé.
+
+### Qualidade visual
+
+- [ ] Zebra é sutil.
+- [ ] Não existem bordas pesadas ou duplicadas.
+- [ ] Não existe excesso de cores.
+- [ ] A tipografia não é reduzida para compensar layout inadequado.
+- [ ] A seleção não compromete contraste nem leitura.
+
+## 18. Lacunas que a imagem não resolve
+
+- família tipográfica nominal e respectivos pesos;
+- conversão de fonte em pixels para pontos VCL;
+- paleta funcional completa para uma DbGrid em modo escuro;
+- largura numérica do acento lateral de seleção;
+- largura mínima e máxima das colunas;
+- regras de ellipsis, tooltip e quebra de linha;
+- multi-seleção por teclado e modificadores;
+- sequência exata de precedência entre hover, focus, selected e status;
+- atalhos de teclado;
+- política de confirmação/cancelamento da edição;
+- estratégia de virtualização para grandes datasets;
+- comportamento de seleção após sort, filter, refresh e paginação;
+- persistência de largura, ordem, visibilidade e pinagem de colunas;
+- dimensão exata da toolbar, filtros, paginação e scrollbar;
+- comportamento responsivo em larguras estreitas;
+- API de datasource, callbacks e eventos;
+- tecnologia de renderização e integração com componentes de terceiros.
+
+Esses pontos exigem decisão de arquitetura ou produto antes de serem tratados
+como contrato implementável.
+
+## 19. Regra de reutilização desta base
+
+Ao planejar ou revisar uma grid MaxxRural/DAC:
+
+1. começar pelas seções 3 a 10 deste arquivo;
+2. selecionar a densidade pelo contexto, usando MD como padrão;
+3. mapear recursos opcionais sem alterar o chrome base;
+4. usar os tokens observados em vez de cores locais;
+5. separar estados estruturais, de interação, edição e negócio;
+6. registrar qualquer decisão tomada sobre uma lacuna da seção 18;
+7. validar pelos critérios da seção 17;
+8. nunca alegar paridade com a prancha apenas por compilar ou exibir dados.
+

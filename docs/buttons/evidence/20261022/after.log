@@ -1,0 +1,3 @@
+Button layout: 72 runtime caption transitions + font metrics: PASS
+Icons: 169 SVGs x 3 styles rendered; 169 DFM roundtrips; published consumers: PASS
+DACComponentsInteraction: PASS

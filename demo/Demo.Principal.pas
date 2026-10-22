@@ -12,6 +12,7 @@ uses
   Vcl.ComCtrls,
   Vcl.Controls,
   Vcl.Forms,
+  Vcl.Graphics,
   Vcl.Skia,
   Vcl.StdCtrls,
   DAC.Components.Controls.Badges,
@@ -95,6 +96,9 @@ type
     btnIconOnlyMore: TDACButton;
     btnIconCustomSize: TDACButton;
     btnIconDanger: TDACButton;
+    btnIconFileJson: TDACButton;
+    btnIconFolderOpen: TDACButton;
+    btnIconDatabase: TDACButton;
     lblButtonStates: TDACSystemText;
     gcButtonStates: TDACGridContainer;
     btnStateNormal: TDACButton;
@@ -111,6 +115,7 @@ type
     btnSaveAction: TDACButton;
     btnDeleteAction: TDACButton;
     btnUploadAction: TDACButton;
+    procedure CardTypographyClick(Sender: TObject);
   private
     FDashboardActivity: TDACContainer;
     FDashboardAgenda: TDACContainer;
@@ -395,6 +400,8 @@ begin
     PublishInputProbe;
 end;
 
+{$ENDIF DAC_LEGACY_DATAAWARE_DEMO}
+
 function TForm1.CanApplyRuntimeLayout: Boolean;
 begin
   Result := not (csDesigning in ComponentState) and (scrButtons <> nil) and
@@ -501,6 +508,8 @@ begin
   FThemeToggle.OnClick := ThemeToggleClick;
   LayoutThemeToggle;
 end;
+
+{$IFDEF DAC_LEGACY_DATAAWARE_DEMO}
 
 procedure TForm1.BuildDemoGridData;
 var
@@ -720,8 +729,6 @@ begin
   end;
 end;
 {$ENDIF}
-
-{$ENDIF DAC_LEGACY_DATAAWARE_DEMO}
 
 procedure TForm1.ConfigureResponsiveButtons;
 var
@@ -958,12 +965,9 @@ end;
 
 procedure TForm1.ConfigureTabsLayout;
 var
-  LActualPoint: TPoint;
-  LDesiredLeft: Integer;
-  LPage: TTabSheet;
-  LRight: Integer;
-  LTabs: TDACTabs;
-  LText: TDACSystemText;
+  LHorizontal, LVertical: TDACTabs;
+  LAvailable, LColumn, LInset, LGap: Integer;
+  LCaption: TLabel;
   procedure LayoutSelectors;
   var
     LAvailableWidth: Integer;
@@ -1011,41 +1015,42 @@ var
         LCaption.Width := Max(0, APage.ClientWidth - LCaption.Left - LRightInset);
       end;
   end;
-  procedure LayoutActiveVerticalText(const AName: string);
-  begin
-    LText := FindComponent(AName) as TDACSystemText;
-    if (LText = nil) or not (LText.Parent is TTabSheet) then
-      Exit;
-    LPage := TTabSheet(LText.Parent);
-    if LPage <> LTabs.ActivePage then
-      Exit;
-    // The native TPageControl can add an orientation-dependent page offset.
-    // Reconcile the real screen/client coordinates after that offset instead
-    // of reusing a DFM-specific left value.
-    LDesiredLeft := LTabs.ClientToScreen(Point(LTabs.ContentInset, 0)).X;
-    LRight := LTabs.ClientToScreen(Point(Max(0, LTabs.ClientWidth - 24), 0)).X;
-    LActualPoint := LText.ClientToScreen(Point(0, 0));
-    LText.SetBounds(LText.Left + (LDesiredLeft - LActualPoint.X), LText.Top,
-      Min(LText.Width, Max(0, LRight - LDesiredLeft)), LText.Height);
-  end;
+
 begin
   if csDesigning in ComponentState then
     Exit;
   if GalleryTabs <> nil then
     LayoutPageCaptions(GalleryTabs.ActivePage);
-  LTabs := FindComponent('demoTabs') as TDACTabs;
-  if LTabs <> nil then
-    LTabs.RefreshContentLayout;
-  { Input/selector state matrices are authored declaratively in the DFM.
-    Runtime interaction only produces real hover/focus; it does not fabricate
-    visual state or reposition those samples. }
-  LTabs := FindComponent('demoVerticalTabs') as TDACTabs;
-  if LTabs <> nil then
+  if GalleryTabs.ActivePage <> tsTabs then Exit;
+  LHorizontal := FindComponent('demoTabs') as TDACTabs;
+  LVertical := FindComponent('demoVerticalTabs') as TDACTabs;
+  LInset := Round(TDACSpacingTokens.Default.S24);
+  LGap := LInset;
+  LAvailable := Max(0, tsTabs.ClientWidth - 2 * LInset);
+  if (LHorizontal <> nil) and (LVertical <> nil) then
   begin
-    LTabs.RefreshContentLayout;
-    LayoutActiveVerticalText('demoVerticalTabsFirstText');
-    LayoutActiveVerticalText('demoVerticalTabsSecondText');
-    LayoutActiveVerticalText('demoVerticalTabsThirdText');
+    if LAvailable >= 720 then
+    begin
+      LColumn := (LAvailable - LGap) div 2;
+      LHorizontal.SetBounds(LInset, 56, LColumn, 260);
+      LVertical.SetBounds(LInset + LColumn + LGap, 56,
+        LAvailable - LColumn - LGap, 260);
+    end
+    else
+    begin
+      LHorizontal.SetBounds(LInset, 56, LAvailable, 220);
+      LVertical.SetBounds(LInset, LHorizontal.Top + LHorizontal.Height + LGap,
+        LAvailable, 260);
+    end;
+    LHorizontal.RefreshContentLayout;
+    LVertical.RefreshContentLayout;
+  end;
+  LCaption := FindComponent('lblTabs') as TLabel;
+  if LCaption <> nil then
+  begin
+    LCaption.StyleElements := [];
+    LCaption.Font.Color := TDACComponentColors.ToVclColor(
+      GalleryTabs.ResolvedTokens.ContainerTitle);
   end;
 end;
 
@@ -1369,6 +1374,37 @@ procedure TForm1.GalleryTabsChange(Sender: TObject);
 begin
   RefreshDemoNavigation;
   RequestDemoLayout;
+end;
+
+procedure TForm1.CardTypographyClick(Sender: TObject);
+var
+  Card: TDACSummaryCard;
+  Button: TDACButton;
+  Tokens: TDACControlTokens;
+begin
+  Card := FindComponent('demoSummaryCard') as TDACSummaryCard;
+  if (Card = nil) or not (Sender is TDACButton) then Exit;
+  Button := TDACButton(Sender);
+  if Button.Tag = 0 then
+  begin
+    Tokens := TDACComponentStyle.Resolve(TDACThemeManager.ApplicationMode).Tokens.Controls;
+    Card.TitleFont.Size := 14;
+    Card.TitleFont.Style := [fsItalic];
+    Card.ValueFont.Size := 30;
+    Card.ValueFont.Style := [fsBold, fsUnderline];
+    Card.FooterFont.Size := 12;
+    Card.FooterFont.Style := [fsItalic];
+    Card.FooterFont.Color := TDACComponentColors.ToVclColor(Tokens.SummaryCardDanger);
+    Button.Caption := 'Restaurar fontes do card';
+    Button.Tag := 1;
+  end
+  else
+  begin
+    Card.ResetTextFonts;
+    Card.Height := 100;
+    Button.Caption := 'Alterar fontes em runtime';
+    Button.Tag := 0;
+  end;
 end;
 
 procedure TForm1.ThemeToggleClick(Sender: TObject);

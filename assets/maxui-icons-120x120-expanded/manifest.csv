@@ -1,0 +1,170 @@
+id,category,name,label_pt,usage,file,file_green,width,height,viewBox,strokeWidth,defaultColor
+1,actions,add,Adicionar,Botões primários e inclusão de recursos,svg/actions/add.svg,svg-green/actions/add.svg,120,120,0 0 120 120,6,#2F9E22
+2,actions,minus,Remover,"Redução, exclusão de item ou decremento",svg/actions/minus.svg,svg-green/actions/minus.svg,120,120,0 0 120 120,6,#2F9E22
+3,actions,edit,Editar,Edição de registros e células da tabela,svg/actions/edit.svg,svg-green/actions/edit.svg,120,120,0 0 120 120,6,#2F9E22
+4,actions,trash,Excluir,Ação destrutiva e remoção de registros,svg/actions/trash.svg,svg-green/actions/trash.svg,120,120,0 0 120 120,6,#2F9E22
+5,actions,check,Confirmar,"Sucesso, confirmação e seleção",svg/actions/check.svg,svg-green/actions/check.svg,120,120,0 0 120 120,6,#2F9E22
+6,actions,close,Fechar,"Fechamento de modal, chip e toast",svg/actions/close.svg,svg-green/actions/close.svg,120,120,0 0 120 120,6,#2F9E22
+7,actions,save,Salvar,Salvar rascunho e dados de formulário,svg/actions/save.svg,svg-green/actions/save.svg,120,120,0 0 120 120,6,#2F9E22
+8,actions,print,Imprimir,Impressão no report viewer,svg/actions/print.svg,svg-green/actions/print.svg,120,120,0 0 120 120,6,#2F9E22
+9,actions,download,Baixar / Exportar,Exportação de relatório ou dados,svg/actions/download.svg,svg-green/actions/download.svg,120,120,0 0 120 120,6,#2F9E22
+10,actions,upload,Enviar,Importação e envio de arquivo,svg/actions/upload.svg,svg-green/actions/upload.svg,120,120,0 0 120 120,6,#2F9E22
+11,actions,refresh,Atualizar,Atualização de listas e dados,svg/actions/refresh.svg,svg-green/actions/refresh.svg,120,120,0 0 120 120,6,#2F9E22
+12,actions,search,Pesquisar,Campos de busca e pesquisa no relatório,svg/actions/search.svg,svg-green/actions/search.svg,120,120,0 0 120 120,6,#2F9E22
+13,actions,filter,Filtrar,Filtros de grid e listagens,svg/actions/filter.svg,svg-green/actions/filter.svg,120,120,0 0 120 120,6,#2F9E22
+14,actions,more-horizontal,Mais opções horizontal,Menu contextual de linha,svg/actions/more-horizontal.svg,svg-green/actions/more-horizontal.svg,120,120,0 0 120 120,6,#2F9E22
+15,actions,more-vertical,Mais opções vertical,Menu contextual compacto,svg/actions/more-vertical.svg,svg-green/actions/more-vertical.svg,120,120,0 0 120 120,6,#2F9E22
+16,actions,copy,Copiar,Duplicação e cópia de conteúdo,svg/actions/copy.svg,svg-green/actions/copy.svg,120,120,0 0 120 120,6,#2F9E22
+17,actions,attachment,Anexo,Aba de anexos e arquivos,svg/actions/attachment.svg,svg-green/actions/attachment.svg,120,120,0 0 120 120,6,#2F9E22
+18,actions,external-link,Abrir externamente,Documentação e links externos,svg/actions/external-link.svg,svg-green/actions/external-link.svg,120,120,0 0 120 120,6,#2F9E22
+19,navigation,chevron-up,Chevron para cima,"Combobox, colapso e seleção",svg/navigation/chevron-up.svg,svg-green/navigation/chevron-up.svg,120,120,0 0 120 120,6,#2F9E22
+20,navigation,chevron-down,Chevron para baixo,Combobox e menus de seleção,svg/navigation/chevron-down.svg,svg-green/navigation/chevron-down.svg,120,120,0 0 120 120,6,#2F9E22
+21,navigation,chevron-left,Chevron para esquerda,Paginação e navegação,svg/navigation/chevron-left.svg,svg-green/navigation/chevron-left.svg,120,120,0 0 120 120,6,#2F9E22
+22,navigation,chevron-right,Chevron para direita,Paginação e navegação,svg/navigation/chevron-right.svg,svg-green/navigation/chevron-right.svg,120,120,0 0 120 120,6,#2F9E22
+23,navigation,arrow-up,Seta para cima,Ordenação e movimento,svg/navigation/arrow-up.svg,svg-green/navigation/arrow-up.svg,120,120,0 0 120 120,6,#2F9E22
+24,navigation,arrow-down,Seta para baixo,Ordenação e movimento,svg/navigation/arrow-down.svg,svg-green/navigation/arrow-down.svg,120,120,0 0 120 120,6,#2F9E22
+25,navigation,arrow-left,Seta para esquerda,Voltar e navegar,svg/navigation/arrow-left.svg,svg-green/navigation/arrow-left.svg,120,120,0 0 120 120,6,#2F9E22
+26,navigation,arrow-right,Seta para direita,Avançar e navegar,svg/navigation/arrow-right.svg,svg-green/navigation/arrow-right.svg,120,120,0 0 120 120,6,#2F9E22
+27,navigation,first-page,Primeira página,Report viewer e paginação,svg/navigation/first-page.svg,svg-green/navigation/first-page.svg,120,120,0 0 120 120,6,#2F9E22
+28,navigation,previous-page,Página anterior,Report viewer e paginação,svg/navigation/previous-page.svg,svg-green/navigation/previous-page.svg,120,120,0 0 120 120,6,#2F9E22
+29,navigation,next-page,Próxima página,Report viewer e paginação,svg/navigation/next-page.svg,svg-green/navigation/next-page.svg,120,120,0 0 120 120,6,#2F9E22
+30,navigation,last-page,Última página,Report viewer e paginação,svg/navigation/last-page.svg,svg-green/navigation/last-page.svg,120,120,0 0 120 120,6,#2F9E22
+31,navigation,expand,Expandir,Maximizar painel ou visualização,svg/navigation/expand.svg,svg-green/navigation/expand.svg,120,120,0 0 120 120,6,#2F9E22
+32,navigation,collapse,Recolher,Restaurar painel ou visualização,svg/navigation/collapse.svg,svg-green/navigation/collapse.svg,120,120,0 0 120 120,6,#2F9E22
+33,navigation,home,Início / Fazenda,Card de fazenda e navegação inicial,svg/navigation/home.svg,svg-green/navigation/home.svg,120,120,0 0 120 120,6,#2F9E22
+34,navigation,menu,Menu,Menu compacto e ações agrupadas,svg/navigation/menu.svg,svg-green/navigation/menu.svg,120,120,0 0 120 120,6,#2F9E22
+35,interface,eye,Visualizar,Exibição de senha e detalhes,svg/interface/eye.svg,svg-green/interface/eye.svg,120,120,0 0 120 120,6,#2F9E22
+36,interface,eye-off,Ocultar,Ocultação de senha,svg/interface/eye-off.svg,svg-green/interface/eye-off.svg,120,120,0 0 120 120,6,#2F9E22
+37,interface,calendar,Calendário,DatePicker e agenda,svg/interface/calendar.svg,svg-green/interface/calendar.svg,120,120,0 0 120 120,6,#2F9E22
+38,interface,clock,Relógio,"TimePicker, duração e agenda",svg/interface/clock.svg,svg-green/interface/clock.svg,120,120,0 0 120 120,6,#2F9E22
+39,interface,info-circle,Informação,Tooltip e mensagens informativas,svg/interface/info-circle.svg,svg-green/interface/info-circle.svg,120,120,0 0 120 120,6,#2F9E22
+40,interface,help-circle,Ajuda,Modal de confirmação e ajuda,svg/interface/help-circle.svg,svg-green/interface/help-circle.svg,120,120,0 0 120 120,6,#2F9E22
+41,interface,success-circle,Sucesso,Toast de sucesso e validação,svg/interface/success-circle.svg,svg-green/interface/success-circle.svg,120,120,0 0 120 120,6,#2F9E22
+42,interface,warning-triangle,Alerta,"Toast, badge e validação pendente",svg/interface/warning-triangle.svg,svg-green/interface/warning-triangle.svg,120,120,0 0 120 120,6,#2F9E22
+43,interface,error-circle,Erro,Toast de erro e ação perigosa,svg/interface/error-circle.svg,svg-green/interface/error-circle.svg,120,120,0 0 120 120,6,#2F9E22
+44,interface,lock,Bloqueado,Status bar e conteúdo protegido,svg/interface/lock.svg,svg-green/interface/lock.svg,120,120,0 0 120 120,6,#2F9E22
+45,interface,unlock,Desbloqueado,Estado liberado,svg/interface/unlock.svg,svg-green/interface/unlock.svg,120,120,0 0 120 120,6,#2F9E22
+46,interface,bell,Notificação,Alertas da aplicação,svg/interface/bell.svg,svg-green/interface/bell.svg,120,120,0 0 120 120,6,#2F9E22
+47,interface,user,Usuário,Responsável técnico e conta,svg/interface/user.svg,svg-green/interface/user.svg,120,120,0 0 120 120,6,#2F9E22
+48,interface,users,Usuários,Card de clientes e equipes,svg/interface/users.svg,svg-green/interface/users.svg,120,120,0 0 120 120,6,#2F9E22
+49,interface,settings,Configurações,Preferências e ajustes,svg/interface/settings.svg,svg-green/interface/settings.svg,120,120,0 0 120 120,6,#2F9E22
+50,interface,palette,Temas / Paleta,Seleção de cores e tema,svg/interface/palette.svg,svg-green/interface/palette.svg,120,120,0 0 120 120,6,#2F9E22
+51,interface,code,Exemplos / Código,Acesso a exemplos da suíte,svg/interface/code.svg,svg-green/interface/code.svg,120,120,0 0 120 120,6,#2F9E22
+52,interface,book-open,Documentação,Acesso à documentação,svg/interface/book-open.svg,svg-green/interface/book-open.svg,120,120,0 0 120 120,6,#2F9E22
+53,interface,document,Documento,Tabs e arquivos genéricos,svg/interface/document.svg,svg-green/interface/document.svg,120,120,0 0 120 120,6,#2F9E22
+54,interface,document-text,Documento com texto,Relatórios e conteúdo textual,svg/interface/document-text.svg,svg-green/interface/document-text.svg,120,120,0 0 120 120,6,#2F9E22
+55,interface,theme-sun,Tema claro / Sol,Tema claro e condição ensolarada,svg/interface/theme-sun.svg,svg-green/interface/theme-sun.svg,120,120,0 0 120 120,6,#2F9E22
+56,interface,theme-moon,Tema escuro / Lua,Alternância de tema,svg/interface/theme-moon.svg,svg-green/interface/theme-moon.svg,120,120,0 0 120 120,6,#2F9E22
+57,interface,status-connected,Conectado,Status de conexão ativo,svg/interface/status-connected.svg,svg-green/interface/status-connected.svg,120,120,0 0 120 120,6,#2F9E22
+58,interface,status-disconnected,Desconectado,Status de conexão indisponível,svg/interface/status-disconnected.svg,svg-green/interface/status-disconnected.svg,120,120,0 0 120 120,6,#2F9E22
+59,data,money-circle,Financeiro,"Receita, custo e valor monetário",svg/data/money-circle.svg,svg-green/data/money-circle.svg,120,120,0 0 120 120,6,#2F9E22
+60,data,shopping-cart,Pedidos,Card de pedidos e compras,svg/data/shopping-cart.svg,svg-green/data/shopping-cart.svg,120,120,0 0 120 120,6,#2F9E22
+61,data,package,Produto / Caixa,"Produtos, recursos e estoque",svg/data/package.svg,svg-green/data/package.svg,120,120,0 0 120 120,6,#2F9E22
+62,data,inventory-stack,Estoque,Inventário e itens armazenados,svg/data/inventory-stack.svg,svg-green/data/inventory-stack.svg,120,120,0 0 120 120,6,#2F9E22
+63,data,table-grid,Tabela / Grid,Data grid e visualização tabular,svg/data/table-grid.svg,svg-green/data/table-grid.svg,120,120,0 0 120 120,6,#2F9E22
+64,data,list,Lista,Listagens e detalhes,svg/data/list.svg,svg-green/data/list.svg,120,120,0 0 120 120,6,#2F9E22
+65,data,report,Relatório,Report viewer e indicadores,svg/data/report.svg,svg-green/data/report.svg,120,120,0 0 120 120,6,#2F9E22
+66,data,chart-bar,Gráfico de barras,Charts de barras,svg/data/chart-bar.svg,svg-green/data/chart-bar.svg,120,120,0 0 120 120,6,#2F9E22
+67,data,chart-line,Gráfico de linha,Charts de linha,svg/data/chart-line.svg,svg-green/data/chart-line.svg,120,120,0 0 120 120,6,#2F9E22
+68,data,chart-area,Gráfico de área,Charts de área,svg/data/chart-area.svg,svg-green/data/chart-area.svg,120,120,0 0 120 120,6,#2F9E22
+69,data,chart-donut,Gráfico de rosca,Charts de pizza/donut,svg/data/chart-donut.svg,svg-green/data/chart-donut.svg,120,120,0 0 120 120,6,#2F9E22
+70,data,percent,Percentual,Progresso e métricas percentuais,svg/data/percent.svg,svg-green/data/percent.svg,120,120,0 0 120 120,6,#2F9E22
+71,data,sort-asc,Ordenar crescente,Ordenação de colunas,svg/data/sort-asc.svg,svg-green/data/sort-asc.svg,120,120,0 0 120 120,6,#2F9E22
+72,data,sort-desc,Ordenar decrescente,Ordenação de colunas,svg/data/sort-desc.svg,svg-green/data/sort-desc.svg,120,120,0 0 120 120,6,#2F9E22
+73,data,clipboard-order,Ordem de serviço,"Ordens, situação e planejamento",svg/data/clipboard-order.svg,svg-green/data/clipboard-order.svg,120,120,0 0 120 120,6,#2F9E22
+74,agriculture,farm,Fazenda,Resumo de fazenda e propriedade,svg/agriculture/farm.svg,svg-green/agriculture/farm.svg,120,120,0 0 120 120,6,#2F9E22
+75,agriculture,barn,Galpão / Celeiro,"Propriedades, depósitos e módulos",svg/agriculture/barn.svg,svg-green/agriculture/barn.svg,120,120,0 0 120 120,6,#2F9E22
+76,agriculture,field,Campo,Área agrícola e produtividade,svg/agriculture/field.svg,svg-green/agriculture/field.svg,120,120,0 0 120 120,6,#2F9E22
+77,agriculture,plot,Talhão,Identificação de talhões,svg/agriculture/plot.svg,svg-green/agriculture/plot.svg,120,120,0 0 120 120,6,#2F9E22
+78,agriculture,leaf,Folha / Cultura,"Cultura, safra e módulos agrícolas",svg/agriculture/leaf.svg,svg-green/agriculture/leaf.svg,120,120,0 0 120 120,6,#2F9E22
+79,agriculture,soybean,Soja,Cultura de soja e sementes,svg/agriculture/soybean.svg,svg-green/agriculture/soybean.svg,120,120,0 0 120 120,6,#2F9E22
+80,agriculture,seedling,Muda / Plantio,Plantio e produção,svg/agriculture/seedling.svg,svg-green/agriculture/seedling.svg,120,120,0 0 120 120,6,#2F9E22
+81,agriculture,tractor,Trator,Máquinas e recursos vinculados,svg/agriculture/tractor.svg,svg-green/agriculture/tractor.svg,120,120,0 0 120 120,6,#2F9E22
+82,agriculture,sprayer,Pulverizador,Aplicação de herbicida e equipamentos,svg/agriculture/sprayer.svg,svg-green/agriculture/sprayer.svg,120,120,0 0 120 120,6,#2F9E22
+83,agriculture,herbicide,Herbicida / Insumo,Recursos químicos e insumos,svg/agriculture/herbicide.svg,svg-green/agriculture/herbicide.svg,120,120,0 0 120 120,6,#2F9E22
+84,agriculture,area-ruler,Área estimada,Medição de hectares e dimensões,svg/agriculture/area-ruler.svg,svg-green/agriculture/area-ruler.svg,120,120,0 0 120 120,6,#2F9E22
+85,agriculture,location-pin,Localização,"Propriedade, talhão e endereço",svg/agriculture/location-pin.svg,svg-green/agriculture/location-pin.svg,120,120,0 0 120 120,6,#2F9E22
+86,agriculture,cloud-rain,Chuva,Condição climática,svg/agriculture/cloud-rain.svg,svg-green/agriculture/cloud-rain.svg,120,120,0 0 120 120,6,#2F9E22
+87,agriculture,temperature,Temperatura,Condição climática e sensores,svg/agriculture/temperature.svg,svg-green/agriculture/temperature.svg,120,120,0 0 120 120,6,#2F9E22
+88,agriculture,harvest,Colheita,Safra e produtividade,svg/agriculture/harvest.svg,svg-green/agriculture/harvest.svg,120,120,0 0 120 120,6,#2F9E22
+89,controls,checkbox-checked,Checkbox marcado,Controle selecionado,svg/controls/checkbox-checked.svg,svg-green/controls/checkbox-checked.svg,120,120,0 0 120 120,6,#2F9E22
+90,controls,checkbox-unchecked,Checkbox desmarcado,Controle não selecionado,svg/controls/checkbox-unchecked.svg,svg-green/controls/checkbox-unchecked.svg,120,120,0 0 120 120,6,#2F9E22
+91,controls,radio-checked,Radio selecionado,Opção exclusiva selecionada,svg/controls/radio-checked.svg,svg-green/controls/radio-checked.svg,120,120,0 0 120 120,6,#2F9E22
+92,controls,radio-unchecked,Radio não selecionado,Opção exclusiva vazia,svg/controls/radio-unchecked.svg,svg-green/controls/radio-unchecked.svg,120,120,0 0 120 120,6,#2F9E22
+93,controls,toggle-on,Toggle ativado,Chave ligada,svg/controls/toggle-on.svg,svg-green/controls/toggle-on.svg,120,120,0 0 120 120,6,#2F9E22
+94,controls,toggle-off,Toggle desativado,Chave desligada,svg/controls/toggle-off.svg,svg-green/controls/toggle-off.svg,120,120,0 0 120 120,6,#2F9E22
+95,controls,slider,Slider,Controle de valor contínuo,svg/controls/slider.svg,svg-green/controls/slider.svg,120,120,0 0 120 120,6,#2F9E22
+96,controls,spinner,Spinner,Carregamento circular,svg/controls/spinner.svg,svg-green/controls/spinner.svg,120,120,0 0 120 120,6,#2F9E22
+97,controls,dots-loading,Carregamento por pontos,Indicador de carregamento compacto,svg/controls/dots-loading.svg,svg-green/controls/dots-loading.svg,120,120,0 0 120 120,6,#2F9E22
+98,controls,tag,Tag,"Tags, badges e chips",svg/controls/tag.svg,svg-green/controls/tag.svg,120,120,0 0 120 120,6,#2F9E22
+99,controls,clipboard-check,Validação,Conferência e checklist,svg/controls/clipboard-check.svg,svg-green/controls/clipboard-check.svg,120,120,0 0 120 120,6,#2F9E22
+100,controls,flag,Prioridade,Prioridade e marcação de item,svg/controls/flag.svg,svg-green/controls/flag.svg,120,120,0 0 120 120,6,#2F9E22
+101,report-viewer,zoom-in,Aumentar zoom,Zoom do relatório,svg/report-viewer/zoom-in.svg,svg-green/report-viewer/zoom-in.svg,120,120,0 0 120 120,6,#2F9E22
+102,report-viewer,zoom-out,Reduzir zoom,Zoom do relatório,svg/report-viewer/zoom-out.svg,svg-green/report-viewer/zoom-out.svg,120,120,0 0 120 120,6,#2F9E22
+103,report-viewer,fit-page,Ajustar página,Enquadramento do relatório,svg/report-viewer/fit-page.svg,svg-green/report-viewer/fit-page.svg,120,120,0 0 120 120,6,#2F9E22
+104,report-viewer,fullscreen,Tela cheia,Visualização expandida,svg/report-viewer/fullscreen.svg,svg-green/report-viewer/fullscreen.svg,120,120,0 0 120 120,6,#2F9E22
+105,report-viewer,file-pdf,Arquivo PDF,Exportação de relatório em PDF,svg/report-viewer/file-pdf.svg,svg-green/report-viewer/file-pdf.svg,120,120,0 0 120 120,6,#2F9E22
+106,report-viewer,page-search,Pesquisar no relatório,Busca de conteúdo na página,svg/report-viewer/page-search.svg,svg-green/report-viewer/page-search.svg,120,120,0 0 120 120,6,#2F9E22
+107,files,file,Arquivo,Arquivos e sistema: arquivo,svg/files/file.svg,svg-green/files/file.svg,120,120,0 0 120 120,6,#2F9E22
+108,files,file-text,Arquivo texto,Arquivos e sistema: arquivo texto,svg/files/file-text.svg,svg-green/files/file-text.svg,120,120,0 0 120 120,6,#2F9E22
+109,files,file-code,Arquivo código,Arquivos e sistema: arquivo código,svg/files/file-code.svg,svg-green/files/file-code.svg,120,120,0 0 120 120,6,#2F9E22
+110,files,file-json,Arquivo JSON,Arquivos e sistema: arquivo json,svg/files/file-json.svg,svg-green/files/file-json.svg,120,120,0 0 120 120,6,#2F9E22
+111,files,file-xml,Arquivo XML,Arquivos e sistema: arquivo xml,svg/files/file-xml.svg,svg-green/files/file-xml.svg,120,120,0 0 120 120,6,#2F9E22
+112,files,file-pdf,Documento PDF,Arquivos e sistema: documento pdf,svg/files/file-pdf.svg,svg-green/files/file-pdf.svg,120,120,0 0 120 120,6,#2F9E22
+113,files,file-image,Arquivo imagem,Arquivos e sistema: arquivo imagem,svg/files/file-image.svg,svg-green/files/file-image.svg,120,120,0 0 120 120,6,#2F9E22
+114,files,file-zip,Arquivo ZIP,Arquivos e sistema: arquivo zip,svg/files/file-zip.svg,svg-green/files/file-zip.svg,120,120,0 0 120 120,6,#2F9E22
+115,files,file-check,Arquivo validado,Arquivos e sistema: arquivo validado,svg/files/file-check.svg,svg-green/files/file-check.svg,120,120,0 0 120 120,6,#2F9E22
+116,files,file-warning,Arquivo com alerta,Arquivos e sistema: arquivo com alerta,svg/files/file-warning.svg,svg-green/files/file-warning.svg,120,120,0 0 120 120,6,#2F9E22
+117,files,file-lock,Arquivo protegido,Arquivos e sistema: arquivo protegido,svg/files/file-lock.svg,svg-green/files/file-lock.svg,120,120,0 0 120 120,6,#2F9E22
+118,files,file-search,Buscar arquivo,Arquivos e sistema: buscar arquivo,svg/files/file-search.svg,svg-green/files/file-search.svg,120,120,0 0 120 120,6,#2F9E22
+119,files,files-stack,Arquivos,Arquivos e sistema: arquivos,svg/files/files-stack.svg,svg-green/files/files-stack.svg,120,120,0 0 120 120,6,#2F9E22
+120,files,file-plus,Novo arquivo,Arquivos e sistema: novo arquivo,svg/files/file-plus.svg,svg-green/files/file-plus.svg,120,120,0 0 120 120,6,#2F9E22
+121,files,file-minus,Remover arquivo,Arquivos e sistema: remover arquivo,svg/files/file-minus.svg,svg-green/files/file-minus.svg,120,120,0 0 120 120,6,#2F9E22
+122,files,file-export,Exportar arquivo,Arquivos e sistema: exportar arquivo,svg/files/file-export.svg,svg-green/files/file-export.svg,120,120,0 0 120 120,6,#2F9E22
+123,folders-paths,folder,Pasta,Arquivos e sistema: pasta,svg/folders-paths/folder.svg,svg-green/folders-paths/folder.svg,120,120,0 0 120 120,6,#2F9E22
+124,folders-paths,folder-open,Abrir pasta,Arquivos e sistema: abrir pasta,svg/folders-paths/folder-open.svg,svg-green/folders-paths/folder-open.svg,120,120,0 0 120 120,6,#2F9E22
+125,folders-paths,folder-plus,Nova pasta,Arquivos e sistema: nova pasta,svg/folders-paths/folder-plus.svg,svg-green/folders-paths/folder-plus.svg,120,120,0 0 120 120,6,#2F9E22
+126,folders-paths,folder-search,Localizar pasta,Arquivos e sistema: localizar pasta,svg/folders-paths/folder-search.svg,svg-green/folders-paths/folder-search.svg,120,120,0 0 120 120,6,#2F9E22
+127,folders-paths,folder-lock,Pasta protegida,Arquivos e sistema: pasta protegida,svg/folders-paths/folder-lock.svg,svg-green/folders-paths/folder-lock.svg,120,120,0 0 120 120,6,#2F9E22
+128,folders-paths,folder-tree,Árvore de pastas,Arquivos e sistema: árvore de pastas,svg/folders-paths/folder-tree.svg,svg-green/folders-paths/folder-tree.svg,120,120,0 0 120 120,6,#2F9E22
+129,folders-paths,path,Caminho,Arquivos e sistema: caminho,svg/folders-paths/path.svg,svg-green/folders-paths/path.svg,120,120,0 0 120 120,6,#2F9E22
+130,folders-paths,path-slash,Separador de caminho,Arquivos e sistema: separador de caminho,svg/folders-paths/path-slash.svg,svg-green/folders-paths/path-slash.svg,120,120,0 0 120 120,6,#2F9E22
+131,folders-paths,path-breadcrumb,Caminho hierárquico,Arquivos e sistema: caminho hierárquico,svg/folders-paths/path-breadcrumb.svg,svg-green/folders-paths/path-breadcrumb.svg,120,120,0 0 120 120,6,#2F9E22
+132,folders-paths,path-relative,Caminho relativo,Arquivos e sistema: caminho relativo,svg/folders-paths/path-relative.svg,svg-green/folders-paths/path-relative.svg,120,120,0 0 120 120,6,#2F9E22
+133,folders-paths,path-absolute,Caminho absoluto,Arquivos e sistema: caminho absoluto,svg/folders-paths/path-absolute.svg,svg-green/folders-paths/path-absolute.svg,120,120,0 0 120 120,6,#2F9E22
+134,folders-paths,directory-up,Diretório superior,Arquivos e sistema: diretório superior,svg/folders-paths/directory-up.svg,svg-green/folders-paths/directory-up.svg,120,120,0 0 120 120,6,#2F9E22
+135,folders-paths,directory-sync,Sincronizar diretório,Arquivos e sistema: sincronizar diretório,svg/folders-paths/directory-sync.svg,svg-green/folders-paths/directory-sync.svg,120,120,0 0 120 120,6,#2F9E22
+136,folders-paths,link-file,Vínculo de arquivo,Arquivos e sistema: vínculo de arquivo,svg/folders-paths/link-file.svg,svg-green/folders-paths/link-file.svg,120,120,0 0 120 120,6,#2F9E22
+137,system,hard-drive,Disco rígido,Arquivos e sistema: disco rígido,svg/system/hard-drive.svg,svg-green/system/hard-drive.svg,120,120,0 0 120 120,6,#2F9E22
+138,system,ssd,Unidade SSD,Arquivos e sistema: unidade ssd,svg/system/ssd.svg,svg-green/system/ssd.svg,120,120,0 0 120 120,6,#2F9E22
+139,system,usb-drive,Pendrive,Arquivos e sistema: pendrive,svg/system/usb-drive.svg,svg-green/system/usb-drive.svg,120,120,0 0 120 120,6,#2F9E22
+140,system,computer,Computador,Arquivos e sistema: computador,svg/system/computer.svg,svg-green/system/computer.svg,120,120,0 0 120 120,6,#2F9E22
+141,system,terminal,Terminal,Arquivos e sistema: terminal,svg/system/terminal.svg,svg-green/system/terminal.svg,120,120,0 0 120 120,6,#2F9E22
+142,system,command-line,Linha de comando,Arquivos e sistema: linha de comando,svg/system/command-line.svg,svg-green/system/command-line.svg,120,120,0 0 120 120,6,#2F9E22
+143,system,code-brackets,Código-fonte,Arquivos e sistema: código-fonte,svg/system/code-brackets.svg,svg-green/system/code-brackets.svg,120,120,0 0 120 120,6,#2F9E22
+144,system,config,Configuração,Arquivos e sistema: configuração,svg/system/config.svg,svg-green/system/config.svg,120,120,0 0 120 120,6,#2F9E22
+145,system,process,Processo,Arquivos e sistema: processo,svg/system/process.svg,svg-green/system/process.svg,120,120,0 0 120 120,6,#2F9E22
+146,system,service,Serviço,Arquivos e sistema: serviço,svg/system/service.svg,svg-green/system/service.svg,120,120,0 0 120 120,6,#2F9E22
+147,system,server,Servidor,Arquivos e sistema: servidor,svg/system/server.svg,svg-green/system/server.svg,120,120,0 0 120 120,6,#2F9E22
+148,system,database,Banco de dados,Arquivos e sistema: banco de dados,svg/system/database.svg,svg-green/system/database.svg,120,120,0 0 120 120,6,#2F9E22
+149,system,database-backup,Backup de banco,Arquivos e sistema: backup de banco,svg/system/database-backup.svg,svg-green/system/database-backup.svg,120,120,0 0 120 120,6,#2F9E22
+150,system,network,Rede,Arquivos e sistema: rede,svg/system/network.svg,svg-green/system/network.svg,120,120,0 0 120 120,6,#2F9E22
+151,system,cloud,Nuvem,Arquivos e sistema: nuvem,svg/system/cloud.svg,svg-green/system/cloud.svg,120,120,0 0 120 120,6,#2F9E22
+152,system,cloud-upload,Enviar nuvem,Arquivos e sistema: enviar nuvem,svg/system/cloud-upload.svg,svg-green/system/cloud-upload.svg,120,120,0 0 120 120,6,#2F9E22
+153,system,cloud-download,Baixar nuvem,Arquivos e sistema: baixar nuvem,svg/system/cloud-download.svg,svg-green/system/cloud-download.svg,120,120,0 0 120 120,6,#2F9E22
+154,system,api,API,Arquivos e sistema: api,svg/system/api.svg,svg-green/system/api.svg,120,120,0 0 120 120,6,#2F9E22
+155,system,key,Chave de acesso,Arquivos e sistema: chave de acesso,svg/system/key.svg,svg-green/system/key.svg,120,120,0 0 120 120,6,#2F9E22
+156,system,certificate,Certificado,Arquivos e sistema: certificado,svg/system/certificate.svg,svg-green/system/certificate.svg,120,120,0 0 120 120,6,#2F9E22
+157,system,firewall,Firewall,Arquivos e sistema: firewall,svg/system/firewall.svg,svg-green/system/firewall.svg,120,120,0 0 120 120,6,#2F9E22
+158,system,logs,Logs,Arquivos e sistema: logs,svg/system/logs.svg,svg-green/system/logs.svg,120,120,0 0 120 120,6,#2F9E22
+159,system,event-log,Log de eventos,Arquivos e sistema: log de eventos,svg/system/event-log.svg,svg-green/system/event-log.svg,120,120,0 0 120 120,6,#2F9E22
+160,system,bug,Depuração,Arquivos e sistema: depuração,svg/system/bug.svg,svg-green/system/bug.svg,120,120,0 0 120 120,6,#2F9E22
+161,system,update,Atualização,Arquivos e sistema: atualização,svg/system/update.svg,svg-green/system/update.svg,120,120,0 0 120 120,6,#2F9E22
+162,system,package,Pacote,Arquivos e sistema: pacote,svg/system/package.svg,svg-green/system/package.svg,120,120,0 0 120 120,6,#2F9E22
+163,system,archive-box,Arquivo morto,Arquivos e sistema: arquivo morto,svg/system/archive-box.svg,svg-green/system/archive-box.svg,120,120,0 0 120 120,6,#2F9E22
+164,system,clipboard-list,Lista de tarefas,Arquivos e sistema: lista de tarefas,svg/system/clipboard-list.svg,svg-green/system/clipboard-list.svg,120,120,0 0 120 120,6,#2F9E22
+165,system,scheduler,Agendador,Arquivos e sistema: agendador,svg/system/scheduler.svg,svg-green/system/scheduler.svg,120,120,0 0 120 120,6,#2F9E22
+166,system,environment,Ambiente,Arquivos e sistema: ambiente,svg/system/environment.svg,svg-green/system/environment.svg,120,120,0 0 120 120,6,#2F9E22
+167,system,windows,Windows,Arquivos e sistema: windows,svg/system/windows.svg,svg-green/system/windows.svg,120,120,0 0 120 120,6,#2F9E22
+168,system,dll,Biblioteca DLL,Arquivos e sistema: biblioteca dll,svg/system/dll.svg,svg-green/system/dll.svg,120,120,0 0 120 120,6,#2F9E22
+169,system,registry,Registro do sistema,Arquivos e sistema: registro do sistema,svg/system/registry.svg,svg-green/system/registry.svg,120,120,0 0 120 120,6,#2F9E22

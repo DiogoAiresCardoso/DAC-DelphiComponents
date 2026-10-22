@@ -1,590 +1,369 @@
 unit DACChartsDemo.Main;
 
 interface
-
-uses
-  System.Classes,
-  System.SysUtils,
-  System.UITypes,
-  Data.DB,
-  Datasnap.DBClient,
-  Vcl.Controls,
-  Vcl.ExtCtrls,
-  Vcl.Forms,
-  Vcl.Graphics,
-  Vcl.StdCtrls,
-  DAC.Components.Controls.Charts,
-  DACChartsDemo.ClientDataSetAdapter,
-  DAC.Components.DesignSystem.Theme;
-
+uses System.Classes, System.SysUtils, System.Types, System.JSON,
+  Winapi.Windows, Winapi.Messages, Data.DB, Datasnap.DBClient, Vcl.Forms, Vcl.Controls, Vcl.StdCtrls,
+  Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.Dialogs, Vcl.Graphics, Vcl.Clipbrd,
+  DAC.Components.Controls.Charts, DAC.Components.Charts.Options, DAC.Components.Charts.Types;
 type
   TChartsDemoForm = class(TForm)
-    pnlHeader: TPanel;
-    lblTitle: TLabel;
-    lblDescription: TLabel;
-    btnTheme: TButton;
-    btnDataMode: TButton;
-    sbCharts: TScrollBox;
-    procedure btnThemeClick(Sender: TObject);
-    procedure btnDataModeClick(Sender: TObject);
+    Pages: TPageControl;
+    GalleryTab, ConfigTab, VisualTab, CompareTab, StabilityTab: TTabSheet;
+    Gallery: TScrollBox;
+    ConfigBar: TPanel;
+    Cases: TComboBox;
+    ApplyButton,ResetButton,ImportButton,ExportButton,CopyButton: TButton;
+    Editor: TMemo;
+    ChartHost: TPanel;
+    VisualBar: TPanel;
+    TitleEdit: TEdit;
+    LabelsCheck,LegendCheck,TooltipCheck: TCheckBox;
+    ThemeBox: TComboBox;
+    LegendOrientation: TComboBox;
+    VisualHost: TPanel;
+    CompareBar: TPanel;
+    ReferenceDir,ActualDir: TEdit;
+    CompareButton: TButton;
+    CompareScroll: TScrollBox;
+    RefImage,DACImage,OverlayImage,DiffImage: TImage;
+    RefCaption,DACCaption,OverlayCaption,DiffCaption,UnavailableLabel: TLabel;
+    StabilityBar: TPanel;
+    UpdateButton,ReplayButton,StopButton,CaptureButton,StressButton: TButton;
+    StabilityHost: TPanel;
+    Metrics: TMemo;
+    MetricsTimer: TTimer;
+    OpenDialog: TOpenDialog;
+    SaveDialog: TSaveDialog;
+    Status: TLabel;
+    FilterButton: TButton;
+    DemoData: TClientDataSet;
+    DemoSource: TDataSource;
     procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure CaseChanged(Sender: TObject);
+    procedure ApplyClick(Sender: TObject);
+    procedure ResetClick(Sender: TObject);
+    procedure ImportClick(Sender: TObject);
+    procedure ExportClick(Sender: TObject);
+    procedure CopyClick(Sender: TObject);
+    procedure VisualChanged(Sender: TObject);
+    procedure CompareClick(Sender: TObject);
+    procedure UpdateClick(Sender: TObject);
+    procedure ReplayClick(Sender: TObject);
+    procedure StopClick(Sender: TObject);
+    procedure CaptureClick(Sender: TObject);
+    procedure StressClick(Sender: TObject);
+    procedure MetricsTick(Sender: TObject);
+    procedure PageChanged(Sender: TObject);
+    procedure FilterClick(Sender: TObject);
+  protected
+    function HandleCreateException: Boolean; override;
   private
-    FDataSet: TClientDataSet;
-    FDataSource: TDataSource;
-    FDark: Boolean;
-    FDataModeIndex: Integer;
-    FModeChart: TDACChart;
-    FAnimationEnabled: Boolean;
-    btnUpdateValues: TButton;
-    btnToggleAnimation: TButton;
-    cbDuration: TComboBox;
-    cbEasing: TComboBox;
-    procedure AddManual(const ASeries: TDACChartSeries;
-      const ACategories: array of string; const AValues: array of Double;
-      const ANullIndex: Integer = -1);
-    procedure BuildCharts;
-    procedure BuildDataSet;
-    function CreateChart(const ATitle: string; const AColumn, ARow: Integer): TDACChart;
-    function NewSeries(const AChart: TDACChart; const AName: string;
-      const AType: TDACChartType; const AFill: TDACChartFillMode = cfSolid): TDACChartSeries;
-    procedure ApplyTheme;
-    procedure ApplyAnimationOptions;
-    procedure btnToggleAnimationClick(Sender: TObject);
-    procedure btnUpdateValuesClick(Sender: TObject);
-    procedure cbAnimationOptionChange(Sender: TObject);
-    procedure CreateAnimationControls;
+    FFixtures: TJSONObject;
+    FChart,FVisual,FStress,FDataChart: TDACChart;
+    FIteration: Integer;
+    FAutomatic: Boolean;
+    FFailed: Boolean;
+    procedure RuntimeException(Sender: TObject; E: Exception);
+    function Arg(const Name,Default: string): string;
+    function FixturePath: string;
+    function SelectedOption: string;
+    procedure BuildGallery;
+    procedure RunAutomatic(var Message: TMessage); message WM_APP+$510;
+    procedure RunStress;
   end;
+procedure RunChartsDemo;
 
-var
-  ChartsDemoForm: TChartsDemoForm;
-
+var ChartsDemoForm: TChartsDemoForm;
 implementation
-
+uses System.IOUtils, System.Math, System.Diagnostics, System.Variants, Vcl.Imaging.pngimage,
+  MidasLib, DACChartsDemo.Startup, DACChartsDemo.ClientDataSetAdapter;
 {$R *.dfm}
 
-const
-  { The gallery deliberately uses the same minimum visual size as the
-    component.  It may scroll horizontally on smaller displays, rather than
-    compressing chart text, axes or the reserved legend panel. }
-  ChartWidth = 560;
-  ChartHeight = 360;
-  ChartGap = 28;
 
-procedure TChartsDemoForm.AddManual(const ASeries: TDACChartSeries;
-  const ACategories: array of string; const AValues: array of Double;
-  const ANullIndex: Integer);
-var
-  I: Integer;
-  LPoint: TDACChartPoint;
+procedure RunChartsDemo;
 begin
-  if Length(ACategories) <> Length(AValues) then
-    raise EArgumentException.Create('Categorias e valores devem ter o mesmo tamanho.');
-  for I := Low(AValues) to High(AValues) do
-  begin
-    LPoint := ASeries.Points.Add;
-    LPoint.Category := ACategories[I];
-    LPoint.XValue := I;
-    LPoint.Value := AValues[I];
-    LPoint.IsNull := I = ANullIndex;
-    LPoint.LabelText := FormatFloat('0.##', AValues[I]);
-    LPoint.TooltipText := ASeries.Name + ' em ' + ACategories[I];
+  try
+    try
+      Application.Initialize;
+      Application.MainFormOnTaskbar:=True;
+      Application.CreateForm(TChartsDemoForm,ChartsDemoForm);
+      Application.OnException:=ChartsDemoForm.RuntimeException;
+      Application.Run;
+    except on E: Exception do ReportDemoFailure(E); end;
+  finally Application.OnException:=nil; end;
+end;
+
+function TChartsDemoForm.HandleCreateException: Boolean;
+begin
+  { The VCL default consumes OnCreate errors and leaves a partial blank form. }
+  Result:=False;
+end;
+
+procedure TChartsDemoForm.RuntimeException(Sender: TObject; E: Exception);
+begin
+  if FFailed then Exit;
+  FFailed:=True; MetricsTimer.Enabled:=False;
+  ReportDemoFailure(E); Application.Terminate;
+end;
+
+function TChartsDemoForm.Arg(const Name,Default: string): string;
+var I: Integer;
+begin
+  Result:=Default;
+  for I:=1 to ParamCount do if SameText(ParamStr(I),Name) then begin
+    if (I<ParamCount) and not ParamStr(I+1).StartsWith('--') then Result:=ParamStr(I+1) else Result:='true'; Exit;
   end;
 end;
-
-procedure TChartsDemoForm.ApplyTheme;
+function TChartsDemoForm.FixturePath: string;
 begin
-  { ResolveForSurface honors the physical parent surface for ThemeMode=Inherit.
-    Apply that surface before notifying TDACThemeManager; otherwise charts use
-    the previous scrollbox color and the palette is inverted one toggle late. }
-  if FDark then
-  begin
-    Color := TColor($00140D08);
-    pnlHeader.Color := TColor($001E140D);
-    lblTitle.Font.Color := clWhite;
-    lblDescription.Font.Color := TColor($00D0D0D0);
-    btnTheme.Caption := 'Usar tema claro';
-  end
-  else
-  begin
-    Color := clWhite;
-    pnlHeader.Color := TColor($00F5F8F4);
-    lblTitle.Font.Color := TColor($0017221A);
-    lblDescription.Font.Color := TColor($00526158);
-    btnTheme.Caption := 'Usar tema escuro';
-  end;
-  sbCharts.Color := Color;
-  if FDark then
-    TDACThemeManager.SetApplicationMode(dtmDark)
-  else
-    TDACThemeManager.SetApplicationMode(dtmLight);
+  Result:=Arg('--fixtures','');
+  if Result<>'' then Result:=ExpandFileName(Result)
+  else Result:=TPath.Combine(ExtractFilePath(Application.ExeName),'reference-cases.json');
+  if not TFile.Exists(Result) then
+    raise Exception.Create('Arquivo de cenarios nao encontrado: '+Result+'. Distribua reference-cases.json junto ao EXE ou use --fixtures caminho.');
 end;
-
-procedure TChartsDemoForm.ApplyAnimationOptions;
-var
-  I: Integer;
-  LChart: TDACChart;
-  LDuration: Integer;
-begin
-  LDuration := StrToIntDef(cbDuration.Text, 360);
-  for I := 0 to sbCharts.ControlCount - 1 do
-    if sbCharts.Controls[I] is TDACChart then
-    begin
-      LChart := TDACChart(sbCharts.Controls[I]);
-      LChart.Animation.Enabled := FAnimationEnabled;
-      LChart.Animation.Duration := LDuration;
-      LChart.Animation.Easing := TDACChartAnimationEasing(cbEasing.ItemIndex);
-    end;
-  if FAnimationEnabled then
-    btnToggleAnimation.Caption := 'Animacao: ativa'
-  else
-    btnToggleAnimation.Caption := 'Animacao: desativada';
-end;
-
-procedure TChartsDemoForm.BuildCharts;
-var
-  LChart: TDACChart;
-  LSeries: TDACChartSeries;
-begin
-  LChart := CreateChart('1. Barras solidas', 0, 0);
-  LSeries := NewSeries(LChart, 'Producao', ctBar);
-  LSeries.Color := TAlphaColor($FF2F9E22);
-  AddManual(LSeries, ['Jan', 'Fev', 'Mar', 'Abr', 'Mai'], [42, 68, 57, 75, 54]);
-  LSeries := NewSeries(LChart, 'Meta', ctBar);
-  LSeries.Color := TAlphaColor($FF4C8DFF);
-  AddManual(LSeries, ['Jan', 'Fev', 'Mar', 'Abr', 'Mai'], [48, 62, 64, 70, 60]);
-
-  LChart := CreateChart('2. Barras - gradiente 0 graus', 1, 0);
-  LSeries := NewSeries(LChart, 'Colheita', ctBar, cfLinearGradient);
-  LSeries.GradientAngle := 0;
-  LSeries.GradientStartColor := TAlphaColor($FF1B7F3A);
-  LSeries.GradientEndColor := TAlphaColor($FF8BE25A);
-  AddManual(LSeries, ['A', 'B', 'C', 'D'], [28, 44, 31, 60]);
-  LSeries := NewSeries(LChart, 'Planejado', ctBar, cfLinearGradient);
-  LSeries.Color := TAlphaColor($FF4C8DFF);
-  LSeries.GradientAngle := 0;
-  AddManual(LSeries, ['A', 'B', 'C', 'D'], [34, 39, 42, 53]);
-
-  LChart := CreateChart('3. Barras - gradiente 90 graus', 2, 0);
-  LSeries := NewSeries(LChart, 'Estoque', ctBar, cfLinearGradient);
-  LSeries.GradientAngle := 90;
-  AddManual(LSeries, ['S1', 'S2', 'S3', 'S4'], [14, 33, 50, 26]);
-  LSeries := NewSeries(LChart, 'Referencia', ctBar, cfLinearGradient);
-  LSeries.Color := TAlphaColor($FFF5C842);
-  LSeries.GradientAngle := 90;
-  AddManual(LSeries, ['S1', 'S2', 'S3', 'S4'], [20, 30, 44, 32]);
-
-  LChart := CreateChart('4. Barras - gradiente radial', 0, 1);
-  LSeries := NewSeries(LChart, 'Indice', ctBar, cfRadialGradient);
-  AddManual(LSeries, ['Norte', 'Sul', 'Leste', 'Oeste'], [20, 48, 35, 55]);
-  LSeries := NewSeries(LChart, 'Meta regional', ctBar, cfRadialGradient);
-  LSeries.Color := TAlphaColor($FF4C8DFF);
-  AddManual(LSeries, ['Norte', 'Sul', 'Leste', 'Oeste'], [28, 42, 40, 50]);
-
-  LChart := CreateChart('5. Linha com lacuna nula', 1, 1);
-  LSeries := NewSeries(LChart, 'Umidade', ctLine);
-  AddManual(LSeries, ['Jan', 'Fev', 'Mar', 'Abr', 'Mai'], [16, 22, 0, 18, 24], 2);
-
-  LChart := CreateChart('6. Area com negativos e zero', 2, 1);
-  LSeries := NewSeries(LChart, 'Resultado', ctArea, cfLinearGradient);
-  LSeries.GradientAngle := 90;
-  AddManual(LSeries, ['Jan', 'Fev', 'Mar', 'Abr', 'Mai'], [-10, 18, 0, 27, -4]);
-
-  LChart := CreateChart('7. Misto: tooltip com 3 series', 0, 2);
-  LChart.Tooltip.Mode := ctmAxis;
-  LChart.Tooltip.Formatter := '{series}: {value}  {tooltip}';
-  LSeries := NewSeries(LChart, 'Realizado', ctBar, cfLinearGradient);
-  AddManual(LSeries, ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago'],
-    [20, 34, 29, 45, 38, 52, 47, 61]);
-  LSeries := NewSeries(LChart, 'Meta', ctLine);
-  AddManual(LSeries, ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago'],
-    [26, 31, 36, 40, 43, 47, 51, 56]);
-  LSeries := NewSeries(LChart, 'Tendencia', ctArea, cfRadialGradient);
-  AddManual(LSeries, ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago'],
-    [12, 18, 22, 28, 26, 33, 37, 42]);
-
-  LChart := CreateChart('8. Pie com tooltip e legenda', 1, 2);
-  LSeries := NewSeries(LChart, 'Culturas', ctPie, cfSolid);
-  AddManual(LSeries, ['Soja', 'Milho', 'Feijao', 'Outros'], [55, 25, 15, 5]);
-
-  LChart := CreateChart('9. Doughnut radial', 2, 2);
-  LSeries := NewSeries(LChart, 'Status', ctDoughnut, cfRadialGradient);
-  AddManual(LSeries, ['Ativo', 'Pendente', 'Pausado'], [62, 28, 10]);
-
-  LChart := CreateChart('10. Data-aware: tooltip com 3 series', 0, 3);
-  LChart.DataSource := FDataSource;
-  LChart.DataMode := cdmDataSource;
-  LChart.Tooltip.Mode := ctmAxis;
-  LChart.Tooltip.Formatter := '{series}: {value}';
-  LSeries := NewSeries(LChart, 'Producao CDS', ctBar, cfLinearGradient);
-  LSeries.EncodeX := 'MES';
-  LSeries.EncodeY := 'PRODUCAO';
-  LSeries.EncodeLabel := 'ROTULO';
-  LSeries.EncodeTooltip := 'DETALHE';
-  LSeries := NewSeries(LChart, 'Chuva CDS', ctLine, cfSolid);
-  LSeries.EncodeX := 'MES';
-  LSeries.EncodeY := 'CHUVA';
-  LSeries := NewSeries(LChart, 'Custo CDS', ctArea, cfLinearGradient);
-  LSeries.EncodeX := 'MES';
-  LSeries.EncodeY := 'CUSTO';
-
-  LChart := CreateChart('11. Data-aware: linha', 1, 3);
-  LChart.DataSource := FDataSource;
-  LChart.DataMode := cdmDataSource;
-  LSeries := NewSeries(LChart, 'Chuva CDS', ctLine, cfSolid);
-  LSeries.EncodeX := 'MES';
-  LSeries.EncodeY := 'CHUVA';
-
-  LChart := CreateChart('12. Data-aware: area', 2, 3);
-  LChart.DataSource := FDataSource;
-  LChart.DataMode := cdmDataSource;
-  LSeries := NewSeries(LChart, 'Custo CDS', ctArea, cfLinearGradient);
-  LSeries.EncodeX := 'MES';
-  LSeries.EncodeY := 'CUSTO';
-
-  LChart := CreateChart('13. Categorias longas e margens', 0, 4);
-  LChart.Title.Visible := True;
-  LChart.Title.Text := 'Qualidade por fazenda';
-  LChart.Title.SubText := 'Titulo configuravel: fonte, cor, alinhamento e posicao';
-  LChart.Title.Font.Size := 14;
-  LChart.Title.TextColor := TAlphaColor($FF176B2C);
-  LChart.Title.SubTextColor := TAlphaColor($FF5A6A60);
-  LChart.Legend.Position := cpLeft;
-  LChart.Legend.Orientation := coVertical;
-  LChart.Legend.BackgroundVisible := True;
-  LChart.Legend.Padding := 6;
-  LChart.XAxis.Title := 'Fazendas';
-  LChart.XAxis.TitleVisible := True;
-  LChart.YAxis.Title := 'Indice';
-  LChart.YAxis.TitleVisible := True;
-  LChart.YAxis.GridColor := TAlphaColor($FFD5E5D7);
-  LChart.ChartGrid.Margins.Left := 12;
-  LChart.ChartGrid.Margins.Bottom := 12;
-  LSeries := NewSeries(LChart, 'Qualidade', ctLine);
-  AddManual(LSeries, ['Fazenda Boa Vista', 'Fazenda Horizonte',
-    'Fazenda Santa Clara', 'Fazenda Campo Verde'], [72, 64, 81, 77]);
-
-  LChart := CreateChart('14. X temporal', 1, 4);
-  LChart.Title.Visible := True;
-  LChart.Title.Position := cpBottom;
-  LChart.Title.Alignment := taCenter;
-  LChart.Title.Text := 'Temperatura diaria';
-  LChart.Legend.Position := cpRight;
-  LChart.Legend.Orientation := coVertical;
-  LChart.Legend.BorderVisible := True;
-  LChart.Legend.MarkersVisible := True;
-  LChart.XAxis.TickMarksVisible := False;
-  LChart.XAxis.AxisType := catTime;
-  LChart.XAxis.LabelFormat := 'dd/mm';
-  LSeries := NewSeries(LChart, 'Temperatura', ctLine);
-  AddManual(LSeries, ['Dia 1', 'Dia 2', 'Dia 3', 'Dia 4'], [22, 24, 21, 27]);
-  LSeries.Points[0].XValue := EncodeDate(2025, 5, 1);
-  LSeries.Points[1].XValue := EncodeDate(2025, 5, 2);
-  LSeries.Points[2].XValue := EncodeDate(2025, 5, 3);
-  LSeries.Points[3].XValue := EncodeDate(2025, 5, 4);
-
-  LChart := CreateChart('15. Estado vazio manual', 2, 4);
-  LChart.DataMode := cdmManual;
-  LChart.Legend.Visible := False;
-
-  LChart := CreateChart('16. Alternancia de DataMode', 0, 5);
-  FModeChart := LChart;
-  LChart.DataSource := FDataSource;
-  LSeries := NewSeries(LChart, 'Producao comparavel', ctBar, cfLinearGradient);
-  LSeries.EncodeX := 'MES';
-  LSeries.EncodeY := 'PRODUCAO';
-  AddManual(LSeries, ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
-    [38, 62, 51, 71, 49, 77]);
-  LSeries := NewSeries(LChart, 'Meta comparavel', ctBar);
-  LSeries.Color := TAlphaColor($FF4C8DFF);
-  AddManual(LSeries, ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
-    [44, 58, 59, 68, 56, 74]);
-  LChart.DataMode := cdmManual;
-
-  LChart := CreateChart('17. Barras - gradiente 180 graus', 1, 5);
-  LChart.Title.Visible := True;
-  LChart.Title.Position := cpLeft;
-  LChart.Title.Text := 'Volume';
-  LChart.Legend.LabelsVisible := False;
-  LChart.Legend.MarkersVisible := True;
-  LChart.YAxis.LabelsVisible := False;
-  LChart.YAxis.LineVisible := False;
-  LSeries := NewSeries(LChart, 'Volume', ctBar, cfLinearGradient);
-  LSeries.GradientAngle := 180;
-  LSeries.GradientStartColor := TAlphaColor($FF3A5FD0);
-  LSeries.GradientEndColor := TAlphaColor($FF9DC8FF);
-  AddManual(LSeries, ['Q1', 'Q2', 'Q3', 'Q4'], [31, 48, 39, 66]);
-  LSeries := NewSeries(LChart, 'Meta trimestral', ctBar, cfLinearGradient);
-  LSeries.GradientAngle := 180;
-  LSeries.GradientStartColor := TAlphaColor($FFF5C842);
-  LSeries.GradientEndColor := TAlphaColor($FFFAD77A);
-  AddManual(LSeries, ['Q1', 'Q2', 'Q3', 'Q4'], [38, 45, 46, 60]);
-
-  LChart := CreateChart('18. Doughnut sem valores positivos', 2, 5);
-  LSeries := NewSeries(LChart, 'Sem valores', ctDoughnut, cfSolid);
-  AddManual(LSeries, ['A', 'B', 'C'], [0, 0, 0]);
-
-  { Stress cases: the cards intentionally contain enough information to prove
-    that a physical legend panel and native text remain readable. }
-  LChart := CreateChart('19. Legenda inferior com oito series', 0, 6);
-  LChart.Legend.Position := cpBottom;
-  LChart.Legend.Orientation := coHorizontal;
-  LChart.Legend.BackgroundVisible := True;
-  LChart.Legend.BorderVisible := True;
-  LChart.Legend.Padding := 10;
-  LSeries := NewSeries(LChart, 'Receita liquida', ctBar);
-  AddManual(LSeries, ['T1', 'T2', 'T3'], [32, 45, 51]);
-  LSeries := NewSeries(LChart, 'Meta operacional', ctBar);
-  LSeries.Color := TAlphaColor($FF4C8DFF);
-  AddManual(LSeries, ['T1', 'T2', 'T3'], [38, 42, 55]);
-  LSeries := NewSeries(LChart, 'Custo direto', ctBar);
-  LSeries.Color := TAlphaColor($FFF5C842);
-  AddManual(LSeries, ['T1', 'T2', 'T3'], [20, 26, 30]);
-  LSeries := NewSeries(LChart, 'Margem estimada', ctLine);
-  LSeries.Color := TAlphaColor($FF7C4DFF);
-  AddManual(LSeries, ['T1', 'T2', 'T3'], [28, 31, 37]);
-  LSeries := NewSeries(LChart, 'Chuva acumulada', ctLine);
-  LSeries.Color := TAlphaColor($FF00A9D9);
-  AddManual(LSeries, ['T1', 'T2', 'T3'], [44, 36, 48]);
-  LSeries := NewSeries(LChart, 'Insumos aplicados', ctArea);
-  LSeries.Color := TAlphaColor($FFDB6E28);
-  AddManual(LSeries, ['T1', 'T2', 'T3'], [15, 22, 18]);
-  LSeries := NewSeries(LChart, 'Produtividade', ctLine);
-  LSeries.Color := TAlphaColor($FF2F9E22);
-  AddManual(LSeries, ['T1', 'T2', 'T3'], [41, 47, 52]);
-  LSeries := NewSeries(LChart, 'Previsao anual', ctLine);
-  LSeries.Color := TAlphaColor($FFE84C88);
-  AddManual(LSeries, ['T1', 'T2', 'T3'], [35, 40, 46]);
-
-  LChart := CreateChart('20. Legenda direita com dez fatias', 1, 6);
-  LChart.Legend.Position := cpRight;
-  LChart.Legend.Orientation := coVertical;
-  LChart.Legend.BackgroundVisible := True;
-  LChart.Legend.BorderVisible := True;
-  LChart.Legend.Padding := 10;
-  LSeries := NewSeries(LChart, 'Distribuicao de culturas', ctDoughnut, cfRadialGradient);
-  AddManual(LSeries, ['Soja precoce', 'Soja tardia', 'Milho safrinha',
-    'Feijao carioca', 'Algodao irrigado', 'Cafe especial', 'Trigo de inverno',
-    'Hortalicas', 'Pastagem', 'Outras culturas'],
-    [24, 18, 14, 10, 8, 7, 6, 5, 4, 4]);
-
-  LChart := CreateChart('21. Eixo denso com 24 categorias', 2, 6);
-  LChart.XAxis.TitleVisible := True;
-  LChart.XAxis.Title := 'Leituras sequenciais por talhao';
-  LChart.Legend.Position := cpBottom;
-  LChart.Legend.Padding := 10;
-  LSeries := NewSeries(LChart, 'Producao observada', ctBar, cfLinearGradient);
-  AddManual(LSeries, ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08',
-    'T09', 'T10', 'T11', 'T12', 'T13', 'T14', 'T15', 'T16', 'T17', 'T18',
-    'T19', 'T20', 'T21', 'T22', 'T23', 'T24'],
-    [38, 44, 41, 55, 49, 62, 58, 67, 61, 74, 70, 78, 73, 83, 76, 88,
-    82, 91, 86, 96, 90, 101, 95, 108]);
-  LSeries := NewSeries(LChart, 'Meta de referencia', ctLine);
-  LSeries.Color := TAlphaColor($FF4C8DFF);
-  AddManual(LSeries, ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T08',
-    'T09', 'T10', 'T11', 'T12', 'T13', 'T14', 'T15', 'T16', 'T17', 'T18',
-    'T19', 'T20', 'T21', 'T22', 'T23', 'T24'],
-    [42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72,
-    74, 76, 78, 80, 82, 84, 86, 88]);
-end;
-
-procedure TChartsDemoForm.BuildDataSet;
-const
-  Months: array[0..11] of string = ('Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-    'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez');
-  Production: array[0..11] of Double = (42, 68, 57, 75, 54, 80, 73, 91, 66, 84, 97, 105);
-  Rain: array[0..11] of Double = (120, 95, 140, 110, 90, 65, 72, 58, 102, 118, 86, 77);
-  Cost: array[0..11] of Double = (18, 21, 19, 25, 22, 29, 27, 31, 24, 33, 30, 36);
-var
-  I: Integer;
-begin
-  FDataSet := TClientDataSet.Create(Self);
-  FDataSet.FieldDefs.Add('MES', ftString, 12);
-  FDataSet.FieldDefs.Add('PRODUCAO', ftFloat);
-  FDataSet.FieldDefs.Add('CHUVA', ftFloat);
-  FDataSet.FieldDefs.Add('CUSTO', ftFloat);
-  FDataSet.FieldDefs.Add('ROTULO', ftString, 32);
-  FDataSet.FieldDefs.Add('DETALHE', ftString, 80);
-  FDataSet.CreateDataSet;
-  for I := Low(Months) to High(Months) do
-  begin
-    FDataSet.Append;
-    FDataSet.FieldByName('MES').AsString := Months[I];
-    FDataSet.FieldByName('PRODUCAO').AsFloat := Production[I];
-    FDataSet.FieldByName('CHUVA').AsFloat := Rain[I];
-    if I <> 3 then
-      FDataSet.FieldByName('CUSTO').AsFloat := Cost[I];
-    FDataSet.FieldByName('ROTULO').AsString := FormatFloat('0.## t', Production[I]);
-    FDataSet.FieldByName('DETALHE').AsString := 'Registro de ' + Months[I];
-    FDataSet.Post;
-  end;
-  FDataSource := TDataSource.Create(Self);
-  FDataSource.DataSet := FDataSet;
-end;
-
-procedure TChartsDemoForm.btnThemeClick(Sender: TObject);
-begin
-  FDark := not FDark;
-  ApplyTheme;
-end;
-
-procedure TChartsDemoForm.btnDataModeClick(Sender: TObject);
-const
-  Captions: array[TDACChartDataMode] of string = (
-    'Modo: manual', 'Modo: data-aware', 'Modo: automatico');
-begin
-  if FModeChart = nil then
-    Exit;
-  FDataModeIndex := (FDataModeIndex + 1) mod 3;
-  FModeChart.DataMode := TDACChartDataMode(FDataModeIndex);
-  btnDataMode.Caption := Captions[FModeChart.DataMode];
-end;
-
-procedure TChartsDemoForm.btnToggleAnimationClick(Sender: TObject);
-begin
-  FAnimationEnabled := not FAnimationEnabled;
-  ApplyAnimationOptions;
-end;
-
-procedure TChartsDemoForm.btnUpdateValuesClick(Sender: TObject);
-var
-  I: Integer;
-  J: Integer;
-  LChart: TDACChart;
-  LPoint: TDACChartPoint;
-  LRecNo: Integer;
-begin
-  { Manual values and the ClientDataSet are changed independently. The chart
-    receives both paths through the same coalesced refresh pipeline. }
-  for I := 0 to sbCharts.ControlCount - 1 do
-    if sbCharts.Controls[I] is TDACChart then
-    begin
-      LChart := TDACChart(sbCharts.Controls[I]);
-      if LChart.DataMode <> cdmDataSource then
-      begin
-        for J := 0 to LChart.Series.Count - 1 do
-          if LChart.Series[J].Points.Count > 0 then
-          begin
-            LPoint := LChart.Series[J].Points[Random(LChart.Series[J].Points.Count)];
-            if not LPoint.IsNull then
-              LPoint.Value := 12 + Random(108);
-          end;
-      end;
-    end;
-  if (FDataSet <> nil) and FDataSet.Active and not FDataSet.IsEmpty then
-  begin
-    LRecNo := FDataSet.RecNo;
-    FDataSet.First;
-    while not FDataSet.Eof do
-    begin
-      FDataSet.Edit;
-      FDataSet.FieldByName('PRODUCAO').AsFloat := 20 + Random(110);
-      FDataSet.FieldByName('CHUVA').AsFloat := 20 + Random(130);
-      if not FDataSet.FieldByName('CUSTO').IsNull then
-        FDataSet.FieldByName('CUSTO').AsFloat := 10 + Random(45);
-      FDataSet.Post;
-      FDataSet.Next;
-    end;
-    if LRecNo > 0 then
-      FDataSet.RecNo := LRecNo;
-  end;
-  for I := 0 to sbCharts.ControlCount - 1 do
-    if sbCharts.Controls[I] is TDACChart then
-      TDACChart(sbCharts.Controls[I]).RequeryData;
-  btnUpdateValues.Caption := 'Valores atualizados';
-end;
-
-procedure TChartsDemoForm.cbAnimationOptionChange(Sender: TObject);
-begin
-  ApplyAnimationOptions;
-end;
-
-procedure TChartsDemoForm.CreateAnimationControls;
-begin
-  pnlHeader.Height := 94;
-  lblDescription.Caption :=
-    'Manual, data-aware, mixed, gradientes, nulos, eixos, interacao e animacoes';
-  btnDataMode.SetBounds(20, 54, 150, 28);
-
-  btnUpdateValues := TButton.Create(Self);
-  btnUpdateValues.Parent := pnlHeader;
-  btnUpdateValues.SetBounds(180, 54, 150, 28);
-  btnUpdateValues.Caption := 'Atualizar valores';
-  btnUpdateValues.OnClick := btnUpdateValuesClick;
-
-  btnToggleAnimation := TButton.Create(Self);
-  btnToggleAnimation.Parent := pnlHeader;
-  btnToggleAnimation.SetBounds(340, 54, 165, 28);
-  btnToggleAnimation.OnClick := btnToggleAnimationClick;
-
-  cbDuration := TComboBox.Create(Self);
-  cbDuration.Parent := pnlHeader;
-  cbDuration.SetBounds(515, 55, 105, 24);
-  cbDuration.Style := csDropDownList;
-  cbDuration.Items.Add('180');
-  cbDuration.Items.Add('360');
-  cbDuration.Items.Add('600');
-  cbDuration.ItemIndex := 1;
-  cbDuration.OnChange := cbAnimationOptionChange;
-
-  cbEasing := TComboBox.Create(Self);
-  cbEasing.Parent := pnlHeader;
-  cbEasing.SetBounds(630, 55, 150, 24);
-  cbEasing.Style := csDropDownList;
-  cbEasing.Items.Add('Linear');
-  cbEasing.Items.Add('Cubica entrada');
-  cbEasing.Items.Add('Cubica saida');
-  cbEasing.Items.Add('Cubica entrada/saida');
-  cbEasing.ItemIndex := Ord(caeCubicOut);
-  cbEasing.OnChange := cbAnimationOptionChange;
-
-  btnTheme.SetBounds(800, 54, 160, 28);
-end;
-
-function TChartsDemoForm.CreateChart(const ATitle: string; const AColumn,
-  ARow: Integer): TDACChart;
-begin
-  Result := TDACChart.Create(Self);
-  Result.Parent := sbCharts;
-  Result.SetBounds(20 + AColumn * (ChartWidth + ChartGap),
-    16 + ARow * (ChartHeight + ChartGap), ChartWidth, ChartHeight);
-  Result.DataMode := cdmManual;
-  Result.Title.Visible := True;
-  Result.Title.Text := ATitle;
-  Result.Title.Font.Size := 12;
-  Result.Legend.Visible := True;
-  Result.Legend.AllowToggleSeries := True;
-  Result.Tooltip.Enabled := True;
-  Result.Tooltip.Mode := ctmAxis;
-  Result.Tooltip.Formatter := '{series}: {value}';
-  Result.Tooltip.Font.Size := 12;
-  Result.Tooltip.TitleFont.Size := 14;
-  Result.Tooltip.Padding := 14;
-  Result.TabStop := True;
-end;
-
 procedure TChartsDemoForm.FormCreate(Sender: TObject);
+var A: TJSONArray; I: Integer; Parsed,Item: TJSONValue; FileName,Id: string;
+  Ids: TStringList;
 begin
-  Randomize;
-  FDark := False;
-  FAnimationEnabled := True;
-  FDataModeIndex := Ord(cdmManual);
-  BuildDataSet;
-  BuildCharts;
-  CreateAnimationControls;
-  ApplyAnimationOptions;
-  btnDataMode.Caption := 'Modo: manual';
-  ApplyTheme;
+  FileName:=FixturePath;
+  Parsed:=TJSONObject.ParseJSONValue(TFile.ReadAllText(FileName,TEncoding.UTF8));
+  if not (Parsed is TJSONObject) then begin
+    Parsed.Free;
+    raise Exception.Create(FileName+': esperado documento JSON com objeto raiz e array cases');
+  end;
+  FFixtures:=TJSONObject(Parsed);
+  if not (CJ(FFixtures,'cases') is TJSONArray) then
+    raise Exception.Create(FileName+': cases deve ser um array');
+  A:=TJSONArray(CJ(FFixtures,'cases'));
+  if A.Count=0 then raise Exception.Create(FileName+': cases nao pode estar vazio');
+  Ids:=TStringList.Create;
+  try
+    Ids.CaseSensitive:=True;
+    for I:=0 to A.Count-1 do begin
+      Item:=A.Items[I];
+      if not (Item is TJSONObject) or not (CJ(Item,'id') is TJSONString) or
+        not (CJ(Item,'title') is TJSONString) or not (CJ(Item,'option') is TJSONObject) then
+        raise Exception.CreateFmt('%s: cases[%d] exige id/title textuais e option objeto',[FileName,I]);
+      Id:=CS(CJ(Item,'id'));
+      if (Id='') or (Ids.IndexOf(Id)>=0) or (Id='.') or (Id='..') or
+        (Id.IndexOfAny(TPath.GetInvalidFileNameChars)>=0) then
+        raise Exception.CreateFmt('%s: cases[%d].id vazio, repetido ou invalido',[FileName,I]);
+      Ids.Add(Id);
+      try ValidateChartOptions(TJSONObject(CJ(Item,'option')));
+      except on E: Exception do
+        raise Exception.CreateFmt('%s: cases[%d] (%s): %s',[FileName,I,Id,E.Message]); end;
+    end;
+  finally Ids.Free; end;
+  for I:=0 to A.Count-1 do Cases.Items.Add(CS(CJ(A.Items[I],'id'))+' - '+CS(CJ(A.Items[I],'title')));
+  FChart:=TDACChart.Create(Self); FChart.Parent:=ChartHost; FChart.Align:=alClient;
+  FVisual:=TDACChart.Create(Self); FVisual.Parent:=VisualHost; FVisual.Align:=alClient;
+  FStress:=TDACChart.Create(Self); FStress.Parent:=StabilityHost; FStress.Align:=alClient;
+  DemoData.FieldDefs.Add('MES',ftString,12); DemoData.FieldDefs.Add('VALOR',ftFloat);
+  DemoData.CreateDataSet; DemoData.AppendRecord(['Jan',10]); DemoData.AppendRecord(['Fev',20]);
+  DemoData.AppendRecord(['Mar',Null]); DemoData.AppendRecord(['Abr',30]);
+  DemoData.Filter:='VALOR >= 20';
+  Cases.ItemIndex:=0; CaseChanged(nil); BuildGallery; Pages.ActivePage:=GalleryTab;
+  FAutomatic:=Arg('--out','')<>'';
 end;
-
-function TChartsDemoForm.NewSeries(const AChart: TDACChart;
-  const AName: string; const AType: TDACChartType;
-  const AFill: TDACChartFillMode): TDACChartSeries;
+procedure TChartsDemoForm.FormDestroy(Sender: TObject);
+begin FFixtures.Free; end;
+procedure TChartsDemoForm.FormShow(Sender: TObject);
+begin if FAutomatic then PostMessage(Handle,WM_APP+$510,0,0); end;
+procedure TChartsDemoForm.BuildGallery;
+var I: Integer; A: TJSONArray; C: TDACChart; L: TLabel;
 begin
-  Result := AChart.Series.Add;
-  Result.Name := AName;
-  Result.ChartType := AType;
-  Result.FillMode := AFill;
-  Result.GradientAngle := 90;
+  A:=TJSONArray(CJ(FFixtures,'cases'));
+  for I:=0 to A.Count-1 do begin
+    L:=TLabel.Create(Self); L.Parent:=Gallery; L.SetBounds(12+(I mod 2)*530,12+(I div 2)*340,510,24);
+    L.Caption:=CS(CJ(A.Items[I],'id'))+' - '+CS(CJ(A.Items[I],'title'));
+    C:=TDACChart.Create(Self); C.Parent:=Gallery; C.SetBounds(L.Left,L.Top+28,510,290);
+    C.LoadJSON(CJ(A.Items[I],'option').ToJSON);
+  end;
+  FDataChart:=TDACChart.Create(Self); FDataChart.Parent:=Gallery;
+  FDataChart.SetBounds(12,(A.Count div 2+1)*340,1030,290);
+  FDataChart.LoadJSON('{"animation":false,"title":{"text":"Data-aware: filtro e NULL"},"dataset":{"dimensions":["MES","VALOR"]},"xAxis":{"type":"category"},"yAxis":{"type":"value"},"tooltip":{"trigger":"axis"},' +
+    '"series":[{"type":"bar","name":"Dataset local","encode":{"x":"MES","y":"VALOR"}}]}');
+  FDataChart.DataSource:=DemoSource;
 end;
-
+procedure TChartsDemoForm.FilterClick(Sender: TObject);
+begin DemoData.Filtered:=not DemoData.Filtered; Status.Caption:='Filtro do dataset: '+BoolToStr(DemoData.Filtered,True); end;
+function TChartsDemoForm.SelectedOption: string;
+begin Result:=CJ(TJSONArray(CJ(FFixtures,'cases')).Items[Max(0,Cases.ItemIndex)],'option').ToJSON; end;
+procedure TChartsDemoForm.CaseChanged(Sender: TObject);
+begin
+  Editor.Text:=SelectedOption; ApplyClick(nil);
+  FVisual.LoadJSON(SelectedOption); FStress.LoadJSON(SelectedOption);
+end;
+procedure TChartsDemoForm.ApplyClick(Sender: TObject);
+begin
+  try FChart.LoadJSON(Editor.Text); Status.Caption:='Configuracao aplicada';
+  except on E: Exception do Status.Caption:=E.Message; end;
+end;
+procedure TChartsDemoForm.ResetClick(Sender: TObject);
+begin CaseChanged(nil); end;
+procedure TChartsDemoForm.ImportClick(Sender: TObject);
+begin if OpenDialog.Execute then begin Editor.Text:=TFile.ReadAllText(OpenDialog.FileName,TEncoding.UTF8); ApplyClick(nil); end; end;
+procedure TChartsDemoForm.ExportClick(Sender: TObject);
+begin if SaveDialog.Execute then TFile.WriteAllText(SaveDialog.FileName,FChart.SaveJSON,TEncoding.UTF8); end;
+procedure TChartsDemoForm.CopyClick(Sender: TObject);
+begin Clipboard.AsText:=FChart.SaveJSON; end;
+procedure TChartsDemoForm.VisualChanged(Sender: TObject);
+var O: TJSONObject; I: Integer;
+begin
+  FVisual.BeginUpdate;
+  try
+    FVisual.Options.Title.Text:=TitleEdit.Text;
+    FVisual.Options.Legend.Show:=LegendCheck.Checked;
+    case LegendOrientation.ItemIndex of
+      1: FVisual.Options.Legend.Orient:=dcoHorizontal;
+      2: FVisual.Options.Legend.Orient:=dcoVertical;
+    else FVisual.Options.Legend.Orient:=dcoDefault; end;
+    FVisual.Options.Tooltip.Show:=TooltipCheck.Checked;
+    for I:=0 to FVisual.Options.Series.Count-1 do FVisual.Options.Series[I].LabelStyle.Show:=LabelsCheck.Checked;
+  finally FVisual.EndUpdate; end;
+  O:=FVisual.Options.Clone;
+  try
+    if ThemeBox.ItemIndex=1 then begin
+      CSet(O,'color',TJSONArray.Create.Add('#2F9E22').Add('#3DB82A').Add('#74D64A').Add('#F5C842').Add('#D94A3A'));
+      CSet(O,'backgroundColor',TJSONString.Create('#E8EEE8'));
+    end else begin
+      O.RemovePair('color').Free; O.RemovePair('backgroundColor').Free;
+    end;
+    FVisual.LoadJSON(O.ToJSON);
+  finally O.Free; end;
+end;
+procedure TChartsDemoForm.CompareClick(Sender: TObject);
+var I: Integer; Image: TImage; FileName,Id: string;
+begin
+  Id:=CS(CJ(TJSONArray(CJ(FFixtures,'cases')).Items[Cases.ItemIndex],'id'));
+  for I:=0 to 3 do begin
+    case I of 0: Image:=RefImage; 1: Image:=DACImage; 2: Image:=OverlayImage; else Image:=DiffImage; end;
+    if I=0 then FileName:=TPath.Combine(ReferenceDir.Text,Id+'.png')
+    else if I=1 then FileName:=TPath.Combine(ActualDir.Text,Id+'.png')
+    else if I=2 then FileName:=TPath.Combine(ActualDir.Text,Id+'-overlay.png')
+    else FileName:=TPath.Combine(ActualDir.Text,Id+'-diff.png');
+    if TFile.Exists(FileName) then Image.Picture.LoadFromFile(FileName)
+    else begin Image.Picture.Assign(nil); Image.Hint:='Arquivo ainda nao gerado: '+FileName; Image.ShowHint:=True; end;
+  end;
+end;
+procedure TChartsDemoForm.UpdateClick(Sender: TObject);
+var O: TJSONObject; A,D,NewData: TJSONArray; I,J: Integer; V: TJSONValue;
+begin
+  O:=FStress.Options.Clone; Inc(FIteration);
+  try
+    A:=TJSONArray(CJ(O,'series'));
+    for I:=0 to A.Count-1 do begin
+      D:=TJSONArray(CJ(A.Items[I],'data')); if D=nil then Continue;
+      NewData:=TJSONArray.Create;
+      for J:=0 to D.Count-1 do begin
+        V:=D.Items[J];
+        if V is TJSONNumber then NewData.Add(5+(J*7+FIteration*3) mod 35)
+        else NewData.AddElement(TJSONValue(V.Clone));
+      end;
+      CSet(TJSONObject(A.Items[I]),'data',NewData);
+    end;
+    CSet(O,'animation',TJSONBool.Create(True)); FStress.LoadJSON(O.ToJSON);
+  finally O.Free; end;
+end;
+procedure TChartsDemoForm.ReplayClick(Sender: TObject);
+begin FStress.Replay; end;
+procedure TChartsDemoForm.StopClick(Sender: TObject);
+begin FStress.Stop; end;
+procedure TChartsDemoForm.CaptureClick(Sender: TObject);
+begin
+  SaveDialog.Filter:='PNG|*.png';
+  if SaveDialog.Execute then FStress.CapturePNG(SaveDialog.FileName);
+  SaveDialog.Filter:='JSON|*.json';
+end;
+procedure TChartsDemoForm.RunStress;
+var O: TJSONObject; A,D: TJSONArray; S,P,I,Points,Frames,DPI: Integer; Series: TJSONObject; Start,Finish: Cardinal; Animate: Boolean;
+begin
+  Points:=Max(6,StrToIntDef(Arg('--points','996'),996));
+  Frames:=Max(1,StrToIntDef(Arg('--frames','120'),120));
+  DPI:=StrToIntDef(Arg('--dpi','144'),144);
+  SendMessage(FStress.Handle,WM_DPICHANGED,MakeWParam(DPI,DPI),0);
+  O:=TJSONObject.Create; A:=TJSONArray.Create;
+  try
+    O.AddPair('animation',TJSONBool.Create(False));
+    O.AddPair('xAxis',TJSONObject.Create.AddPair('type','value'));
+    O.AddPair('yAxis',TJSONObject.Create.AddPair('type','value'));
+    O.AddPair('series',A);
+    for S:=0 to 5 do begin
+      Series:=TJSONObject.Create; A.AddElement(Series); Series.AddPair('type','line');
+      Series.AddPair('showSymbol',TJSONBool.Create(False)); D:=TJSONArray.Create; Series.AddPair('data',D);
+      for P:=0 to ((Points+5-S) div 6)-1 do D.AddElement(TJSONArray.Create.Add(P).Add(Sin(P/12+S)*20+S*10));
+    end;
+    Animate:=Arg('--animate','')<>'';
+    FStress.LoadJSON(O.ToJSON); Start:=GetTickCount;
+    for I:=0 to Frames-1 do begin
+      if Animate and ((I mod 15)=0) then begin
+        for S:=0 to A.Count-1 do begin
+          Series:=TJSONObject(A.Items[S]); D:=TJSONArray.Create;
+          for P:=0 to ((Points+5-S) div 6)-1 do D.AddElement(TJSONArray.Create.Add(P).Add(Sin((P+I)/12+S)*20+S*10));
+          CSet(Series,'data',D);
+        end;
+        CSet(O,'animation',TJSONBool.Create(True)); FStress.LoadJSON(O.ToJSON);
+      end;
+      SendMessage(FStress.Handle,WM_MOUSEMOVE,0,MakeLParam(100+(I*3 mod 500),150));
+      FStress.Update; Application.ProcessMessages;
+      while GetTickCount-Start<Cardinal((I+1)*33) do begin Application.ProcessMessages; Sleep(1); end;
+    end;
+    if Animate then begin
+      Finish:=GetTickCount;
+      repeat Application.ProcessMessages; Sleep(1); until (GetTickCount-Finish>750) and not FStress.AnimationRunning;
+    end;
+    if FStress.Engine.Marks.Count<>Points then raise Exception.CreateFmt(
+      'Carga invalida: %d pontos desenhados, esperado %d',[FStress.Engine.Marks.Count,Points]);
+    Metrics.Text:=FStress.MetricsJSON;
+  finally O.Free; end;
+end;
+procedure TChartsDemoForm.StressClick(Sender: TObject);
+begin RunStress; end;
+procedure TChartsDemoForm.MetricsTick(Sender: TObject);
+begin Metrics.Text:=FStress.MetricsJSON; end;
+procedure TChartsDemoForm.PageChanged(Sender: TObject);
+begin MetricsTimer.Enabled:=Pages.ActivePage=StabilityTab; end;
+procedure TChartsDemoForm.RunAutomatic(var Message: TMessage);
+var OutDir,Id,CaseId: string; A: TJSONArray; I,Matches: Integer; Bitmap: TBitmap; PNG: TPngImage;
+begin
+  try
+    OutDir:=ExpandFileName(Arg('--out','captures')); ForceDirectories(OutDir);
+    Pages.ActivePage:=GalleryTab; Update; Application.ProcessMessages;
+    Bitmap:=TBitmap.Create; PNG:=TPngImage.Create;
+    try Bitmap.SetSize(ClientWidth,ClientHeight); PaintTo(Bitmap.Canvas.Handle,0,0);
+      PNG.Assign(Bitmap); PNG.SaveToFile(TPath.Combine(OutDir,'gallery.png'));
+    finally PNG.Free; Bitmap.Free; end;
+    Matches:=0;
+    Pages.ActivePage:=ConfigTab; FChart.Align:=alNone; FChart.SetBounds(0,0,Max(80,StrToIntDef(Arg('--width','720'),720)),Max(80,StrToIntDef(Arg('--height','420'),420)));
+    if Arg('--dpi','')<>'' then SendMessage(FChart.Handle,WM_DPICHANGED,MakeWParam(StrToIntDef(Arg('--dpi','96'),96),0),0);
+    A:=TJSONArray(CJ(FFixtures,'cases')); CaseId:=Arg('--case','all');
+    for I:=0 to A.Count-1 do begin
+      Id:=CS(CJ(A.Items[I],'id')); if (CaseId<>'all') and (CaseId<>Id) then Continue;
+      Inc(Matches); FChart.LoadJSON(CJ(A.Items[I],'option').ToJSON);
+      FChart.CapturePNG(TPath.Combine(OutDir,Id+'.png')); FChart.Invalidate; FChart.Update;
+      if Arg('--buffer-only','')='' then
+        FChart.CaptureWindowPNG(TPath.Combine(OutDir,Id+'-window.png'));
+      TFile.WriteAllText(TPath.Combine(OutDir,Id+'.json'),FChart.GeometryJSON,TEncoding.UTF8);
+    end;
+    if Matches=0 then raise Exception.Create('Cenario nao encontrado: '+CaseId);
+    if Arg('--stress','')<>'' then begin
+      Pages.ActivePage:=StabilityTab; FStress.Align:=alNone; FStress.SetBounds(0,0,720,420);
+      FStress.CaptureDirectory:=TPath.Combine(OutDir,'frames');
+      FStress.CaptureScreenFrames:=Arg('--screen','')<>'';
+      if FStress.CaptureScreenFrames then begin BringToFront; SetForegroundWindow(Handle); end;
+      RunStress;
+      TFile.WriteAllText(TPath.Combine(OutDir,'stress-option.json'),FStress.SaveJSON,TEncoding.UTF8);
+      TFile.WriteAllText(TPath.Combine(OutDir,'stress-geometry.json'),FStress.GeometryJSON,TEncoding.UTF8);
+      TFile.WriteAllText(TPath.Combine(OutDir,'metrics.json'),FStress.MetricsJSON,TEncoding.UTF8);
+    end;
+    TFile.WriteAllText(TPath.Combine(OutDir,'result.txt'),'OK',TEncoding.UTF8);
+    Application.Terminate;
+  except on E: Exception do begin
+    TFile.WriteAllText(TPath.Combine(OutDir,'error.txt'),E.ClassName+': '+E.Message,TEncoding.UTF8);
+    ExitCode:=1; Application.Terminate;
+  end; end;
+end;
 end.

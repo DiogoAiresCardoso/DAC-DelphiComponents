@@ -1,0 +1,30 @@
+**********************************************************************
+*        DUnitX - (c) 2015 Vincent Parrett & Contributors            *
+*                    vincent@finalbuilder.com                        *
+*                                                                    *
+*        License - http://www.apache.org/licenses/LICENSE-2.0        *
+**********************************************************************
+
+DUnitX - [ApiTestes.exe] - Starting Tests.
+
+.F.F.F
+
+Tests Found   : 3
+Tests Ignored : 0
+Tests Passed  : 0
+Tests Leaked  : 0
+Tests Failed  : 3
+Tests Errored : 0
+
+Failing Tests
+
+  Teste.MovimentoBancario.InputGrid.TMovimentoBancarioInputGridTests.HitTestFocoCliqueEScrollNaHierarquiaReal.Prontos
+  Message: Condition is False when True expected. [Hit alvo=120DF0 grid=100E68 enabled=False visible=True canfocus=False]
+
+  Teste.MovimentoBancario.InputGrid.TMovimentoBancarioInputGridTests.HitTestFocoCliqueEScrollNaHierarquiaReal.Conciliar
+  Message: Condition is False when True expected. [Hit alvo=110E68 grid=150CCE enabled=False visible=True canfocus=False]
+
+  Teste.MovimentoBancario.InputGrid.TMovimentoBancarioInputGridTests.HitTestFocoCliqueEScrollNaHierarquiaReal.Importados
+  Message: Condition is False when True expected. [Hit alvo=120E68 grid=160CCE enabled=False visible=True canfocus=False]
+
+

@@ -1,0 +1,195 @@
+class procedure TDACChartTypes.Validate(O: TJSONObject; SeriesOnly: Boolean);
+  function InList(const S,List: string): Boolean;
+  begin Result:=Pos('|'+S+'|','|'+List+'|')>0; end;
+  procedure Keys(V: TJSONValue; const P,Allowed: string);
+  var Pair: TJSONPair;
+  begin
+    if not (V is TJSONObject) then Bad(P,'objeto');
+    for Pair in TJSONObject(V) do
+      if not InList(Pair.JsonString.Value,Allowed) then Bad(P+'.'+Pair.JsonString.Value,'opcao suportada');
+  end;
+  procedure Walk(V: TJSONValue; const P,C: string); forward;
+  procedure Numeric(V: TJSONValue; const P,K: string);
+  var N: Double;
+  begin
+    N:=Number(V,P);
+    if InList(K,'opacity|smooth|offset') and ((N<0) or (N>1)) then Bad(P,'numero 0..1');
+    if InList(K,'width|height|fontSize|lineHeight|padding|borderWidth|borderRadius|shadowBlur|distance|itemGap|itemWidth|itemHeight|showDelay|hideDelay|animationDuration|animationDurationUpdate|animationThreshold|barMinWidth|barMaxWidth|barMinHeight|symbolSize|selectedOffset|percentPrecision|margin|length|length2|r') and (N<0) then Bad(P,'numero nao negativo');
+    if InList(K,'splitNumber|interval') and (N<=0) then Bad(P,'numero positivo');
+    if InList(K,'animationThreshold|percentPrecision|datasetIndex') and (Frac(N)<>0) then Bad(P,'numero inteiro');
+    if (K='percentPrecision') and (N>15) then Bad(P,'precisao 0..15');
+    if (K='datasetIndex') and (N<>0) then Bad(P,'datasetIndex 0');
+  end;
+  procedure MeasureAt(V: TJSONValue; const P,K,C: string);
+  var N: Double; M: TDACChartMeasureMode; Allowed: set of TDACChartMeasureMode;
+  begin
+    M:=Measure(V,P,N); Allowed:=[dcmmPixels,dcmmPercent];
+    if ((C='title') or (C='legend')) and (K='left') then Allowed:=Allowed+[dcmmLeft,dcmmCenter,dcmmRight];
+    if (C='legend') and (K='top') then Allowed:=Allowed+[dcmmTop,dcmmBottom];
+    if (C='title') and (K='top') then Allowed:=Allowed+[dcmmTop];
+    if not (M in Allowed) then Bad(P,'medida/alinhamento suportado neste contexto');
+    if InList(K,'radius|barWidth|barCategoryGap') and (N<0) then Bad(P,'medida nao negativa');
+  end;
+  procedure Fill(V: TJSONValue; const P: string; GradientAllowed: Boolean);
+  var A: TJSONArray; I: Integer; Last,Offset: Double; Kind: string;
+  begin
+    if V is TJSONString then begin Color(V,P); Exit; end;
+    if not GradientAllowed then Bad(P,'cor solida');
+    Keys(V,P,'type|x|y|x2|y2|r|colorStops');
+    if not (J(V,'type') is TJSONString) then Bad(P+'.type','linear ou radial');
+    Kind:=J(V,'type').Value;
+    if not InList(Kind,'linear|radial') then Bad(P+'.type','linear ou radial');
+    if (Kind='linear') and (J(V,'r')<>nil) then Bad(P+'.r','raio apenas em radial');
+    if (Kind='radial') and ((J(V,'x2')<>nil) or (J(V,'y2')<>nil)) then Bad(P,'radial sem x2/y2');
+    for I:=0 to 4 do
+      case I of
+        0: if J(V,'x')<>nil then Number(J(V,'x'),P+'.x');
+        1: if J(V,'y')<>nil then Number(J(V,'y'),P+'.y');
+        2: if J(V,'x2')<>nil then Number(J(V,'x2'),P+'.x2');
+        3: if J(V,'y2')<>nil then Number(J(V,'y2'),P+'.y2');
+        4: if J(V,'r')<>nil then Numeric(J(V,'r'),P+'.r','r');
+      end;
+    if not (J(V,'colorStops') is TJSONArray) then Bad(P+'.colorStops','array de paradas');
+    A:=TJSONArray(J(V,'colorStops')); if A.Count<2 then Bad(P+'.colorStops','ao menos duas paradas');
+    Last:=-1;
+    for I:=0 to A.Count-1 do begin
+      Keys(A.Items[I],Format('%s.colorStops[%d]',[P,I]),'offset|color');
+      Offset:=Number(J(A.Items[I],'offset'),Format('%s.colorStops[%d].offset',[P,I]));
+      if (Offset<0) or (Offset>1) or (Offset<Last) then Bad(P+'.colorStops','offsets crescentes em 0..1');
+      Last:=Offset; Color(J(A.Items[I],'color'),Format('%s.colorStops[%d].color',[P,I]));
+    end;
+  end;
+  procedure Walk(V: TJSONValue; const P,C: string);
+  var Pair,Sub: TJSONPair; K,Q,S: string; W: TJSONValue; A: TJSONArray;
+    I: Integer; N: Double;
+  begin
+    if C='root' then Keys(V,P,'animation|animationDuration|animationDurationUpdate|animationEasing|animationEasingUpdate|animationThreshold|backgroundColor|color|useUTC|dataset|series|xAxis|yAxis|grid|title|legend|tooltip')
+    else if C='series' then Keys(V,P,'id|name|type|data|datasetIndex|seriesLayoutBy|encode|itemStyle|lineStyle|areaStyle|label|labelLine|labelLayout|emphasis|blur|select|selectedMode|selectedOffset|smooth|smoothMonotone|step|connectNulls|symbol|symbolSize|showSymbol|barWidth|barMinWidth|barMaxWidth|barMinHeight|barGap|barCategoryGap|stack|stackStrategy|center|radius|startAngle|clockwise|stillShowZeroSum|showEmptyCircle|emptyCircleStyle|percentPrecision|avoidLabelOverlap')
+    else if C='axis' then Keys(V,P,'type|data|min|max|inverse|boundaryGap|splitNumber|interval|scale|show|name|nameTextStyle|axisLine|axisLabel|axisTick|splitLine')
+    else if C='title' then Keys(V,P,'show|text|subtext|left|top|itemGap|textStyle|subtextStyle')
+    else if C='legend' then Keys(V,P,'show|type|orient|left|top|itemGap|itemWidth|itemHeight|textStyle|selected|selectedMode')
+    else if C='tooltip' then Keys(V,P,'show|trigger|triggerOn|confine|renderMode|formatter|showDelay|hideDelay|backgroundColor|borderColor|padding|textStyle|axisPointer')
+    else if C='grid' then Keys(V,P,'left|right|top|bottom|outerBoundsMode')
+    else if C='dataset' then Keys(V,P,'source|dimensions|sourceHeader')
+    else if C='style' then Keys(V,P,'color|opacity|width|type|borderColor|borderWidth|borderRadius|shadowBlur|shadowColor|shadowOffsetX|shadowOffsetY')
+    else if C='label' then Keys(V,P,'show|position|distance|formatter|rotate|color|fontFamily|fontSize|fontWeight|fontStyle|lineHeight|width|height|padding|align|verticalAlign|overflow|backgroundColor|borderColor|borderWidth|borderRadius|shadowBlur|shadowColor|shadowOffsetX|shadowOffsetY|rich|interval|margin')
+    else if C='state' then Keys(V,P,'itemStyle|focus')
+    else if C='axisLine' then Keys(V,P,'show|onZero|lineStyle')
+    else if C='axisTick' then Keys(V,P,'show|length|lineStyle')
+    else if C='splitLine' then Keys(V,P,'show|lineStyle')
+    else if C='labelLine' then Keys(V,P,'show|lineStyle')
+    else if C='labelLayout' then Keys(V,P,'hideOverlap')
+    else if C='axisPointer' then Keys(V,P,'type|lineStyle|shadowStyle')
+    else if C='encode' then Keys(V,P,'x|y|value')
+    else if C='datum' then Keys(V,P,'id|name|value|itemStyle|label|emphasis|blur|select')
+    else Bad(P,'grupo conhecido');
+    for Pair in TJSONObject(V) do begin
+      K:=Pair.JsonString.Value; W:=Pair.JsonValue; Q:=P+'.'+K;
+      if W is TJSONNull then begin
+        if (C='datum') and (K='value') then Continue;
+        Bad(Q,'valor explicito valido; remova a chave para herdar o default');
+      end;
+      if InList(K,'xAxis|yAxis') then Walk(W,Q,'axis')
+      else if InList(K,'dataset|grid|title|legend|tooltip|axisLine|axisTick|splitLine|labelLine|labelLayout|axisPointer|encode') then Walk(W,Q,K)
+      else if InList(K,'itemStyle|lineStyle|areaStyle|shadowStyle|emptyCircleStyle') then Walk(W,Q,'style')
+      else if InList(K,'label|axisLabel|textStyle|subtextStyle|nameTextStyle') then Walk(W,Q,'label')
+      else if InList(K,'emphasis|blur|select') then Walk(W,Q,'state')
+      else if K='rich' then begin
+        if not (W is TJSONObject) then Bad(Q,'objeto de estilos');
+        for Sub in TJSONObject(W) do Walk(Sub.JsonValue,Q+'.'+Sub.JsonString.Value,'label');
+      end
+      else if K='series' then begin
+        if not (W is TJSONArray) then Bad(Q,'array de series');
+        A:=TJSONArray(W); for I:=0 to A.Count-1 do Walk(A.Items[I],Format('%s[%d]',[Q,I]),'series');
+      end
+      else if K='type' then begin
+        if C='series' then SeriesType(W,Q)
+        else if C='axis' then AxisType(W,Q)
+        else if C='legend' then LegendType(W,Q)
+        else if C='axisPointer' then PointerType(W,Q)
+        else if C='style' then LineType(W,Q)
+        else Bad(Q,'tipo contextual');
+      end
+      else if K='orient' then Orientation(W,Q)
+      else if K='position' then LabelPosition(W,Q)
+      else if K='trigger' then TooltipTrigger(W,Q)
+      else if K='triggerOn' then TooltipEvents(W,Q)
+      else if K='outerBoundsMode' then OuterBoundsMode(W,Q)
+      else if K='seriesLayoutBy' then SeriesLayout(W,Q)
+      else if K='step' then Step(W,Q)
+      else if K='smoothMonotone' then Monotone(W,Q)
+      else if K='symbol' then Symbol(W,Q)
+      else if K='selectedMode' then Selection(W,Q)
+      else if InList(K,'animationEasing|animationEasingUpdate') then Easing(W,Q)
+      else if K='focus' then Focus(W,Q)
+      else if K='fontStyle' then FontStyle(W,Q)
+      else if K='align' then TextAlign(W,Q)
+      else if K='verticalAlign' then VerticalAlign(W,Q)
+      else if K='overflow' then Overflow(W,Q)
+      else if K='renderMode' then RenderMode(W,Q)
+      else if K='stackStrategy' then StackStrategy(W,Q)
+      else if InList(K,'animation|sourceHeader') then Switch(W,Q)
+      else if InList(K,'left|right|top|bottom|barWidth|barGap|barCategoryGap') then MeasureAt(W,Q,K,C)
+      else if InList(K,'min|max') then begin
+        if W is TJSONNumber then Number(W,Q)
+        else if not ((W is TJSONString) and InList(W.Value,'auto|dataMin|dataMax')) then Bad(Q,'numero, auto, dataMin ou dataMax');
+      end
+      else if InList(K,'color|backgroundColor|borderColor|shadowColor') then begin
+        if (C='root') and (K='color') then begin
+          if not (W is TJSONArray) then Bad(Q,'array de cores');
+          A:=TJSONArray(W); if A.Count=0 then Bad(Q,'paleta nao vazia');
+          for I:=0 to A.Count-1 do Fill(A.Items[I],Format('%s[%d]',[Q,I]),False);
+        end else Fill(W,Q,(K='color') and (C='style'));
+      end
+      else if K='fontWeight' then begin
+        if W is TJSONNumber then begin N:=Number(W,Q); if (Frac(N)<>0) or (N<1) or (N>1000) then Bad(Q,'peso inteiro 1..1000'); end
+        else if not ((W is TJSONString) and InList(W.Value,'normal|bold')) then Bad(Q,'normal, bold ou peso numerico');
+      end
+      else if K='smooth' then begin if W is TJSONBool then BooleanValue(W,Q) else Numeric(W,Q,K); end
+      else if (K='interval') and (C='label') then begin
+        if (W is TJSONString) and (W.Value='auto') then Continue;
+        N:=Number(W,Q); if (N<0) or (Frac(N)<>0) then Bad(Q,'auto ou inteiro nao negativo');
+      end
+      else if InList(K,'radius|center') then begin
+        if W is TJSONArray then begin
+          A:=TJSONArray(W); if A.Count<>2 then Bad(Q,'par de medidas');
+          for I:=0 to 1 do MeasureAt(A.Items[I],Format('%s[%d]',[Q,I]),K,C);
+        end else if K='radius' then MeasureAt(W,Q,K,C) else Bad(Q,'par de medidas');
+      end
+      else if K='selected' then begin
+        if not (W is TJSONObject) then Bad(Q,'mapa nome/boolean');
+        for Sub in TJSONObject(W) do BooleanValue(Sub.JsonValue,Q+'.'+Sub.JsonString.Value);
+      end
+      else if C='encode' then begin
+        if W is TJSONArray then begin
+          A:=TJSONArray(W); if A.Count<>1 then Bad(Q,'uma dimensao por encode neste perfil'); W:=A.Items[0];
+        end;
+        if W is TJSONNumber then begin N:=Number(W,Q); if (N<0) or (Frac(N)<>0) then Bad(Q,'indice inteiro nao negativo'); end
+        else if not ((W is TJSONString) and (W.Value<>'')) then Bad(Q,'nome ou indice de dimensao');
+      end
+      else if InList(K,'data|source|dimensions') then begin
+        if not (W is TJSONArray) then Bad(Q,'array'); A:=TJSONArray(W);
+        if (K='data') and (C='series') then for I:=0 to A.Count-1 do
+          if A.Items[I] is TJSONObject then Walk(A.Items[I],Format('%s[%d]',[Q,I]),'datum');
+        if K='dimensions' then for I:=0 to A.Count-1 do begin
+          if A.Items[I] is TJSONObject then begin
+            Keys(A.Items[I],Format('%s[%d]',[Q,I]),'name');
+            if not (J(A.Items[I],'name') is TJSONString) then Bad(Q,'nome de dimensao');
+          end else if not (A.Items[I] is TJSONString) then Bad(Q,'nomes de dimensoes');
+        end;
+      end
+      else if (C='datum') and (K='value') then Continue
+      else if InList(K,'id|name|text|subtext|fontFamily|formatter|stack') then begin
+        if not (W is TJSONString) then Bad(Q,'texto');
+      end
+      else if InList(K,'show|inverse|boundaryGap|scale|onZero|confine|connectNulls|showSymbol|clockwise|stillShowZeroSum|showEmptyCircle|avoidLabelOverlap|hideOverlap|useUTC') then begin
+        if (K='confine') and not BooleanValue(W,Q) then Bad(Q,'true no perfil nativo');
+        BooleanValue(W,Q);
+      end else Numeric(W,Q,K);
+    end;
+    if (C='axis') and (J(V,'min') is TJSONNumber) and (J(V,'max') is TJSONNumber) then
+      if Number(J(V,'min'),P+'.min')>=Number(J(V,'max'),P+'.max') then Bad(P+'.max','max maior que min');
+  end;
+begin
+  if SeriesOnly then Walk(O,'series','series') else Walk(O,'option','root');
+end;

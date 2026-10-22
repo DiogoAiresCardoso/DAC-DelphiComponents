@@ -1,462 +1,200 @@
 program DACComponentsCharts;
-
 {$APPTYPE CONSOLE}
-
-uses
-  System.Classes,
-  System.SysUtils,
-  System.UITypes,
-  Data.DB,
-  Datasnap.DBClient,
-  Winapi.Messages,
-  Winapi.Windows,
-  Vcl.Controls,
-  Vcl.Forms,
-  Vcl.Graphics,
+uses System.Classes, System.SysUtils, System.IOUtils, System.JSON,
+  System.Math, System.Types, System.Variants, Winapi.Windows, Winapi.Messages,
+  Vcl.Forms, Vcl.Controls, Data.DB, Datasnap.DBClient,
+  DAC.Components.Charts.Options, DACComponentsCharts.TypesTests,
+  DAC.Components.Charts.Engine, DAC.Components.Charts.Surface,
   DAC.Components.Controls.Charts in '..\Source\Controls\DAC.Components.Controls.Charts.pas',
   DACComponentsCharts.ClientDataSetAdapter in 'DACComponentsCharts.ClientDataSetAdapter.pas';
 
 type
-  TAnimationProbe = class
+  TChartAccess = class(TDACChart)
   public
-    Started: Integer;
-    Finished: Integer;
-    procedure AnimationStarted(Sender: TObject);
-    procedure AnimationFinished(Sender: TObject);
+    procedure RecreateForTest;
   end;
+procedure TChartAccess.RecreateForTest;
+begin RecreateWnd; end;
 
-procedure Require(const ACondition: Boolean; const AMessage: string);
-begin
-  if not ACondition then
-    raise Exception.Create(AMessage);
-end;
+procedure Require(B: Boolean; const S: string);
+begin if not B then raise Exception.Create(S); end;
+procedure Near(A,B: Double; const S: string);
+begin Require(Abs(A-B)<0.5,S+Format(' %.4f <> %.4f',[A,B])); end;
 
-procedure TAnimationProbe.AnimationStarted(Sender: TObject);
+procedure TestTitleSpacing(const Output: string);
+const Titles: array[0..5] of string = (
+  '{"text":"Titulo configuravel"}',
+  '{"text":"Titulo grande\nSegunda linha","textStyle":{"fontSize":28},"subtext":"Subtitulo\nMais detalhes","subtextStyle":{"fontSize":16}}',
+  '{"text":"{large|Titulo}","textStyle":{"rich":{"large":{"fontSize":42,"padding":3}}}}',
+  '{"subtext":"Apenas subtitulo"}',
+  '{"text":"Oculto","show":false}',
+  '{"text":""}');
+var Engine: TDACChartEngine; Surface: TDACChartSurface; Evidence: TJSONValue;
+  Texts: TJSONArray; I,J,DPI,W: Integer; Scale,Bottom,PlotTop: Double; Prefix: string;
 begin
-  Inc(Started);
-end;
-
-procedure TAnimationProbe.AnimationFinished(Sender: TObject);
-begin
-  Inc(Finished);
-end;
-
-procedure Pump(const AMilliseconds: Cardinal);
-var
-  LStarted: Cardinal;
-begin
-  LStarted := GetTickCount;
-  repeat
-    Application.ProcessMessages;
-    Sleep(1);
-  until (GetTickCount - LStarted) >= AMilliseconds;
-  Application.ProcessMessages;
-end;
-
-procedure AddPoint(const ASeries: TDACChartSeries; const ACategory: string;
-  const AValue: Double; const AIsNull: Boolean = False);
-var
-  LPoint: TDACChartPoint;
-begin
-  LPoint := ASeries.Points.Add;
-  LPoint.Category := ACategory;
-  LPoint.XValue := ASeries.Points.Count - 1;
-  LPoint.Value := AValue;
-  LPoint.IsNull := AIsNull;
-end;
-
-procedure TestDpiContract;
-var
-  LChart: TDACChart;
-  LForm: TForm;
-begin
-  LChart := TDACChart.Create(nil);
+  Engine:=TDACChartEngine.Create; Surface:=TDACChartSurface.Create;
   try
-    Require((LChart.EffectiveDpi = 96) and (LChart.DpiScale = 1),
-      'Chart sem Parent deve preservar as metricas de 96 PPI.');
-    Require(not LChart.HandleAllocated,
-      'A consulta de DPI nao pode criar HWND para um chart sem Parent.');
-  finally
-    LChart.Free;
-  end;
-
-  LForm := TForm.Create(nil);
-  try
-    LChart := TDACChart.Create(LForm);
-    LChart.Parent := LForm;
-    LChart.SetBounds(0, 0, 360, 220);
-    LForm.Show;
-    Pump(20);
-    SendMessage(LChart.Handle, WM_DPICHANGED, WPARAM($00900090), 0);
-    Require((LChart.EffectiveDpi = 144) and (LChart.DpiScale > 1.49) and
-      (LChart.DpiScale < 1.51),
-      'WM_DPICHANGED deve atualizar somente as metricas internas do chart.');
-    Require((LChart.Width = 360) and (LChart.Height = 220),
-      'O chart nao deve redimensionar o host ao receber nova escala DPI.');
-    SendMessage(LChart.Handle, WM_DPICHANGED, WPARAM($00600060), 0);
-    Require((LChart.EffectiveDpi = 96) and (LChart.DpiScale = 1),
-      'O retorno para 96 PPI deve restaurar as metricas originais.');
-  finally
-    LForm.Free;
-  end;
+    for DPI in TArray<Integer>.Create(96,120,144,192) do
+      for W in TArray<Integer>.Create(320,720,1280) do
+        for I:=0 to High(Titles) do begin
+          Scale:=DPI/96;
+          Engine.Configure('{"animation":false,"title":'+Titles[I]+
+            ',"grid":{"top":40},"xAxis":{"type":"category","data":["A"],"axisLabel":{"show":false}},'+
+            '"yAxis":{"min":0,"max":40,"axisLabel":{"show":false}},"series":[{"type":"bar","data":[40]}]}');
+          Engine.Render(Surface,Round(W*Scale),Round(Max(240,W*420/720)*Scale),DPI,PointF(-1,-1));
+          PlotTop:=Engine.Marks[0].Y;
+          Evidence:=TJSONObject.ParseJSONValue(Engine.GeometryJSON);
+          try
+            Texts:=TJSONArray(CJ(Evidence,'texts')); Bottom:=0;
+            for J:=0 to Texts.Count-1 do
+              Bottom:=Max(Bottom,CN(CJ(Texts.Items[J],'y'))+CN(CJ(Texts.Items[J],'height')));
+            Prefix:=Format('title-%d-%d-%d',[I,DPI,W]);
+            if I<4 then begin
+              Require(Texts.Count>0,Prefix+': titulo ausente');
+              Require(PlotTop>=Bottom+12*Scale-0.5,Prefix+': grafico invade espaco do titulo');
+            end else Near(PlotTop,40*Scale,Prefix+': titulo vazio/oculto reservou espaco');
+            if W=720 then Surface.SavePNG(TPath.Combine(Output,Prefix+'.png'));
+          finally Evidence.Free; end;
+          { Removing the title on the same engine must restore the original grid. }
+          Engine.Configure('{"animation":false,"grid":{"top":40},"xAxis":{"data":["A"]},'+
+            '"yAxis":{"min":0,"max":40},"series":[{"type":"bar","data":[40]}]}');
+          Engine.Render(Surface,Round(W*Scale),Round(Max(240,W*420/720)*Scale),DPI,PointF(-1,-1));
+          Near(Engine.Marks[0].Y,40*Scale,'Remover titulo deve restaurar margem');
+        end;
+    Engine.Configure('{"animation":false,"title":{"text":"Titulo"},"grid":{"top":120},'+
+      '"xAxis":{"data":["A"]},"yAxis":{"min":0,"max":40},"series":[{"type":"bar","data":[40]}]}');
+    Engine.Render(Surface,720,420,96,PointF(-1,-1));
+    Near(Engine.Marks[0].Y,120,'Margem maior deve ser preservada');
+    Writeln('Title spacing: native metrics, multiline, subtitle, rich text, hidden/empty, resize and four DPIs OK');
+  finally Surface.Free; Engine.Free; end;
 end;
 
-procedure TestAnimationContract;
-var
-  LChart: TDACChart;
-  LForm: TForm;
-  LProbe: TAnimationProbe;
-  LSeries: TDACChartSeries;
+procedure TestWindowLifecycle(const Output: string);
+var Host: TForm; Chart: TDACChart; DPI,I,J: Integer; First,Second: TBytes;
+  Start: Cardinal; BaseGDI: DWORD;
 begin
-  LChart := TDACChart.Create(nil);
+  Host:=TForm.Create(nil);
   try
-    Require(not LChart.HandleAllocated,
-      'TDACChart com Parent=nil nao pode criar HWND no construtor.');
-    Require(LChart.Animation.Enabled and LChart.Animation.AutoStartOnUpdate and
-      (LChart.Animation.Duration = 360) and
-      (LChart.Animation.Easing = caeCubicOut),
-      'Defaults de Animation divergentes do contrato.');
-  finally
-    LChart.Free;
-  end;
-
-  LForm := TForm.Create(nil);
-  LProbe := TAnimationProbe.Create;
-  try
-    LChart := TDACChart.Create(LForm);
-    LChart.Parent := LForm;
-    LChart.SetBounds(0, 0, 360, 220);
-    LChart.Animation.Duration := 80;
-    LChart.OnAnimationStart := LProbe.AnimationStarted;
-    LChart.OnAnimationFinish := LProbe.AnimationFinished;
-    LSeries := LChart.Series.Add;
-    LSeries.Name := 'Manual';
-    AddPoint(LSeries, 'A', 10);
-    AddPoint(LSeries, 'B', 20);
-    LForm.Show;
-    Pump(20);
-    LSeries.Points[0].Value := 60;
-    Pump(20);
-    Require(LProbe.Started > 0,
-      'Atualizacao manual nao iniciou animacao automatica.');
-    Pump(120);
-    Require(not LChart.Animation.Running and (LProbe.Finished > 0),
-      'Animacao manual nao terminou ou manteve timer ativo.');
-    LChart.Animation.Replay;
-    Pump(20);
-    Require(LChart.Animation.Running,
-      'Replay deve iniciar a animacao quando o chart possui handle.');
-    LChart.Animation.Stop;
-    Require(not LChart.Animation.Running,
-      'Stop deve encerrar a animacao de forma idempotente.');
-  finally
-    LProbe.Free;
-    LForm.Free;
-  end;
+    Host.ClientWidth:=900; Host.ClientHeight:=620;
+    Chart:=TDACChart.Create(Host); Chart.Parent:=Host; Chart.SetBounds(0,0,720,420);
+    Chart.LoadJSON('{"animation":false,"xAxis":{"type":"category","data":["A","B"]},"yAxis":{"type":"value"},"tooltip":{"trigger":"axis"},"series":[{"type":"bar","data":[10,20]}]}');
+    Host.Show; Application.ProcessMessages;
+    for DPI in TArray<Integer>.Create(96,120,144,192) do begin
+      SendMessage(Chart.Handle,WM_DPICHANGED,MakeWParam(DPI,DPI),0);
+      Chart.SetBounds(0,0,Round(720*DPI/96),Round(420*DPI/96));
+      Chart.CapturePNG(TPath.Combine(Output,'dpi-'+IntToStr(DPI)+'.png'));
+      Require(Chart.EffectiveDpi=DPI,'DPI interno incorreto');
+    end;
+    SendMessage(Chart.Handle,WM_DPICHANGED,MakeWParam(96,96),0); Chart.SetBounds(0,0,720,420);
+    Chart.CapturePNG(TPath.Combine(Output,'stable-a.png')); First:=TFile.ReadAllBytes(TPath.Combine(Output,'stable-a.png'));
+    for I:=0 to 40 do Chart.SetBounds(0,0,320+I*10,240+I*4);
+    Chart.SetBounds(0,0,720,420); Chart.CapturePNG(TPath.Combine(Output,'stable-b.png'));
+    Second:=TFile.ReadAllBytes(TPath.Combine(Output,'stable-b.png'));
+    Require((Length(First)=Length(Second)) and CompareMem(@First[0],@Second[0],Length(First)),'Resize deixou artefatos');
+    for J:=1 to 5 do begin
+      for I:=0 to 79 do begin SendMessage(Chart.Handle,WM_MOUSEMOVE,0,MakeLParam(100+I,200)); Chart.Update; end;
+      Application.ProcessMessages;
+    end;
+    Application.ProcessMessages; GdiFlush;
+    BaseGDI:=GetGuiResources(GetCurrentProcess,0);
+    for I:=0 to 80 do begin
+      SendMessage(Chart.Handle,WM_MOUSEMOVE,0,MakeLParam(100+I,200)); Chart.Update;
+    end;
+    Application.ProcessMessages; GdiFlush;
+    Require(GetGuiResources(GetCurrentProcess,0)<=BaseGDI+4,Format('Crescimento de objetos GDI: %d -> %d',[BaseGDI,GetGuiResources(GetCurrentProcess,0)]));
+    Chart.CaptureDirectory:=TPath.Combine(Output,'animation-frames');
+    Chart.LoadJSON('{"animation":true,"animationDuration":80,"animationDurationUpdate":80,"xAxis":{"type":"category","data":["A","B"]},"yAxis":{"type":"value"},"series":[{"type":"bar","data":[20,40]}]}');
+    Start:=GetTickCount;
+    repeat Application.ProcessMessages; Sleep(1); until GetTickCount-Start>=240;
+    Require(not Chart.AnimationRunning,'Animacao nao terminou');
+    Chart.CaptureDirectory:='';
+    TChartAccess(Chart).RecreateForTest; Start:=GetTickCount;
+    repeat Application.ProcessMessages; Sleep(1); until GetTickCount-Start>=240;
+    Require(not Chart.AnimationRunning,'Recriacao ativou timer residual');
+    Host.WindowState:=wsMinimized; Application.ProcessMessages;
+    Host.WindowState:=wsNormal; Host.Hide; Host.Show; Chart.Update;
+    Chart.CaptureWindowPNG(TPath.Combine(Output,'window-lifecycle.png'));
+    TFile.WriteAllText(TPath.Combine(Output,'window-metrics.json'),Chart.MetricsJSON,TEncoding.UTF8);
+    TFile.WriteAllText(TPath.Combine(Output,'monitors.txt'),IntToStr(Screen.MonitorCount)+
+      ' monitor(es); mudanca de monitor real nao automatizada',TEncoding.UTF8);
+  finally Host.Free; end;
 end;
 
-procedure TestDataAwareRefresh;
-var
-  LChart: TDACChart;
-  LDataSet: TClientDataSet;
-  LDataSource: TDataSource;
-  LForm: TForm;
-  LRecNo: Integer;
-  LSeries: TDACChartSeries;
+var Chart,Restored: TDACChart; Fixtures,V,C,Options: TJSONValue;
+  Cases: TJSONArray; I: Integer; OutDir,Id,Before: string;
+  Stream: TMemoryStream; DS: TClientDataSet; Source: TDataSource;
 begin
-  LForm := TForm.Create(nil);
-  LDataSet := TClientDataSet.Create(nil);
-  LDataSource := TDataSource.Create(nil);
   try
-    LDataSet.FieldDefs.Add('MES', ftString, 8);
-    LDataSet.FieldDefs.Add('VALOR', ftFloat);
-    LDataSet.CreateDataSet;
-    LDataSet.Append;
-    LDataSet.FieldByName('MES').AsString := 'Jan';
-    LDataSet.FieldByName('VALOR').AsFloat := 10;
-    LDataSet.Post;
-    LDataSet.Append;
-    LDataSet.FieldByName('MES').AsString := 'Fev';
-    LDataSet.FieldByName('VALOR').AsFloat := 20;
-    LDataSet.Post;
-    LDataSet.Last;
-    LRecNo := LDataSet.RecNo;
-    LDataSource.DataSet := LDataSet;
-
-    LChart := TDACChart.Create(LForm);
-    LChart.Parent := LForm;
-    LChart.SetBounds(0, 0, 360, 220);
-    LChart.DataSource := LDataSource;
-    LChart.DataMode := cdmDataSource;
-    LSeries := LChart.Series.Add;
-    LSeries.Name := 'Valor';
-    LSeries.EncodeX := 'MES';
-    LSeries.EncodeY := 'VALOR';
-    LForm.Show;
-    Pump(30);
-    Require((LDataSet.RecNo = LRecNo) and (LDataSet.State = dsBrowse),
-      'Refresh data-aware alterou cursor ou estado do ClientDataSet original.');
-    LDataSet.Edit;
-    LDataSet.FieldByName('VALOR').AsFloat := 35;
-    LDataSet.Post;
-    Pump(120);
-    Require((LDataSet.RecNo = LRecNo) and (LDataSet.State = dsBrowse),
-      'Notificacao data-aware alterou cursor ou estado do ClientDataSet original.');
-  finally
-    LDataSource.Free;
-    LDataSet.Free;
-    LForm.Free;
-  end;
-end;
-
-procedure TestDataAwareColumns;
-var
-  LChart: TDACChart;
-  LDataSet: TClientDataSet;
-  LDataSource: TDataSource;
-  LForm: TForm;
-  LRecNo: Integer;
-begin
-  LForm := TForm.Create(nil);
-  LDataSet := TClientDataSet.Create(nil);
-  LDataSource := TDataSource.Create(nil);
-  try
-    LDataSet.FieldDefs.Add('MES', ftString, 8);
-    LDataSet.FieldDefs.Add('PRODUCAO', ftFloat);
-    LDataSet.FieldDefs.Add('META', ftFloat);
-    LDataSet.CreateDataSet;
-    LDataSet.Append;
-    LDataSet.FieldByName('MES').AsString := 'Jan';
-    LDataSet.FieldByName('PRODUCAO').AsFloat := 12;
-    LDataSet.FieldByName('META').AsFloat := 15;
-    LDataSet.Post;
-    LDataSet.Append;
-    LDataSet.FieldByName('MES').AsString := 'Fev';
-    LDataSet.FieldByName('PRODUCAO').AsFloat := 18;
-    LDataSet.FieldByName('META').AsFloat := 16;
-    LDataSet.Post;
-    LDataSet.Last;
-    LRecNo := LDataSet.RecNo;
-    LDataSource.DataSet := LDataSet;
-    LChart := TDACChart.Create(LForm);
-    LChart.Parent := LForm;
-    LChart.SetBounds(0, 0, 360, 220);
-    LChart.DataSource := LDataSource;
-    LChart.DataMode := cdmDataSource;
-    LChart.DatasetOptions.SeriesLayoutBy := cslColumns;
-    LChart.DatasetOptions.Dimensions := 'MES;PRODUCAO;META';
-    LForm.Show;
-    Pump(40);
-    Require((LDataSet.RecNo = LRecNo) and (LDataSet.State = dsBrowse),
-      'cslColumns alterou o cursor ou o estado do ClientDataSet original.');
-    LDataSource.Free;
-    LDataSource := nil;
-    Pump(20);
-  finally
-    LDataSource.Free;
-    LDataSet.Free;
-    LForm.Free;
-  end;
-end;
-
-procedure TestConfigurableLayers;
-var
-  LChart: TDACChart;
-begin
-  LChart := TDACChart.Create(nil);
-  try
-    LChart.Title.Visible := True;
-    LChart.Title.TextVisible := False;
-    LChart.Title.SubTextVisible := True;
-    LChart.Title.Position := cpRight;
-    LChart.Title.Font.Name := 'Arial';
-    LChart.Title.Font.Size := 17;
-    LChart.Title.TextColor := TAlphaColor($FF1A6F35);
-    LChart.Legend.Position := cpLeft;
-    LChart.Legend.Orientation := coVertical;
-    LChart.Legend.LabelsVisible := False;
-    LChart.Legend.MarkersVisible := True;
-    LChart.Legend.BackgroundVisible := True;
-    LChart.Legend.BorderVisible := True;
-    LChart.Legend.MarkerSize := 14;
-    LChart.XAxis.LineVisible := False;
-    LChart.XAxis.LabelsVisible := False;
-    LChart.XAxis.TickMarksVisible := False;
-    LChart.XAxis.TitleVisible := False;
-    LChart.YAxis.GridColor := TAlphaColor($FFAACCAA);
-    LChart.YAxis.LabelFont.Size := 11;
-    LChart.YAxis.TitleFont.Size := 13;
-    Require((LChart.Title.Position = cpRight) and
-      (LChart.Legend.Position = cpLeft) and
-      (LChart.Legend.Orientation = coVertical) and
-      (LChart.Legend.MarkerSize = 14) and not LChart.XAxis.LineVisible and
-      not LChart.XAxis.LabelsVisible and not LChart.XAxis.TickMarksVisible and
-      not LChart.XAxis.TitleVisible,
-      'As propriedades configuraveis de titulo, legenda e eixo nao persistiram.');
-  finally
-    LChart.Free;
-  end;
-end;
-
-procedure TestStreamingAndLifecycle;
-var
-  I: Integer;
-  LChart: TDACChart;
-  LLoaded: TDACChart;
-  LStream: TMemoryStream;
-begin
-  System.Classes.RegisterClass(TDACChart);
-  LChart := TDACChart.Create(nil);
-  try
-    LChart.Name := 'ChartStreaming';
-    LChart.DataMode := cdmManual;
-    LChart.Title.Text := 'Titulo';
-    LChart.Title.Visible := True;
-    LChart.Legend.Position := cpRight;
-    LChart.DatasetOptions.SeriesLayoutBy := cslColumns;
-    LChart.DatasetOptions.Dimensions := 'MES;REALIZADO;META';
-    LChart.Tooltip.Mode := ctmAxis;
-    LChart.Tooltip.Padding := 16;
-    LChart.Tooltip.Font.Size := 12;
-    LChart.Tooltip.TitleFont.Size := 13;
-    LChart.Tooltip.TextColor := TAlphaColor($FF243A2A);
-    LChart.Series.Add.Name := 'Realizado';
-    LStream := TMemoryStream.Create;
+    Application.Initialize;
+    TestChartTypes;
+    if ParamCount<2 then raise Exception.Create('Uso: DACComponentsCharts fixtures.json output');
+    OutDir:=ExpandFileName(ParamStr(2)); ForceDirectories(OutDir);
+    TestTitleSpacing(OutDir);
+    Fixtures:=TJSONObject.ParseJSONValue(TFile.ReadAllText(ParamStr(1),TEncoding.UTF8));
+    Chart:=TDACChart.Create(nil);
     try
-      LStream.WriteComponent(LChart);
-      LStream.Position := 0;
-      LLoaded := TDACChart(LStream.ReadComponent(nil));
-      try
-        Require((LLoaded.DataMode = cdmManual) and
-          (LLoaded.Legend.Position = cpRight) and
-          (LLoaded.DatasetOptions.SeriesLayoutBy = cslColumns) and
-          (LLoaded.Tooltip.Mode = ctmAxis) and
-          (LLoaded.Tooltip.Padding = 16) and
-          (LLoaded.Tooltip.Font.Size = 12) and
-          (LLoaded.Tooltip.TitleFont.Size = 13) and
-          (LLoaded.Tooltip.TextColor = TAlphaColor($FF243A2A)) and
-          (LLoaded.Series.Count = 1),
-          'Round-trip DFM do TDACChart nao preservou propriedades persistentes.');
-      finally
-        LLoaded.Free;
+      Chart.SetBounds(0,0,720,420);
+      Require(not Chart.HandleAllocated,'Parent=nil criou HWND');
+      Cases:=TJSONArray(CJ(Fixtures,'cases'));
+      for I:=0 to Cases.Count-1 do begin
+        C:=Cases.Items[I]; Id:=CS(CJ(C,'id')); Options:=CJ(C,'option');
+        Chart.LoadJSON(Options.ToJSON);
+        Chart.CapturePNG(TPath.Combine(OutDir,Id+'.png'));
+        TFile.WriteAllText(TPath.Combine(OutDir,Id+'.json'),Chart.GeometryJSON,TEncoding.UTF8);
+        if Id='C01' then begin Near(Chart.Engine.Marks[0].X,180,'C01 barra A'); Near(Chart.Engine.Marks[3].X,180,'C01 linha A'); end;
+        if Id='C02' then begin Near(Chart.Engine.Marks[1].X,86,'C02 X=1'); Near(Chart.Engine.Marks[2].X,680,'C02 X=100'); end;
+        if Id='C03' then Near(Chart.Engine.Marks[1].X,140,'C03 tempo');
+        if Id='C04' then Near(Chart.Engine.Marks[0].Y,296,'C04 limite fixo');
+        if Id='C05' then begin Require(Chart.Engine.Marks[0].Name='A','C05 A'); Require(Chart.Engine.Marks[1].Name='B','C05 B'); end;
+        if Id='C06' then Require(Chart.Engine.Marks.Count=3,'C06 NULL');
+        if Id='C07' then Near(Chart.Engine.Marks[0].Y,360-320/7,'C07 negativo');
+        if Id='C08' then begin Near(Chart.Engine.Marks[0].Sweep,90,'C08 angulo'); Require(Chart.Engine.HitTest(PointF(360,210))=-1,'C08 centro vazado'); end;
+        if Id='C09' then Near(Chart.Engine.Marks[0].Sweep,180,'C09 soma zero');
+        if Id='C10' then Require(Chart.Engine.Marks.Count=0,'C10 sem setores');
+        if (Id='C11') or (Id='C12') then begin Require(Chart.Engine.Marks[0].Name='Jan',Id+' categoria'); Near(Chart.Engine.Marks[4].Value,25,Id+' encode'); end;
+        if Id='C13' then Near(Chart.Engine.Marks[3].Base,-4,'C13 base negativa');
+        if Id='C14' then Near(Chart.Engine.Marks[0].X,230,'C14 horizontal');
+        if Id.StartsWith('C') then Writeln(Id,': assertions OK') else Writeln(Id,': captured for visual review');
       end;
-    finally
-      LStream.Free;
-    end;
-  finally
-    LChart.Free;
-  end;
-  for I := 1 to 3 do
-  begin
-    LChart := TDACChart.Create(nil);
-    try
-      Require(not LChart.HandleAllocated,
-        'Ciclo lifecycle criou HWND para TDACChart sem Parent.');
-    finally
-      LChart.Free;
-    end;
-  end;
-end;
-
-procedure TestChartKindsAndMixedSeries;
-var
-  LChart: TDACChart;
-  LForm: TForm;
-  LIndex: Integer;
-  LSeries: TDACChartSeries;
-  LType: TDACChartType;
-begin
-  LForm := TForm.Create(nil);
-  try
-    LForm.Show;
-    for LIndex := Ord(Low(TDACChartType)) to Ord(High(TDACChartType)) do
-    begin
-      LType := TDACChartType(LIndex);
-      LChart := TDACChart.Create(LForm);
+      Chart.LoadJSON('{"animation":false,"xAxis":{"type":"value"},"yAxis":{"type":"value"},"series":[{"type":"line","data":[[0.5,1.25],[1.5,-2.75]]}]}');
+      Chart.CapturePNG(TPath.Combine(OutDir,'decimals.png'));
+      Require(Chart.Engine.Marks.Count=2,'Decimais descartados pela configuracao regional');
+      Near(Chart.Engine.Marks[1].Value,-2.75,'Valor decimal alterado');
+      Before:=Chart.SaveJSON;
+      try Chart.LoadJSON('{"series":[{"type":"radar"}]}'); raise Exception.Create('Tipo invalido aceito');
+      except on E: EDACChartOptionError do ; end;
+      Require(Chart.SaveJSON=Before,'Importacao nao transacional');
+      System.Classes.RegisterClass(TDACChart);
+      Stream:=TMemoryStream.Create;
       try
-        LChart.Parent := LForm;
-        LChart.SetBounds(0, 0, 360, 220);
-        LChart.Animation.Enabled := False;
-        LChart.ChartType := LType;
-        LSeries := LChart.Series.Add;
-        LSeries.ChartType := LType;
-        LSeries.Name := 'Serie';
-        AddPoint(LSeries, 'A', 10);
-        AddPoint(LSeries, 'B', 20);
-        AddPoint(LSeries, 'C', 15);
-        Pump(15);
-      finally
-        LChart.Free;
-      end;
-    end;
-    LChart := TDACChart.Create(LForm);
-    try
-      LChart.Parent := LForm;
-      LChart.SetBounds(0, 0, 360, 220);
-      LChart.Animation.Enabled := False;
-      LSeries := LChart.Series.Add;
-      LSeries.ChartType := ctBar;
-      LSeries.Name := 'Realizado';
-      AddPoint(LSeries, 'A', 12);
-      AddPoint(LSeries, 'B', 18);
-      LSeries := LChart.Series.Add;
-      LSeries.ChartType := ctLine;
-      LSeries.Name := 'Meta';
-      AddPoint(LSeries, 'A', 15);
-      AddPoint(LSeries, 'B', 16);
-      Pump(15);
-    finally
-      LChart.Free;
-    end;
-  finally
-    LForm.Free;
-  end;
-end;
-
-procedure TestReadableTypographyDefaults;
-var
-  LChart: TDACChart;
-begin
-  LChart := TDACChart.Create(nil);
-  try
-    Require(LChart.Title.Font.Size >= 14,
-      'O titulo padrao do grafico deve manter tamanho legivel.');
-    Require(LChart.Legend.Font.Size >= 10,
-      'A legenda padrao do grafico deve manter tamanho legivel.');
-    Require(LChart.XAxis.LabelFont.Size >= 10,
-      'Os rotulos do eixo X devem manter tamanho legivel.');
-    Require(LChart.YAxis.LabelFont.Size >= 10,
-      'Os rotulos do eixo Y devem manter tamanho legivel.');
-    Require(LChart.Tooltip.Font.Size >= 12,
-      'O texto do tooltip deve manter tamanho legivel.');
-    Require((LChart.Tooltip.TitleFont.Size >= 14) and
-      (LChart.Tooltip.TitleFont.Size > LChart.Tooltip.Font.Size) and
-      (fsBold in LChart.Tooltip.TitleFont.Style),
-      'O titulo do tooltip deve ser mais destacado que as series.');
-    Require(LChart.Tooltip.Padding >= 14,
-      'O tooltip deve manter espaco interno suficiente para leitura.');
-  finally
-    LChart.Free;
-  end;
-end;
-
-begin
-  Application.Initialize;
-  try
-    TestDpiContract;
-    TestAnimationContract;
-    TestDataAwareRefresh;
-    TestDataAwareColumns;
-    TestConfigurableLayers;
-    TestStreamingAndLifecycle;
-    TestChartKindsAndMixedSeries;
-    TestReadableTypographyDefaults;
+        Chart.Name:='RoundTrip'; Stream.WriteComponent(Chart); Stream.Position:=0;
+        Restored:=TDACChart(Stream.ReadComponent(nil));
+        try Require(Restored.SaveJSON=Chart.SaveJSON,'DFM roundtrip'); finally Restored.Free; end;
+      finally Stream.Free; end;
+      try Chart.LoadJSON('{"dataset":{"dimensions":["MES","VALOR"],"source":[{"MES":"A"}]},"series":[{"type":"bar","encode":{"y":"VALOR"}}]}');
+        raise Exception.Create('Campo inexistente aceito como NULL');
+      except on E: EDACChartOptionError do ; end;
+      Require(Chart.SaveJSON=Before,'Erro de dataset mudou configuracao');
+      Chart.Options.Title.Text:='Designer'; Require(Pos('Designer',Chart.SaveJSON)>0,'Setter designer sem efeito');
+      DS:=TClientDataSet.Create(nil); Source:=TDataSource.Create(nil);
+      try
+        DS.FieldDefs.Add('MES',ftString,10); DS.FieldDefs.Add('VALOR',ftFloat); DS.CreateDataSet;
+        DS.AppendRecord(['A',10]); DS.AppendRecord(['B',20]); DS.AppendRecord(['C',Null]); DS.Filter:='VALOR > 15'; DS.Filtered:=True;
+        Source.DataSet:=DS;
+        Chart.LoadJSON('{"animation":false,"dataset":{"dimensions":["MES","VALOR"]},"xAxis":{"type":"category"},"yAxis":{"type":"value"},"series":[{"type":"bar","encode":{"x":"MES","y":"VALOR"}}]}');
+        Chart.DataSource:=Source; Chart.CapturePNG(TPath.Combine(OutDir,'filtered.png'));
+        Require(Chart.Engine.Marks.Count=1,'Filtro ignorado'); Require(Chart.Engine.Marks[0].Name='B','Filtro categoria');
+        Chart.Options.Title.Text:='Outra cor'; Chart.CapturePNG(TPath.Combine(OutDir,'filtered-title.png'));
+        V:=TJSONObject.ParseJSONValue(Chart.MetricsJSON);
+        try Near(CN(CJ(V,'dataReads')),1,'Mudanca visual releu dataset'); finally V.Free; end;
+        DS.Filtered:=False; DS.Locate('MES','B',[]); DS.Edit; DS.FieldByName('VALOR').AsFloat:=25; DS.Post;
+        Chart.CapturePNG(TPath.Combine(OutDir,'dataset-update.png'));
+        Require(DS.FieldByName('MES').AsString='B','Leitura moveu cursor original');
+        Require(Chart.Engine.Marks.Count=2,'NULL virou ponto numerico');
+        Near(Chart.Engine.Marks[1].Value,25,'Atualizacao nao chegou ao chart');
+      finally Source.Free; DS.Free; end;
+    finally Chart.Free; Fixtures.Free; end;
+    TestWindowLifecycle(OutDir);
     Writeln('DACComponentsCharts: OK');
-  except
-    on E: Exception do
-    begin
-      Writeln('DACComponentsCharts: FALHOU - ' + E.Message);
-      Halt(1);
-    end;
-  end;
+  except on E: Exception do begin Writeln(E.ClassName,': ',E.Message); Halt(1); end; end;
 end.

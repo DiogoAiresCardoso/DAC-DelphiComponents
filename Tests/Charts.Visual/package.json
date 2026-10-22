@@ -1,0 +1,6 @@
+{
+  "name": "dac-charts-visual-reference",
+  "private": true,
+  "version": "1.0.0",
+  "devDependencies": {"echarts": "6.1.0", "playwright": "1.62.1"}
+}

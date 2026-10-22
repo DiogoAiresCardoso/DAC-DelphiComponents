@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Informação" style="color:#2F9E22">
+  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="60" cy="60" r="46"/><line x1="60" y1="54" x2="60" y2="84"/><circle cx="60" cy="36" r="4" fill="currentColor" stroke="none"/>
+  </g>
+</svg>

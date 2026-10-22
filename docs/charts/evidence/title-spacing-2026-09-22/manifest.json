@@ -1,0 +1,643 @@
+{
+  "executedAt": "2026-09-22",
+  "archivedAt": "2026-09-23",
+  "origin": "tmp/chart-title-spacing",
+  "rendererRerunDuringConsolidation": false,
+  "environment": {
+    "compiler": "Delphi Tokyo 10.2, dcc32 32.0",
+    "platform": "Win32",
+    "config": "Debug"
+  },
+  "matrix": {
+    "variants": 6,
+    "logicalWidths": [
+      320,
+      720,
+      1280
+    ],
+    "syntheticDpis": [
+      96,
+      120,
+      144,
+      192
+    ],
+    "combinations": 72,
+    "storedMatrixPngs": 24,
+    "additionalChecks": [
+      "remove title",
+      "larger grid.top"
+    ]
+  },
+  "results": {
+    "tests": "pass",
+    "demo": "OK",
+    "testBuildLog": "not_saved",
+    "fullEChartsComparisonAfterTitleChange": "not_run",
+    "physicalFlicker": "not_retested"
+  },
+  "sourceHashMeaning": "Collected on 2026-09-23 from current checkout; not a build-time provenance record.",
+  "sourceHashesAtConsolidation": [
+    {
+      "path": "Source/Skia/DAC.Components.Charts.Engine.pas",
+      "bytes": 62775,
+      "sha256": "9f05a59a80bceb32e8cb79294178043c31503efc1dc124cbb643de6567bf44dc"
+    },
+    {
+      "path": "Tests/DACComponentsCharts.dpr",
+      "bytes": 12993,
+      "sha256": "3baea49dda8a2deb43113534d2695d0e3b1b2dee86a55c26908f47883a983a6a"
+    },
+    {
+      "path": "Source/Core/DAC.Components.Charts.Types.pas",
+      "bytes": 46037,
+      "sha256": "c3b257f4cdf82412ebe421984f639c17ca939b739e2d7bdbf39a18f5d14c2a56"
+    },
+    {
+      "path": "Source/Controls/DAC.Components.Charts.Options.pas",
+      "bytes": 51557,
+      "sha256": "7e3142f9526614e661c9ca856c340492b2f1b44066d3f59e3285eeb0df7c04c4"
+    },
+    {
+      "path": "Source/Controls/DAC.Components.Controls.Charts.pas",
+      "bytes": 19185,
+      "sha256": "1c07f90b79f043217aba766e534cc8d72a143db20f26eee34b1adcae78fdc492"
+    },
+    {
+      "path": "Source/Skia/DAC.Components.Charts.Surface.pas",
+      "bytes": 3056,
+      "sha256": "afe4edb5d27b944fe31c36df8a8f43a5f5f8e49db01fc62b5556ffb026f9b5ab"
+    }
+  ],
+  "binaryHashesAtConsolidation": [
+    {
+      "path": "tmp/chart-title-spacing/demo-exe/DACChartsDemo.exe",
+      "bytes": 16814444,
+      "sha256": "2f42ef6544b7133359641013b134d60002e7f4570fdac196f615dd76a577e381"
+    },
+    {
+      "path": "tmp/chart-title-spacing/tests-exe/DACComponentsCharts.exe",
+      "bytes": 3645952,
+      "sha256": "17031121637e07652d4d9f6ab2b32a1ffa95a3263988da17df4869805d40da82"
+    }
+  ],
+  "artifacts": [
+    {
+      "archivePath": "cases/C01.json",
+      "bytes": 2408,
+      "sha256": "a47c98294ee112b9c2d7dd01f0be5b1eee3920765083ae7e827eda930d5e25ea",
+      "origin": "tmp/chart-title-spacing/captures/C01.json"
+    },
+    {
+      "archivePath": "cases/C01.png",
+      "bytes": 6020,
+      "sha256": "579a6a927b2e98a8b52116f60808b68c21833b9a91eb33b51b446c95a8c5bdd7",
+      "origin": "tmp/chart-title-spacing/captures/C01.png"
+    },
+    {
+      "archivePath": "cases/C02.json",
+      "bytes": 2067,
+      "sha256": "8e592b58d3847251f02175125f90cd14d4ee0df3f0619cc8f49ce1a441c3e366",
+      "origin": "tmp/chart-title-spacing/captures/C02.json"
+    },
+    {
+      "archivePath": "cases/C02.png",
+      "bytes": 11158,
+      "sha256": "699aaf87f4d70d9857b1aa4d06117142d8e6018273e3059d258056d4a5e25ace",
+      "origin": "tmp/chart-title-spacing/captures/C02.png"
+    },
+    {
+      "archivePath": "cases/C03.json",
+      "bytes": 2194,
+      "sha256": "0f6448844ba37d8a74ea92950b68ba74e7e4455a9dd1f443f2151b7ebb8de1f4",
+      "origin": "tmp/chart-title-spacing/captures/C03.json"
+    },
+    {
+      "archivePath": "cases/C03.png",
+      "bytes": 9600,
+      "sha256": "60128720edb355cd8dee199c03a69f7242605c490cb1e6faf9d9e3a3374ebdf1",
+      "origin": "tmp/chart-title-spacing/captures/C03.png"
+    },
+    {
+      "archivePath": "cases/C04.json",
+      "bytes": 1583,
+      "sha256": "af58bdd65d0fbd4345fb0bee40869cc6f0db6a7fe33ed970e1d4b9573615567c",
+      "origin": "tmp/chart-title-spacing/captures/C04.json"
+    },
+    {
+      "archivePath": "cases/C04.png",
+      "bytes": 8428,
+      "sha256": "74d264bb4462a2482cd87f0c203baabf674464c3c157995a0fb7f80af258e63c",
+      "origin": "tmp/chart-title-spacing/captures/C04.png"
+    },
+    {
+      "archivePath": "cases/C05.json",
+      "bytes": 1793,
+      "sha256": "94f5a80c9be5ff6d5297c23c6c1149d3ad85d1b2f7bca7073cdfa1980953366d",
+      "origin": "tmp/chart-title-spacing/captures/C05.json"
+    },
+    {
+      "archivePath": "cases/C05.png",
+      "bytes": 5068,
+      "sha256": "439c94fbbf061cd42a435905966c3685d721f9aa3b19fbde6aa43624d6d1dd59",
+      "origin": "tmp/chart-title-spacing/captures/C05.png"
+    },
+    {
+      "archivePath": "cases/C06.json",
+      "bytes": 2036,
+      "sha256": "11468ff1922f2e2a9802ccbf61b2fbfb07ca677a988e01d2a040bf05b39798ed",
+      "origin": "tmp/chart-title-spacing/captures/C06.json"
+    },
+    {
+      "archivePath": "cases/C06.png",
+      "bytes": 6618,
+      "sha256": "aa1614a913a266eda7f0fddf9cedaa8ed754a2248d392c51e843c39224ba3b40",
+      "origin": "tmp/chart-title-spacing/captures/C06.png"
+    },
+    {
+      "archivePath": "cases/C07.json",
+      "bytes": 2369,
+      "sha256": "f546734ed4d466ba7bbc179703a1715e4dc0e69abfd64f7f5cfde3a6512b3460",
+      "origin": "tmp/chart-title-spacing/captures/C07.json"
+    },
+    {
+      "archivePath": "cases/C07.png",
+      "bytes": 5178,
+      "sha256": "14f2922a305d89c279be53d835e9164a294f27793fa72a515513aecec89bae7f",
+      "origin": "tmp/chart-title-spacing/captures/C07.png"
+    },
+    {
+      "archivePath": "cases/C08.json",
+      "bytes": 707,
+      "sha256": "b5483b26c9106e8e198f2495ff38d1ca40b7b268c3ce9f1e4c3235a0d710881d",
+      "origin": "tmp/chart-title-spacing/captures/C08.json"
+    },
+    {
+      "archivePath": "cases/C08.png",
+      "bytes": 9400,
+      "sha256": "fdb3cbb0169c8b334fcfe5c1905310b352d936e011c568dd81f3954d1eb4117a",
+      "origin": "tmp/chart-title-spacing/captures/C08.png"
+    },
+    {
+      "archivePath": "cases/C09.json",
+      "bytes": 594,
+      "sha256": "078d0c8690542814956c8d970bd873769accb57c1fc688d926cdb6545b730888",
+      "origin": "tmp/chart-title-spacing/captures/C09.json"
+    },
+    {
+      "archivePath": "cases/C09.png",
+      "bytes": 7012,
+      "sha256": "8ceda3cb62c55547819c4c4f4aa2dcffeae3a0db8069cc4890609c3e0ab627e9",
+      "origin": "tmp/chart-title-spacing/captures/C09.png"
+    },
+    {
+      "archivePath": "cases/C10.json",
+      "bytes": 265,
+      "sha256": "5ffbe156f08f7f933fa328412490dee62fdc2d3c5dd645f4f31679d75c451ec1",
+      "origin": "tmp/chart-title-spacing/captures/C10.json"
+    },
+    {
+      "archivePath": "cases/C10.png",
+      "bytes": 1815,
+      "sha256": "43fde123b3a9d769540b154de79844e484029cf6a629be7bdd303d5760224720",
+      "origin": "tmp/chart-title-spacing/captures/C10.png"
+    },
+    {
+      "archivePath": "cases/C11.json",
+      "bytes": 2619,
+      "sha256": "054de27d2d9228ac02fb288878db6ad9f35a9dd312a25538657242000e0fbfa3",
+      "origin": "tmp/chart-title-spacing/captures/C11.json"
+    },
+    {
+      "archivePath": "cases/C11.png",
+      "bytes": 7083,
+      "sha256": "8fd137a2209ec52cea3dfaad8a7329c8c83abedb5fe90152197769466ef9f39a",
+      "origin": "tmp/chart-title-spacing/captures/C11.png"
+    },
+    {
+      "archivePath": "cases/C12.json",
+      "bytes": 2456,
+      "sha256": "2c1d3d24361a65179c4902634a6ca461bcae216b480cee44208d360fd9681983",
+      "origin": "tmp/chart-title-spacing/captures/C12.json"
+    },
+    {
+      "archivePath": "cases/C12.png",
+      "bytes": 7083,
+      "sha256": "8fd137a2209ec52cea3dfaad8a7329c8c83abedb5fe90152197769466ef9f39a",
+      "origin": "tmp/chart-title-spacing/captures/C12.png"
+    },
+    {
+      "archivePath": "cases/C13.json",
+      "bytes": 2322,
+      "sha256": "26e1de7157422039e477748c28b3e802329bd0cac315b231c6c391bdd546093e",
+      "origin": "tmp/chart-title-spacing/captures/C13.json"
+    },
+    {
+      "archivePath": "cases/C13.png",
+      "bytes": 4838,
+      "sha256": "1b2d9f3e56671e62094808db5840cb19bd931adc28e0d62b2b7f35b8499cdf3d",
+      "origin": "tmp/chart-title-spacing/captures/C13.png"
+    },
+    {
+      "archivePath": "cases/C14.json",
+      "bytes": 1901,
+      "sha256": "fb7e7a4ffddcee4a8683e70e52a26a250f677dac7190801ecbbacc40dac1e048",
+      "origin": "tmp/chart-title-spacing/captures/C14.json"
+    },
+    {
+      "archivePath": "cases/C14.png",
+      "bytes": 5422,
+      "sha256": "49d6a5aead139497d8c52d25426e84683fa3a6f5f1e496fe35802fc84c889965",
+      "origin": "tmp/chart-title-spacing/captures/C14.png"
+    },
+    {
+      "archivePath": "cases/V01.json",
+      "bytes": 4405,
+      "sha256": "051e5fa43f4fb9cefde064da2f44d5045e0e7784db73c0405a7b94150d6b0bd5",
+      "origin": "tmp/chart-title-spacing/captures/V01.json"
+    },
+    {
+      "archivePath": "cases/V01.png",
+      "bytes": 10607,
+      "sha256": "b3c5582d6b406e1105631457daca4de1990d97207f515ef7fb6e5fb567d520a6",
+      "origin": "tmp/chart-title-spacing/captures/V01.png"
+    },
+    {
+      "archivePath": "cases/V02.json",
+      "bytes": 3019,
+      "sha256": "4d613fa0f6623cd8c9ea47148f5601f1d5453892af1012326ea2c78655e22653",
+      "origin": "tmp/chart-title-spacing/captures/V02.json"
+    },
+    {
+      "archivePath": "cases/V02.png",
+      "bytes": 6013,
+      "sha256": "7fed58cbcd9ff8aa16d24e762ed9c13fc6da89b1f859605d1c2598bff3ae495e",
+      "origin": "tmp/chart-title-spacing/captures/V02.png"
+    },
+    {
+      "archivePath": "cases/V03.json",
+      "bytes": 2044,
+      "sha256": "0432885c6b45ff0d05cb6fc8e37ed011608b4548d6c89d2826ceacbb3ab60a9f",
+      "origin": "tmp/chart-title-spacing/captures/V03.json"
+    },
+    {
+      "archivePath": "cases/V03.png",
+      "bytes": 8745,
+      "sha256": "b19c387036bb5526d636c4f94288d4d96740f603d1ed05dcc1177ecfed7321c5",
+      "origin": "tmp/chart-title-spacing/captures/V03.png"
+    },
+    {
+      "archivePath": "cases/V04.json",
+      "bytes": 13271,
+      "sha256": "79636aec6b83c6e10388cf2629b0a731e84e4b323a4fdc0ce9000838343143d0",
+      "origin": "tmp/chart-title-spacing/captures/V04.json"
+    },
+    {
+      "archivePath": "cases/V04.png",
+      "bytes": 7470,
+      "sha256": "45dfa91bb7fda860b851f805863dd52c8c6b5561b846362649c5dcba6b5acd9a",
+      "origin": "tmp/chart-title-spacing/captures/V04.png"
+    },
+    {
+      "archivePath": "cases/V05.json",
+      "bytes": 2398,
+      "sha256": "8bd6a7b4da214345f3c9e4b2c0f743eb20eb2cd19443477fe69b508d80d888ee",
+      "origin": "tmp/chart-title-spacing/captures/V05.json"
+    },
+    {
+      "archivePath": "cases/V05.png",
+      "bytes": 6722,
+      "sha256": "4137131680c88e0dc353040367a5137dbcaf561e87577df23c914b695e13ee1d",
+      "origin": "tmp/chart-title-spacing/captures/V05.png"
+    },
+    {
+      "archivePath": "cases/V06.json",
+      "bytes": 1053,
+      "sha256": "63ff5795cfe0db6bfac252a63016261a4ed9499fb23a7d426f4d0b02d7ce676a",
+      "origin": "tmp/chart-title-spacing/captures/V06.json"
+    },
+    {
+      "archivePath": "cases/V06.png",
+      "bytes": 10322,
+      "sha256": "62f0bedba1aabe3f5c5d63b63f9743f77aa67fdeb4a520830828edd037add575",
+      "origin": "tmp/chart-title-spacing/captures/V06.png"
+    },
+    {
+      "archivePath": "cases/V07.json",
+      "bytes": 2582,
+      "sha256": "b3b23caf302e3fec30954267bb2e75ed0cc9045334ab2e80467fc9735bbdd20a",
+      "origin": "tmp/chart-title-spacing/captures/V07.json"
+    },
+    {
+      "archivePath": "cases/V07.png",
+      "bytes": 8358,
+      "sha256": "cde878b860a0cdba98690111d7f6d20717ccb804b9ce5cf078fdee81e0dbb47d",
+      "origin": "tmp/chart-title-spacing/captures/V07.png"
+    },
+    {
+      "archivePath": "cases/V08.json",
+      "bytes": 828,
+      "sha256": "68041826c25fbbb5a69103fb7d358fd603ed28dfbee2ce3769fd92ae9efad0c1",
+      "origin": "tmp/chart-title-spacing/captures/V08.json"
+    },
+    {
+      "archivePath": "cases/V08.png",
+      "bytes": 2869,
+      "sha256": "f51408a2b7c162eb07ebed09b54c45de5768ab016280a21ecb69fba2636da5fd",
+      "origin": "tmp/chart-title-spacing/captures/V08.png"
+    },
+    {
+      "archivePath": "cases/V09.json",
+      "bytes": 1139,
+      "sha256": "4df27b99e0b90bf80c95c27eeb95a9c7319994c9e8ddbe81019469af581576c1",
+      "origin": "tmp/chart-title-spacing/captures/V09.json"
+    },
+    {
+      "archivePath": "cases/V09.png",
+      "bytes": 3308,
+      "sha256": "35ce5c6bd9050e8083ff84f1c867dbcabc77dd1844b5678ff2954a91c56e81fa",
+      "origin": "tmp/chart-title-spacing/captures/V09.png"
+    },
+    {
+      "archivePath": "cases/V10.json",
+      "bytes": 1726,
+      "sha256": "70774f4c7b404f88211926823edbb3c68c2f78bf40e0eaa4f5bd17fb92320643",
+      "origin": "tmp/chart-title-spacing/captures/V10.json"
+    },
+    {
+      "archivePath": "cases/V10.png",
+      "bytes": 5312,
+      "sha256": "51c7f04288c033ef9104c375828998e2087ff057525ab6c2be97df6f8d97ddea",
+      "origin": "tmp/chart-title-spacing/captures/V10.png"
+    },
+    {
+      "archivePath": "cases/V11.json",
+      "bytes": 1741,
+      "sha256": "726a0b98554ad94858df914d5627ad0cd8fbe2ab6f474fd7abd5ae0bf522d15a",
+      "origin": "tmp/chart-title-spacing/captures/V11.json"
+    },
+    {
+      "archivePath": "cases/V11.png",
+      "bytes": 10935,
+      "sha256": "a82374c9ebf21496ca05d66b793aa8bfc3f77f49b0f21905d22d6efb85196615",
+      "origin": "tmp/chart-title-spacing/captures/V11.png"
+    },
+    {
+      "archivePath": "cases/V12.json",
+      "bytes": 1758,
+      "sha256": "93b387bd0744cb10bea1d882e74112a4487ba6bb50629a8aceb996cf44b1a287",
+      "origin": "tmp/chart-title-spacing/captures/V12.json"
+    },
+    {
+      "archivePath": "cases/V12.png",
+      "bytes": 5310,
+      "sha256": "25a6c9183a629488dd2f87e6c4c8e70030cea7ed3f3023fd65f9678b06d426f8",
+      "origin": "tmp/chart-title-spacing/captures/V12.png"
+    },
+    {
+      "archivePath": "cases/V13.json",
+      "bytes": 1753,
+      "sha256": "5b94b367c0db850d5405eac88462e64d1bd153118d1f1109e0e707c852fa5ee1",
+      "origin": "tmp/chart-title-spacing/captures/V13.json"
+    },
+    {
+      "archivePath": "cases/V13.png",
+      "bytes": 5625,
+      "sha256": "f5ccc674b31d1cfb464b9d1d1d8e0af1eb959a70f119b7471112a8e31376eabc",
+      "origin": "tmp/chart-title-spacing/captures/V13.png"
+    },
+    {
+      "archivePath": "cases/V14.json",
+      "bytes": 1580,
+      "sha256": "4dd5889a87adbbdc3e9ea14ec04199cddf7e5f2dc4c32c33795ae4a78ddd0931",
+      "origin": "tmp/chart-title-spacing/captures/V14.json"
+    },
+    {
+      "archivePath": "cases/V14.png",
+      "bytes": 4230,
+      "sha256": "4aa8cc95a13124b090b828a037d83476172f993b89c47784805ed9a52b3ee923",
+      "origin": "tmp/chart-title-spacing/captures/V14.png"
+    },
+    {
+      "archivePath": "cases/V15.json",
+      "bytes": 2790,
+      "sha256": "cbc24e55f9d143e43d8bed71143298efa49e10bed3fbc303680ac0f8a4baf7c0",
+      "origin": "tmp/chart-title-spacing/captures/V15.json"
+    },
+    {
+      "archivePath": "cases/V15.png",
+      "bytes": 9279,
+      "sha256": "4ee22546625af7d8e75d68c0919786891035522adeba410fd3e088ca106b176f",
+      "origin": "tmp/chart-title-spacing/captures/V15.png"
+    },
+    {
+      "archivePath": "commands/build-demo.cmd",
+      "bytes": 426,
+      "sha256": "b86c546cd57f02e437eddb32802599c74dd688b85039e80b96e803896e4d096b",
+      "origin": "tmp/chart-title-spacing/build-demo.cmd"
+    },
+    {
+      "archivePath": "commands/build-tests.cmd",
+      "bytes": 428,
+      "sha256": "c53d640e8f12425c739839a325ff6741053697998270ebdb6230d820ffc2b706",
+      "origin": "tmp/chart-title-spacing/build-tests.cmd"
+    },
+    {
+      "archivePath": "demo/gallery.png",
+      "bytes": 21146,
+      "sha256": "393f85e6aedf263c73da390a90650cafddcef4620d9488b28ad094db008d4467",
+      "origin": "tmp/chart-title-spacing/demo-captures/gallery.png"
+    },
+    {
+      "archivePath": "demo/result.txt",
+      "bytes": 5,
+      "sha256": "a6685f089429192f0195e8a1098486ec87269fe00bef1a9dfc9362f2c2b8a1b8",
+      "origin": "tmp/chart-title-spacing/demo-captures/result.txt"
+    },
+    {
+      "archivePath": "demo/title-spacing-window.png",
+      "bytes": 9411,
+      "sha256": "e759f41b6d32660e15398337d2cf6f70c8b82e3e8b013e834bd3f2b55fb7b811",
+      "origin": "tmp/chart-title-spacing/demo-captures/title-spacing-window.png"
+    },
+    {
+      "archivePath": "demo/title-spacing.json",
+      "bytes": 2823,
+      "sha256": "14b3f1571b8caf6690f96f456710097f055ce98a211d7e80018b2c330c3cf3be",
+      "origin": "tmp/chart-title-spacing/demo-captures/title-spacing.json"
+    },
+    {
+      "archivePath": "demo/title-spacing.png",
+      "bytes": 9411,
+      "sha256": "e759f41b6d32660e15398337d2cf6f70c8b82e3e8b013e834bd3f2b55fb7b811",
+      "origin": "tmp/chart-title-spacing/demo-captures/title-spacing.png"
+    },
+    {
+      "archivePath": "fixture.json",
+      "bytes": 1529,
+      "sha256": "77e2c423579711dff64e0dae8a497f74d5e746293212d60a343b33ad62ef4127",
+      "origin": "tmp/chart-title-spacing/fixture.json"
+    },
+    {
+      "archivePath": "logs/build-demo.log",
+      "bytes": 666,
+      "sha256": "0bc9ff9430e172077aa2b3d4e147a51352b8bc0c7ab5901ab8e7215c5653e063",
+      "origin": "tmp/chart-title-spacing/build-demo.log"
+    },
+    {
+      "archivePath": "logs/tests.log",
+      "bytes": 990,
+      "sha256": "58fbcf011bd030043382802a499620790cf3540f492b0568cb9d3dcd5bc39918",
+      "origin": "tmp/chart-title-spacing/tests.log"
+    },
+    {
+      "archivePath": "README.md",
+      "bytes": 3429,
+      "sha256": "4015eb356149eacef05db71c420c3095b02aec7f2cee321104cbd2ced8b8d3c3",
+      "origin": "documentation"
+    },
+    {
+      "archivePath": "titles/title-0-120-720.png",
+      "bytes": 5981,
+      "sha256": "d582eb559dfb90ee198b14ff29be384f8307aa29da73912bcf886f8a81b1e948",
+      "origin": "tmp/chart-title-spacing/captures/title-0-120-720.png"
+    },
+    {
+      "archivePath": "titles/title-0-144-720.png",
+      "bytes": 7655,
+      "sha256": "40d9bbf94ae993af73137f31be6b88e2ab61f7a6f98d2c19bae74de46fdd1e3f",
+      "origin": "tmp/chart-title-spacing/captures/title-0-144-720.png"
+    },
+    {
+      "archivePath": "titles/title-0-192-720.png",
+      "bytes": 11342,
+      "sha256": "fbe3103e2e5f6ea43be44714e8cc85425794556b1fdf7bf733e2fbd26cab3ce3",
+      "origin": "tmp/chart-title-spacing/captures/title-0-192-720.png"
+    },
+    {
+      "archivePath": "titles/title-0-96-720.png",
+      "bytes": 4703,
+      "sha256": "e95b6f7f7e8b41d7e4677d1f1d948c719060718cd7b09d2f980158bdaa33b9aa",
+      "origin": "tmp/chart-title-spacing/captures/title-0-96-720.png"
+    },
+    {
+      "archivePath": "titles/title-1-120-720.png",
+      "bytes": 9357,
+      "sha256": "4dcf315090ca3122db791d3f80db84afd38a51a824cf4ce0b5cfd134169d6c3e",
+      "origin": "tmp/chart-title-spacing/captures/title-1-120-720.png"
+    },
+    {
+      "archivePath": "titles/title-1-144-720.png",
+      "bytes": 11703,
+      "sha256": "2d3f7ab46b0541e80911ed272a71aff4d23a89100ac478d5efbefcfafcdb397c",
+      "origin": "tmp/chart-title-spacing/captures/title-1-144-720.png"
+    },
+    {
+      "archivePath": "titles/title-1-192-720.png",
+      "bytes": 17043,
+      "sha256": "b747ed9b0697210613dcfcb12cfc7e24803e40c9f23789fe36436d365402d64c",
+      "origin": "tmp/chart-title-spacing/captures/title-1-192-720.png"
+    },
+    {
+      "archivePath": "titles/title-1-96-720.png",
+      "bytes": 6793,
+      "sha256": "07f3e7599aa49598e198905a7e5a234c5311dcae3445f8ec373e6b18e5940fc9",
+      "origin": "tmp/chart-title-spacing/captures/title-1-96-720.png"
+    },
+    {
+      "archivePath": "titles/title-2-120-720.png",
+      "bytes": 5544,
+      "sha256": "eec34922fe3c4de0425058049e4d805063316c647e252d0e1d3c020dfa2ac9c8",
+      "origin": "tmp/chart-title-spacing/captures/title-2-120-720.png"
+    },
+    {
+      "archivePath": "titles/title-2-144-720.png",
+      "bytes": 6953,
+      "sha256": "836354f887bc09e45fb7791ba210ca9f9c716131ff25f7d6a0541fb9542be512",
+      "origin": "tmp/chart-title-spacing/captures/title-2-144-720.png"
+    },
+    {
+      "archivePath": "titles/title-2-192-720.png",
+      "bytes": 10221,
+      "sha256": "78052f4a01150f4662c48524e77083c0c5114073f8c52a19ec63533fe6f75355",
+      "origin": "tmp/chart-title-spacing/captures/title-2-192-720.png"
+    },
+    {
+      "archivePath": "titles/title-2-96-720.png",
+      "bytes": 4166,
+      "sha256": "d2b31a07d4e245d58811c00f28fe87b7cb297c47ab8e81c5f393deb42e7c2626",
+      "origin": "tmp/chart-title-spacing/captures/title-2-96-720.png"
+    },
+    {
+      "archivePath": "titles/title-3-120-720.png",
+      "bytes": 5532,
+      "sha256": "c35f4cd615557506ce1d3abfdc3835f4a632478ae43c0e78dfbe3523f0070626",
+      "origin": "tmp/chart-title-spacing/captures/title-3-120-720.png"
+    },
+    {
+      "archivePath": "titles/title-3-144-720.png",
+      "bytes": 7139,
+      "sha256": "b75807a1c3c191e7e4c586bf1177b096ae51f9f2bcb539b0c65d19f0793071a0",
+      "origin": "tmp/chart-title-spacing/captures/title-3-144-720.png"
+    },
+    {
+      "archivePath": "titles/title-3-192-720.png",
+      "bytes": 10580,
+      "sha256": "560504e6e7f884cbf75bb87708f2809b15ef96638c71c7213df8d92d04b9c241",
+      "origin": "tmp/chart-title-spacing/captures/title-3-192-720.png"
+    },
+    {
+      "archivePath": "titles/title-3-96-720.png",
+      "bytes": 4300,
+      "sha256": "eafa1918f9e86c0a30f3c991df3183ba25468bfa244d6551467256a84016fcec",
+      "origin": "tmp/chart-title-spacing/captures/title-3-96-720.png"
+    },
+    {
+      "archivePath": "titles/title-4-120-720.png",
+      "bytes": 4731,
+      "sha256": "6d6bc5dce10c86d295b5fd813f079dc571079819cc25128b86e6d78da40f2e51",
+      "origin": "tmp/chart-title-spacing/captures/title-4-120-720.png"
+    },
+    {
+      "archivePath": "titles/title-4-144-720.png",
+      "bytes": 5932,
+      "sha256": "71a03dea428b9e9def22a8f68d8f876298d32468bbed59f0910325617d28ed5f",
+      "origin": "tmp/chart-title-spacing/captures/title-4-144-720.png"
+    },
+    {
+      "archivePath": "titles/title-4-192-720.png",
+      "bytes": 8988,
+      "sha256": "40f70100733e688fbdc71847f5365d97d7887511f9d8befed0e22897798e2de2",
+      "origin": "tmp/chart-title-spacing/captures/title-4-192-720.png"
+    },
+    {
+      "archivePath": "titles/title-4-96-720.png",
+      "bytes": 3568,
+      "sha256": "3dcb2a3a56f4a216ae2791594de45c422e09f9b8e8ba04e3742b20548babca88",
+      "origin": "tmp/chart-title-spacing/captures/title-4-96-720.png"
+    },
+    {
+      "archivePath": "titles/title-5-120-720.png",
+      "bytes": 4731,
+      "sha256": "6d6bc5dce10c86d295b5fd813f079dc571079819cc25128b86e6d78da40f2e51",
+      "origin": "tmp/chart-title-spacing/captures/title-5-120-720.png"
+    },
+    {
+      "archivePath": "titles/title-5-144-720.png",
+      "bytes": 5932,
+      "sha256": "71a03dea428b9e9def22a8f68d8f876298d32468bbed59f0910325617d28ed5f",
+      "origin": "tmp/chart-title-spacing/captures/title-5-144-720.png"
+    },
+    {
+      "archivePath": "titles/title-5-192-720.png",
+      "bytes": 8988,
+      "sha256": "40f70100733e688fbdc71847f5365d97d7887511f9d8befed0e22897798e2de2",
+      "origin": "tmp/chart-title-spacing/captures/title-5-192-720.png"
+    },
+    {
+      "archivePath": "titles/title-5-96-720.png",
+      "bytes": 3568,
+      "sha256": "3dcb2a3a56f4a216ae2791594de45c422e09f9b8e8ba04e3742b20548babca88",
+      "origin": "tmp/chart-title-spacing/captures/title-5-96-720.png"
+    }
+  ]
+}

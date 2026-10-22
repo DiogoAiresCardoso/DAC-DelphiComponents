@@ -113,7 +113,70 @@ type
     mikFullscreen,
     mikPageSearch,
     mikZoomIn,
-    mikZoomOut
+    mikZoomOut,
+    mikFileCheck,
+    mikFileCode,
+    mikFileExport,
+    mikFileImage,
+    mikFileJson,
+    mikFileLock,
+    mikFileMinus,
+    mikFilesPdf,
+    mikFilePlus,
+    mikFileSearch,
+    mikFileText,
+    mikFileWarning,
+    mikFileXml,
+    mikFileZip,
+    mikFile,
+    mikFilesStack,
+    mikDirectorySync,
+    mikDirectoryUp,
+    mikFolderLock,
+    mikFolderOpen,
+    mikFolderPlus,
+    mikFolderSearch,
+    mikFolderTree,
+    mikFolder,
+    mikLinkFile,
+    mikPathAbsolute,
+    mikPathBreadcrumb,
+    mikPathRelative,
+    mikPathSlash,
+    mikPath,
+    mikApi,
+    mikArchiveBox,
+    mikBug,
+    mikCertificate,
+    mikClipboardList,
+    mikCloudDownload,
+    mikCloudUpload,
+    mikCloud,
+    mikCodeBrackets,
+    mikCommandLine,
+    mikComputer,
+    mikConfig,
+    mikDatabaseBackup,
+    mikDatabase,
+    mikDll,
+    mikEnvironment,
+    mikEventLog,
+    mikFirewall,
+    mikHardDrive,
+    mikKey,
+    mikLogs,
+    mikNetwork,
+    mikSystemPackage,
+    mikProcess,
+    mikRegistry,
+    mikScheduler,
+    mikServer,
+    mikService,
+    mikSsd,
+    mikTerminal,
+    mikUpdate,
+    mikUsbDrive,
+    mikWindows
   );
 
   TDACIconInfo = record
@@ -237,6 +300,70 @@ const
   DAC_ICON_REPORT_VIEWER_PAGE_SEARCH = 'report-viewer\page-search.svg';
   DAC_ICON_REPORT_VIEWER_ZOOM_IN = 'report-viewer\zoom-in.svg';
   DAC_ICON_REPORT_VIEWER_ZOOM_OUT = 'report-viewer\zoom-out.svg';
+
+  DAC_ICON_FILES_FILE_CHECK = 'files\file-check.svg';
+  DAC_ICON_FILES_FILE_CODE = 'files\file-code.svg';
+  DAC_ICON_FILES_FILE_EXPORT = 'files\file-export.svg';
+  DAC_ICON_FILES_FILE_IMAGE = 'files\file-image.svg';
+  DAC_ICON_FILES_FILE_JSON = 'files\file-json.svg';
+  DAC_ICON_FILES_FILE_LOCK = 'files\file-lock.svg';
+  DAC_ICON_FILES_FILE_MINUS = 'files\file-minus.svg';
+  DAC_ICON_FILES_FILE_PDF = 'files\file-pdf.svg';
+  DAC_ICON_FILES_FILE_PLUS = 'files\file-plus.svg';
+  DAC_ICON_FILES_FILE_SEARCH = 'files\file-search.svg';
+  DAC_ICON_FILES_FILE_TEXT = 'files\file-text.svg';
+  DAC_ICON_FILES_FILE_WARNING = 'files\file-warning.svg';
+  DAC_ICON_FILES_FILE_XML = 'files\file-xml.svg';
+  DAC_ICON_FILES_FILE_ZIP = 'files\file-zip.svg';
+  DAC_ICON_FILES_FILE = 'files\file.svg';
+  DAC_ICON_FILES_FILES_STACK = 'files\files-stack.svg';
+  DAC_ICON_FOLDERS_PATHS_DIRECTORY_SYNC = 'folders-paths\directory-sync.svg';
+  DAC_ICON_FOLDERS_PATHS_DIRECTORY_UP = 'folders-paths\directory-up.svg';
+  DAC_ICON_FOLDERS_PATHS_FOLDER_LOCK = 'folders-paths\folder-lock.svg';
+  DAC_ICON_FOLDERS_PATHS_FOLDER_OPEN = 'folders-paths\folder-open.svg';
+  DAC_ICON_FOLDERS_PATHS_FOLDER_PLUS = 'folders-paths\folder-plus.svg';
+  DAC_ICON_FOLDERS_PATHS_FOLDER_SEARCH = 'folders-paths\folder-search.svg';
+  DAC_ICON_FOLDERS_PATHS_FOLDER_TREE = 'folders-paths\folder-tree.svg';
+  DAC_ICON_FOLDERS_PATHS_FOLDER = 'folders-paths\folder.svg';
+  DAC_ICON_FOLDERS_PATHS_LINK_FILE = 'folders-paths\link-file.svg';
+  DAC_ICON_FOLDERS_PATHS_PATH_ABSOLUTE = 'folders-paths\path-absolute.svg';
+  DAC_ICON_FOLDERS_PATHS_PATH_BREADCRUMB = 'folders-paths\path-breadcrumb.svg';
+  DAC_ICON_FOLDERS_PATHS_PATH_RELATIVE = 'folders-paths\path-relative.svg';
+  DAC_ICON_FOLDERS_PATHS_PATH_SLASH = 'folders-paths\path-slash.svg';
+  DAC_ICON_FOLDERS_PATHS_PATH = 'folders-paths\path.svg';
+  DAC_ICON_SYSTEM_API = 'system\api.svg';
+  DAC_ICON_SYSTEM_ARCHIVE_BOX = 'system\archive-box.svg';
+  DAC_ICON_SYSTEM_BUG = 'system\bug.svg';
+  DAC_ICON_SYSTEM_CERTIFICATE = 'system\certificate.svg';
+  DAC_ICON_SYSTEM_CLIPBOARD_LIST = 'system\clipboard-list.svg';
+  DAC_ICON_SYSTEM_CLOUD_DOWNLOAD = 'system\cloud-download.svg';
+  DAC_ICON_SYSTEM_CLOUD_UPLOAD = 'system\cloud-upload.svg';
+  DAC_ICON_SYSTEM_CLOUD = 'system\cloud.svg';
+  DAC_ICON_SYSTEM_CODE_BRACKETS = 'system\code-brackets.svg';
+  DAC_ICON_SYSTEM_COMMAND_LINE = 'system\command-line.svg';
+  DAC_ICON_SYSTEM_COMPUTER = 'system\computer.svg';
+  DAC_ICON_SYSTEM_CONFIG = 'system\config.svg';
+  DAC_ICON_SYSTEM_DATABASE_BACKUP = 'system\database-backup.svg';
+  DAC_ICON_SYSTEM_DATABASE = 'system\database.svg';
+  DAC_ICON_SYSTEM_DLL = 'system\dll.svg';
+  DAC_ICON_SYSTEM_ENVIRONMENT = 'system\environment.svg';
+  DAC_ICON_SYSTEM_EVENT_LOG = 'system\event-log.svg';
+  DAC_ICON_SYSTEM_FIREWALL = 'system\firewall.svg';
+  DAC_ICON_SYSTEM_HARD_DRIVE = 'system\hard-drive.svg';
+  DAC_ICON_SYSTEM_KEY = 'system\key.svg';
+  DAC_ICON_SYSTEM_LOGS = 'system\logs.svg';
+  DAC_ICON_SYSTEM_NETWORK = 'system\network.svg';
+  DAC_ICON_SYSTEM_PACKAGE = 'system\package.svg';
+  DAC_ICON_SYSTEM_PROCESS = 'system\process.svg';
+  DAC_ICON_SYSTEM_REGISTRY = 'system\registry.svg';
+  DAC_ICON_SYSTEM_SCHEDULER = 'system\scheduler.svg';
+  DAC_ICON_SYSTEM_SERVER = 'system\server.svg';
+  DAC_ICON_SYSTEM_SERVICE = 'system\service.svg';
+  DAC_ICON_SYSTEM_SSD = 'system\ssd.svg';
+  DAC_ICON_SYSTEM_TERMINAL = 'system\terminal.svg';
+  DAC_ICON_SYSTEM_UPDATE = 'system\update.svg';
+  DAC_ICON_SYSTEM_USB_DRIVE = 'system\usb-drive.svg';
+  DAC_ICON_SYSTEM_WINDOWS = 'system\windows.svg';
 
 implementation
 
@@ -1324,6 +1451,731 @@ begin
   Result := FloatToStrF(AAlpha / 255, ffFixed, 3, 2, LFormat);
 end;
 
+const CFileCheckSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Arquivo validado" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6m-12 8 3 3 5-6"/><' +
+      '/g>' +
+      #13#10 +
+      '</svg>';
+
+const CFileCodeSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Arquivo código" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M10 13l-2 2 2 2m4-' +
+      '4 2 2-2 2"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CFileExportSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Exportar arquivo" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6m-9 9h9m-3-3 3 3-3' +
+      ' 3"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CFileImageSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Arquivo imagem" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><circle cx="9" ' +
+      'cy="12" r="1"/><path d="m7 18 3-3 2 2 3-4 3 5"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CFileJsonSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Arquivo JSON" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M10 12c-2 0-2 1-2 ' +
+      '3s0 3-2 3m8-6c2 0 2 1 2 3s0 3 2 3"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CFileLockSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Arquivo protegido" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><rect x="9" y="' +
+      '15" width="6" height="5" rx="1"/><path d="M10 15v-2a2 2 0 0 1 4 0v2"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CFileMinusSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Remover arquivo" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6m-5 8h-7"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CFilesPdfSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Documento PDF" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M7 17h2v-4H7v4m5 0' +
+      'v-4h1a2 2 0 0 1 0 4h-1m5 0v-4h2m-2 2h2"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CFilePlusSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Novo arquivo" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 12v7m-3.5-3.5h' +
+      '7"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CFileSearchSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Buscar arquivo" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h9"/><path d="M14 2v6h6v4"/><circle cx="16" cy="16" r="3"/>' +
+      '<path d="m18.5 18.5 3 3"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CFileTextSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Arquivo texto" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/><' +
+      '/g>' +
+      #13#10 +
+      '</svg>';
+
+const CFileWarningSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Arquivo com alerta" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 12v4m0 3h.01"/' +
+      '></g>' +
+      #13#10 +
+      '</svg>';
+
+const CFileXmlSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Arquivo XML" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13l-2 2 2 2m6-4' +
+      ' 2 2-2 2m-4 4 2-8"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CFileZipSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Arquivo ZIP" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M11 3v2m0 2v2m0 2v' +
+      '2m0 2v2"/><rect x="9" y="17" width="4" height="3" rx=".5"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CFileSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Arquivo" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CFilesStackSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Arquivos" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><rect x="7" y="7" width="13" height="15" rx="2"/><path d="M16 7V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v13a2 2 0 0' +
+      ' 0 2 2h1"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CDirectorySyncSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Sincronizar diretório" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M3 8V7a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v3"/><path d="M4 12v7a2 2 0 0 0 2 2h5"/><path d="M14 16' +
+      'a4 4 0 0 1 7 0m0-3v3h-3M21 19a4 4 0 0 1-7 0m0 3v-3h3"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CDirectoryUpSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Diretório superior" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M3 10V7a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5"/><path d="m9 14 3' +
+      '-3 3 3m-3-3v7"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CFolderLockSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Pasta protegida" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M3 7a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><rect x="9" y="14" wi' +
+      'dth="6" height="5" rx="1"/><path d="M10 14v-2a2 2 0 0 1 4 0v2"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CFolderOpenSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Abrir pasta" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M3 7a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v2"/><path d="M5 13h16l-3 8H3z"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CFolderPlusSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Nova pasta" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M3 7a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 12v6m-3-' +
+      '3h6"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CFolderSearchSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Localizar pasta" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M3 7a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v3"/><path d="M3 10v9a2 2 0 0 0 2 2h8"/><circle cx="17" c' +
+      'y="17" r="3"/><path d="m19.3 19.3 2.2 2.2"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CFolderTreeSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Árvore de pastas" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M4 3v17m0-13h5m-5 9h5"/><rect x="9" y="4" width="11" height="6" rx="1"/><rect x="9" y="13" width=' +
+      '"11" height="6" rx="1"/><path d="M10 4h4l1 2h5"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CFolderSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Pasta" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M3 7a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CLinkFileSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Vínculo de arquivo" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6m-11 9h3m3-4h-3m-2' +
+      ' 2a3 3 0 0 0 4 1m0-2a3 3 0 0 0-4-1"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CPathAbsoluteSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Caminho absoluto" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M4 4v16M8 18h12M8 12h9M8 6h12"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CPathBreadcrumbSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Caminho hierárquico" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M3 12h4m2-4 4 4-4 4m6-8 4 4-4 4"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CPathRelativeSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Caminho relativo" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h5m0 0 3-3m-3 3 3 3"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CPathSlashSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Separador de caminho" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M8 4 4 12l4 8m8-16 4 8-4 8m-2-17-4 18"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CPathSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Caminho" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M4 7h9m-9 10h12"/><circle cx="4" cy="7" r="2"/><circle cx="20" cy="7" r="2"/><circle cx="16" cy="' +
+      '17" r="2"/><path d="M13 7h7M6 17h8"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CApiSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="API" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="m7 9-3 3 3 3m10-6 3 3-3 3m-3-8-3 10"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CArchiveBoxSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Arquivo morto" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v11h14V9m-10 5h6"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CBugSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Depuração" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><rect x="8" y="6" width="8" height="14" rx="4"/><path d="M9 6 7 3m8 3 2-3M8 12H3m13 0h5M8 17H3m13 0h5M8 9h' +
+      '8"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CCertificateSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Certificado" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><rect x="4" y="2" width="16" height="15" rx="2"/><path d="M8 7h8m-8 4h4m2 6-2 5-2-3-3 1 2-5"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CClipboardListSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Lista de tarefas" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><rect x="4" y="4" width="16" height="18" rx="2"/><rect x="9" y="2" width="6" height="5" rx="1"/><path d="M' +
+      '8 12h8m-8 4h8m-8 3h5"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CCloudDownloadSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Baixar nuvem" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M6 19h12a4 4 0 0 0 1-8 7 7 0 0 0-14-1 4.5 4.5 0 0 0 1 9z"/><path d="m9 15 3 3 3-3m-3-3v6"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CCloudUploadSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Enviar nuvem" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M6 19h12a4 4 0 0 0 1-8 7 7 0 0 0-14-1 4.5 4.5 0 0 0 1 9z"/><path d="m9 15 3-3 3 3m-3-3v7"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CCloudSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Nuvem" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M6 19h12a4 4 0 0 0 1-8 7 7 0 0 0-14-1 4.5 4.5 0 0 0 1 9z"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CCodeBracketsSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Código-fonte" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="m8 5-5 7 5 7m8-14 5 7-5 7m-3-16-2 20"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CCommandLineSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Linha de comando" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="m4 6 6 6-6 6m9 0h7"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CComputerSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Computador" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CConfigSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Configuração" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><circle cx="12" cy="12" r="3"/><path d="M10 2h4l1 3 2 1 3-1 2 4-2 2v2l2 2-2 4-3-1-2 1-1 3h-4l-1-3-2-1-3 1-' +
+      '2-4 2-2v-2L2 9l2-4 3 1 2-1z"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CDatabaseBackupSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Backup de banco" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><ellipse cx="10" cy="5" rx="7" ry="3"/><path d="M3 5v12c0 3 10 4 14 1M17 5v5M3 11c0 3 8 4 13 2"/><path d="' +
+      'M17 14h5v5m0-5-6 6"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CDatabaseSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Banco de dados" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 4 18 4 18 0V5M3 12c0 4 18 4 18 0"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CDllSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Biblioteca DLL" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M4 4h16v16H4zM8 2v2m8-2v2M8 20v2m8-2v2M2 8h2m-2 8h2m16-8h2m-2 8h2"/><path d="M9 9h6v6H9z"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CEnvironmentSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Ambiente" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18m-13 4 3 3-3 3m6 0h4"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CEventLogSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Log de eventos" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M7 2v4m10-4v4M3 10h18M8 14h4m-4 4h8"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CFirewallSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Firewall" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M12 2 3 6v6c0 6 4 9 9 10 5-1 9-4 9-10V6z"/><path d="M8 9h8M8 13h8m-4-8v12"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CHardDriveSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Disco rígido" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 13h18m-14 4h.01M11 17h.01"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CKeySvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Chave de acesso" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><circle cx="8" cy="9" r="5"/><path d="m12 12 9 9m-4-4 3-3m-6 0 3-3"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CLogsSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Logs" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 12h8M8 16h5m-5 ' +
+      '3h8"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CNetworkSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Rede" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><rect x="9" y="2" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="16' +
+      '" y="16" width="6" height="6" rx="1"/><path d="M12 8v4H5v4m7-4h7v4"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CSystemPackageSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Pacote" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="m12 2 9 5-9 5-9-5zM3 7v10l9 5 9-5V7M12 12v10M7 5l10 5"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CProcessSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Processo" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><rect x="2" y="2" width="8" height="7" rx="1"/><rect x="14" y="2" width="8" height="7" rx="1"/><rect x="8"' +
+      ' y="15" width="8" height="7" rx="1"/><path d="M6 9v3h12V9m-6 3v3"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CRegistrySvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Registro do sistema" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3"' +
+      ' y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CSchedulerSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Agendador" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><rect x="3" y="5" width="18" height="17" rx="2"/><path d="M7 2v6m10-6v6M3 11h18"/><circle cx="12" cy="16" ' +
+      'r="3"/><path d="M12 14v2l1 1"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CServerSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Servidor" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><rect x="3" y="2" width="18" height="9" rx="2"/><rect x="3" y="13" width="18" height="9" rx="2"/><path d="' +
+      'M7 6h.01M7 17h.01M11 6h7m-7 11h7"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CServiceSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Serviço" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="m9 8 7 4-7 4z"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CSsdSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Unidade SSD" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 6h8v9H8zM8 18h.01M16 18h.01"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CTerminalSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Terminal" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="m6 8 4 4-4 4m7 0h5"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CUpdateSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Atualização" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5 9a8 8 0 0 1 14-2l1 5M4 12l1 5a8 8 0 0 0 14-2"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CUsbDriveSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Pendrive" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M8 3h8v6H8zM6 9h12v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2z"/><path d="M10 5v2m4-2v2"/></g>' +
+      #13#10 +
+      '</svg>';
+
+const CWindowsSvg =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      #13#10 +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" ' +
+      'aria-label="Windows" style="color:#2F9E22">' +
+      #13#10 +
+      '  <g transform="scale(5)" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="rou' +
+      'nd"><path d="M3 5 11 4v8H3zM13 4l8-1v9h-8zM3 14h8v8l-8-1zM13 14h8v9l-8-1z"/></g>' +
+      #13#10 +
+      '</svg>';
+
 function RawSvg(const AKind: TDACIconKind): string;
 begin
   case AKind of
@@ -1433,6 +2285,69 @@ begin
     mikPageSearch: Result := CPageSearchSvg;
     mikZoomIn: Result := CZoomInSvg;
     mikZoomOut: Result := CZoomOutSvg;
+    mikFileCheck: Result := CFileCheckSvg;
+    mikFileCode: Result := CFileCodeSvg;
+    mikFileExport: Result := CFileExportSvg;
+    mikFileImage: Result := CFileImageSvg;
+    mikFileJson: Result := CFileJsonSvg;
+    mikFileLock: Result := CFileLockSvg;
+    mikFileMinus: Result := CFileMinusSvg;
+    mikFilesPdf: Result := CFilesPdfSvg;
+    mikFilePlus: Result := CFilePlusSvg;
+    mikFileSearch: Result := CFileSearchSvg;
+    mikFileText: Result := CFileTextSvg;
+    mikFileWarning: Result := CFileWarningSvg;
+    mikFileXml: Result := CFileXmlSvg;
+    mikFileZip: Result := CFileZipSvg;
+    mikFile: Result := CFileSvg;
+    mikFilesStack: Result := CFilesStackSvg;
+    mikDirectorySync: Result := CDirectorySyncSvg;
+    mikDirectoryUp: Result := CDirectoryUpSvg;
+    mikFolderLock: Result := CFolderLockSvg;
+    mikFolderOpen: Result := CFolderOpenSvg;
+    mikFolderPlus: Result := CFolderPlusSvg;
+    mikFolderSearch: Result := CFolderSearchSvg;
+    mikFolderTree: Result := CFolderTreeSvg;
+    mikFolder: Result := CFolderSvg;
+    mikLinkFile: Result := CLinkFileSvg;
+    mikPathAbsolute: Result := CPathAbsoluteSvg;
+    mikPathBreadcrumb: Result := CPathBreadcrumbSvg;
+    mikPathRelative: Result := CPathRelativeSvg;
+    mikPathSlash: Result := CPathSlashSvg;
+    mikPath: Result := CPathSvg;
+    mikApi: Result := CApiSvg;
+    mikArchiveBox: Result := CArchiveBoxSvg;
+    mikBug: Result := CBugSvg;
+    mikCertificate: Result := CCertificateSvg;
+    mikClipboardList: Result := CClipboardListSvg;
+    mikCloudDownload: Result := CCloudDownloadSvg;
+    mikCloudUpload: Result := CCloudUploadSvg;
+    mikCloud: Result := CCloudSvg;
+    mikCodeBrackets: Result := CCodeBracketsSvg;
+    mikCommandLine: Result := CCommandLineSvg;
+    mikComputer: Result := CComputerSvg;
+    mikConfig: Result := CConfigSvg;
+    mikDatabaseBackup: Result := CDatabaseBackupSvg;
+    mikDatabase: Result := CDatabaseSvg;
+    mikDll: Result := CDllSvg;
+    mikEnvironment: Result := CEnvironmentSvg;
+    mikEventLog: Result := CEventLogSvg;
+    mikFirewall: Result := CFirewallSvg;
+    mikHardDrive: Result := CHardDriveSvg;
+    mikKey: Result := CKeySvg;
+    mikLogs: Result := CLogsSvg;
+    mikNetwork: Result := CNetworkSvg;
+    mikSystemPackage: Result := CSystemPackageSvg;
+    mikProcess: Result := CProcessSvg;
+    mikRegistry: Result := CRegistrySvg;
+    mikScheduler: Result := CSchedulerSvg;
+    mikServer: Result := CServerSvg;
+    mikService: Result := CServiceSvg;
+    mikSsd: Result := CSsdSvg;
+    mikTerminal: Result := CTerminalSvg;
+    mikUpdate: Result := CUpdateSvg;
+    mikUsbDrive: Result := CUsbDriveSvg;
+    mikWindows: Result := CWindowsSvg;
   else
     Result := '';
   end;
@@ -2183,6 +3098,447 @@ begin
         Result.Name := 'zoom-out';
         Result.DisplayName := 'Zoom Out';
         Result.RelativeFileName := 'report-viewer\zoom-out.svg';
+      end;
+    mikFileCheck:
+      begin
+        Result.Category := 'files';
+        Result.Name := 'file-check';
+        Result.DisplayName := 'Arquivo validado';
+        Result.RelativeFileName := 'files\file-check.svg';
+      end;
+    mikFileCode:
+      begin
+        Result.Category := 'files';
+        Result.Name := 'file-code';
+        Result.DisplayName := 'Arquivo código';
+        Result.RelativeFileName := 'files\file-code.svg';
+      end;
+    mikFileExport:
+      begin
+        Result.Category := 'files';
+        Result.Name := 'file-export';
+        Result.DisplayName := 'Exportar arquivo';
+        Result.RelativeFileName := 'files\file-export.svg';
+      end;
+    mikFileImage:
+      begin
+        Result.Category := 'files';
+        Result.Name := 'file-image';
+        Result.DisplayName := 'Arquivo imagem';
+        Result.RelativeFileName := 'files\file-image.svg';
+      end;
+    mikFileJson:
+      begin
+        Result.Category := 'files';
+        Result.Name := 'file-json';
+        Result.DisplayName := 'Arquivo JSON';
+        Result.RelativeFileName := 'files\file-json.svg';
+      end;
+    mikFileLock:
+      begin
+        Result.Category := 'files';
+        Result.Name := 'file-lock';
+        Result.DisplayName := 'Arquivo protegido';
+        Result.RelativeFileName := 'files\file-lock.svg';
+      end;
+    mikFileMinus:
+      begin
+        Result.Category := 'files';
+        Result.Name := 'file-minus';
+        Result.DisplayName := 'Remover arquivo';
+        Result.RelativeFileName := 'files\file-minus.svg';
+      end;
+    mikFilesPdf:
+      begin
+        Result.Category := 'files';
+        Result.Name := 'file-pdf';
+        Result.DisplayName := 'Documento PDF';
+        Result.RelativeFileName := 'files\file-pdf.svg';
+      end;
+    mikFilePlus:
+      begin
+        Result.Category := 'files';
+        Result.Name := 'file-plus';
+        Result.DisplayName := 'Novo arquivo';
+        Result.RelativeFileName := 'files\file-plus.svg';
+      end;
+    mikFileSearch:
+      begin
+        Result.Category := 'files';
+        Result.Name := 'file-search';
+        Result.DisplayName := 'Buscar arquivo';
+        Result.RelativeFileName := 'files\file-search.svg';
+      end;
+    mikFileText:
+      begin
+        Result.Category := 'files';
+        Result.Name := 'file-text';
+        Result.DisplayName := 'Arquivo texto';
+        Result.RelativeFileName := 'files\file-text.svg';
+      end;
+    mikFileWarning:
+      begin
+        Result.Category := 'files';
+        Result.Name := 'file-warning';
+        Result.DisplayName := 'Arquivo com alerta';
+        Result.RelativeFileName := 'files\file-warning.svg';
+      end;
+    mikFileXml:
+      begin
+        Result.Category := 'files';
+        Result.Name := 'file-xml';
+        Result.DisplayName := 'Arquivo XML';
+        Result.RelativeFileName := 'files\file-xml.svg';
+      end;
+    mikFileZip:
+      begin
+        Result.Category := 'files';
+        Result.Name := 'file-zip';
+        Result.DisplayName := 'Arquivo ZIP';
+        Result.RelativeFileName := 'files\file-zip.svg';
+      end;
+    mikFile:
+      begin
+        Result.Category := 'files';
+        Result.Name := 'file';
+        Result.DisplayName := 'Arquivo';
+        Result.RelativeFileName := 'files\file.svg';
+      end;
+    mikFilesStack:
+      begin
+        Result.Category := 'files';
+        Result.Name := 'files-stack';
+        Result.DisplayName := 'Arquivos';
+        Result.RelativeFileName := 'files\files-stack.svg';
+      end;
+    mikDirectorySync:
+      begin
+        Result.Category := 'folders-paths';
+        Result.Name := 'directory-sync';
+        Result.DisplayName := 'Sincronizar diretório';
+        Result.RelativeFileName := 'folders-paths\directory-sync.svg';
+      end;
+    mikDirectoryUp:
+      begin
+        Result.Category := 'folders-paths';
+        Result.Name := 'directory-up';
+        Result.DisplayName := 'Diretório superior';
+        Result.RelativeFileName := 'folders-paths\directory-up.svg';
+      end;
+    mikFolderLock:
+      begin
+        Result.Category := 'folders-paths';
+        Result.Name := 'folder-lock';
+        Result.DisplayName := 'Pasta protegida';
+        Result.RelativeFileName := 'folders-paths\folder-lock.svg';
+      end;
+    mikFolderOpen:
+      begin
+        Result.Category := 'folders-paths';
+        Result.Name := 'folder-open';
+        Result.DisplayName := 'Abrir pasta';
+        Result.RelativeFileName := 'folders-paths\folder-open.svg';
+      end;
+    mikFolderPlus:
+      begin
+        Result.Category := 'folders-paths';
+        Result.Name := 'folder-plus';
+        Result.DisplayName := 'Nova pasta';
+        Result.RelativeFileName := 'folders-paths\folder-plus.svg';
+      end;
+    mikFolderSearch:
+      begin
+        Result.Category := 'folders-paths';
+        Result.Name := 'folder-search';
+        Result.DisplayName := 'Localizar pasta';
+        Result.RelativeFileName := 'folders-paths\folder-search.svg';
+      end;
+    mikFolderTree:
+      begin
+        Result.Category := 'folders-paths';
+        Result.Name := 'folder-tree';
+        Result.DisplayName := 'Árvore de pastas';
+        Result.RelativeFileName := 'folders-paths\folder-tree.svg';
+      end;
+    mikFolder:
+      begin
+        Result.Category := 'folders-paths';
+        Result.Name := 'folder';
+        Result.DisplayName := 'Pasta';
+        Result.RelativeFileName := 'folders-paths\folder.svg';
+      end;
+    mikLinkFile:
+      begin
+        Result.Category := 'folders-paths';
+        Result.Name := 'link-file';
+        Result.DisplayName := 'Vínculo de arquivo';
+        Result.RelativeFileName := 'folders-paths\link-file.svg';
+      end;
+    mikPathAbsolute:
+      begin
+        Result.Category := 'folders-paths';
+        Result.Name := 'path-absolute';
+        Result.DisplayName := 'Caminho absoluto';
+        Result.RelativeFileName := 'folders-paths\path-absolute.svg';
+      end;
+    mikPathBreadcrumb:
+      begin
+        Result.Category := 'folders-paths';
+        Result.Name := 'path-breadcrumb';
+        Result.DisplayName := 'Caminho hierárquico';
+        Result.RelativeFileName := 'folders-paths\path-breadcrumb.svg';
+      end;
+    mikPathRelative:
+      begin
+        Result.Category := 'folders-paths';
+        Result.Name := 'path-relative';
+        Result.DisplayName := 'Caminho relativo';
+        Result.RelativeFileName := 'folders-paths\path-relative.svg';
+      end;
+    mikPathSlash:
+      begin
+        Result.Category := 'folders-paths';
+        Result.Name := 'path-slash';
+        Result.DisplayName := 'Separador de caminho';
+        Result.RelativeFileName := 'folders-paths\path-slash.svg';
+      end;
+    mikPath:
+      begin
+        Result.Category := 'folders-paths';
+        Result.Name := 'path';
+        Result.DisplayName := 'Caminho';
+        Result.RelativeFileName := 'folders-paths\path.svg';
+      end;
+    mikApi:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'api';
+        Result.DisplayName := 'API';
+        Result.RelativeFileName := 'system\api.svg';
+      end;
+    mikArchiveBox:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'archive-box';
+        Result.DisplayName := 'Arquivo morto';
+        Result.RelativeFileName := 'system\archive-box.svg';
+      end;
+    mikBug:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'bug';
+        Result.DisplayName := 'Depuração';
+        Result.RelativeFileName := 'system\bug.svg';
+      end;
+    mikCertificate:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'certificate';
+        Result.DisplayName := 'Certificado';
+        Result.RelativeFileName := 'system\certificate.svg';
+      end;
+    mikClipboardList:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'clipboard-list';
+        Result.DisplayName := 'Lista de tarefas';
+        Result.RelativeFileName := 'system\clipboard-list.svg';
+      end;
+    mikCloudDownload:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'cloud-download';
+        Result.DisplayName := 'Baixar nuvem';
+        Result.RelativeFileName := 'system\cloud-download.svg';
+      end;
+    mikCloudUpload:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'cloud-upload';
+        Result.DisplayName := 'Enviar nuvem';
+        Result.RelativeFileName := 'system\cloud-upload.svg';
+      end;
+    mikCloud:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'cloud';
+        Result.DisplayName := 'Nuvem';
+        Result.RelativeFileName := 'system\cloud.svg';
+      end;
+    mikCodeBrackets:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'code-brackets';
+        Result.DisplayName := 'Código-fonte';
+        Result.RelativeFileName := 'system\code-brackets.svg';
+      end;
+    mikCommandLine:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'command-line';
+        Result.DisplayName := 'Linha de comando';
+        Result.RelativeFileName := 'system\command-line.svg';
+      end;
+    mikComputer:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'computer';
+        Result.DisplayName := 'Computador';
+        Result.RelativeFileName := 'system\computer.svg';
+      end;
+    mikConfig:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'config';
+        Result.DisplayName := 'Configuração';
+        Result.RelativeFileName := 'system\config.svg';
+      end;
+    mikDatabaseBackup:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'database-backup';
+        Result.DisplayName := 'Backup de banco';
+        Result.RelativeFileName := 'system\database-backup.svg';
+      end;
+    mikDatabase:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'database';
+        Result.DisplayName := 'Banco de dados';
+        Result.RelativeFileName := 'system\database.svg';
+      end;
+    mikDll:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'dll';
+        Result.DisplayName := 'Biblioteca DLL';
+        Result.RelativeFileName := 'system\dll.svg';
+      end;
+    mikEnvironment:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'environment';
+        Result.DisplayName := 'Ambiente';
+        Result.RelativeFileName := 'system\environment.svg';
+      end;
+    mikEventLog:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'event-log';
+        Result.DisplayName := 'Log de eventos';
+        Result.RelativeFileName := 'system\event-log.svg';
+      end;
+    mikFirewall:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'firewall';
+        Result.DisplayName := 'Firewall';
+        Result.RelativeFileName := 'system\firewall.svg';
+      end;
+    mikHardDrive:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'hard-drive';
+        Result.DisplayName := 'Disco rígido';
+        Result.RelativeFileName := 'system\hard-drive.svg';
+      end;
+    mikKey:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'key';
+        Result.DisplayName := 'Chave de acesso';
+        Result.RelativeFileName := 'system\key.svg';
+      end;
+    mikLogs:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'logs';
+        Result.DisplayName := 'Logs';
+        Result.RelativeFileName := 'system\logs.svg';
+      end;
+    mikNetwork:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'network';
+        Result.DisplayName := 'Rede';
+        Result.RelativeFileName := 'system\network.svg';
+      end;
+    mikSystemPackage:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'package';
+        Result.DisplayName := 'Pacote';
+        Result.RelativeFileName := 'system\package.svg';
+      end;
+    mikProcess:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'process';
+        Result.DisplayName := 'Processo';
+        Result.RelativeFileName := 'system\process.svg';
+      end;
+    mikRegistry:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'registry';
+        Result.DisplayName := 'Registro do sistema';
+        Result.RelativeFileName := 'system\registry.svg';
+      end;
+    mikScheduler:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'scheduler';
+        Result.DisplayName := 'Agendador';
+        Result.RelativeFileName := 'system\scheduler.svg';
+      end;
+    mikServer:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'server';
+        Result.DisplayName := 'Servidor';
+        Result.RelativeFileName := 'system\server.svg';
+      end;
+    mikService:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'service';
+        Result.DisplayName := 'Serviço';
+        Result.RelativeFileName := 'system\service.svg';
+      end;
+    mikSsd:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'ssd';
+        Result.DisplayName := 'Unidade SSD';
+        Result.RelativeFileName := 'system\ssd.svg';
+      end;
+    mikTerminal:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'terminal';
+        Result.DisplayName := 'Terminal';
+        Result.RelativeFileName := 'system\terminal.svg';
+      end;
+    mikUpdate:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'update';
+        Result.DisplayName := 'Atualização';
+        Result.RelativeFileName := 'system\update.svg';
+      end;
+    mikUsbDrive:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'usb-drive';
+        Result.DisplayName := 'Pendrive';
+        Result.RelativeFileName := 'system\usb-drive.svg';
+      end;
+    mikWindows:
+      begin
+        Result.Category := 'system';
+        Result.Name := 'windows';
+        Result.DisplayName := 'Windows';
+        Result.RelativeFileName := 'system\windows.svg';
       end;
   else
     begin

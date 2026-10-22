@@ -1,12 +1,8 @@
 program DACChartsHighDpi;
 
-uses
-  Vcl.Forms,
+uses DACChartsDemo.Startup in 'DACChartsDemo.Startup.pas',
   DACChartsDemo.Main in 'DACChartsDemo.Main.pas' {ChartsDemoForm};
 
 begin
-  Application.Initialize;
-  Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TChartsDemoForm, ChartsDemoForm);
-  Application.Run;
+  RunChartsDemo;
 end.

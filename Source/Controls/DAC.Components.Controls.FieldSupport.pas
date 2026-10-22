@@ -33,6 +33,31 @@ type
       const AValidation: TDACFieldValidation): TDACResolvedFieldState; static;
   end;
 
+  { Resolved visual chrome for any field. Produced by TDACFieldChromeResolver
+    so every input draws identical border, background and text. }
+  TDACFieldChromeResult = record
+    BorderColor: TAlphaColor;
+    BorderAlpha: Byte;
+    BorderWidth: Single;
+    BackgroundColor: TAlphaColor;
+    BackgroundAlpha: Byte;
+    TextColor: TAlphaColor;
+    IconColor: TAlphaColor;
+    CanFocus: Boolean;
+    CanModify: Boolean;
+  end;
+
+  { Single source of truth for field chrome rendering.
+    Precedence (identical to TDACEdit):
+      1. Disabled  2. Loading  3. ReadOnly
+      4. Validation (border color)  5. Focus (border width)
+      6. Hover  7. Normal }
+  TDACFieldChromeResolver = record
+  public
+    class function Resolve(const AState: TDACResolvedFieldState;
+      const ATokens: TDACControlTokens): TDACFieldChromeResult; static;
+  end;
+
   { Owns only native caption/support. Values stay in native VCL editors and
     chrome stays in Skia. }
   TDACFieldTextSupport = class
@@ -261,6 +286,82 @@ begin
     Result.Content := mfcFilled
   else
     Result.Content := mfcEmpty;
+end;
+
+class function TDACFieldChromeResolver.Resolve(
+  const AState: TDACResolvedFieldState;
+  const ATokens: TDACControlTokens): TDACFieldChromeResult;
+begin
+  { --- Defaults (Normal state) --- }
+  Result.BorderColor := ATokens.InputBorder;
+  Result.BorderAlpha := ATokens.InputBorderAlphaNormal;
+  Result.BorderWidth := ATokens.InputBorderWidth;
+  Result.BackgroundColor := ATokens.InputBackground;
+  Result.BackgroundAlpha := ATokens.InputBackgroundAlpha;
+  Result.TextColor := ATokens.InputText;
+  Result.IconColor := ATokens.InputIcon;
+  Result.CanFocus := True;
+  Result.CanModify := True;
+
+  { --- Precedence 7/6: Hover (lowest visual priority) --- }
+  if AState.Interaction = mfiHover then
+  begin
+    Result.BorderColor := ATokens.InputBorderHover;
+    Result.BorderAlpha := ATokens.InputBorderAlphaHover;
+  end;
+
+  { --- Precedence 5: Focus (sets border width to 2px) --- }
+  if AState.Interaction = mfiFocused then
+  begin
+    Result.BorderColor := ATokens.InputFocus;
+    Result.BorderAlpha := ATokens.InputBorderAlphaFocus;
+    Result.BorderWidth := ATokens.InputFocusBorderWidth;
+  end;
+
+  { --- Precedence 4: Validation (overrides border color, not width) --- }
+  case AState.Validation of
+    mfvSuccess:
+    begin
+      Result.BorderColor := ATokens.InputSuccessBorder;
+      Result.BorderAlpha := ATokens.InputBorderAlphaStatus;
+    end;
+    mfvWarning:
+    begin
+      Result.BorderColor := ATokens.InputWarningBorder;
+      Result.BorderAlpha := ATokens.InputBorderAlphaStatus;
+    end;
+    mfvDanger:
+    begin
+      Result.BorderColor := ATokens.InputDangerBorder;
+      Result.BorderAlpha := ATokens.InputBorderAlphaStatus;
+    end;
+  end;
+
+  { --- Precedence 3: ReadOnly --- }
+  if AState.Availability = mfaReadOnly then
+    Result.CanModify := False;
+
+  { --- Precedence 2: Loading (same visual as disabled, no focus) --- }
+  if AState.Availability = mfaLoading then
+  begin
+    Result.BorderAlpha := ATokens.InputBorderAlphaDisabled;
+    Result.BackgroundColor := ATokens.InputDisabledBackground;
+    Result.TextColor := ATokens.InputDisabledText;
+    Result.IconColor := ATokens.InputIconDisabled;
+    Result.CanFocus := False;
+    Result.CanModify := False;
+  end;
+
+  { --- Precedence 1: Disabled (highest priority) --- }
+  if AState.Availability = mfaDisabled then
+  begin
+    Result.BorderAlpha := ATokens.InputBorderAlphaDisabled;
+    Result.BackgroundColor := ATokens.InputDisabledBackground;
+    Result.TextColor := ATokens.InputDisabledText;
+    Result.IconColor := ATokens.InputIconDisabled;
+    Result.CanFocus := False;
+    Result.CanModify := False;
+  end;
 end;
 
 constructor TDACFieldTextSupport.Create(const AOwner: TComponent;

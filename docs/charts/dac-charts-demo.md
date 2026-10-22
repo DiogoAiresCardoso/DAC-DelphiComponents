@@ -1,4 +1,11 @@
+> **Estado atual — 23/09/2026:** consulte a [consolidação atual](consolidation-2026-09-23.md) para API tipada, validação transacional, espaço do título e evidências posteriores. O conteúdo abaixo preserva sua etapa histórica.
+
 # DAC Charts Demo
+
+> Histórico do demo anterior à galeria reconstruída. Para desenvolvimento e uso
+> atuais, consulte o [manual consolidado](README.md), o [capítulo de operação](manual/07-demo-operacao.md)
+> e o [README do executável](../../demo-charts/README.md). Os cenários e a API descritos
+> abaixo não devem substituir as fixtures e a API Options atuais.
 
 `demo-charts\DACChartsDemo.dproj` e um aplicativo VCL exclusivo para a
 validacao visual de `TDACChart`. Ele nao referencia o Demo principal e nao

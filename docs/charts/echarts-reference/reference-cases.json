@@ -1,0 +1,843 @@
+{
+  "referenceLibrary": "Apache ECharts",
+  "referenceVersion": "6.1.0",
+  "researchedAt": "2026-09-22",
+  "status": "specification_not_executed",
+  "viewport": {
+    "width": 720,
+    "height": 420
+  },
+  "instructions": [
+    "Passar somente case.option para setOption(option, {notMerge: true}).",
+    "Usar tema padrão ECharts, fonte e locale controlados. As expectativas são especificações derivadas, ainda não observadas em execução.",
+    "Coordenadas normalizadas usam o retângulo útil cartesiano. X cresce da esquerda para a direita; Y indicado FromBottom cresce de baixo para cima.",
+    "Propriedades expected e phase pertencem ao roteiro de teste, não à API ECharts."
+  ],
+  "cases": [
+    {
+      "id": "C01",
+      "title": "Barra e linha compartilham categorias",
+      "phase": "core",
+      "option": {
+        "animation": false,
+        "grid": {
+          "left": 80,
+          "right": 40,
+          "top": 40,
+          "bottom": 60,
+          "outerBoundsMode": "none"
+        },
+        "xAxis": {
+          "type": "category",
+          "boundaryGap": true,
+          "data": [
+            "A",
+            "B",
+            "C"
+          ],
+          "axisLabel": {
+            "interval": 0
+          }
+        },
+        "yAxis": {
+          "type": "value",
+          "min": 0,
+          "max": 40
+        },
+        "series": [
+          {
+            "name": "Barra",
+            "type": "bar",
+            "barWidth": 40,
+            "data": [
+              10,
+              20,
+              30
+            ]
+          },
+          {
+            "name": "Linha",
+            "type": "line",
+            "data": [
+              10,
+              20,
+              30
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "categoryCentersNormalized": [
+          0.16666666666666666,
+          0.5,
+          0.8333333333333334
+        ],
+        "sameXForBothSeries": true
+      }
+    },
+    {
+      "id": "C02",
+      "title": "X numérico irregular",
+      "phase": "core",
+      "option": {
+        "animation": false,
+        "grid": {
+          "left": 80,
+          "right": 40,
+          "top": 40,
+          "bottom": 60,
+          "outerBoundsMode": "none"
+        },
+        "xAxis": {
+          "type": "value",
+          "min": 0,
+          "max": 100
+        },
+        "yAxis": {
+          "type": "value",
+          "min": 0,
+          "max": 40
+        },
+        "series": [
+          {
+            "type": "line",
+            "data": [
+              [
+                0,
+                10
+              ],
+              [
+                1,
+                20
+              ],
+              [
+                100,
+                30
+              ]
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "xDomain": [
+          0,
+          100
+        ],
+        "normalizedX": [
+          0,
+          0.01,
+          1
+        ]
+      }
+    },
+    {
+      "id": "C03",
+      "title": "X temporal irregular em UTC",
+      "phase": "core",
+      "option": {
+        "animation": false,
+        "grid": {
+          "left": 80,
+          "right": 40,
+          "top": 40,
+          "bottom": 60,
+          "outerBoundsMode": "none"
+        },
+        "xAxis": {
+          "type": "time",
+          "min": 1767225600000,
+          "max": 1768089600000
+        },
+        "yAxis": {
+          "type": "value",
+          "min": 0,
+          "max": 40
+        },
+        "series": [
+          {
+            "type": "line",
+            "data": [
+              [
+                1767225600000,
+                10
+              ],
+              [
+                1767312000000,
+                20
+              ],
+              [
+                1768089600000,
+                30
+              ]
+            ]
+          }
+        ],
+        "useUTC": true
+      },
+      "expected": {
+        "timestamps": [
+          1767225600000,
+          1767312000000,
+          1768089600000
+        ],
+        "elapsedDays": [
+          0,
+          1,
+          10
+        ],
+        "normalizedX": [
+          0,
+          0.1,
+          1
+        ]
+      }
+    },
+    {
+      "id": "C04",
+      "title": "Limites Y explícitos",
+      "phase": "core",
+      "option": {
+        "animation": false,
+        "grid": {
+          "left": 80,
+          "right": 40,
+          "top": 40,
+          "bottom": 60,
+          "outerBoundsMode": "none"
+        },
+        "xAxis": {
+          "type": "category",
+          "boundaryGap": true,
+          "data": [
+            "A",
+            "B"
+          ],
+          "axisLabel": {
+            "interval": 0
+          }
+        },
+        "yAxis": {
+          "type": "value",
+          "min": 0,
+          "max": 100
+        },
+        "series": [
+          {
+            "type": "line",
+            "data": [
+              20,
+              80
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "yDomain": [
+          0,
+          100
+        ],
+        "normalizedYFromBottom": [
+          0.2,
+          0.8
+        ],
+        "automaticPadding": false
+      }
+    },
+    {
+      "id": "C05",
+      "title": "Duas categorias sem duplicação",
+      "phase": "core",
+      "option": {
+        "animation": false,
+        "grid": {
+          "left": 80,
+          "right": 40,
+          "top": 40,
+          "bottom": 60,
+          "outerBoundsMode": "none"
+        },
+        "xAxis": {
+          "type": "category",
+          "boundaryGap": true,
+          "data": [
+            "A",
+            "B"
+          ],
+          "axisLabel": {
+            "interval": 0
+          }
+        },
+        "yAxis": {
+          "type": "value",
+          "min": 0,
+          "max": 30
+        },
+        "series": [
+          {
+            "type": "bar",
+            "data": [
+              10,
+              20
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "axisLabels": [
+          "A",
+          "B"
+        ],
+        "categoryCentersNormalized": [
+          0.25,
+          0.75
+        ]
+      }
+    },
+    {
+      "id": "C06",
+      "title": "Área interrompida por valor nulo",
+      "phase": "core",
+      "option": {
+        "animation": false,
+        "grid": {
+          "left": 80,
+          "right": 40,
+          "top": 40,
+          "bottom": 60,
+          "outerBoundsMode": "none"
+        },
+        "xAxis": {
+          "type": "category",
+          "boundaryGap": true,
+          "data": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "axisLabel": {
+            "interval": 0
+          }
+        },
+        "yAxis": {
+          "type": "value",
+          "min": 0,
+          "max": 50
+        },
+        "series": [
+          {
+            "type": "line",
+            "areaStyle": {},
+            "connectNulls": false,
+            "data": [
+              10,
+              null,
+              30,
+              40
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "validDataIndices": [
+          0,
+          2,
+          3
+        ],
+        "connectedRuns": [
+          [
+            0
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "bridgeAcrossNull": false,
+        "tooltipMustNotInventZero": true
+      }
+    },
+    {
+      "id": "C07",
+      "title": "Barras positivas e negativas",
+      "phase": "core",
+      "option": {
+        "animation": false,
+        "grid": {
+          "left": 80,
+          "right": 40,
+          "top": 40,
+          "bottom": 60,
+          "outerBoundsMode": "none"
+        },
+        "xAxis": {
+          "type": "category",
+          "boundaryGap": true,
+          "data": [
+            "Negativo",
+            "Zero",
+            "Positivo"
+          ],
+          "axisLabel": {
+            "interval": 0
+          }
+        },
+        "yAxis": {
+          "type": "value",
+          "min": -30,
+          "max": 40
+        },
+        "series": [
+          {
+            "type": "bar",
+            "barMinHeight": 0,
+            "data": [
+              -20,
+              0,
+              30
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "baselineValue": 0,
+        "normalizedBaselineFromBottom": 0.42857142857142855,
+        "normalizedEndpointsFromBottom": [
+          0.14285714285714285,
+          0.42857142857142855,
+          0.8571428571428571
+        ],
+        "zeroBarValueExtent": 0
+      }
+    },
+    {
+      "id": "C08",
+      "title": "Rosca proporcional",
+      "phase": "core",
+      "option": {
+        "animation": false,
+        "tooltip": {
+          "trigger": "item"
+        },
+        "series": [
+          {
+            "type": "pie",
+            "center": [
+              "50%",
+              "50%"
+            ],
+            "radius": [
+              50,
+              100
+            ],
+            "label": {
+              "show": false
+            },
+            "data": [
+              {
+                "name": "A",
+                "value": 10
+              },
+              {
+                "name": "B",
+                "value": 30
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "radiiPixels": [
+          50,
+          100
+        ],
+        "sectorAnglesDegrees": [
+          90,
+          270
+        ],
+        "centerHit": false
+      }
+    },
+    {
+      "id": "C09",
+      "title": "Pizza soma zero com default oficial",
+      "phase": "core",
+      "option": {
+        "animation": false,
+        "series": [
+          {
+            "type": "pie",
+            "radius": 100,
+            "label": {
+              "show": false
+            },
+            "data": [
+              {
+                "name": "A",
+                "value": 0
+              },
+              {
+                "name": "B",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "resolvedStillShowZeroSum": true,
+        "sectorAnglesDegrees": [
+          180,
+          180
+        ],
+        "rawValues": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "C10",
+      "title": "Pizza soma zero sem setores fictícios",
+      "phase": "core",
+      "option": {
+        "animation": false,
+        "series": [
+          {
+            "type": "pie",
+            "radius": 100,
+            "stillShowZeroSum": false,
+            "showEmptyCircle": false,
+            "label": {
+              "show": false
+            },
+            "data": [
+              {
+                "name": "A",
+                "value": 0
+              },
+              {
+                "name": "B",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "sectorAnglesDegrees": [
+          0,
+          0
+        ],
+        "visibleProportionalSectors": 0,
+        "rawValues": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "C11",
+      "title": "Dataset orientado por colunas",
+      "phase": "core",
+      "option": {
+        "animation": false,
+        "grid": {
+          "left": 80,
+          "right": 40,
+          "top": 40,
+          "bottom": 60,
+          "outerBoundsMode": "none"
+        },
+        "xAxis": {
+          "type": "category",
+          "boundaryGap": true
+        },
+        "yAxis": {
+          "type": "value",
+          "min": 0,
+          "max": 40
+        },
+        "series": [
+          {
+            "type": "bar",
+            "name": "Realizado",
+            "seriesLayoutBy": "column",
+            "encode": {
+              "x": "MES",
+              "y": "REAL"
+            }
+          },
+          {
+            "type": "line",
+            "name": "Meta",
+            "seriesLayoutBy": "column",
+            "encode": {
+              "x": "MES",
+              "y": "META"
+            }
+          }
+        ],
+        "dataset": {
+          "dimensions": [
+            {
+              "name": "MES",
+              "type": "ordinal"
+            },
+            {
+              "name": "REAL",
+              "type": "float"
+            },
+            {
+              "name": "META",
+              "type": "float"
+            }
+          ],
+          "source": [
+            [
+              "Jan",
+              10,
+              15
+            ],
+            [
+              "Fev",
+              20,
+              25
+            ],
+            [
+              "Mar",
+              30,
+              35
+            ]
+          ]
+        }
+      },
+      "expected": {
+        "categories": [
+          "Jan",
+          "Fev",
+          "Mar"
+        ],
+        "seriesValues": {
+          "Realizado": [
+            10,
+            20,
+            30
+          ],
+          "Meta": [
+            15,
+            25,
+            35
+          ]
+        }
+      }
+    },
+    {
+      "id": "C12",
+      "title": "Dataset orientado por linhas",
+      "phase": "core",
+      "option": {
+        "animation": false,
+        "grid": {
+          "left": 80,
+          "right": 40,
+          "top": 40,
+          "bottom": 60,
+          "outerBoundsMode": "none"
+        },
+        "xAxis": {
+          "type": "category",
+          "boundaryGap": true
+        },
+        "yAxis": {
+          "type": "value",
+          "min": 0,
+          "max": 40
+        },
+        "series": [
+          {
+            "type": "bar",
+            "seriesLayoutBy": "row"
+          },
+          {
+            "type": "line",
+            "seriesLayoutBy": "row"
+          }
+        ],
+        "dataset": {
+          "sourceHeader": true,
+          "source": [
+            [
+              "Produto",
+              "Jan",
+              "Fev",
+              "Mar"
+            ],
+            [
+              "Realizado",
+              10,
+              20,
+              30
+            ],
+            [
+              "Meta",
+              15,
+              25,
+              35
+            ]
+          ]
+        }
+      },
+      "expected": {
+        "categories": [
+          "Jan",
+          "Fev",
+          "Mar"
+        ],
+        "seriesNames": [
+          "Realizado",
+          "Meta"
+        ],
+        "seriesValues": {
+          "Realizado": [
+            10,
+            20,
+            30
+          ],
+          "Meta": [
+            15,
+            25,
+            35
+          ]
+        },
+        "encodeResolution": "Mapeamento automático de dimensões, conforme dataset/seriesLayoutBy."
+      }
+    },
+    {
+      "id": "C13",
+      "title": "Empilhamento mantém sinais separados",
+      "phase": "extension",
+      "option": {
+        "animation": false,
+        "grid": {
+          "left": 80,
+          "right": 40,
+          "top": 40,
+          "bottom": 60,
+          "outerBoundsMode": "none"
+        },
+        "xAxis": {
+          "type": "category",
+          "boundaryGap": true,
+          "data": [
+            "A",
+            "B"
+          ],
+          "axisLabel": {
+            "interval": 0
+          }
+        },
+        "yAxis": {
+          "type": "value",
+          "min": -12,
+          "max": 20
+        },
+        "series": [
+          {
+            "name": "S1",
+            "type": "bar",
+            "stack": "total",
+            "stackStrategy": "samesign",
+            "data": [
+              10,
+              -4
+            ]
+          },
+          {
+            "name": "S2",
+            "type": "bar",
+            "stack": "total",
+            "stackStrategy": "samesign",
+            "data": [
+              5,
+              -6
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "firstSeriesBaseline": [
+          0,
+          0
+        ],
+        "secondSeriesBaseline": [
+          10,
+          -4
+        ],
+        "secondSeriesEndpoints": [
+          15,
+          -10
+        ],
+        "rawValuesUnchanged": true
+      }
+    },
+    {
+      "id": "C14",
+      "title": "Barras horizontais",
+      "phase": "extension",
+      "option": {
+        "animation": false,
+        "grid": {
+          "left": 80,
+          "right": 40,
+          "top": 40,
+          "bottom": 60,
+          "outerBoundsMode": "none"
+        },
+        "xAxis": {
+          "type": "value",
+          "min": 0,
+          "max": 40
+        },
+        "yAxis": {
+          "type": "category",
+          "boundaryGap": true,
+          "data": [
+            "A",
+            "B",
+            "C"
+          ],
+          "axisLabel": {
+            "interval": 0
+          }
+        },
+        "series": [
+          {
+            "type": "bar",
+            "data": [
+              10,
+              20,
+              30
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "xDomain": [
+          0,
+          40
+        ],
+        "normalizedValueEndpoints": [
+          0.25,
+          0.5,
+          0.75
+        ],
+        "categoryCentersFromBottom": [
+          0.16666666666666666,
+          0.5,
+          0.8333333333333334
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+**********************************************************************
+*        DUnitX - (c) 2015 Vincent Parrett & Contributors            *
+*                    vincent@finalbuilder.com                        *
+*                                                                    *
+*        License - http://www.apache.org/licenses/LICENSE-2.0        *
+**********************************************************************
+
+DUnitX - [ApiTestes.exe] - Starting Tests.
+
+.TRACE before-focus left=0 c0=900 c1=196 rect=0:623 width=623
+TRACE after-leftcol left=0 rect=0:623
+TRACE after-actioncell left=0
+TRACE focus mode=TRUE left=0 raw=1 row=1
+TRACE key=27 mode=TRUE left=0
+TRACE message-down left=0
+TRACE down x=46 y=58 col=0 cellrow=1 row=1 left=0
+F
+
+Tests Found   : 1
+Tests Ignored : 0
+Tests Passed  : 0
+Tests Leaked  : 0
+Tests Failed  : 1
+Tests Errored : 0
+
+Failing Tests
+
+  Teste.MovimentoBancario.AcoesGrid.TMovimentoBancarioAcoesGridTests.SelecaoPorLinhaPreservaRolagemHorizontalEAcessoPorF2
+  Message: Expected 1 but got 0 Clique deslocou o viewport antes de soltar.
+
+

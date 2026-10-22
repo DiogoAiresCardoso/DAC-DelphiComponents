@@ -1,14 +1,10 @@
 program DACChartsDemo;
 
-uses
-  Vcl.Forms,
+uses DACChartsDemo.Startup in 'DACChartsDemo.Startup.pas',
   DACChartsDemo.Main in 'DACChartsDemo.Main.pas' {ChartsDemoForm};
 
 {$R *.res}
 
 begin
-  Application.Initialize;
-  Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TChartsDemoForm, ChartsDemoForm);
-  Application.Run;
+  RunChartsDemo;
 end.

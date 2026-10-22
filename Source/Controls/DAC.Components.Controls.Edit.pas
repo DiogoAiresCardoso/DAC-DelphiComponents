@@ -122,6 +122,8 @@ type
     procedure InvalidateParentRegion(const ABounds: TRect);
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
+    procedure PaintBoxMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
     function Pixels(const AValue: Integer): Integer;
     procedure SetCharCase(const AValue: TEditCharCase);
     procedure SetCornerRadius(const AValue: Integer);
@@ -153,11 +155,20 @@ type
     procedure WMSetFocus(var AMessage: TWMSetFocus); message WM_SETFOCUS;
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
   protected
+    { Descendants that specialize the native TMaskEdit value (for example,
+      TDACDateTimePicker) may synchronize their semantic state before the
+      public OnChange event is emitted.  The base editor remains the sole
+      owner of caret, IME, clipboard and notification ordering. }
+    procedure Change; virtual;
     procedure CreateWnd; override;
     procedure Loaded; override;
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
     procedure Resize; override;
     procedure SetBindingCanModify(const AValue: Boolean);
+    { Composite fields such as TDACButtonEdit may cover part of the edit with
+      an action child. Keep the canonical edit responsible for the hover
+      chrome even when the pointer entered through that child. }
+    procedure SetCompositeMouseInside(const AValue: Boolean);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -173,6 +184,9 @@ type
     property NativeLabel: TLabel read FNativeLabel;
     property RightContentReserve: Integer read FRightContentReserve
       write SetRightContentReserve;
+{$IFDEF DAC_TESTING}
+    property DesignValueLabel: TLabel read FDesignValueLabel;
+{$ENDIF}
   published
     property Align;
     property Anchors;
@@ -267,6 +281,7 @@ begin
   FPaintBox.StyleElements := [];
   FPaintBox.Cursor := crIBeam;
   FPaintBox.OnDraw := PaintBoxDraw;
+  FPaintBox.OnMouseDown := PaintBoxMouseDown;
   FPaintBox.OnMouseEnter := DoMouseEnter;
   FPaintBox.OnMouseLeave := DoMouseLeave;
 
@@ -420,11 +435,16 @@ begin
   Redraw;
 end;
 
-procedure TDACEdit.DoEditChange(Sender: TObject);
+procedure TDACEdit.Change;
 begin
   Redraw;
   if Assigned(OnChange) then
     OnChange(Self);
+end;
+
+procedure TDACEdit.DoEditChange(Sender: TObject);
+begin
+  Change;
 end;
 
 procedure TDACEdit.DoEditEnter(Sender: TObject);
@@ -763,7 +783,10 @@ begin
     { Invalidate preserves TSkPaintBox's raster cache. A theme inherited from
       a parent container therefore needs Redraw to discard the old light/dark
       chrome while keeping the native text preview untouched. }
-    FPaintBox.Redraw;
+    if (Parent <> nil) and HandleAllocated and Parent.HandleAllocated then
+      FPaintBox.Redraw
+    else
+      FPaintBox.Invalidate;
     Invalidate;
     Exit;
   end;
@@ -1013,6 +1036,30 @@ begin
   FBindingCanModify := AValue;
   UpdateEditStyle;
   InvalidateChrome;
+end;
+
+procedure TDACEdit.PaintBoxMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if csDesigning in ComponentState then
+    Exit;
+  { TSkPaintBox is a graphic child and therefore wins VCL mouse routing over
+    the host border. Forward the physical click to the canonical field so the
+    native editor receives focus even outside its text rectangle. }
+  if Sender is TControl then
+  begin
+    Inc(X, TControl(Sender).Left);
+    Inc(Y, TControl(Sender).Top);
+  end;
+  MouseDown(Button, Shift, X, Y);
+end;
+
+procedure TDACEdit.SetCompositeMouseInside(const AValue: Boolean);
+begin
+  if FMouseInside = AValue then
+    Exit;
+  FMouseInside := AValue;
+  Redraw;
 end;
 
 procedure TDACEdit.SetRequired(const AValue: Boolean);
@@ -1291,8 +1338,26 @@ begin
 end;
 
 procedure TDACEdit.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+var
+  LBrush: HBRUSH;
+  LColor: TColor;
 begin
-  inherited;
+  { The wrapper is intentionally non-opaque because its native labels and
+    support rows live outside the Skia chrome. Do not delegate the erase to a
+    Skia-painted TDACContainer: that path exposes the container's own parent
+    surface and creates a rectangular halo behind the field. The shared
+    resolver gives TDACContainer.BackgroundColor precedence over its VCL Color
+    compatibility value and performs the required alpha composition, yielding
+    exactly the pixels that must appear behind this host in design-time and
+    runtime. }
+  LColor := EditVclColor(TDACComponentColors.ResolveParentSurface(Self));
+  LBrush := CreateSolidBrush(ColorToRGB(LColor));
+  try
+    FillRect(AMessage.DC, ClientRect, LBrush);
+  finally
+    DeleteObject(LBrush);
+  end;
+  AMessage.Result := 1;
 end;
 
 procedure TDACEdit.WMSetFocus(var AMessage: TWMSetFocus);

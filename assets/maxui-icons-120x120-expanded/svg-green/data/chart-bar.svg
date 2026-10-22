@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Gráfico de barras" style="color:#2F9E22">
+  <g stroke="#2F9E22" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="20" y1="100" x2="104" y2="100"/><line x1="20" y1="100" x2="20" y2="20"/><rect x="34" y="66" width="14" height="34" rx="2"/><rect x="56" y="46" width="14" height="54" rx="2"/><rect x="78" y="28" width="14" height="72" rx="2"/>
+  </g>
+</svg>

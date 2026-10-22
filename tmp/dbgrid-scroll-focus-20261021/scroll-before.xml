@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<test-results name="M:\MaxxSoft\MaxxRural\Desktop\maxxrural\EXE\ApiTestes.exe" total="40" errors="0" failures="6" ignored="0" inconclusive="0" not-run="0" skipped="0" invalid="0" date="2026-10-21" time="15.202">
+  <culture-info current-culture="en" current-uiculture="en" />
+  <test-suite type="Assembly" name="ApiTestes.exe" executed="true" result="Failure" success="False" time="15.202" asserts="0">
+    <results>
+        <test-suite type="Namespace" name="Teste" executed="true" result="Failure" success="False" time="15.202" asserts="0" >
+          <results>
+              <test-suite type="Fixture" name="TMovimentoBancarioColunasGridTests" executed="True" result="Failure" success="False" time="15.202" >
+                <results>
+                  <test-case name="ScrollRecompoeCliente.claro96" executed="True" result="Failure" success="False" time="1.946" asserts="0" >
+                    <failure>
+                      <message>
+                        <![CDATA[ Expected 0 but got 265 Pixels residuais apos scroll passo 6 PPI 96 tema 1 maior 0 ]]>
+                      </message>
+                      <stack-trace>
+                        <![CDATA[  ]]>
+                      </stack-trace>
+                    </failure>
+                  </test-case>
+                  <test-case name="ScrollRecompoeCliente.escuro96" executed="True" result="Failure" success="False" time="1.979" asserts="0" >
+                    <failure>
+                      <message>
+                        <![CDATA[ Expected 0 but got 265 Pixels residuais apos scroll passo 6 PPI 96 tema 0 maior 0 ]]>
+                      </message>
+                      <stack-trace>
+                        <![CDATA[  ]]>
+                      </stack-trace>
+                    </failure>
+                  </test-case>
+                  <test-case name="ScrollRecompoeCliente.claro144" executed="True" result="Failure" success="False" time="1.970" asserts="0" >
+                    <failure>
+                      <message>
+                        <![CDATA[ Expected 0 but got 4 Pixels residuais apos scroll passo 2 PPI 144 tema 1 maior 0 ]]>
+                      </message>
+                      <stack-trace>
+                        <![CDATA[  ]]>
+                      </stack-trace>
+                    </failure>
+                  </test-case>
+                  <test-case name="ScrollRecompoeCliente.escuro144" executed="True" result="Failure" success="False" time="1.943" asserts="0" >
+                    <failure>
+                      <message>
+                        <![CDATA[ Expected 0 but got 9 Pixels residuais apos scroll passo 2 PPI 144 tema 0 maior 0 ]]>
+                      </message>
+                      <stack-trace>
+                        <![CDATA[  ]]>
+                      </stack-trace>
+                    </failure>
+                  </test-case>
+                  <test-case name="ScrollRecompoeCliente.colunaMaiorClaro" executed="True" result="Failure" success="False" time="1.958" asserts="0" >
+                    <failure>
+                      <message>
+                        <![CDATA[ Expected 0 but got 265 Pixels residuais apos scroll passo 6 PPI 96 tema 1 maior 1 ]]>
+                      </message>
+                      <stack-trace>
+                        <![CDATA[  ]]>
+                      </stack-trace>
+                    </failure>
+                  </test-case>
+                  <test-case name="ScrollRecompoeCliente.colunaMaiorEscuro" executed="True" result="Failure" success="False" time="1.954" asserts="0" >
+                    <failure>
+                      <message>
+                        <![CDATA[ Expected 0 but got 265 Pixels residuais apos scroll passo 6 PPI 96 tema 0 maior 1 ]]>
+                      </message>
+                      <stack-trace>
+                        <![CDATA[  ]]>
+                      </stack-trace>
+                    </failure>
+                  </test-case>
+                  <test-case name="NumerosNulosNegativosRepetidosEIdentidade" executed="True" result="Success" success="True" time="0.017" asserts="0" />
+                  <test-case name="DatasOrdenadasPorValor" executed="True" result="Success" success="True" time="0.006" asserts="0" />
+                  <test-case name="DecimaisMantemPrecisao" executed="True" result="Success" success="True" time="0.010" asserts="0" />
+                  <test-case name="TextosAcentuadosECodigosComZeros" executed="True" result="Success" success="True" time="0.107" asserts="0" />
+                  <test-case name="CabecalhoAlternaUmaVezEIgnoraOpcoes" executed="True" result="Success" success="True" time="0.083" asserts="0" />
+                  <test-case name="ArrastarERedimensionarNaoOrdenam" executed="True" result="Success" success="True" time="0.019" asserts="0" />
+                  <test-case name="ArrastarColunaMantemCampoOrdenado" executed="True" result="Success" success="True" time="0.029" asserts="0" />
+                  <test-case name="OrdenacaoPorTecladoEPedidoRecusado" executed="True" result="Success" success="True" time="0.010" asserts="0" />
+                  <test-case name="DatasetFechadoVazioSubstituidoELoading" executed="True" result="Success" success="True" time="0.011" asserts="0" />
+                  <test-case name="AlterarCampoOuRemoverColunaLimpaIndicador" executed="True" result="Success" success="True" time="0.005" asserts="0" />
+                  <test-case name="LayoutRestauraDadosEIdentidade" executed="True" result="Success" success="True" time="0.031" asserts="0" />
+                  <test-case name="ResetPreservaOrdenacaoInicial" executed="True" result="Success" success="True" time="0.021" asserts="0" />
+                  <test-case name="CarregarNaoSobrescreveComAutosavePendente" executed="True" result="Success" success="True" time="0.023" asserts="0" />
+                  <test-case name="LayoutAntigoEStruturaComNovasColunas" executed="True" result="Success" success="True" time="0.029" asserts="0" />
+                  <test-case name="LayoutNaoReutilizaOrdenacaoDeOutroCampo" executed="True" result="Success" success="True" time="0.010" asserts="0" />
+                  <test-case name="OcultacaoMinimoERestauracao" executed="True" result="Success" success="True" time="0.016" asserts="0" />
+                  <test-case name="LayoutMantemLarguraLogicaEntreEscalas" executed="True" result="Success" success="True" time="0.061" asserts="0" />
+                  <test-case name="FocoPorCelulaPermaneceDuranteHover" executed="True" result="Success" success="True" time="0.013" asserts="0" />
+                  <test-case name="AssignEStreamingAntigoENovo" executed="True" result="Success" success="True" time="0.009" asserts="0" />
+                  <test-case name="DicasDeCabecalhoCelulaEBotao" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="HoverNaoRepintaNoMesmoPontoELimpaCursor" executed="True" result="Success" success="True" time="0.043" asserts="0" />
+                  <test-case name="HoverAcompanhaMovimentoLarguraERolagem" executed="True" result="Success" success="True" time="0.014" asserts="0" />
+                  <test-case name="AcoesDepoisDeOrdenarMoverERolar" executed="True" result="Success" success="True" time="0.014" asserts="0" />
+                  <test-case name="RenderizaHoverSelecaoEFoco.claro96" executed="True" result="Success" success="True" time="0.073" asserts="0" />
+                  <test-case name="RenderizaHoverSelecaoEFoco.escuro96" executed="True" result="Success" success="True" time="0.074" asserts="0" />
+                  <test-case name="RenderizaHoverSelecaoEFoco.claro120" executed="True" result="Success" success="True" time="0.120" asserts="0" />
+                  <test-case name="RenderizaHoverSelecaoEFoco.escuro120" executed="True" result="Success" success="True" time="0.087" asserts="0" />
+                  <test-case name="RenderizaHoverSelecaoEFoco.claro144" executed="True" result="Success" success="True" time="0.117" asserts="0" />
+                  <test-case name="RenderizaHoverSelecaoEFoco.escuro144" executed="True" result="Success" success="True" time="0.115" asserts="0" />
+                  <test-case name="RenderizaHoverSelecaoEFoco.claro192" executed="True" result="Success" success="True" time="0.174" asserts="0" />
+                  <test-case name="RenderizaHoverSelecaoEFoco.escuro192" executed="True" result="Success" success="True" time="0.147" asserts="0" />
+                  <test-case name="TresGridsDFMOrdenamEAcionam.Prontos" executed="True" result="Success" success="True" time="0.030" asserts="0" />
+                  <test-case name="TresGridsDFMOrdenamEAcionam.Conciliar" executed="True" result="Success" success="True" time="0.028" asserts="0" />
+                  <test-case name="TresGridsDFMOrdenamEAcionam.Importados" executed="True" result="Success" success="True" time="0.032" asserts="0" />
+                </results>
+              </test-suite>
+          </results>
+        </test-suite>
+    </results>
+  </test-suite>
+</test-results>

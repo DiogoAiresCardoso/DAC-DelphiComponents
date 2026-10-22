@@ -86,6 +86,9 @@ type
     SummaryCardBadgeAlpha: Byte;
     ScrollContainerRadius: Single;
     ScrollContainerBorderWidth: Single;
+    ScrollBarTrackThickness: Single;
+    ScrollBarThumbThickness: Single;
+    ScrollBarTrackRadius: Single;
     ScrollBarThumbRadius: Single;
     ScrollBarBorderWidth: Single;
     ScrollBarArrowStrokeWidth: Single;
@@ -273,6 +276,8 @@ type
     ScrollBarThumb: TAlphaColor;
     ScrollBarThumbHot: TAlphaColor;
     ScrollBarThumbPressed: TAlphaColor;
+    ScrollBarThumbDisabled: TAlphaColor;
+    ScrollBarFocusRing: TAlphaColor;
     ScrollBarArrow: TAlphaColor;
     ScrollBarBorder: TAlphaColor;
   end;

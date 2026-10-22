@@ -1,0 +1,10 @@
+{
+  "cardTests": "PASS: tmp/cards-fonts-20261020/tests.log",
+  "lifecycleCurrent": "FAIL: Lifecycle deixou saldo de objetos USER.",
+  "lifecyclePrevious": "FAIL: Lifecycle deixou saldo de objetos USER.",
+  "previousExecutable": "M:\\Delphi Componentes\\DAC-DelphiComponents\\tmp\\tabs-fix-20261019\\DACComponentsDesignLifecycle-exe\\DACComponentsDesignLifecycle.Current.exe",
+  "previousHash": "D05B6B7E17B9279AEF677E0A7887CAAB89D1B30CCC532A397409B4982C0BCE87",
+  "currentExecutable": "M:\\Delphi Componentes\\DAC-DelphiComponents\\tmp\\cards-fonts-20261020\\DACComponentsDesignLifecycle-exe\\DACComponentsDesignLifecycle.Current.exe",
+  "currentHash": "095394FA93384FB248E5D43D491A2BB31358067E6E966093164CFBF0633C3F59",
+  "lifecycleInstantiatesSummaryCard": false
+}

@@ -1,7 +1,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ProjectGuid>{F0A75257-FD12-4A5A-A340-3FD93B4B7261}</ProjectGuid>
-    <MainSource>DACDemoStartup.dpr</MainSource>
+    <MainSource>DACDemoStartup.Current.dpr</MainSource>
     <ProjectVersion>18.3</ProjectVersion>
     <FrameworkType>VCL</FrameworkType>
     <Config Condition="'$(Config)'==''">Debug</Config>
@@ -33,7 +33,7 @@
   </ItemGroup>
   <ProjectExtensions>
     <Borland.Personality>Delphi.Personality.12</Borland.Personality>
-    <BorlandProject><Delphi.Personality><Source><Source Name="MainSource">DACDemoStartup.dpr</Source></Source></Delphi.Personality><Platforms><Platform value="Win32">True</Platform></Platforms></BorlandProject>
+    <BorlandProject><Delphi.Personality><Source><Source Name="MainSource">DACDemoStartup.Current.dpr</Source></Source></Delphi.Personality><Platforms><Platform value="Win32">True</Platform></Platforms></BorlandProject>
   </ProjectExtensions>
   <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
   <PropertyGroup><BuildDependsOn>$(BuildDependsOn);CopySkiaRuntimeForDemoStartup</BuildDependsOn></PropertyGroup>

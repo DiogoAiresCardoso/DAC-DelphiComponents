@@ -73,8 +73,6 @@ type
     FText: string;
     FVariant: TDACInputVariant;
     FStyle: TComboBoxStyle;
-    function BorderAlpha: Byte;
-    function BorderColor: TAlphaColor;
     function CanModifyValue: Boolean;
     procedure AttachComboToHost;
     function CanUpdateChildren: Boolean;
@@ -484,54 +482,6 @@ begin
   FBackgroundPainter.Free;
   FRenderer.Free;
   inherited;
-end;
-
-function TDACComboBox.BorderAlpha: Byte;
-var
-  LTokens: TDACControlTokens;
-begin
-  LTokens := ResolvedTokens;
-  if FVariant = mivUnderlined then
-  begin
-    if NativeFocused or DropDownVisible or (FStatus <> mesNormal) then
-      Exit(LTokens.ComboBoxUnderlinedBorderAlphaFocus);
-    if FMouseInside then
-      Exit(LTokens.ComboBoxUnderlinedBorderAlphaHover);
-    Exit(LTokens.ComboBoxUnderlinedBorderAlphaNormal);
-  end;
-
-  if not Enabled or FLoading then
-    Result := LTokens.ComboBoxBorderAlphaDisabled
-  else if NativeFocused or DropDownVisible then
-    Result := LTokens.ComboBoxBorderAlphaFocus
-  else if FStatus <> mesNormal then
-    Result := LTokens.ComboBoxBorderAlphaStatus
-  else if FMouseInside then
-    Result := LTokens.ComboBoxBorderAlphaHover
-  else
-    Result := LTokens.ComboBoxBorderAlphaNormal;
-end;
-
-function TDACComboBox.BorderColor: TAlphaColor;
-var
-  LTokens: TDACControlTokens;
-begin
-  LTokens := ResolvedTokens;
-  case FStatus of
-    mesSuccess:
-      Result := LTokens.ComboBoxSuccessBorder;
-    mesWarning:
-      Result := LTokens.ComboBoxWarningBorder;
-    mesDanger:
-      Result := LTokens.ComboBoxDangerBorder;
-  else
-    if NativeFocused or DropDownVisible then
-      Result := LTokens.ComboBoxFocusBorder
-    else if FMouseInside then
-      Result := LTokens.ComboBoxBorderHover
-    else
-      Result := LTokens.ComboBoxBorder;
-  end;
 end;
 
 function TDACComboBox.CanModifyValue: Boolean;
@@ -1057,6 +1007,7 @@ var
   LBackground: TDACBackgroundStyle;
   LBorder: TDACBorderStyle;
   LBorderRect: TRectF;
+  LChrome: TDACFieldChromeResult;
   LControlBottom: Single;
   LIconStyle: TDACIconStyle;
   LRect: TRectF;
@@ -1070,29 +1021,20 @@ begin
   LTop := 0;
   LControlBottom := Min(ADest.Height, ControlHeight);
   LBorderRect := FRenderer.SnapRect(TRectF.Create(0, LTop, ADest.Width,
-    LControlBottom), ResolvedTokens.ComboBoxBorderSnapScale);
+    LControlBottom), 1);
   LRect := LBorderRect;
-  LRect.Inflate(-ResolvedTokens.ComboBoxBorderInset,
-    -ResolvedTokens.ComboBoxBorderInset);
+  LRect.Inflate(-ResolvedTokens.InputBorderInset,
+    -ResolvedTokens.InputBorderInset);
 
   LSurface := ParentSurfaceColor;
   LTokens := ResolvedTokens;
+  LChrome := TDACFieldChromeResolver.Resolve(ResolvedFieldState, LTokens);
   ACanvas.Clear(LSurface);
 
-  LBorder.Color := BorderColor;
+  LBorder.Color := LChrome.BorderColor;
   LBorder.Radius := FCornerRadius;
-  LBorder.Width := LTokens.ComboBoxBorderWidth;
-  if NativeFocused or DropDownVisible then
-    LBorder.Width := LTokens.ComboBoxFocusBorderWidth;
-  LBorder.Alpha := BorderAlpha;
-  if csDesigning in ComponentState then
-  begin
-    { Delphi's design surface is also light. The runtime normal stroke is
-      intentionally subtle, but the non-interactive preview needs a fully
-      legible chrome boundary. }
-    LBorder.Color := LTokens.ComboBoxBorderHover;
-    LBorder.Alpha := DACOpacityOpaque;
-  end;
+  LBorder.Width := LChrome.BorderWidth;
+  LBorder.Alpha := LChrome.BorderAlpha;
   if FVariant = mivUnderlined then
   begin
     FRenderer.StrokeRoundRect(ACanvas,
@@ -1101,11 +1043,9 @@ begin
   end
   else
   begin
-    LBackground.Color := LTokens.ComboBoxBackground;
-    if not Enabled or FLoading then
-      LBackground.Color := LTokens.ComboBoxDisabledBackground;
+    LBackground.Color := LChrome.BackgroundColor;
     LBackground.Radius := FCornerRadius;
-    LBackground.Alpha := LTokens.ComboBoxBackgroundAlpha;
+    LBackground.Alpha := LChrome.BackgroundAlpha;
     FBackgroundPainter.Draw(ACanvas, LRect, LBackground);
     FBorderPainter.Draw(ACanvas, LBorderRect, LBorder);
   end;
@@ -1114,9 +1054,7 @@ begin
     LRect.Top + (LRect.Height - Pixels(Round(LTokens.ComboBoxIconSize))) / 2,
     LRect.Right - Pixels(Round(LTokens.ComboBoxIconRightInset)),
     LRect.Top + (LRect.Height + Pixels(Round(LTokens.ComboBoxIconSize))) / 2);
-  LIconStyle.Color := LTokens.ComboBoxIcon;
-  if not Enabled or FLoading then
-    LIconStyle.Color := LTokens.ComboBoxIconDisabled;
+  LIconStyle.Color := LChrome.IconColor;
   LIconStyle.Alpha := LTokens.ComboBoxIconAlpha;
   if FLoading then
     FIconPainter.Draw(ACanvas, LArrowRect, mikRefresh, LIconStyle)
@@ -1612,14 +1550,9 @@ begin
     FDesignValueLabel.Visible := False;
 
   LTokens := ResolvedTokens;
-  LHorizontalPadding := Pixels(Round(LTokens.ComboBoxNativeHorizontalPadding));
+  LHorizontalPadding := Pixels(Round(LTokens.InputNativeHorizontalPadding));
   LInputHeight := Min(ControlHeight, Max(0, Height - ChromeTop));
-  case FInputSize of
-    misSmall: LTextHeight := Pixels(Round(LTokens.ComboBoxSmallEditorHeight));
-    misLarge: LTextHeight := Pixels(Round(LTokens.ComboBoxLargeEditorHeight));
-  else
-    LTextHeight := Pixels(Round(LTokens.ComboBoxMediumEditorHeight));
-  end;
+  LTextHeight := Pixels(Round(LTokens.InputSmallEditorHeight));
   LTextHeight := Min(LInputHeight, LTextHeight);
   LTop := ChromeTop + Max(0, (LInputHeight - LTextHeight) div 2) +
     Pixels(Round(LTokens.InputNativeVerticalOffset));
@@ -1671,6 +1604,7 @@ end;
 
 procedure TDACComboBox.UpdateComboStyle;
 var
+  LChrome: TDACFieldChromeResult;
   LTokens: TDACControlTokens;
   LTextColor: TColor;
 begin
@@ -1688,6 +1622,7 @@ begin
     Exit;
 
   LTokens := ResolvedTokens;
+  LChrome := TDACFieldChromeResolver.Resolve(ResolvedFieldState, LTokens);
   FCombo.Enabled := Enabled and not FLoading;
   TDACNativeComboBox(FCombo).InteractionLocked :=
     not CanModifyValue;
@@ -1697,15 +1632,11 @@ begin
   if FVariant = mivUnderlined then
     FCombo.Color := ComboBoxVclColor(LTokens.ComboBoxUnderlinedBackground)
   else
-    FCombo.Color := ComboBoxVclColor(LTokens.ComboBoxBackground);
-  if not Enabled or FLoading then
-    FCombo.Color := ComboBoxVclColor(LTokens.ComboBoxDisabledBackground);
+    FCombo.Color := ComboBoxVclColor(LChrome.BackgroundColor);
   FCombo.Font.Name := TDACComponentFontInstaller.FontFamily;
   FCombo.Font.Size := InputFontSize;
   FCombo.Font.Style := [];
-  LTextColor := ComboBoxVclColor(LTokens.ComboBoxText);
-  if not Enabled or FLoading then
-    LTextColor := ComboBoxVclColor(LTokens.ComboBoxDisabledText);
+  LTextColor := ComboBoxVclColor(LChrome.TextColor);
   FCombo.Font.Color := LTextColor;
   { A native TComboBox can renegotiate its effective height after Font
     changes. Recenter that final height in the shared input chrome. }
@@ -1720,6 +1651,7 @@ end;
 
 procedure TDACComboBox.UpdateDesignValuePreview;
 var
+  LChrome: TDACFieldChromeResult;
   LHorizontalPadding: Integer;
   LInputHeight: Integer;
   LTextHeight: Integer;
@@ -1736,6 +1668,7 @@ begin
   end;
 
   LTokens := ResolvedTokens;
+  LChrome := TDACFieldChromeResolver.Resolve(ResolvedFieldState, LTokens);
   LText := FText;
   if (LText = '') and (FItemIndex >= 0) and (FItemIndex < FItems.Count) then
     LText := FItems[FItemIndex];
@@ -1743,20 +1676,12 @@ begin
   FDesignValueLabel.Font.Name := TDACComponentStyle.FontFamily;
   FDesignValueLabel.Font.Size := InputFontSize;
   FDesignValueLabel.Font.Style := [];
-  if not Enabled or FLoading then
-    FDesignValueLabel.Font.Color := ComboBoxVclColor(LTokens.ComboBoxDisabledText)
-  else
-    FDesignValueLabel.Font.Color := ComboBoxVclColor(LTokens.ComboBoxText);
+  FDesignValueLabel.Font.Color := ComboBoxVclColor(LChrome.TextColor);
   FDesignValueLabel.Visible := Showing and (LText <> '');
 
-  LHorizontalPadding := Pixels(Round(LTokens.ComboBoxNativeHorizontalPadding));
+  LHorizontalPadding := Pixels(Round(LTokens.InputNativeHorizontalPadding));
   LInputHeight := Min(ControlHeight, Max(0, Height - ChromeTop));
-  case FInputSize of
-    misSmall: LTextHeight := Pixels(Round(LTokens.ComboBoxSmallEditorHeight));
-    misLarge: LTextHeight := Pixels(Round(LTokens.ComboBoxLargeEditorHeight));
-  else
-    LTextHeight := Pixels(Round(LTokens.ComboBoxMediumEditorHeight));
-  end;
+  LTextHeight := Pixels(Round(LTokens.InputSmallEditorHeight));
   LTextHeight := Min(LInputHeight, LTextHeight);
   LTop := ChromeTop + Max(0, (LInputHeight - LTextHeight) div 2) +
     Pixels(Round(LTokens.InputNativeVerticalOffset));

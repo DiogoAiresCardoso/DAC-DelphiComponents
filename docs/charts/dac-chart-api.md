@@ -1,3 +1,9 @@
+> **Estado atual — 23/09/2026:** consulte a [consolidação atual](consolidation-2026-09-23.md) para API tipada, validação transacional, espaço do título e evidências posteriores. O conteúdo abaixo preserva sua etapa histórica.
+
+> API substituída pela [API Options](tdacchart-options-api.md). Consulte o [estado de implementação e aceite](implementation-2026-09-22.md). O conteúdo abaixo é histórico.
+
+> **Contrato alvo atualizado em 22/09/2026:** ECharts 6.1.0 é o padrão oficial. A biblioteca ainda não possui consumidores; decisões e propriedades abaixo que divergem dele serão substituídas sem compatibilidade legada. Este documento registra a implementação/plano anterior. Consulte [a base normativa ECharts](echarts-reference/README.md).
+
 # API do TDACChart
 
 `TDACChart` e o unico componente analitico visual da Suite DAC. Ele herda de

@@ -1,0 +1,49 @@
+{
+  "total": "433",
+  "errors": "0",
+  "failures": "5",
+  "baseline_failures": [
+    [
+      "CoresDosHostsSeguemSuperficieDosPais",
+      "Condition is False when True expected. [Altura OFX fora da tolerancia nativa]"
+    ],
+    [
+      "LayoutSemSobreposicao.96",
+      "Condition is False when True expected. [HISTORICO com largura excessiva]"
+    ],
+    [
+      "LayoutSemSobreposicao.144",
+      "Condition is False when True expected. [HISTORICO com largura excessiva]"
+    ],
+    [
+      "LayoutSemSobreposicao.192",
+      "Condition is False when True expected. [HISTORICO com largura excessiva]"
+    ],
+    [
+      "LayoutSemSobreposicao.Minimo",
+      "Condition is False when True expected. [HISTORICO com largura excessiva]"
+    ]
+  ],
+  "current_failures": [
+    [
+      "CoresDosHostsSeguemSuperficieDosPais",
+      "Condition is False when True expected. [Altura OFX fora da tolerancia nativa]"
+    ],
+    [
+      "LayoutSemSobreposicao.96",
+      "Condition is False when True expected. [HISTORICO com largura excessiva]"
+    ],
+    [
+      "LayoutSemSobreposicao.144",
+      "Condition is False when True expected. [HISTORICO com largura excessiva]"
+    ],
+    [
+      "LayoutSemSobreposicao.192",
+      "Condition is False when True expected. [HISTORICO com largura excessiva]"
+    ],
+    [
+      "LayoutSemSobreposicao.Minimo",
+      "Condition is False when True expected. [HISTORICO com largura excessiva]"
+    ]
+  ]
+}

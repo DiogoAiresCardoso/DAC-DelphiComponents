@@ -3,8 +3,9 @@ unit DAC.Components.Controls.FieldChrome;
 { Responsabilidade: classe base unificada para todos os controles de campo
   de formulario que possuem chrome Skia + editor nativo + labels de texto.
 
-  Controles que herdam de TDACCustomFieldChrome:
-    TDACEdit, TDACButtonEdit, TDACComboBox, TDACDateTimePicker, TDACMemo
+  O TDACDateTimePicker herda diretamente de TDACEdit para compartilhar o
+  editor, o chrome e o ciclo de foco canônicos. Os demais campos compostos
+  podem reutilizar este contrato quando não forem especializações de TDACEdit.
 
   SOLID: SRP — esta classe gerencia apenas o chrome (fundo + borda + labels).
   A logica de editor (input, mask, dropdown) fica nos descendentes.

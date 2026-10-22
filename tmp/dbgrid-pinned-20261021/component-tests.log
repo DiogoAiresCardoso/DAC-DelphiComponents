@@ -1,0 +1,10 @@
+  Embarcadero Delphi for Win32 compiler version 32.0
+  Copyright (c) 1983,2017 Embarcadero Technologies, Inc.
+  48134 lines, 0.42 seconds, 3673632 bytes code, 84276 bytes data.
+OK sort controller
+OK selection controller
+OK serializer and file store
+OK DFM streaming contract with 11 persistent columns
+OK grid lifecycle and paint
+OK layout persistence contract
+DACDBGridTests: PASS

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Chuva" style="color:#2F9E22">
+  <g stroke="#2F9E22" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M28 76 H90 A18 18 0 0 0 94 40 A30 30 0 0 0 38 34 A22 22 0 0 0 28 76 Z"/><line x1="38" y1="88" x2="32" y2="102"/><line x1="60" y1="88" x2="54" y2="102"/><line x1="82" y1="88" x2="76" y2="102"/>
+  </g>
+</svg>

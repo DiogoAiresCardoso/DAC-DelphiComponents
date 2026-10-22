@@ -1,0 +1,8 @@
+project=DACSkiaComponents
+configuration=Debug
+platform=Win32
+bplOutput=M:\Delphi Componentes\DAC-DelphiComponents/tmp/cards-fonts-20261020/package-bpl
+dcpOutput=M:\Delphi Componentes\DAC-DelphiComponents/tmp/cards-fonts-20261020/package-dcp
+dcuOutput=M:\Delphi Componentes\DAC-DelphiComponents/tmp/cards-fonts-20261020/package-dcu
+cBuilderOutput=None
+legacyArtifacts=preserved

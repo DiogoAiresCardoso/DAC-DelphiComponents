@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Pesquisar no relatório" style="color:#2F9E22">
+  <g stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M24 14 H68 L88 34 V70"/><polyline points="68,14 68,34 88,34"/><circle cx="70" cy="78" r="18"/><line x1="84" y1="92" x2="104" y2="108"/>
+  </g>
+</svg>

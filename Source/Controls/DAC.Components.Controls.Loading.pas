@@ -8,6 +8,7 @@ uses
   System.Types,
   System.UITypes,
   Winapi.Messages,
+  Winapi.Windows,
   Vcl.Controls,
   Vcl.ExtCtrls,
   Vcl.Graphics,
@@ -32,6 +33,7 @@ type
     FThemeMode: TDACThemeMode;
     FTimer: TTimer;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
+    procedure CMParentColorChanged(var AMessage: TMessage); message CM_PARENTCOLORCHANGED;
     procedure CMVisibleChanged(var AMessage: TMessage); message CM_VISIBLECHANGED;
     procedure DrawDots(const ACanvas: ISkCanvas; const ADest: TRectF; const AAlpha: Byte);
     procedure DrawSkeleton(const ACanvas: ISkCanvas; const ADest: TRectF; const AAlpha: Byte);
@@ -87,6 +89,7 @@ implementation
 
 uses
   System.Math,
+  DAC.Components.DesignSystem.ColorTokens,
   DAC.Components.DesignSystem.ComponentStyle,
   DAC.Components.DesignSystem.ControlTokens;
 
@@ -134,6 +137,12 @@ procedure TDACLoading.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
   UpdateTimer;
+  InvalidateLoading;
+end;
+
+procedure TDACLoading.CMParentColorChanged(var AMessage: TMessage);
+begin
+  inherited;
   InvalidateLoading;
 end;
 
@@ -297,7 +306,7 @@ end;
 
 function TDACLoading.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.PopupBackground;
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
 procedure TDACLoading.Redraw;
@@ -368,7 +377,10 @@ end;
 procedure TDACLoading.SetThemeMode(const AValue: TDACThemeMode);
 begin
   if FThemeMode = AValue then
+  begin
+    ThemeChanged(Self);
     Exit;
+  end;
   FThemeMode := AValue;
   ThemeChanged(Self);
 end;
@@ -414,7 +426,16 @@ begin
 end;
 
 procedure TDACLoading.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+var
+  LBrush: HBRUSH;
 begin
+  LBrush := CreateSolidBrush(ColorToRGB(
+    TDACComponentColors.ToVclColor(ParentSurfaceColor)));
+  try
+    Winapi.Windows.FillRect(AMessage.DC, ClientRect, LBrush);
+  finally
+    DeleteObject(LBrush);
+  end;
   AMessage.Result := 1;
 end;
 

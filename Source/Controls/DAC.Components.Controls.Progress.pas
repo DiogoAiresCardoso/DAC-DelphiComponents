@@ -8,6 +8,7 @@ uses
   System.Types,
   System.UITypes,
   Winapi.Messages,
+  Winapi.Windows,
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
@@ -41,6 +42,7 @@ type
     FThemeMode: TDACThemeMode;
     FValue: Integer;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
+    procedure CMParentColorChanged(var AMessage: TMessage); message CM_PARENTCOLORCHANGED;
     function AccentColor: TAlphaColor;
     procedure DrawArc(const ACanvas: ISkCanvas; const ARect: TRectF;
       const AStartAngle, ASweepAngle, AStrokeWidth: Single;
@@ -103,6 +105,7 @@ implementation
 uses
   System.Math,
   System.SysUtils,
+  DAC.Components.DesignSystem.ColorTokens,
   DAC.Components.DesignSystem.Fonts,
   DAC.Components.DesignSystem.ComponentStyle,
   DAC.Components.DesignSystem.ControlTokens;
@@ -167,6 +170,12 @@ begin
   end;
 end;
 procedure TDACProgress.CMEnabledChanged(var AMessage: TMessage);
+begin
+  inherited;
+  InvalidateProgress;
+end;
+
+procedure TDACProgress.CMParentColorChanged(var AMessage: TMessage);
 begin
   inherited;
   InvalidateProgress;
@@ -297,7 +306,7 @@ end;
 
 function TDACProgress.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.PopupBackground;
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
 function TDACProgress.Percent: Single;
@@ -373,7 +382,10 @@ end;
 procedure TDACProgress.SetThemeMode(const AValue: TDACThemeMode);
 begin
   if FThemeMode = AValue then
+  begin
+    ThemeChanged(Self);
     Exit;
+  end;
   FThemeMode := AValue;
   ThemeChanged(Self);
 end;
@@ -419,7 +431,16 @@ begin
 end;
 
 procedure TDACProgress.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+var
+  LBrush: HBRUSH;
 begin
+  LBrush := CreateSolidBrush(ColorToRGB(
+    TDACComponentColors.ToVclColor(ParentSurfaceColor)));
+  try
+    Winapi.Windows.FillRect(AMessage.DC, ClientRect, LBrush);
+  finally
+    DeleteObject(LBrush);
+  end;
   AMessage.Result := 1;
 end;
 

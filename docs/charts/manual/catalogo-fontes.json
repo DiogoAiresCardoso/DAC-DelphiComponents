@@ -1,0 +1,2508 @@
+{
+  "schema": 1,
+  "scope": "local source and font file inventory; not proof of per-glyph GDI resolution",
+  "sfntNameIds": {
+    "1": "family",
+    "2": "subfamily",
+    "4": "full name",
+    "5": "version",
+    "6": "PostScript name"
+  },
+  "sources": [
+    {
+      "path": "demo-charts/DACChartsDemo.ClientDataSetAdapter.pas",
+      "bytes": 1423,
+      "sha256": "bf35a4f88c052ca5caee335ec87fe05bfd6b5f89bdacc4258fc0065de93a667b",
+      "symbols": [
+        {
+          "name": "TDACChartsDemoClientDataSetAdapter.Supports",
+          "kind": "function",
+          "line": 25
+        },
+        {
+          "name": "TDACChartsDemoClientDataSetAdapter.CreateReadCursor",
+          "kind": "function",
+          "line": 31
+        }
+      ]
+    },
+    {
+      "path": "demo-charts/DACChartsDemo.dpr",
+      "bytes": 201,
+      "sha256": "931636bb48723e286adf6014aaaac0578fdf2cbdaa7d2a1361283f4c3a20ef23"
+    },
+    {
+      "path": "demo-charts/DACChartsDemo.dproj",
+      "bytes": 4242,
+      "sha256": "df2bf5ca8962a8bd086507979f9fb0403699ab8b82e4e6e359ef2541950e1bd5"
+    },
+    {
+      "path": "demo-charts/DACChartsDemo.Main.dfm",
+      "bytes": 8150,
+      "sha256": "4130c78b0bd2be68dd6b19f2a89383cdb269d41dfd82f4d24c808acc69a681a3"
+    },
+    {
+      "path": "demo-charts/DACChartsDemo.Main.pas",
+      "bytes": 17728,
+      "sha256": "db8e48577086607e4b6257cf73d5ca9a2fc273d5cc77869eb5f5fce32838c783",
+      "symbols": [
+        {
+          "name": "RunChartsDemo",
+          "kind": "procedure",
+          "line": 76
+        },
+        {
+          "name": "RunChartsDemo",
+          "kind": "procedure",
+          "line": 85
+        },
+        {
+          "name": "TChartsDemoForm.HandleCreateException",
+          "kind": "function",
+          "line": 98
+        },
+        {
+          "name": "TChartsDemoForm.RuntimeException",
+          "kind": "procedure",
+          "line": 104
+        },
+        {
+          "name": "TChartsDemoForm.Arg",
+          "kind": "function",
+          "line": 111
+        },
+        {
+          "name": "TChartsDemoForm.FixturePath",
+          "kind": "function",
+          "line": 119
+        },
+        {
+          "name": "TChartsDemoForm.FormCreate",
+          "kind": "procedure",
+          "line": 127
+        },
+        {
+          "name": "TChartsDemoForm.FormDestroy",
+          "kind": "procedure",
+          "line": 171
+        },
+        {
+          "name": "TChartsDemoForm.FormShow",
+          "kind": "procedure",
+          "line": 173
+        },
+        {
+          "name": "TChartsDemoForm.BuildGallery",
+          "kind": "procedure",
+          "line": 175
+        },
+        {
+          "name": "TChartsDemoForm.FilterClick",
+          "kind": "procedure",
+          "line": 191
+        },
+        {
+          "name": "TChartsDemoForm.SelectedOption",
+          "kind": "function",
+          "line": 193
+        },
+        {
+          "name": "TChartsDemoForm.CaseChanged",
+          "kind": "procedure",
+          "line": 195
+        },
+        {
+          "name": "TChartsDemoForm.ApplyClick",
+          "kind": "procedure",
+          "line": 200
+        },
+        {
+          "name": "TChartsDemoForm.ResetClick",
+          "kind": "procedure",
+          "line": 205
+        },
+        {
+          "name": "TChartsDemoForm.ImportClick",
+          "kind": "procedure",
+          "line": 207
+        },
+        {
+          "name": "TChartsDemoForm.ExportClick",
+          "kind": "procedure",
+          "line": 209
+        },
+        {
+          "name": "TChartsDemoForm.CopyClick",
+          "kind": "procedure",
+          "line": 211
+        },
+        {
+          "name": "TChartsDemoForm.VisualChanged",
+          "kind": "procedure",
+          "line": 213
+        },
+        {
+          "name": "TChartsDemoForm.CompareClick",
+          "kind": "procedure",
+          "line": 238
+        },
+        {
+          "name": "TChartsDemoForm.UpdateClick",
+          "kind": "procedure",
+          "line": 252
+        },
+        {
+          "name": "TChartsDemoForm.ReplayClick",
+          "kind": "procedure",
+          "line": 271
+        },
+        {
+          "name": "TChartsDemoForm.StopClick",
+          "kind": "procedure",
+          "line": 273
+        },
+        {
+          "name": "TChartsDemoForm.CaptureClick",
+          "kind": "procedure",
+          "line": 275
+        },
+        {
+          "name": "TChartsDemoForm.RunStress",
+          "kind": "procedure",
+          "line": 281
+        },
+        {
+          "name": "TChartsDemoForm.StressClick",
+          "kind": "procedure",
+          "line": 323
+        },
+        {
+          "name": "TChartsDemoForm.MetricsTick",
+          "kind": "procedure",
+          "line": 325
+        },
+        {
+          "name": "TChartsDemoForm.PageChanged",
+          "kind": "procedure",
+          "line": 327
+        },
+        {
+          "name": "TChartsDemoForm.RunAutomatic",
+          "kind": "procedure",
+          "line": 329
+        }
+      ]
+    },
+    {
+      "path": "demo-charts/DACChartsDemo.Startup.pas",
+      "bytes": 2537,
+      "sha256": "9824bffc91c7a3acad3d6ff55a0eae5fbca425bf661099039395e18c3d8a0a21",
+      "symbols": [
+        {
+          "name": "ReportDemoFailure",
+          "kind": "procedure",
+          "line": 7
+        },
+        {
+          "name": "ReportDemoFailure",
+          "kind": "procedure",
+          "line": 15
+        },
+        {
+          "name": "PrepareRuntime",
+          "kind": "procedure",
+          "line": 34
+        }
+      ]
+    },
+    {
+      "path": "demo-charts/DACChartsHighDpi.dpr",
+      "bytes": 190,
+      "sha256": "41ae392cb55f1da7efb913ffa311b61c6194e410652db1f8bafdb15392da426c"
+    },
+    {
+      "path": "demo-charts/DACChartsHighDpi.dproj",
+      "bytes": 4311,
+      "sha256": "685ee095e9aaeaf498dc160d5abce97d18e6b8dff146336cb6406f43dcbbaf0d"
+    },
+    {
+      "path": "demo-charts/DACChartsNoHighDpi.dpr",
+      "bytes": 192,
+      "sha256": "329f92417415c267fc7b03da75d039cd8a472be9b78102e13ee15c743115b0b0"
+    },
+    {
+      "path": "demo-charts/DACChartsNoHighDpi.dproj",
+      "bytes": 4326,
+      "sha256": "60d82c2e28b186ab04fd0ac2dc57d6b78d792a1742defca577fea12c3faa9228"
+    },
+    {
+      "path": "Package/DACSkiaComponents.dpk",
+      "bytes": 12697,
+      "sha256": "2e25bc84ce03a959e487f010306264cfbbbed0d816b94984b73683691bd1c18d"
+    },
+    {
+      "path": "Package/DACSkiaComponentsDesign.dpk",
+      "bytes": 789,
+      "sha256": "b335c170df459740eb71e789aec74d58ca25bba1eb947a8f20ddc10286baaca2"
+    },
+    {
+      "path": "Package/DACSkiaComponentsRuntime.dpk",
+      "bytes": 12581,
+      "sha256": "61a47dea7abcece0a17da503ac8a2d211924b46901c6a6418854c92ee46dacef"
+    },
+    {
+      "path": "Source/Controls/DAC.Components.Charts.Options.pas",
+      "bytes": 51557,
+      "sha256": "7e3142f9526614e661c9ca856c340492b2f1b44066d3f59e3285eeb0df7c04c4",
+      "symbols": [
+        {
+          "name": "CJ",
+          "kind": "function",
+          "line": 417
+        },
+        {
+          "name": "CS",
+          "kind": "function",
+          "line": 418
+        },
+        {
+          "name": "CN",
+          "kind": "function",
+          "line": 419
+        },
+        {
+          "name": "CB",
+          "kind": "function",
+          "line": 420
+        },
+        {
+          "name": "CSet",
+          "kind": "procedure",
+          "line": 421
+        },
+        {
+          "name": "ValidateChartOptions",
+          "kind": "procedure",
+          "line": 422
+        },
+        {
+          "name": "CJ",
+          "kind": "function",
+          "line": 426
+        },
+        {
+          "name": "CS",
+          "kind": "function",
+          "line": 431
+        },
+        {
+          "name": "CN",
+          "kind": "function",
+          "line": 436
+        },
+        {
+          "name": "CB",
+          "kind": "function",
+          "line": 441
+        },
+        {
+          "name": "CSet",
+          "kind": "procedure",
+          "line": 446
+        },
+        {
+          "name": "ValidateChartOptions",
+          "kind": "procedure",
+          "line": 452
+        },
+        {
+          "name": "TDACChartOptionStore.Create",
+          "kind": "constructor",
+          "line": 454
+        },
+        {
+          "name": "TDACChartOptionStore.Destroy",
+          "kind": "destructor",
+          "line": 456
+        },
+        {
+          "name": "TDACChartOptionStore.Read",
+          "kind": "function",
+          "line": 458
+        },
+        {
+          "name": "TDACChartOptionStore.Write",
+          "kind": "procedure",
+          "line": 464
+        },
+        {
+          "name": "TDACChartOptionStore.Load",
+          "kind": "procedure",
+          "line": 488
+        },
+        {
+          "name": "TDACChartOptionStore.Clone",
+          "kind": "function",
+          "line": 495
+        },
+        {
+          "name": "TDACChartOptionNode.Create",
+          "kind": "constructor",
+          "line": 497
+        },
+        {
+          "name": "TDACChartOptionNode.Destroy",
+          "kind": "destructor",
+          "line": 502
+        },
+        {
+          "name": "TDACChartOptionNode.Bound",
+          "kind": "function",
+          "line": 504
+        },
+        {
+          "name": "TDACChartOptionNode.Path",
+          "kind": "function",
+          "line": 510
+        },
+        {
+          "name": "TDACChartOptionNode.GetJSON",
+          "kind": "function",
+          "line": 515
+        },
+        {
+          "name": "TDACChartOptionNode.SetJSON",
+          "kind": "procedure",
+          "line": 518
+        },
+        {
+          "name": "TDACChartOptionNode.Assign",
+          "kind": "procedure",
+          "line": 525
+        },
+        {
+          "name": "TDACChartTextOptions.GetShow",
+          "kind": "function",
+          "line": 527
+        },
+        {
+          "name": "TDACChartTextOptions.SetShow",
+          "kind": "procedure",
+          "line": 529
+        },
+        {
+          "name": "TDACChartTextOptions.GetText",
+          "kind": "function",
+          "line": 531
+        },
+        {
+          "name": "TDACChartTextOptions.SetText",
+          "kind": "procedure",
+          "line": 533
+        },
+        {
+          "name": "TDACChartTextOptions.GetSubtext",
+          "kind": "function",
+          "line": 535
+        },
+        {
+          "name": "TDACChartTextOptions.SetSubtext",
+          "kind": "procedure",
+          "line": 537
+        },
+        {
+          "name": "TDACChartTextOptions.GetFontFamily",
+          "kind": "function",
+          "line": 539
+        },
+        {
+          "name": "TDACChartTextOptions.SetFontFamily",
+          "kind": "procedure",
+          "line": 541
+        },
+        {
+          "name": "TDACChartTextOptions.GetFontSize",
+          "kind": "function",
+          "line": 543
+        },
+        {
+          "name": "TDACChartTextOptions.SetFontSize",
+          "kind": "procedure",
+          "line": 546
+        },
+        {
+          "name": "TDACChartTextOptions.GetColor",
+          "kind": "function",
+          "line": 548
+        },
+        {
+          "name": "TDACChartTextOptions.SetColor",
+          "kind": "procedure",
+          "line": 550
+        },
+        {
+          "name": "TDACChartTextOptions.GetLeft",
+          "kind": "function",
+          "line": 552
+        },
+        {
+          "name": "TDACChartTextOptions.SetLeft",
+          "kind": "procedure",
+          "line": 554
+        },
+        {
+          "name": "TDACChartTextOptions.GetTop",
+          "kind": "function",
+          "line": 556
+        },
+        {
+          "name": "TDACChartTextOptions.SetTop",
+          "kind": "procedure",
+          "line": 558
+        },
+        {
+          "name": "TDACChartTextOptions.GetPosition",
+          "kind": "function",
+          "line": 560
+        },
+        {
+          "name": "TDACChartTextOptions.SetPosition",
+          "kind": "procedure",
+          "line": 562
+        },
+        {
+          "name": "TDACChartTextOptions.GetFormatter",
+          "kind": "function",
+          "line": 564
+        },
+        {
+          "name": "TDACChartTextOptions.SetFormatter",
+          "kind": "procedure",
+          "line": 566
+        },
+        {
+          "name": "TDACChartTextOptions.GetRotate",
+          "kind": "function",
+          "line": 568
+        },
+        {
+          "name": "TDACChartTextOptions.SetRotate",
+          "kind": "procedure",
+          "line": 570
+        },
+        {
+          "name": "TDACChartTextOptions.GetDistance",
+          "kind": "function",
+          "line": 572
+        },
+        {
+          "name": "TDACChartTextOptions.SetDistance",
+          "kind": "procedure",
+          "line": 574
+        },
+        {
+          "name": "TDACChartAxisOptions.GetShow",
+          "kind": "function",
+          "line": 576
+        },
+        {
+          "name": "TDACChartAxisOptions.SetShow",
+          "kind": "procedure",
+          "line": 578
+        },
+        {
+          "name": "TDACChartAxisOptions.GetAxisType",
+          "kind": "function",
+          "line": 580
+        },
+        {
+          "name": "TDACChartAxisOptions.SetAxisType",
+          "kind": "procedure",
+          "line": 582
+        },
+        {
+          "name": "TDACChartAxisOptions.GetMin",
+          "kind": "function",
+          "line": 584
+        },
+        {
+          "name": "TDACChartAxisOptions.SetMin",
+          "kind": "procedure",
+          "line": 586
+        },
+        {
+          "name": "TDACChartAxisOptions.GetMax",
+          "kind": "function",
+          "line": 588
+        },
+        {
+          "name": "TDACChartAxisOptions.SetMax",
+          "kind": "procedure",
+          "line": 590
+        },
+        {
+          "name": "TDACChartAxisOptions.GetInverse",
+          "kind": "function",
+          "line": 592
+        },
+        {
+          "name": "TDACChartAxisOptions.SetInverse",
+          "kind": "procedure",
+          "line": 594
+        },
+        {
+          "name": "TDACChartAxisOptions.GetBoundaryGap",
+          "kind": "function",
+          "line": 596
+        },
+        {
+          "name": "TDACChartAxisOptions.SetBoundaryGap",
+          "kind": "procedure",
+          "line": 598
+        },
+        {
+          "name": "TDACChartAxisOptions.GetSplitNumber",
+          "kind": "function",
+          "line": 600
+        },
+        {
+          "name": "TDACChartAxisOptions.SetSplitNumber",
+          "kind": "procedure",
+          "line": 602
+        },
+        {
+          "name": "TDACChartAxisOptions.GetName",
+          "kind": "function",
+          "line": 604
+        },
+        {
+          "name": "TDACChartAxisOptions.SetName",
+          "kind": "procedure",
+          "line": 606
+        },
+        {
+          "name": "TDACChartStyleOptions.GetColor",
+          "kind": "function",
+          "line": 608
+        },
+        {
+          "name": "TDACChartStyleOptions.SetColor",
+          "kind": "procedure",
+          "line": 610
+        },
+        {
+          "name": "TDACChartStyleOptions.GetOpacity",
+          "kind": "function",
+          "line": 612
+        },
+        {
+          "name": "TDACChartStyleOptions.SetOpacity",
+          "kind": "procedure",
+          "line": 614
+        },
+        {
+          "name": "TDACChartStyleOptions.GetWidth",
+          "kind": "function",
+          "line": 616
+        },
+        {
+          "name": "TDACChartStyleOptions.SetWidth",
+          "kind": "procedure",
+          "line": 618
+        },
+        {
+          "name": "TDACChartStyleOptions.GetBorderColor",
+          "kind": "function",
+          "line": 620
+        },
+        {
+          "name": "TDACChartStyleOptions.SetBorderColor",
+          "kind": "procedure",
+          "line": 622
+        },
+        {
+          "name": "TDACChartStyleOptions.GetBorderWidth",
+          "kind": "function",
+          "line": 624
+        },
+        {
+          "name": "TDACChartStyleOptions.SetBorderWidth",
+          "kind": "procedure",
+          "line": 626
+        },
+        {
+          "name": "TDACChartStyleOptions.GetBorderRadius",
+          "kind": "function",
+          "line": 628
+        },
+        {
+          "name": "TDACChartStyleOptions.SetBorderRadius",
+          "kind": "procedure",
+          "line": 630
+        },
+        {
+          "name": "TDACChartStyleOptions.GetShadowBlur",
+          "kind": "function",
+          "line": 632
+        },
+        {
+          "name": "TDACChartStyleOptions.SetShadowBlur",
+          "kind": "procedure",
+          "line": 634
+        },
+        {
+          "name": "TDACChartStyleOptions.GetShadowColor",
+          "kind": "function",
+          "line": 636
+        },
+        {
+          "name": "TDACChartStyleOptions.SetShadowColor",
+          "kind": "procedure",
+          "line": 638
+        },
+        {
+          "name": "TDACChartStyleOptions.GetShadowOffsetX",
+          "kind": "function",
+          "line": 640
+        },
+        {
+          "name": "TDACChartStyleOptions.SetShadowOffsetX",
+          "kind": "procedure",
+          "line": 642
+        },
+        {
+          "name": "TDACChartStyleOptions.GetShadowOffsetY",
+          "kind": "function",
+          "line": 644
+        },
+        {
+          "name": "TDACChartStyleOptions.SetShadowOffsetY",
+          "kind": "procedure",
+          "line": 646
+        },
+        {
+          "name": "TDACChartLegendOptions.GetShow",
+          "kind": "function",
+          "line": 648
+        },
+        {
+          "name": "TDACChartLegendOptions.SetShow",
+          "kind": "procedure",
+          "line": 650
+        },
+        {
+          "name": "TDACChartLegendOptions.GetLegendType",
+          "kind": "function",
+          "line": 652
+        },
+        {
+          "name": "TDACChartLegendOptions.SetLegendType",
+          "kind": "procedure",
+          "line": 654
+        },
+        {
+          "name": "TDACChartLegendOptions.GetOrient",
+          "kind": "function",
+          "line": 656
+        },
+        {
+          "name": "TDACChartLegendOptions.SetOrient",
+          "kind": "procedure",
+          "line": 658
+        },
+        {
+          "name": "TDACChartLegendOptions.GetLeft",
+          "kind": "function",
+          "line": 660
+        },
+        {
+          "name": "TDACChartLegendOptions.SetLeft",
+          "kind": "procedure",
+          "line": 662
+        },
+        {
+          "name": "TDACChartLegendOptions.GetTop",
+          "kind": "function",
+          "line": 664
+        },
+        {
+          "name": "TDACChartLegendOptions.SetTop",
+          "kind": "procedure",
+          "line": 666
+        },
+        {
+          "name": "TDACChartLegendOptions.GetItemGap",
+          "kind": "function",
+          "line": 668
+        },
+        {
+          "name": "TDACChartLegendOptions.SetItemGap",
+          "kind": "procedure",
+          "line": 670
+        },
+        {
+          "name": "TDACChartLegendOptions.GetItemWidth",
+          "kind": "function",
+          "line": 672
+        },
+        {
+          "name": "TDACChartLegendOptions.SetItemWidth",
+          "kind": "procedure",
+          "line": 674
+        },
+        {
+          "name": "TDACChartLegendOptions.GetItemHeight",
+          "kind": "function",
+          "line": 676
+        },
+        {
+          "name": "TDACChartLegendOptions.SetItemHeight",
+          "kind": "procedure",
+          "line": 678
+        },
+        {
+          "name": "TDACChartTooltipOptions.GetShow",
+          "kind": "function",
+          "line": 680
+        },
+        {
+          "name": "TDACChartTooltipOptions.SetShow",
+          "kind": "procedure",
+          "line": 682
+        },
+        {
+          "name": "TDACChartTooltipOptions.GetTrigger",
+          "kind": "function",
+          "line": 684
+        },
+        {
+          "name": "TDACChartTooltipOptions.SetTrigger",
+          "kind": "procedure",
+          "line": 686
+        },
+        {
+          "name": "TDACChartTooltipOptions.GetTriggerOn",
+          "kind": "function",
+          "line": 688
+        },
+        {
+          "name": "TDACChartTooltipOptions.SetTriggerOn",
+          "kind": "procedure",
+          "line": 690
+        },
+        {
+          "name": "TDACChartTooltipOptions.GetConfine",
+          "kind": "function",
+          "line": 692
+        },
+        {
+          "name": "TDACChartTooltipOptions.SetConfine",
+          "kind": "procedure",
+          "line": 694
+        },
+        {
+          "name": "TDACChartTooltipOptions.GetFormatter",
+          "kind": "function",
+          "line": 696
+        },
+        {
+          "name": "TDACChartTooltipOptions.SetFormatter",
+          "kind": "procedure",
+          "line": 698
+        },
+        {
+          "name": "TDACChartTooltipOptions.GetShowDelay",
+          "kind": "function",
+          "line": 700
+        },
+        {
+          "name": "TDACChartTooltipOptions.SetShowDelay",
+          "kind": "procedure",
+          "line": 702
+        },
+        {
+          "name": "TDACChartTooltipOptions.GetHideDelay",
+          "kind": "function",
+          "line": 704
+        },
+        {
+          "name": "TDACChartTooltipOptions.SetHideDelay",
+          "kind": "procedure",
+          "line": 706
+        },
+        {
+          "name": "TDACChartTooltipOptions.GetBackgroundColor",
+          "kind": "function",
+          "line": 708
+        },
+        {
+          "name": "TDACChartTooltipOptions.SetBackgroundColor",
+          "kind": "procedure",
+          "line": 710
+        },
+        {
+          "name": "TDACChartTooltipOptions.GetBorderColor",
+          "kind": "function",
+          "line": 712
+        },
+        {
+          "name": "TDACChartTooltipOptions.SetBorderColor",
+          "kind": "procedure",
+          "line": 714
+        },
+        {
+          "name": "TDACChartTooltipOptions.GetPadding",
+          "kind": "function",
+          "line": 716
+        },
+        {
+          "name": "TDACChartTooltipOptions.SetPadding",
+          "kind": "procedure",
+          "line": 718
+        },
+        {
+          "name": "TDACChartGridOptions.GetLeft",
+          "kind": "function",
+          "line": 720
+        },
+        {
+          "name": "TDACChartGridOptions.SetLeft",
+          "kind": "procedure",
+          "line": 722
+        },
+        {
+          "name": "TDACChartGridOptions.GetRight",
+          "kind": "function",
+          "line": 724
+        },
+        {
+          "name": "TDACChartGridOptions.SetRight",
+          "kind": "procedure",
+          "line": 726
+        },
+        {
+          "name": "TDACChartGridOptions.GetTop",
+          "kind": "function",
+          "line": 728
+        },
+        {
+          "name": "TDACChartGridOptions.SetTop",
+          "kind": "procedure",
+          "line": 730
+        },
+        {
+          "name": "TDACChartGridOptions.GetBottom",
+          "kind": "function",
+          "line": 732
+        },
+        {
+          "name": "TDACChartGridOptions.SetBottom",
+          "kind": "procedure",
+          "line": 734
+        },
+        {
+          "name": "TDACChartGridOptions.GetOuterBoundsMode",
+          "kind": "function",
+          "line": 736
+        },
+        {
+          "name": "TDACChartGridOptions.SetOuterBoundsMode",
+          "kind": "procedure",
+          "line": 738
+        },
+        {
+          "name": "TDACChartOptionSeries.Create",
+          "kind": "constructor",
+          "line": 740
+        },
+        {
+          "name": "TDACChartOptionSeries.Destroy",
+          "kind": "destructor",
+          "line": 749
+        },
+        {
+          "name": "TDACChartOptionSeries.StoreChanged",
+          "kind": "procedure",
+          "line": 751
+        },
+        {
+          "name": "TDACChartOptionSeries.GetJSON",
+          "kind": "function",
+          "line": 753
+        },
+        {
+          "name": "TDACChartOptionSeries.SetJSON",
+          "kind": "procedure",
+          "line": 755
+        },
+        {
+          "name": "TDACChartOptionSeries.GetDisplayName",
+          "kind": "function",
+          "line": 757
+        },
+        {
+          "name": "TDACChartOptionSeries.Assign",
+          "kind": "procedure",
+          "line": 766
+        },
+        {
+          "name": "TDACChartOptionSeries.GetName",
+          "kind": "function",
+          "line": 768
+        },
+        {
+          "name": "TDACChartOptionSeries.SetName",
+          "kind": "procedure",
+          "line": 770
+        },
+        {
+          "name": "TDACChartOptionSeries.GetKind",
+          "kind": "function",
+          "line": 772
+        },
+        {
+          "name": "TDACChartOptionSeries.SetKind",
+          "kind": "procedure",
+          "line": 774
+        },
+        {
+          "name": "TDACChartOptionSeries.GetStack",
+          "kind": "function",
+          "line": 776
+        },
+        {
+          "name": "TDACChartOptionSeries.SetStack",
+          "kind": "procedure",
+          "line": 778
+        },
+        {
+          "name": "TDACChartOptionSeries.SetItemStyle",
+          "kind": "procedure",
+          "line": 780
+        },
+        {
+          "name": "TDACChartOptionSeries.SetLineStyle",
+          "kind": "procedure",
+          "line": 782
+        },
+        {
+          "name": "TDACChartOptionSeries.SetAreaStyle",
+          "kind": "procedure",
+          "line": 784
+        },
+        {
+          "name": "TDACChartOptionSeries.SetLabel",
+          "kind": "procedure",
+          "line": 786
+        },
+        {
+          "name": "TDACChartOptionSeriesCollection.Create",
+          "kind": "constructor",
+          "line": 788
+        },
+        {
+          "name": "TDACChartOptionSeriesCollection.Add",
+          "kind": "function",
+          "line": 790
+        },
+        {
+          "name": "TDACChartOptionSeriesCollection.GetItem",
+          "kind": "function",
+          "line": 792
+        },
+        {
+          "name": "TDACChartOptionSeriesCollection.Update",
+          "kind": "procedure",
+          "line": 794
+        },
+        {
+          "name": "TDACChartOptions.Create",
+          "kind": "constructor",
+          "line": 796
+        },
+        {
+          "name": "TDACChartOptions.Destroy",
+          "kind": "destructor",
+          "line": 808
+        },
+        {
+          "name": "TDACChartOptions.BeginUpdate",
+          "kind": "procedure",
+          "line": 814
+        },
+        {
+          "name": "TDACChartOptions.EndUpdate",
+          "kind": "procedure",
+          "line": 816
+        },
+        {
+          "name": "TDACChartOptions.Changed",
+          "kind": "procedure",
+          "line": 821
+        },
+        {
+          "name": "TDACChartOptions.Clone",
+          "kind": "function",
+          "line": 827
+        },
+        {
+          "name": "TDACChartOptions.GetJSON",
+          "kind": "function",
+          "line": 834
+        },
+        {
+          "name": "TDACChartOptions.SetJSON",
+          "kind": "procedure",
+          "line": 837
+        },
+        {
+          "name": "TDACChartOptions.Assign",
+          "kind": "procedure",
+          "line": 852
+        },
+        {
+          "name": "TDACChartOptions.SetSeries",
+          "kind": "procedure",
+          "line": 854
+        },
+        {
+          "name": "TDACChartOptions.SetDataset",
+          "kind": "procedure",
+          "line": 856
+        },
+        {
+          "name": "TDACChartOptions.SetTitle",
+          "kind": "procedure",
+          "line": 858
+        },
+        {
+          "name": "TDACChartOptions.SetXAxis",
+          "kind": "procedure",
+          "line": 860
+        },
+        {
+          "name": "TDACChartOptions.SetYAxis",
+          "kind": "procedure",
+          "line": 862
+        },
+        {
+          "name": "TDACChartOptions.SetGrid",
+          "kind": "procedure",
+          "line": 864
+        },
+        {
+          "name": "TDACChartOptions.SetLegend",
+          "kind": "procedure",
+          "line": 866
+        },
+        {
+          "name": "TDACChartOptions.SetTooltip",
+          "kind": "procedure",
+          "line": 868
+        },
+        {
+          "name": "TDACChartStyleOptions.GetLineType",
+          "kind": "function",
+          "line": 870
+        },
+        {
+          "name": "TDACChartStyleOptions.SetLineType",
+          "kind": "procedure",
+          "line": 872
+        },
+        {
+          "name": "TDACChartLegendOptions.GetSelectedMode",
+          "kind": "function",
+          "line": 874
+        },
+        {
+          "name": "TDACChartLegendOptions.SetSelectedMode",
+          "kind": "procedure",
+          "line": 876
+        },
+        {
+          "name": "TDACChartTooltipOptions.GetRenderMode",
+          "kind": "function",
+          "line": 878
+        },
+        {
+          "name": "TDACChartTooltipOptions.SetRenderMode",
+          "kind": "procedure",
+          "line": 880
+        },
+        {
+          "name": "TDACChartTooltipOptions.GetPointerType",
+          "kind": "function",
+          "line": 882
+        },
+        {
+          "name": "TDACChartTooltipOptions.SetPointerType",
+          "kind": "procedure",
+          "line": 884
+        },
+        {
+          "name": "TDACChartLabelOptions.GetFontStyle",
+          "kind": "function",
+          "line": 886
+        },
+        {
+          "name": "TDACChartLabelOptions.SetFontStyle",
+          "kind": "procedure",
+          "line": 888
+        },
+        {
+          "name": "TDACChartLabelOptions.GetTextAlign",
+          "kind": "function",
+          "line": 890
+        },
+        {
+          "name": "TDACChartLabelOptions.SetTextAlign",
+          "kind": "procedure",
+          "line": 892
+        },
+        {
+          "name": "TDACChartLabelOptions.GetVerticalAlign",
+          "kind": "function",
+          "line": 894
+        },
+        {
+          "name": "TDACChartLabelOptions.SetVerticalAlign",
+          "kind": "procedure",
+          "line": 896
+        },
+        {
+          "name": "TDACChartLabelOptions.GetOverflow",
+          "kind": "function",
+          "line": 898
+        },
+        {
+          "name": "TDACChartLabelOptions.SetOverflow",
+          "kind": "procedure",
+          "line": 900
+        },
+        {
+          "name": "TDACChartOptionSeries.GetLayoutBy",
+          "kind": "function",
+          "line": 902
+        },
+        {
+          "name": "TDACChartOptionSeries.SetLayoutBy",
+          "kind": "procedure",
+          "line": 904
+        },
+        {
+          "name": "TDACChartOptionSeries.GetStep",
+          "kind": "function",
+          "line": 906
+        },
+        {
+          "name": "TDACChartOptionSeries.SetStep",
+          "kind": "procedure",
+          "line": 908
+        },
+        {
+          "name": "TDACChartOptionSeries.GetSmoothMonotone",
+          "kind": "function",
+          "line": 910
+        },
+        {
+          "name": "TDACChartOptionSeries.SetSmoothMonotone",
+          "kind": "procedure",
+          "line": 912
+        },
+        {
+          "name": "TDACChartOptionSeries.GetSymbol",
+          "kind": "function",
+          "line": 914
+        },
+        {
+          "name": "TDACChartOptionSeries.SetSymbol",
+          "kind": "procedure",
+          "line": 916
+        },
+        {
+          "name": "TDACChartOptionSeries.GetSelectedMode",
+          "kind": "function",
+          "line": 918
+        },
+        {
+          "name": "TDACChartOptionSeries.SetSelectedMode",
+          "kind": "procedure",
+          "line": 920
+        },
+        {
+          "name": "TDACChartOptionSeries.GetStackStrategy",
+          "kind": "function",
+          "line": 922
+        },
+        {
+          "name": "TDACChartOptionSeries.SetStackStrategy",
+          "kind": "procedure",
+          "line": 924
+        },
+        {
+          "name": "TDACChartOptionSeries.GetFocus",
+          "kind": "function",
+          "line": 926
+        },
+        {
+          "name": "TDACChartOptionSeries.SetFocus",
+          "kind": "procedure",
+          "line": 928
+        },
+        {
+          "name": "TDACChartOptions.GetAnimationMode",
+          "kind": "function",
+          "line": 930
+        },
+        {
+          "name": "TDACChartOptions.SetAnimationMode",
+          "kind": "procedure",
+          "line": 932
+        },
+        {
+          "name": "TDACChartOptions.GetAnimationEasing",
+          "kind": "function",
+          "line": 934
+        },
+        {
+          "name": "TDACChartOptions.SetAnimationEasing",
+          "kind": "procedure",
+          "line": 936
+        },
+        {
+          "name": "TDACChartOptions.GetAnimationEasingUpdate",
+          "kind": "function",
+          "line": 938
+        },
+        {
+          "name": "TDACChartOptions.SetAnimationEasingUpdate",
+          "kind": "procedure",
+          "line": 940
+        },
+        {
+          "name": "TDACChartDatasetOptions.GetSourceHeader",
+          "kind": "function",
+          "line": 942
+        },
+        {
+          "name": "TDACChartDatasetOptions.SetSourceHeader",
+          "kind": "procedure",
+          "line": 944
+        },
+        {
+          "name": "TDACChartTextOptions.GetFontWeight",
+          "kind": "function",
+          "line": 946
+        },
+        {
+          "name": "TDACChartTextOptions.SetFontWeight",
+          "kind": "procedure",
+          "line": 953
+        }
+      ]
+    },
+    {
+      "path": "Source/Controls/DAC.Components.Controls.Charts.pas",
+      "bytes": 19185,
+      "sha256": "1c07f90b79f043217aba766e534cc8d72a143db20f26eee34b1adcae78fdc492",
+      "symbols": [
+        {
+          "name": "RegisterDACChartDataSetAdapter",
+          "kind": "procedure",
+          "line": 115
+        },
+        {
+          "name": "UnregisterDACChartDataSetAdapter",
+          "kind": "procedure",
+          "line": 116
+        },
+        {
+          "name": "RegisterDACChartDataSetAdapter",
+          "kind": "procedure",
+          "line": 125
+        },
+        {
+          "name": "UnregisterDACChartDataSetAdapter",
+          "kind": "procedure",
+          "line": 127
+        },
+        {
+          "name": "TDACChartDataLink.Create",
+          "kind": "constructor",
+          "line": 129
+        },
+        {
+          "name": "TDACChartDataLink.ActiveChanged",
+          "kind": "procedure",
+          "line": 131
+        },
+        {
+          "name": "TDACChartDataLink.DataSetChanged",
+          "kind": "procedure",
+          "line": 133
+        },
+        {
+          "name": "TDACChartDataLink.RecordChanged",
+          "kind": "procedure",
+          "line": 135
+        },
+        {
+          "name": "TDACChart.Create",
+          "kind": "constructor",
+          "line": 137
+        },
+        {
+          "name": "TDACChart.Destroy",
+          "kind": "destructor",
+          "line": 152
+        },
+        {
+          "name": "TDACChart.SetOptions",
+          "kind": "procedure",
+          "line": 159
+        },
+        {
+          "name": "TDACChart.BeginUpdate",
+          "kind": "procedure",
+          "line": 161
+        },
+        {
+          "name": "TDACChart.EndUpdate",
+          "kind": "procedure",
+          "line": 163
+        },
+        {
+          "name": "TDACChart.LoadJSON",
+          "kind": "procedure",
+          "line": 165
+        },
+        {
+          "name": "TDACChart.SaveJSON",
+          "kind": "function",
+          "line": 173
+        },
+        {
+          "name": "TDACChart.OptionsChanged",
+          "kind": "procedure",
+          "line": 175
+        },
+        {
+          "name": "TDACChart.SetDataSource",
+          "kind": "procedure",
+          "line": 180
+        },
+        {
+          "name": "TDACChart.RequeryData",
+          "kind": "procedure",
+          "line": 188
+        },
+        {
+          "name": "TDACChart.ReadData",
+          "kind": "procedure",
+          "line": 190
+        },
+        {
+          "name": "TDACChart.Configure",
+          "kind": "procedure",
+          "line": 218
+        },
+        {
+          "name": "TDACChart.RenderFrame",
+          "kind": "procedure",
+          "line": 240
+        },
+        {
+          "name": "TDACChart.Paint",
+          "kind": "procedure",
+          "line": 259
+        },
+        {
+          "name": "TDACChart.Resize",
+          "kind": "procedure",
+          "line": 283
+        },
+        {
+          "name": "TDACChart.CreateWnd",
+          "kind": "procedure",
+          "line": 285
+        },
+        {
+          "name": "TDACChart.DestroyWnd",
+          "kind": "procedure",
+          "line": 293
+        },
+        {
+          "name": "TDACChart.Loaded",
+          "kind": "procedure",
+          "line": 295
+        },
+        {
+          "name": "TDACChart.WMEraseBkgnd",
+          "kind": "procedure",
+          "line": 297
+        },
+        {
+          "name": "TDACChart.WMTimer",
+          "kind": "procedure",
+          "line": 299
+        },
+        {
+          "name": "TDACChart.WMDpiChanged",
+          "kind": "procedure",
+          "line": 308
+        },
+        {
+          "name": "TDACChart.WMRefresh",
+          "kind": "procedure",
+          "line": 310
+        },
+        {
+          "name": "TDACChart.CMMouseLeave",
+          "kind": "procedure",
+          "line": 312
+        },
+        {
+          "name": "TDACChart.MouseMove",
+          "kind": "procedure",
+          "line": 317
+        },
+        {
+          "name": "TDACChart.MouseDown",
+          "kind": "procedure",
+          "line": 333
+        },
+        {
+          "name": "TDACChart.KeyDown",
+          "kind": "procedure",
+          "line": 345
+        },
+        {
+          "name": "TDACChart.Notification",
+          "kind": "procedure",
+          "line": 350
+        },
+        {
+          "name": "TDACChart.Replay",
+          "kind": "procedure",
+          "line": 352
+        },
+        {
+          "name": "TDACChart.Stop",
+          "kind": "procedure",
+          "line": 354
+        },
+        {
+          "name": "TDACChart.CapturePNG",
+          "kind": "procedure",
+          "line": 356
+        },
+        {
+          "name": "TDACChart.CaptureWindowPNG",
+          "kind": "procedure",
+          "line": 358
+        },
+        {
+          "name": "TDACChart.CaptureScreenPNG",
+          "kind": "function",
+          "line": 369
+        },
+        {
+          "name": "TDACChart.GeometryJSON",
+          "kind": "function",
+          "line": 387
+        },
+        {
+          "name": "TDACChart.MetricsJSON",
+          "kind": "function",
+          "line": 389
+        },
+        {
+          "name": "TDACChart.NotifyFormat",
+          "kind": "procedure",
+          "line": 408
+        }
+      ]
+    },
+    {
+      "path": "Source/Core/DAC.Components.Charts.Types.pas",
+      "bytes": 46037,
+      "sha256": "c3b257f4cdf82412ebe421984f639c17ca939b739e2d7bdbf39a18f5d14c2a56",
+      "symbols": [
+        {
+          "name": "J",
+          "kind": "function",
+          "line": 180
+        },
+        {
+          "name": "Put",
+          "kind": "procedure",
+          "line": 182
+        },
+        {
+          "name": "Bad",
+          "kind": "procedure",
+          "line": 184
+        },
+        {
+          "name": "Choice",
+          "kind": "function",
+          "line": 186
+        },
+        {
+          "name": "ChoiceJSON",
+          "kind": "function",
+          "line": 199
+        },
+        {
+          "name": "TDACChartBoundValue.Create",
+          "kind": "constructor",
+          "line": 402
+        },
+        {
+          "name": "TDACChartBoundValue.ReadValue",
+          "kind": "function",
+          "line": 404
+        },
+        {
+          "name": "TDACChartBoundValue.WriteValue",
+          "kind": "procedure",
+          "line": 406
+        },
+        {
+          "name": "TDACChartBoundValue.Assign",
+          "kind": "procedure",
+          "line": 408
+        },
+        {
+          "name": "TDACChartBoundValue.Reset",
+          "kind": "procedure",
+          "line": 416
+        },
+        {
+          "name": "TDACChartBoundValue.IsSpecified",
+          "kind": "function",
+          "line": 418
+        },
+        {
+          "name": "TDACChartMeasure.GetMode",
+          "kind": "function",
+          "line": 420
+        },
+        {
+          "name": "TDACChartMeasure.GetValue",
+          "kind": "function",
+          "line": 423
+        },
+        {
+          "name": "TDACChartMeasure.SetMode",
+          "kind": "procedure",
+          "line": 425
+        },
+        {
+          "name": "TDACChartMeasure.SetValue",
+          "kind": "procedure",
+          "line": 427
+        },
+        {
+          "name": "TDACChartMeasure.SetPixels",
+          "kind": "procedure",
+          "line": 430
+        },
+        {
+          "name": "TDACChartMeasure.SetPercent",
+          "kind": "procedure",
+          "line": 432
+        },
+        {
+          "name": "TDACChartAxisLimit.GetMode",
+          "kind": "function",
+          "line": 434
+        },
+        {
+          "name": "TDACChartAxisLimit.GetValue",
+          "kind": "function",
+          "line": 441
+        },
+        {
+          "name": "TDACChartAxisLimit.SetMode",
+          "kind": "procedure",
+          "line": 443
+        },
+        {
+          "name": "TDACChartAxisLimit.SetValue",
+          "kind": "procedure",
+          "line": 451
+        },
+        {
+          "name": "TDACChartFill.GetKind",
+          "kind": "function",
+          "line": 453
+        },
+        {
+          "name": "TDACChartFill.Gradient",
+          "kind": "function",
+          "line": 455
+        },
+        {
+          "name": "TDACChartFill.SetKind",
+          "kind": "procedure",
+          "line": 460
+        },
+        {
+          "name": "TDACChartFill.GetColor",
+          "kind": "function",
+          "line": 474
+        },
+        {
+          "name": "TDACChartFill.SetColor",
+          "kind": "procedure",
+          "line": 476
+        },
+        {
+          "name": "TDACChartFill.GetStops",
+          "kind": "function",
+          "line": 478
+        },
+        {
+          "name": "TDACChartFill.SetStops",
+          "kind": "procedure",
+          "line": 487
+        },
+        {
+          "name": "TDACChartFill.GetStartColor",
+          "kind": "function",
+          "line": 497
+        },
+        {
+          "name": "TDACChartFill.GetEndColor",
+          "kind": "function",
+          "line": 500
+        },
+        {
+          "name": "TDACChartFill.SetStartColor",
+          "kind": "procedure",
+          "line": 503
+        },
+        {
+          "name": "TDACChartFill.SetEndColor",
+          "kind": "procedure",
+          "line": 506
+        },
+        {
+          "name": "TDACChartFill.GetCoordinate",
+          "kind": "function",
+          "line": 509
+        },
+        {
+          "name": "TDACChartFill.SetCoordinate",
+          "kind": "procedure",
+          "line": 516
+        }
+      ]
+    },
+    {
+      "path": "Source/Skia/DAC.Components.Charts.Engine.pas",
+      "bytes": 62775,
+      "sha256": "9f05a59a80bceb32e8cb79294178043c31503efc1dc124cbb643de6567bf44dc",
+      "symbols": [
+        {
+          "name": "Arr",
+          "kind": "function",
+          "line": 101
+        },
+        {
+          "name": "Count",
+          "kind": "function",
+          "line": 106
+        },
+        {
+          "name": "Numeric",
+          "kind": "function",
+          "line": 108
+        },
+        {
+          "name": "NiceStep",
+          "kind": "function",
+          "line": 115
+        },
+        {
+          "name": "TDACChartEngine.Create",
+          "kind": "constructor",
+          "line": 123
+        },
+        {
+          "name": "TDACChartEngine.Destroy",
+          "kind": "destructor",
+          "line": 135
+        },
+        {
+          "name": "TDACChartEngine.ValueKey",
+          "kind": "function",
+          "line": 142
+        },
+        {
+          "name": "TDACChartEngine.Configure",
+          "kind": "procedure",
+          "line": 144
+        },
+        {
+          "name": "TDACChartEngine.LoadData",
+          "kind": "procedure",
+          "line": 169
+        },
+        {
+          "name": "TDACChartEngine.LengthValue",
+          "kind": "function",
+          "line": 256
+        },
+        {
+          "name": "TDACChartEngine.Color",
+          "kind": "function",
+          "line": 265
+        },
+        {
+          "name": "TDACChartEngine.Palette",
+          "kind": "function",
+          "line": 270
+        },
+        {
+          "name": "TDACChartEngine.ItemStyle",
+          "kind": "function",
+          "line": 276
+        },
+        {
+          "name": "TDACChartEngine.PaintFor",
+          "kind": "function",
+          "line": 298
+        },
+        {
+          "name": "TDACChartEngine.NativeFont",
+          "kind": "function",
+          "line": 322
+        },
+        {
+          "name": "TDACChartEngine.TextWidth",
+          "kind": "function",
+          "line": 335
+        },
+        {
+          "name": "TDACChartEngine.TextHeight",
+          "kind": "function",
+          "line": 342
+        },
+        {
+          "name": "TDACChartEngine.Text",
+          "kind": "procedure",
+          "line": 388
+        },
+        {
+          "name": "TDACChartEngine.Coord",
+          "kind": "function",
+          "line": 480
+        },
+        {
+          "name": "TDACChartEngine.AnimatedValue",
+          "kind": "function",
+          "line": 492
+        },
+        {
+          "name": "TDACChartEngine.IsHidden",
+          "kind": "function",
+          "line": 509
+        },
+        {
+          "name": "TDACChartEngine.Render",
+          "kind": "procedure",
+          "line": 511
+        },
+        {
+          "name": "TDACChartEngine.DrawAxes",
+          "kind": "procedure",
+          "line": 570
+        },
+        {
+          "name": "ChartPolyline",
+          "kind": "procedure",
+          "line": 648
+        },
+        {
+          "name": "TDACChartEngine.DrawSeries",
+          "kind": "procedure",
+          "line": 688
+        },
+        {
+          "name": "TDACChartEngine.DrawPie",
+          "kind": "procedure",
+          "line": 796
+        },
+        {
+          "name": "TDACChartEngine.DrawLabel",
+          "kind": "procedure",
+          "line": 839
+        },
+        {
+          "name": "TDACChartEngine.LayoutTitle",
+          "kind": "function",
+          "line": 892
+        },
+        {
+          "name": "TDACChartEngine.DrawLegend",
+          "kind": "procedure",
+          "line": 918
+        },
+        {
+          "name": "TDACChartEngine.HitTest",
+          "kind": "function",
+          "line": 981
+        },
+        {
+          "name": "TDACChartEngine.Activate",
+          "kind": "procedure",
+          "line": 1003
+        },
+        {
+          "name": "TDACChartEngine.DataCount",
+          "kind": "function",
+          "line": 1025
+        },
+        {
+          "name": "TDACChartEngine.NativeFontCount",
+          "kind": "function",
+          "line": 1028
+        },
+        {
+          "name": "TDACChartEngine.DrawTooltip",
+          "kind": "procedure",
+          "line": 1030
+        },
+        {
+          "name": "TDACChartEngine.GeometryJSON",
+          "kind": "function",
+          "line": 1083
+        }
+      ]
+    },
+    {
+      "path": "Source/Skia/DAC.Components.Charts.Surface.pas",
+      "bytes": 3056,
+      "sha256": "afe4edb5d27b944fe31c36df8a8f43a5f5f8e49db01fc62b5556ffb026f9b5ab",
+      "symbols": [
+        {
+          "name": "TDACChartSurface.Release",
+          "kind": "procedure",
+          "line": 35
+        },
+        {
+          "name": "TDACChartSurface.Destroy",
+          "kind": "destructor",
+          "line": 44
+        },
+        {
+          "name": "TDACChartSurface.SetSize",
+          "kind": "procedure",
+          "line": 46
+        },
+        {
+          "name": "TDACChartSurface.Flush",
+          "kind": "procedure",
+          "line": 65
+        },
+        {
+          "name": "TDACChartSurface.OpaqueRect",
+          "kind": "procedure",
+          "line": 67
+        },
+        {
+          "name": "TDACChartSurface.Present",
+          "kind": "procedure",
+          "line": 78
+        },
+        {
+          "name": "TDACChartSurface.SavePNG",
+          "kind": "procedure",
+          "line": 80
+        }
+      ]
+    },
+    {
+      "path": "Tests/Charts.Visual/analyze-frames.py",
+      "bytes": 2353,
+      "sha256": "a76c3c20e03795a98c0b16b471f84cb0c4e80436b32f04173489d3db02581001"
+    },
+    {
+      "path": "Tests/Charts.Visual/capture-reference.cjs",
+      "bytes": 3945,
+      "sha256": "1287dc9da3a2688777f9cf216da1a1c20d1f6365689dc9937638f7e57c2779aa"
+    },
+    {
+      "path": "Tests/Charts.Visual/compare.py",
+      "bytes": 4420,
+      "sha256": "c34fc9786a288fe32c46fecf405e938dfdae495843b524fb32a04c05cc687a8c"
+    },
+    {
+      "path": "Tests/Charts.Visual/fixtures.json",
+      "bytes": 36024,
+      "sha256": "1cc74321269b965b25f7c03dae5ea1243fd88e972c78c1b5c73fa179659c49a2"
+    },
+    {
+      "path": "Tests/Charts.Visual/package.json",
+      "bytes": 152,
+      "sha256": "f3fa5dd7c4ff10bd3b691295b6d1c7e2c6a9fe65bee2ad3d4f84ea51a9ba2103"
+    },
+    {
+      "path": "Tests/Charts.Visual/run.ps1",
+      "bytes": 3027,
+      "sha256": "d646677a31745a9ae8135a538c0b2d771c6cd182b28c161cd4866440811cb04a"
+    },
+    {
+      "path": "Tests/Charts.Visual/test-portable-demo.ps1",
+      "bytes": 4608,
+      "sha256": "ed41068e9440de11afd920a22bfbb12aea49f9adad560e1cadaac753670ce2c2"
+    },
+    {
+      "path": "Tests/DACComponentsCharts.ClientDataSetAdapter.pas",
+      "bytes": 1361,
+      "sha256": "d4b824349f5a5ffe4f8b71926a79f8252abe24ea9e39ae16ac56d9bd559bd3c0",
+      "symbols": [
+        {
+          "name": "TDACChartsTestClientDataSetAdapter.Supports",
+          "kind": "function",
+          "line": 24
+        },
+        {
+          "name": "TDACChartsTestClientDataSetAdapter.CreateReadCursor",
+          "kind": "function",
+          "line": 30
+        }
+      ]
+    },
+    {
+      "path": "Tests/DACComponentsCharts.dpr",
+      "bytes": 12993,
+      "sha256": "3baea49dda8a2deb43113534d2695d0e3b1b2dee86a55c26908f47883a983a6a"
+    },
+    {
+      "path": "Tests/DACComponentsCharts.dproj",
+      "bytes": 2428,
+      "sha256": "c0fd5f1938d98327d4fbe0c7f6ab2b2129272d40e0405c0d8516e412b0999977"
+    },
+    {
+      "path": "Tests/DACComponentsCharts.TypesTests.pas",
+      "bytes": 21662,
+      "sha256": "d291da833d5c874bb7543c259fbf2bb9bb7b1b72349577907f943e394eb62399",
+      "symbols": [
+        {
+          "name": "TestChartTypes",
+          "kind": "procedure",
+          "line": 5
+        },
+        {
+          "name": "Check",
+          "kind": "procedure",
+          "line": 13
+        },
+        {
+          "name": "Reject",
+          "kind": "procedure",
+          "line": 16
+        },
+        {
+          "name": "TestEnumCodecs",
+          "kind": "procedure",
+          "line": 28
+        },
+        {
+          "name": "TestChartTypes",
+          "kind": "procedure",
+          "line": 240
+        }
+      ]
+    }
+  ],
+  "fontFiles": [
+    {
+      "path": "assets/fonts/Inter.ttf",
+      "bytes": 876576,
+      "sha256": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031",
+      "sfntNameRecords": {
+        "1": [
+          "Inter"
+        ],
+        "2": [
+          "Regular"
+        ],
+        "4": [
+          "Inter Regular"
+        ],
+        "5": [
+          "Version 4.001;git-66647c0bb"
+        ],
+        "6": [
+          "Inter-Regular"
+        ]
+      }
+    },
+    {
+      "path": "DAC/Fonts/DAC-Components-Inter.ttf",
+      "bytes": 876576,
+      "sha256": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031",
+      "sfntNameRecords": {
+        "1": [
+          "Inter"
+        ],
+        "2": [
+          "Regular"
+        ],
+        "4": [
+          "Inter Regular"
+        ],
+        "5": [
+          "Version 4.001;git-66647c0bb"
+        ],
+        "6": [
+          "Inter-Regular"
+        ]
+      }
+    },
+    {
+      "path": "C:/Windows/Fonts/arial.ttf",
+      "bytes": 1045720,
+      "sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a",
+      "sfntNameRecords": {
+        "1": [
+          "Arial"
+        ],
+        "2": [
+          "Arrunta",
+          "Navadno",
+          "Normaali",
+          "Normal",
+          "Normale",
+          "Normalny",
+          "Normál",
+          "Normálne",
+          "Regular",
+          "Standaard",
+          "Standard",
+          "normal",
+          "obyčejné",
+          "thường",
+          "Κανονικά",
+          "Обычный"
+        ],
+        "4": [
+          "Arial"
+        ],
+        "5": [
+          "Version 7.06"
+        ],
+        "6": [
+          "ArialMT"
+        ]
+      }
+    },
+    {
+      "path": "C:/Windows/Fonts/arialbd.ttf",
+      "bytes": 989780,
+      "sha256": "e8f4e3baf6cc35fed6fcce3a540e8b39e8f6cda1d22a28f2ec8f526fef7a43f5",
+      "sfntNameRecords": {
+        "1": [
+          "Arial"
+        ],
+        "2": [
+          "Bold",
+          "Fet",
+          "Fett",
+          "Félkövér",
+          "Gras",
+          "Grassetto",
+          "Halvfet",
+          "Kalın",
+          "Krepko",
+          "Lihavoitu",
+          "Lodia",
+          "Negreta",
+          "Negrita",
+          "Negrito",
+          "Pogrubiony",
+          "Tučné",
+          "Vet",
+          "fed",
+          "tučné",
+          "đậm",
+          "Έντονα",
+          "Полужирный"
+        ],
+        "4": [
+          "Arial Bold",
+          "Arial Fet",
+          "Arial Fett",
+          "Arial Félkövér",
+          "Arial Gras",
+          "Arial Grassetto",
+          "Arial Halvfet",
+          "Arial Kalın",
+          "Arial Krepko",
+          "Arial Lihavoitu",
+          "Arial Lodia",
+          "Arial Negreta",
+          "Arial Negrita",
+          "Arial Negrito",
+          "Arial Pogrubiony",
+          "Arial Tučné",
+          "Arial Vet",
+          "Arial fed",
+          "Arial tučné",
+          "Arial đậm",
+          "Arial Έντονα",
+          "Arial Полужирный"
+        ],
+        "5": [
+          "Version 7.06"
+        ],
+        "6": [
+          "Arial-BoldMT"
+        ]
+      }
+    },
+    {
+      "path": "C:/Windows/Fonts/arialbi.ttf",
+      "bytes": 724872,
+      "sha256": "267a411525980d648f10a7222a6ff1ebe4d4feeefbf9b3100cae2b5cfab5594a",
+      "sfntNameRecords": {
+        "1": [
+          "Arial"
+        ],
+        "2": [
+          "Bold Italic",
+          "Fet Kursiv",
+          "Fett Kursiv",
+          "Félkövér dőlt",
+          "Gras Italique",
+          "Grassetto Corsivo",
+          "Halvfet Kursiv",
+          "Kalın İtalik",
+          "Krepko poševno",
+          "Lihavoitu Kursivoi",
+          "Lodi etzana",
+          "Negreta cursiva",
+          "Negrita Cursiva",
+          "Negrito Itálico",
+          "Pogrubiona kursywa",
+          "Tučná kurzíva",
+          "Vet Cursief",
+          "fed kursiv",
+          "nghiêng đậm",
+          "tučné kurzíva",
+          "Έντονα Πλάγια",
+          "Полужирный Курсив"
+        ],
+        "4": [
+          "Arial Bold Italic",
+          "Arial Fet Kursiv",
+          "Arial Fett Kursiv",
+          "Arial Félkövér dőlt",
+          "Arial Gras Italique",
+          "Arial Grassetto Corsivo",
+          "Arial Halvfet Kursiv",
+          "Arial Kalın İtalik",
+          "Arial Krepko poševno",
+          "Arial Lihavoitu Kursivoi",
+          "Arial Lodi etzana",
+          "Arial Negreta cursiva",
+          "Arial Negrita Cursiva",
+          "Arial Negrito Itálico",
+          "Arial Pogrubiona kursywa",
+          "Arial Tučná kurzíva",
+          "Arial Vet Cursief",
+          "Arial fed kursiv",
+          "Arial nghiêng đậm",
+          "Arial tučné kurzíva",
+          "Arial Έντονα Πλάγια",
+          "Arial Полужирный Курсив"
+        ],
+        "5": [
+          "Version 7.06"
+        ],
+        "6": [
+          "Arial-BoldItalicMT"
+        ]
+      }
+    },
+    {
+      "path": "C:/Windows/Fonts/ariali.ttf",
+      "bytes": 721584,
+      "sha256": "86b32db9a06f9694e2a3760c42e5117bcdc5cc1255bb5186ca8ce0305e22f288",
+      "sfntNameRecords": {
+        "1": [
+          "Arial"
+        ],
+        "2": [
+          "Corsivo",
+          "Cursief",
+          "Cursiva",
+          "Dőlt",
+          "Etzana",
+          "Italic",
+          "Italique",
+          "Itálico",
+          "Kursiv",
+          "Kursivoitu",
+          "Kursywa",
+          "Kurzíva",
+          "Poševno",
+          "kursiv",
+          "kurzíva",
+          "nghiêng",
+          "İtalik",
+          "Πλάγια",
+          "Курсив"
+        ],
+        "4": [
+          "Arial Corsivo",
+          "Arial Cursief",
+          "Arial Cursiva",
+          "Arial Dőlt",
+          "Arial Etzana",
+          "Arial Italic",
+          "Arial Italique",
+          "Arial Itálico",
+          "Arial Kursiv",
+          "Arial Kursivoitu",
+          "Arial Kursywa",
+          "Arial Kurzíva",
+          "Arial Poševno",
+          "Arial kursiv",
+          "Arial kurzíva",
+          "Arial nghiêng",
+          "Arial İtalik",
+          "Arial Πλάγια",
+          "Arial Курсив"
+        ],
+        "5": [
+          "Version 7.06"
+        ],
+        "6": [
+          "Arial-ItalicMT"
+        ]
+      }
+    },
+    {
+      "path": "C:/Windows/Fonts/ARIALN.TTF",
+      "bytes": 175956,
+      "sha256": "cad552553cf2a75afca01955751aaa115e2a64fd6c6eea42e1fbd236630b7e0a",
+      "sfntNameRecords": {
+        "1": [
+          "Arial Narrow"
+        ],
+        "2": [
+          "Arrunta",
+          "Navadno",
+          "Normaali",
+          "Normal",
+          "Normale",
+          "Normalny",
+          "Normál",
+          "Normálne",
+          "Regular",
+          "Standaard",
+          "Standard",
+          "normal",
+          "obyčejné",
+          "Κανονικά",
+          "Обычный"
+        ],
+        "4": [
+          "Arial Narrow"
+        ],
+        "5": [
+          "Version 2.40"
+        ],
+        "6": [
+          "ArialNarrow"
+        ]
+      }
+    },
+    {
+      "path": "C:/Windows/Fonts/ARIALNB.TTF",
+      "bytes": 180740,
+      "sha256": "6c4a4b643461def5411e0217b74a625dcf2fb681252ef5da1db0af4eae80aa7e",
+      "sfntNameRecords": {
+        "1": [
+          "Arial Narrow"
+        ],
+        "2": [
+          "Bold",
+          "Fet",
+          "Fett",
+          "Félkövér",
+          "Gras",
+          "Grassetto",
+          "Halvfet",
+          "Kalın",
+          "Krepko",
+          "Lihavoitu",
+          "Lodia",
+          "Negreta",
+          "Negrita",
+          "Negrito",
+          "Pogrubiony",
+          "Tučné",
+          "Vet",
+          "fed",
+          "tučné",
+          "Έντονα",
+          "Полужирный"
+        ],
+        "4": [
+          "Arial Narrow Bold",
+          "Arial Narrow Fet",
+          "Arial Narrow Fett",
+          "Arial Narrow Félkövér",
+          "Arial Narrow Gras",
+          "Arial Narrow Grassetto",
+          "Arial Narrow Halvfet",
+          "Arial Narrow Kalın",
+          "Arial Narrow Krepko",
+          "Arial Narrow Lihavoitu",
+          "Arial Narrow Lodia",
+          "Arial Narrow Negreta",
+          "Arial Narrow Negrita",
+          "Arial Narrow Negrito",
+          "Arial Narrow Pogrubiony",
+          "Arial Narrow Tučné",
+          "Arial Narrow Vet",
+          "Arial Narrow fed",
+          "Arial Narrow tučné",
+          "Arial Narrow Έντονα",
+          "Arial Narrow Полужирный"
+        ],
+        "5": [
+          "Version 2.40"
+        ],
+        "6": [
+          "ArialNarrow-Bold"
+        ]
+      }
+    },
+    {
+      "path": "C:/Windows/Fonts/ARIALNBI.TTF",
+      "bytes": 180084,
+      "sha256": "161b859efd20c69ddebb23012a49f4f2030d56a0c1b9bcfd4df753217ce3e358",
+      "sfntNameRecords": {
+        "1": [
+          "Arial Narrow"
+        ],
+        "2": [
+          "Bold Italic",
+          "Fet Kursiv",
+          "Fett Kursiv",
+          "Félkövér dőlt",
+          "Gras Italique",
+          "Grassetto Corsivo",
+          "Halvfet Kursiv",
+          "Kalın İtalik",
+          "Krepko poševno",
+          "Lihavoitu Kursivoi",
+          "Lodi etzana",
+          "Negreta cursiva",
+          "Negrita Cursiva",
+          "Negrito Itálico",
+          "Pogrubiona kursywa",
+          "Tučná kurzíva",
+          "Vet Cursief",
+          "fed kursiv",
+          "tučné kurzíva",
+          "Έντονα Πλάγια",
+          "Полужирный Курсив"
+        ],
+        "4": [
+          "Arial Narrow Bold Italic",
+          "Arial Narrow Fet Kursiv",
+          "Arial Narrow Fett Kursiv",
+          "Arial Narrow Félkövér dőlt",
+          "Arial Narrow Gras Italique",
+          "Arial Narrow Grassetto Corsivo",
+          "Arial Narrow Halvfet Kursiv",
+          "Arial Narrow Kalın İtalik",
+          "Arial Narrow Krepko poševno",
+          "Arial Narrow Lihavoitu Kursivoi",
+          "Arial Narrow Lodi etzana",
+          "Arial Narrow Negreta cursiva",
+          "Arial Narrow Negrita Cursiva",
+          "Arial Narrow Negrito Itálico",
+          "Arial Narrow Pogrubiona kursywa",
+          "Arial Narrow Tučná kurzíva",
+          "Arial Narrow Vet Cursief",
+          "Arial Narrow fed kursiv",
+          "Arial Narrow tučné kurzíva",
+          "Arial Narrow Έντονα Πλάγια",
+          "Arial Narrow Полужирный Курсив"
+        ],
+        "5": [
+          "Version 2.40"
+        ],
+        "6": [
+          "ArialNarrow-BoldItalic"
+        ]
+      }
+    },
+    {
+      "path": "C:/Windows/Fonts/ARIALNI.TTF",
+      "bytes": 181124,
+      "sha256": "faf73aa7ce40b77ad19c09507a2263fe3f3ce9fa5642e8a1cd54fb3c9f52d599",
+      "sfntNameRecords": {
+        "1": [
+          "Arial Narrow"
+        ],
+        "2": [
+          "Corsivo",
+          "Cursief",
+          "Cursiva",
+          "Dőlt",
+          "Etzana",
+          "Italic",
+          "Italique",
+          "Itálico",
+          "Kursiv",
+          "Kursivoitu",
+          "Kursywa",
+          "Kurzíva",
+          "Poševno",
+          "kursiv",
+          "kurzíva",
+          "İtalik",
+          "Πλάγια",
+          "Курсив"
+        ],
+        "4": [
+          "Arial Narrow Corsivo",
+          "Arial Narrow Cursief",
+          "Arial Narrow Cursiva",
+          "Arial Narrow Dőlt",
+          "Arial Narrow Etzana",
+          "Arial Narrow Italic",
+          "Arial Narrow Italique",
+          "Arial Narrow Itálico",
+          "Arial Narrow Kursiv",
+          "Arial Narrow Kursivoitu",
+          "Arial Narrow Kursywa",
+          "Arial Narrow Kurzíva",
+          "Arial Narrow Poševno",
+          "Arial Narrow kursiv",
+          "Arial Narrow kurzíva",
+          "Arial Narrow İtalik",
+          "Arial Narrow Πλάγια",
+          "Arial Narrow Курсив"
+        ],
+        "5": [
+          "Version 2.40"
+        ],
+        "6": [
+          "ArialNarrow-Italic"
+        ]
+      }
+    }
+  ]
+}

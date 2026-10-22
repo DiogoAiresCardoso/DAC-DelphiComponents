@@ -1,0 +1,26 @@
+{
+  "Source/DesignSystem/DAC.Components.DesignSystem.IconAssets.pas": {
+    "utf8_bom": false,
+    "bare_lf": 0
+  },
+  "Source/Skia/DAC.Components.Skia.IconPainter.pas": {
+    "utf8_bom": false,
+    "bare_lf": 0
+  },
+  "demo/Demo.Principal.dfm": {
+    "utf8_bom": false,
+    "bare_lf": 0
+  },
+  "demo/Demo.Principal.pas": {
+    "utf8_bom": false,
+    "bare_lf": 0
+  },
+  "Tests/DACComponentsInteraction.Current.dpr": {
+    "utf8_bom": false,
+    "bare_lf": 0
+  },
+  "Tests/DACDemoStartup.Current.dpr": {
+    "utf8_bom": false,
+    "bare_lf": 0
+  }
+}

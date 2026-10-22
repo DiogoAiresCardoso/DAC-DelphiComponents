@@ -33,6 +33,7 @@ type
   TDACContainer = class(TCustomControl)
   private
     FAppearance: TDACContainerAppearance;
+    FApplyingTheme: Boolean;
     FBackgroundColor: TAlphaColor;
     FBackgroundPainter: TDACSkiaBackgroundPainter;
     FBorderColor: TAlphaColor;
@@ -254,10 +255,7 @@ begin
   FBorderWidth := Round(TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.ContainerBorderWidth);
   FHeaderHeight := Round(TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.ContainerHeaderHeight);
   FShowHeader := True;
-  if FAppearance = mcaTransparent then
-    Color := clNone
-  else
-    Color := TDACComponentColors.ToVclColor(FBackgroundColor);
+  Color := TDACComponentColors.ToVclColor(ResolvedBackgroundColor);
 
   FRenderer := TDACSkiaRenderer.Create;
   FBackgroundPainter := TDACSkiaBackgroundPainter.Create(FRenderer);
@@ -332,6 +330,8 @@ end;
 procedure TDACContainer.CMParentColorChanged(var AMessage: TMessage);
 begin
   inherited;
+  if FApplyingTheme or (csDestroying in ComponentState) then
+    Exit;
   { A child with ThemeMode=dtmInherit resolves its palette from this physical
     surface. Rebuild its token-backed appearance, not only the Skia frame,
     whenever the designer or runtime changes the parent theme/color. }
@@ -388,7 +388,8 @@ begin
   if FAppearance = mcaTransparent then
     Result := ParentSurfaceColor
   else
-    Result := TDACComponentColors.Normalize(FBackgroundColor);
+    Result := TDACComponentColors.CompositeOver(FBackgroundColor,
+      ParentSurfaceColor);
 end;
 
 function TDACContainer.HeaderText: string;
@@ -495,11 +496,13 @@ begin
 
   ACanvas.Clear(ParentSurfaceColor);
 
-  LBackgroundStyle.Color := FBackgroundColor;
+  { A TCustomControl has an opaque VCL window at runtime. Composite the ARGB
+    background over the physical parent surface before handing it to Skia;
+    otherwise the alpha can look correct in the designer but the HWND fallback
+    exposes the raw RGB colour at runtime. }
+  LBackgroundStyle.Color := ResolvedBackgroundColor;
   LBackgroundStyle.Radius := FCornerRadius;
   LBackgroundStyle.Alpha := LTokens.AlphaOpaque;
-  if FAppearance = mcaTransparent then
-    LBackgroundStyle.Color := LTokens.TransparentSurfaceFallback;
   FBackgroundPainter.Draw(ACanvas, LBackgroundRect, LBackgroundStyle);
 
   LBorderStyle.Color := FBorderColor;
@@ -618,31 +621,35 @@ end;
 
 procedure TDACContainer.ThemeChanged(Sender: TObject);
 begin
-  ApplyAppearanceColors;
-  if FAppearance = mcaTransparent then
-  begin
-    ParentColor := True;
-    ParentBackground := True;
-    Color := clNone;
-  end
-  else
-  begin
+  if FApplyingTheme or (csDestroying in ComponentState) then
+    Exit;
+
+  FApplyingTheme := True;
+  try
+    ApplyAppearanceColors;
+    { TDACContainer is a windowed, opaque host. Even for mcaTransparent it
+      must publish the already resolved physical parent surface instead of
+      alternating ParentColor=True with Color=clNone. TControl.SetColor turns
+      ParentColor off again and, in the designer, that feedback re-enters
+      CM_PARENTCOLORCHANGED until the IDE exhausts its stack. }
     ParentColor := False;
     ParentBackground := False;
-    Color := TDACComponentColors.ToVclColor(FBackgroundColor);
+    Color := TDACComponentColors.ToVclColor(ResolvedBackgroundColor);
+    ParentFont := False;
+    Font.Name := TDACComponentStyle.FontFamily;
+    Font.Size := TDACComponentStyle.TextSize;
+    Font.Style := [];
+    Font.Color := TDACComponentColors.ToVclColor(FTitleColor);
+    if FTitleLabel <> nil then
+      FTitleLabel.ThemeMode := FThemeMode;
+    if FSubtitleLabel <> nil then
+      FSubtitleLabel.ThemeMode := FThemeMode;
+    SynchronizeNativeLabels;
+    UpdateHeaderLabels;
+    InvalidateChrome;
+  finally
+    FApplyingTheme := False;
   end;
-  ParentFont := False;
-  Font.Name := TDACComponentStyle.FontFamily;
-  Font.Size := TDACComponentStyle.TextSize;
-  Font.Style := [];
-  Font.Color := TDACComponentColors.ToVclColor(FTitleColor);
-  if FTitleLabel <> nil then
-    FTitleLabel.ThemeMode := FThemeMode;
-  if FSubtitleLabel <> nil then
-    FSubtitleLabel.ThemeMode := FThemeMode;
-  SynchronizeNativeLabels;
-  UpdateHeaderLabels;
-  InvalidateChrome;
 end;
 
 procedure TDACContainer.SetBackgroundColor(const AValue: TAlphaColor);
@@ -654,10 +661,9 @@ begin
   if FBackgroundColor = LValue then
     Exit;
   FBackgroundColor := LValue;
-  if FAppearance = mcaTransparent then
-    Color := clNone
-  else
-    Color := TDACComponentColors.ToVclColor(FBackgroundColor);
+  Color := TDACComponentColors.ToVclColor(ResolvedBackgroundColor);
+  SynchronizeNativeLabels;
+  RefreshThemeDescendants;
   InvalidateChrome;
 end;
 

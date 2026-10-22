@@ -8,6 +8,7 @@ uses
   System.Types,
   System.UITypes,
   Winapi.Messages,
+  Winapi.Windows,
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
@@ -34,6 +35,7 @@ type
     FThemeMode: TDACThemeMode;
     procedure ButtonClick(Sender: TObject);
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
+    procedure CMParentColorChanged(var AMessage: TMessage); message CM_PARENTCOLORCHANGED;
     procedure CMShowingChanged(var AMessage: TMessage); message CM_SHOWINGCHANGED;
     procedure ComboChange(Sender: TObject);
     function CreatePaginationButton(const AIndex: Integer): TDACButton;
@@ -43,6 +45,7 @@ type
     function PageButtonCount: Integer;
     function PageButtonStart: Integer;
     function PageSizeDisplayText(const AValue: Integer): string;
+    function ParentSurfaceColor: TAlphaColor;
     procedure PageSizeItemsChanged(Sender: TObject);
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
@@ -110,6 +113,7 @@ implementation
 uses
   System.Math,
   System.SysUtils,
+  DAC.Components.DesignSystem.ColorTokens,
   DAC.Components.DesignSystem.ComponentStyle,
   DAC.Components.DesignSystem.ControlTokens;
 
@@ -181,6 +185,12 @@ procedure TDACPagination.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
   UpdateButtonState;
+end;
+
+procedure TDACPagination.CMParentColorChanged(var AMessage: TMessage);
+begin
+  inherited;
+  Redraw;
 end;
 
 procedure TDACPagination.CMShowingChanged(var AMessage: TMessage);
@@ -272,7 +282,7 @@ begin
   if ACanvas = nil then
     Exit;
   LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
-  ACanvas.Clear(LTokens.TransparentSurfaceFallback);
+  ACanvas.Clear(ParentSurfaceColor);
   FRenderer.FillRoundRect(ACanvas, TRectF.Create(LTokens.BorderWidth / 2,
     LTokens.BorderWidth / 2, ADest.Width - (LTokens.BorderWidth / 2),
     ADest.Height - (LTokens.BorderWidth / 2)), LTokens.PaginationBackground,
@@ -282,6 +292,11 @@ begin
     ADest.Height - (LTokens.BorderWidth / 2)), LTokens.PaginationBorder,
     LTokens.PaginationRadius, LTokens.PaginationBorderWidth,
     LTokens.AlphaOpaque);
+end;
+
+function TDACPagination.ParentSurfaceColor: TAlphaColor;
+begin
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
 function TDACPagination.ResolvedBackgroundColor: TAlphaColor;
@@ -467,7 +482,10 @@ var
   I: Integer;
 begin
   if FThemeMode = AValue then
+  begin
+    ThemeChanged(Self);
     Exit;
+  end;
   FThemeMode := AValue;
   for I := Low(FButtons) to High(FButtons) do
     if FButtons[I] <> nil then
@@ -688,7 +706,16 @@ begin
 end;
 
 procedure TDACPagination.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+var
+  LBrush: HBRUSH;
 begin
+  LBrush := CreateSolidBrush(ColorToRGB(
+    TDACComponentColors.ToVclColor(ParentSurfaceColor)));
+  try
+    Winapi.Windows.FillRect(AMessage.DC, ClientRect, LBrush);
+  finally
+    DeleteObject(LBrush);
+  end;
   AMessage.Result := 1;
 end;
 

@@ -1,0 +1,59 @@
+  Embarcadero Delphi for Win32 compiler version 32.0
+  Copyright (c) 1983,2017 Embarcadero Technologies, Inc.
+M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(274): warning W1024: Combining signed and unsigned types - widened both operands [M:\Delphi Componentes\DAC-DelphiComponents\Tests\DACComponentsCharts.dproj]
+M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(286): Hint warning H2164: Variable 'V' is declared but never used in 'TDACChartEngine.ItemStyle' [M:\Delphi Componentes\DAC-DelphiComponents\Tests\DACComponentsCharts.dproj]
+M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(286): Hint warning H2164: Variable 'Pair' is declared but never used in 'TDACChartEngine.ItemStyle' [M:\Delphi Componentes\DAC-DelphiComponents\Tests\DACComponentsCharts.dproj]
+M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(558): Hint warning H2077: Value assigned to 'V' never used [M:\Delphi Componentes\DAC-DelphiComponents\Tests\DACComponentsCharts.dproj]
+M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(905): Hint warning H2164: Variable 'T' is declared but never used in 'TDACChartEngine.HitTest' [M:\Delphi Componentes\DAC-DelphiComponents\Tests\DACComponentsCharts.dproj]
+M:\Delphi Componentes\DAC-DelphiComponents\Source\Controls\DAC.Components.Controls.Charts.pas(308): warning W1073: Combining signed type and unsigned 64-bit type - treated as an unsigned type [M:\Delphi Componentes\DAC-DelphiComponents\Tests\DACComponentsCharts.dproj]
+M:\Delphi Componentes\DAC-DelphiComponents\Source\Controls\DAC.Components.Controls.Charts.pas(322): warning W1073: Combining signed type and unsigned 64-bit type - treated as an unsigned type [M:\Delphi Componentes\DAC-DelphiComponents\Tests\DACComponentsCharts.dproj]
+  26630 lines, 0.28 seconds, 3159176 bytes code, 71520 bytes data.
+  Embarcadero Delphi for Win32 compiler version 32.0
+  Copyright (c) 1983,2017 Embarcadero Technologies, Inc.
+M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(274): warning W1024: Combining signed and unsigned types - widened both operands [M:\Delphi Componentes\DAC-DelphiComponents\demo-charts\DACChartsDemo.dproj]
+M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(286): Hint warning H2164: Variable 'V' is declared but never used in 'TDACChartEngine.ItemStyle' [M:\Delphi Componentes\DAC-DelphiComponents\demo-charts\DACChartsDemo.dproj]
+M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(286): Hint warning H2164: Variable 'Pair' is declared but never used in 'TDACChartEngine.ItemStyle' [M:\Delphi Componentes\DAC-DelphiComponents\demo-charts\DACChartsDemo.dproj]
+M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(558): Hint warning H2077: Value assigned to 'V' never used [M:\Delphi Componentes\DAC-DelphiComponents\demo-charts\DACChartsDemo.dproj]
+M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(905): Hint warning H2164: Variable 'T' is declared but never used in 'TDACChartEngine.HitTest' [M:\Delphi Componentes\DAC-DelphiComponents\demo-charts\DACChartsDemo.dproj]
+M:\Delphi Componentes\DAC-DelphiComponents\Source\Controls\DAC.Components.Controls.Charts.pas(308): warning W1073: Combining signed type and unsigned 64-bit type - treated as an unsigned type [M:\Delphi Componentes\DAC-DelphiComponents\demo-charts\DACChartsDemo.dproj]
+M:\Delphi Componentes\DAC-DelphiComponents\Source\Controls\DAC.Components.Controls.Charts.pas(322): warning W1073: Combining signed type and unsigned 64-bit type - treated as an unsigned type [M:\Delphi Componentes\DAC-DelphiComponents\demo-charts\DACChartsDemo.dproj]
+DACChartsDemo.Main.pas(154): Hint warning H2164: Variable 'A' is declared but never used in 'TChartsDemoForm.VisualChanged' [M:\Delphi Componentes\DAC-DelphiComponents\demo-charts\DACChartsDemo.dproj]
+DACChartsDemo.Main.pas(154): Hint warning H2164: Variable 'S' is declared but never used in 'TChartsDemoForm.VisualChanged' [M:\Delphi Componentes\DAC-DelphiComponents\demo-charts\DACChartsDemo.dproj]
+  26812 lines, 0.53 seconds, 3316968 bytes code, 72104 bytes data.
+C01: assertions OK
+C02: assertions OK
+C03: assertions OK
+C04: assertions OK
+C05: assertions OK
+C06: assertions OK
+C07: assertions OK
+C08: assertions OK
+C09: assertions OK
+C10: assertions OK
+C11: assertions OK
+C12: assertions OK
+C13: assertions OK
+C14: assertions OK
+V01: captured for visual review
+V02: captured for visual review
+V03: captured for visual review
+V04: captured for visual review
+V05: captured for visual review
+V06: captured for visual review
+V07: captured for visual review
+cycle 1 gdi 71
+cycle 2 gdi 77
+cycle 3 gdi 77
+cycle 4 gdi 77
+cycle 5 gdi 75
+gdi 0 75
+gdi 10 75
+gdi 20 75
+gdi 30 75
+gdi 40 75
+gdi 50 75
+gdi 60 75
+gdi 70 75
+gdi 80 75
+DACComponentsCharts: OK
+{"version":"6.1.0","captured":21,"outputDir":"M:\\Delphi Componentes\\DAC-DelphiComponents\\tmp\\chart-validation\\reference"}

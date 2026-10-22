@@ -62,6 +62,8 @@ type
     class procedure SetTokensProvider(const AProvider: TDACColorTokensProvider); static;
     class function Alpha(const ARed, AGreen, ABlue: Byte;
       const AAlpha: Byte = 255): TAlphaColor; static;
+    class function CompositeOver(const AForeground,
+      ABackground: TAlphaColor): TAlphaColor; static;
     class function Normalize(const AColor: TAlphaColor): TAlphaColor; static;
     class function FromVclColor(const AColor: TColor): TAlphaColor; static;
     class function ToVclColor(const AColor: TAlphaColor): TColor; static;
@@ -123,7 +125,8 @@ type
 implementation
 
 uses
-  System.Math;
+  System.Math,
+  System.SysUtils;
 
 var
   GTokensProvider: TDACColorTokensProvider;
@@ -152,6 +155,60 @@ begin
 
   AColor := TColor(GetOrdProp(AControl, LPropInfo));
   Result := (AColor <> clNone) and (AColor <> clDefault);
+end;
+
+function ControlInheritsFromNamedClass(const AControl: TControl;
+  const AClassName: string): Boolean;
+var
+  LClass: TClass;
+begin
+  Result := False;
+  if AControl = nil then
+    Exit;
+
+  LClass := AControl.ClassType;
+  while LClass <> nil do
+  begin
+    if SameText(LClass.ClassName, AClassName) then
+      Exit(True);
+    LClass := LClass.ClassParent;
+  end;
+end;
+
+function PublishedEnumerationEquals(const AControl: TControl;
+  const APropertyName, AValue: string): Boolean;
+var
+  LPropInfo: PPropInfo;
+begin
+  Result := False;
+  if AControl = nil then
+    Exit;
+
+  LPropInfo := GetPropInfo(AControl, APropertyName);
+  if (LPropInfo = nil) or (LPropInfo.PropType^.Kind <> tkEnumeration) then
+    Exit;
+  Result := SameText(GetEnumProp(AControl, LPropInfo), AValue);
+end;
+
+function TryReadPublishedAlphaColor(const AControl: TControl;
+  const APropertyName: string; out AColor: TAlphaColor): Boolean;
+var
+  LPropInfo: PPropInfo;
+begin
+  Result := False;
+  AColor := TAlphaColor(0);
+  if AControl = nil then
+    Exit;
+
+  LPropInfo := GetPropInfo(AControl, APropertyName);
+  { TAlphaColor is a 32-bit ordinal in every supported Delphi target. The
+    published RTTI name may be emitted as TAlphaColor or Cardinal depending on
+    compiler aliases, so validate the storage kind instead of the alias name. }
+  if (LPropInfo = nil) or (LPropInfo.PropType^.Kind <> tkInteger) then
+    Exit;
+
+  AColor := TAlphaColor(Cardinal(GetOrdProp(AControl, LPropInfo)));
+  Result := True;
 end;
 
 class function TDACColorTokens.Default: TDACColorTokens;
@@ -286,6 +343,39 @@ begin
     Result := (LBackground + 0.05) / (LForeground + 0.05)
   else
     Result := (LForeground + 0.05) / (LBackground + 0.05);
+end;
+
+class function TDACComponentColors.CompositeOver(const AForeground,
+  ABackground: TAlphaColor): TAlphaColor;
+var
+  LBackground: Cardinal;
+  LForeground: Cardinal;
+  LForegroundAlpha: Cardinal;
+  LInverseAlpha: Cardinal;
+  LRed: Cardinal;
+  LGreen: Cardinal;
+  LBlue: Cardinal;
+begin
+  LForeground := Cardinal(AForeground);
+  LForegroundAlpha := (LForeground shr 24) and $FF;
+  LBackground := Cardinal(Normalize(ABackground));
+
+  if LForegroundAlpha = 0 then
+    Exit(TAlphaColor(LBackground));
+  if LForegroundAlpha = $FF then
+    Exit(TAlphaColor(LForeground));
+
+  { VCL controls do not have a per-pixel alpha surface. Resolve the visual
+    colour against the real parent first so design-time and runtime paint the
+    same opaque pixels, while preserving the alpha declared by the token. }
+  LInverseAlpha := $FF - LForegroundAlpha;
+  LRed := ((((LForeground shr 16) and $FF) * LForegroundAlpha) +
+    (((LBackground shr 16) and $FF) * LInverseAlpha) + 127) div 255;
+  LGreen := ((((LForeground shr 8) and $FF) * LForegroundAlpha) +
+    (((LBackground shr 8) and $FF) * LInverseAlpha) + 127) div 255;
+  LBlue := (((LForeground and $FF) * LForegroundAlpha) +
+    ((LBackground and $FF) * LInverseAlpha) + 127) div 255;
+  Result := TAlphaColor($FF000000 or (LRed shl 16) or (LGreen shl 8) or LBlue);
 end;
 
 class function TDACComponentColors.ControlBackgroundForSurface(
@@ -485,6 +575,7 @@ end;
 class function TDACComponentColors.ResolveParentSurface(
   const AControl: TControl): TAlphaColor;
 var
+  LBackgroundColor: TAlphaColor;
   LControl: TControl;
   LColor: TColor;
 begin
@@ -495,6 +586,26 @@ begin
 
   while LControl <> nil do
   begin
+    { TDACContainer owns a semantic ARGB BackgroundColor. Its published VCL
+      Color is only an opaque compatibility surface and may still contain a
+      streamed or previously composed value while the child is being painted.
+      Resolve the semantic background first so Edit, ButtonEdit, DateTimePicker
+      and every other descendant blend with the exact container surface.
+
+      The recursive call starts at the container's parent, therefore alpha is
+      composed once and nested containers remain deterministic without needing
+      a dependency from DesignSystem back to Controls. }
+    if ControlInheritsFromNamedClass(LControl, 'TDACContainer') then
+    begin
+      if PublishedEnumerationEquals(LControl, 'Appearance',
+        'mcaTransparent') then
+        Exit(ResolveParentSurface(LControl));
+      if TryReadPublishedAlphaColor(LControl, 'BackgroundColor',
+        LBackgroundColor) then
+        Exit(CompositeOver(LBackgroundColor,
+          ResolveParentSurface(LControl)));
+    end;
+
     if TryReadPublishedColor(LControl, LColor) then
       Exit(FromVclColor(LColor));
     LControl := LControl.Parent;

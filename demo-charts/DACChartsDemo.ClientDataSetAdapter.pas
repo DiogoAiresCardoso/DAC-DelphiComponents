@@ -35,7 +35,7 @@ var
 begin
   LClone := TClientDataSet.Create(nil);
   try
-    LClone.CloneCursor(TCustomClientDataSet(ADataSet), True, True);
+    LClone.CloneCursor(TCustomClientDataSet(ADataSet), False, False);
     Result := LClone;
   except
     LClone.Free;

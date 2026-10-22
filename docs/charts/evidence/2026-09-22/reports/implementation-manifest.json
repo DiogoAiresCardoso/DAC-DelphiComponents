@@ -1,0 +1,12 @@
+{
+  "platform": "Windows-11-10.0.26200-SP0",
+  "sources": {
+    "Source/Controls/DAC.Components.Controls.Charts.pas": "8996b69c5254d798768df8b6b5a8596eb360f84df6b01cad57893f8d73515be7",
+    "Source/Controls/DAC.Components.Charts.Options.pas": "add65970ec8e1b80358d18ab430abfb1d44946c1c044e3a9804d896ec1455cb5",
+    "Source/Skia/DAC.Components.Charts.Engine.pas": "2caf316e44895f0211303b96af0155833063e22510f65b61af72960ad2af29e0",
+    "Source/Skia/DAC.Components.Charts.Surface.pas": "afe4edb5d27b944fe31c36df8a8f43a5f5f8e49db01fc62b5556ffb026f9b5ab",
+    "Tests/Charts.Visual/fixtures.json": "1cc74321269b965b25f7c03dae5ea1243fd88e972c78c1b5c73fa179659c49a2",
+    "demo-charts/DACChartsDemo.Main.pas": "cb1aa7f9b484872f0c4aed61da031678a48591993308fe7dfcaa9fefbc977d75",
+    "demo-charts/DACChartsDemo.Main.dfm": "5f218cdb0b0b23155ec0e4d67c716eb42c71b4292891465bd63db3aeff77257a"
+  }
+}

@@ -70,6 +70,16 @@ type
     procedure QueueCenteredText(const AText, AFamily: string;
       const ABounds: TRectF; const ASize: Single; const AColor: TAlphaColor;
       const ABold: Boolean = False; const AMaxWidth: Single = 0);
+  published
+    { Interactive owners may opt in by enabling the overlay and assigning the
+      same handlers used by the Skia surface. Publishing the inherited events
+      keeps this non-windowed layer transparent to the component lifecycle
+      while allowing VCL hit-testing to reach one canonical interaction path. }
+    property OnMouseDown;
+    property OnMouseEnter;
+    property OnMouseLeave;
+    property OnMouseMove;
+    property OnMouseUp;
   end;
 
   TDACSystemText = class(TGraphicControl)

@@ -1,0 +1,8 @@
+project=DACSkiaComponents
+configuration=Debug
+platform=Win32
+bplOutput=M:\Delphi Componentes\DAC-DelphiComponents/tmp/dbgrid-actions-20261020/runtime-bpl
+dcpOutput=M:\Delphi Componentes\DAC-DelphiComponents/tmp/dbgrid-actions-20261020/runtime-dcp
+dcuOutput=M:\Delphi Componentes\DAC-DelphiComponents/tmp/dbgrid-actions-20261020/runtime-dcu
+cBuilderOutput=None
+legacyArtifacts=preserved

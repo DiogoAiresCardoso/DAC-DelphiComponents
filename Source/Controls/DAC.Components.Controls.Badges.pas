@@ -80,6 +80,7 @@ type
     procedure PaintBoxMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     function ParentSurfaceColor: TAlphaColor;
+    procedure CMParentColorChanged(var AMessage: TMessage); message CM_PARENTCOLORCHANGED;
     function Pixels(const AValue: Integer): Integer;
     procedure SetAppearance(const AValue: TDACBadgeAppearance);
     procedure SetCornerRadius(const AValue: Integer);
@@ -271,6 +272,12 @@ begin
   InvalidateBadge;
 end;
 
+procedure TDACBadge.CMParentColorChanged(var AMessage: TMessage);
+begin
+  inherited;
+  InvalidateBadge;
+end;
+
 procedure TDACBadge.CMTextChanged(var AMessage: TMessage);
 begin
   inherited;
@@ -433,7 +440,7 @@ begin
   if not Enabled then
     LAlpha := LTokens.BadgeDisabledAlpha;
 
-  LBackground := BackgroundColor;
+  LBackground := ResolvedBackgroundColor;
   LBorder := BorderColor;
   FRenderer.FillRoundRect(ACanvas, LRect, LBackground, LRadius, LAlpha);
   if BorderAlpha > 0 then
@@ -516,12 +523,13 @@ end;
 
 function TDACBadge.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.PopupBackground;
+  Result := TDACComponentColors.ResolveParentSurface(Self);
 end;
 
 function TDACBadge.ResolvedBackgroundColor: TAlphaColor;
 begin
-  Result := BackgroundColor;
+  Result := TDACComponentColors.CompositeOver(BackgroundColor,
+    ParentSurfaceColor);
 end;
 
 procedure TDACBadge.Redraw;
@@ -603,7 +611,10 @@ end;
 procedure TDACBadge.SetThemeMode(const AValue: TDACThemeMode);
 begin
   if FThemeMode = AValue then
+  begin
+    ThemeChanged(Self);
     Exit;
+  end;
   FThemeMode := AValue;
   ThemeChanged(Self);
 end;
@@ -667,7 +678,7 @@ var
   LBrush: HBRUSH;
   LColor: TAlphaColor;
 begin
-  LColor := ResolvedBackgroundColor;
+  LColor := ParentSurfaceColor;
   LBrush := CreateSolidBrush(ColorToRGB(
     TColor(((LColor and $00FF0000) shr 16) or
     (LColor and $0000FF00) or ((LColor and $000000FF) shl 16))));

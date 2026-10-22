@@ -1,4 +1,4 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{880B61BC-ABD9-47CF-845F-EC9FFCD41FFD}</ProjectGuid>
         <ProjectVersion>18.3</ProjectVersion>
@@ -9,6 +9,8 @@
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Application</AppType>
+        <DAC_SkiaRuntimeSource Condition="'$(SKIADIR)'!=''">$(SKIADIR)\Binary\Shared\Win32\sk4d.dll</DAC_SkiaRuntimeSource>
+        <DAC_SkiaRuntimeSource Condition="'$(SKIADIR)'==''">$(MSBuildProjectDirectory)\..\..\Build\EXE\sk4d.dll</DAC_SkiaRuntimeSource>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
         <Base>true</Base>
@@ -44,8 +46,6 @@
         <DCC_DcuOutput>..\Build\Dcu\$(Platform)\$(Config)\Demo</DCC_DcuOutput>
         <DCC_ExeOutput>..\Build\Exe\$(Platform)\$(Config)</DCC_ExeOutput>
         <DCC_CBuilderOutput>None</DCC_CBuilderOutput>
-        <DAC_SkiaRuntimeSource Condition="'$(SKIADIR)'!=''">$(SKIADIR)\Binary\Shared\Win32\sk4d.dll</DAC_SkiaRuntimeSource>
-        <DAC_SkiaRuntimeSource Condition="'$(SKIADIR)'==''">$(MSBuildProjectDirectory)\..\Build\EXE\sk4d.dll</DAC_SkiaRuntimeSource>
         <DCC_UnitSearchPath>..\Source\Core;..\Source\DesignSystem;..\Source\Skia;..\Source\Controls;..\Source\Hooks;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DCC_E>false</DCC_E>
         <DCC_N>false</DCC_N>
@@ -584,8 +584,10 @@
         <BuildDependsOn>$(BuildDependsOn);CopySkiaRuntimeForDemo;WriteDacBuildProvenance</BuildDependsOn>
     </PropertyGroup>
     <Target Name="CopySkiaRuntimeForDemo">
-        <Error Condition="!Exists('$(DAC_SkiaRuntimeSource)')" Text="sk4d.dll nao foi encontrada em $(DAC_SkiaRuntimeSource)."/>
-        <Copy SourceFiles="$(DAC_SkiaRuntimeSource)" DestinationFiles="$(DCC_ExeOutput)\sk4d.dll"/>
+        <Error Condition="'$(DAC_SkiaRuntimeSource)'==''" Text="O caminho de origem de sk4d.dll nao foi resolvido. Configure SKIADIR ou disponibilize a DLL no diretorio Build\EXE compartilhado."/>
+        <Error Condition="'$(DAC_SkiaRuntimeSource)'!='' and !Exists('$(DAC_SkiaRuntimeSource)')" Text="sk4d.dll nao foi encontrada em $(DAC_SkiaRuntimeSource)."/>
+        <MakeDir Directories="$(DCC_ExeOutput)" Condition="'$(DCC_ExeOutput)'!='' and !Exists('$(DCC_ExeOutput)')"/>
+        <Copy SourceFiles="$(DAC_SkiaRuntimeSource)" DestinationFiles="$(DCC_ExeOutput)\sk4d.dll" SkipUnchangedFiles="true"/>
     </Target>
     <Target Name="WriteDacBuildProvenance">
         <MakeDir Directories="$(DAC_ProvenanceOutput)"/>

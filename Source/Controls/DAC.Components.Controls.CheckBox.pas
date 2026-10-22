@@ -12,9 +12,11 @@ uses
   Vcl.Graphics,
   Vcl.Skia,
   DAC.Components.Controls.SystemText,
+  DAC.Components.Controls.Edit,
   DAC.Components.DesignSystem.Theme,
   DAC.Components.Skia.IconPainter,
-  DAC.Components.Skia.Renderer;
+  DAC.Components.Skia.Renderer,
+  DAC.Components.Controls.FieldSupport;
 
 type
   TDACSelectorKind = (
@@ -36,6 +38,9 @@ type
     FRenderer: TDACSkiaRenderer;
     FTextOverlay: TDACSystemTextOverlay;
     FThemeMode: TDACThemeMode;
+    FReadOnly: Boolean;
+    FRequired: Boolean;
+    FStatus: TDACEditStatus;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure CMTextChanged(var AMessage: TMessage); message CM_TEXTCHANGED;
     procedure DrawCircle(const ACanvas: ISkCanvas; const ACenter: TPointF;
@@ -51,9 +56,13 @@ type
     procedure PaintBoxMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     function ParentSurfaceColor: TAlphaColor;
+    function ResolvedFieldState: TDACResolvedFieldState;
     function Pixels(const AValue: Integer): Integer;
     procedure SetChecked(const AValue: Boolean);
     procedure SetKind(const AValue: TDACSelectorKind);
+    procedure SetReadOnly(const AValue: Boolean);
+    procedure SetRequired(const AValue: Boolean);
+    procedure SetStatus(const AValue: TDACEditStatus);
     procedure SetThemeMode(const AValue: TDACThemeMode);
     procedure ThemeChanged(Sender: TObject);
     procedure Toggle;
@@ -61,6 +70,8 @@ type
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
   protected
     procedure CreateWnd; override;
+    procedure DoEnter; override;
+    procedure DoExit; override;
     procedure KeyDown(var Key: Word; Shift: TShiftState); override;
     procedure Loaded; override;
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
@@ -89,6 +100,9 @@ type
     property TabStop default True;
     property ThemeMode: TDACThemeMode read FThemeMode write SetThemeMode default dtmInherit;
     property Visible;
+    property ReadOnly: Boolean read FReadOnly write SetReadOnly default False;
+    property Required: Boolean read FRequired write SetRequired default False;
+    property Status: TDACEditStatus read FStatus write SetStatus default mesNormal;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
     property OnClick;
     property OnEnter;
@@ -135,6 +149,9 @@ begin
   FBindingCanModify := True;
   FKind := mskCheckBox;
   FThemeMode := dtmInherit;
+  FReadOnly := False;
+  FRequired := False;
+  FStatus := mesNormal;
 
   FRenderer := TDACSkiaRenderer.Create;
   FIconPainter := TDACSkiaIconPainter.Create(FRenderer);
@@ -152,6 +169,11 @@ begin
   FTextOverlay.Parent := Self;
   FTextOverlay.SetSubComponent(True);
   FTextOverlay.Align := alClient;
+  FTextOverlay.Enabled := True;
+  FTextOverlay.OnMouseDown := PaintBoxMouseDown;
+  FTextOverlay.OnMouseEnter := PaintBoxMouseEnter;
+  FTextOverlay.OnMouseLeave := PaintBoxMouseLeave;
+  FTextOverlay.OnMouseUp := PaintBoxMouseUp;
   TDACThemeManager.RegisterListener(Self, ThemeChanged);
 
   UpdatePaintBoxBounds;
@@ -169,6 +191,8 @@ end;
 
 procedure TDACSelector.Click;
 begin
+  if not Enabled or FReadOnly or not FBindingCanModify then
+    Exit;
   Toggle;
   inherited Click;
 end;
@@ -177,7 +201,7 @@ procedure TDACSelector.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
   Cursor := crHandPoint;
-  if not Enabled then
+  if not Enabled or FReadOnly or not FBindingCanModify then
     Cursor := crDefault;
   InvalidateSelector;
 end;
@@ -192,6 +216,18 @@ procedure TDACSelector.CreateWnd;
 begin
   inherited;
   UpdatePaintBoxBounds;
+  InvalidateSelector;
+end;
+
+procedure TDACSelector.DoEnter;
+begin
+  inherited;
+  InvalidateSelector;
+end;
+
+procedure TDACSelector.DoExit;
+begin
+  inherited;
   InvalidateSelector;
 end;
 
@@ -233,7 +269,7 @@ end;
 procedure TDACSelector.KeyDown(var Key: Word; Shift: TShiftState);
 begin
   inherited;
-  if (Key = VK_SPACE) and Enabled and FBindingCanModify then
+  if (Key = VK_SPACE) and Enabled and FBindingCanModify and not FReadOnly then
   begin
     Toggle;
     Key := 0;
@@ -251,11 +287,11 @@ procedure TDACSelector.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 begin
   inherited;
-  if (Button = mbLeft) and Enabled and FBindingCanModify then
+  if (Button = mbLeft) and Enabled then
   begin
-    FPressed := True;
     if CanFocus then
       SetFocus;
+    FPressed := FBindingCanModify and not FReadOnly;
     InvalidateSelector;
   end;
 end;
@@ -270,7 +306,7 @@ begin
     Exit;
   FPressed := False;
   LPoint := Point(X, Y);
-  if Enabled and FBindingCanModify and
+  if Enabled and FBindingCanModify and not FReadOnly and
     PtInRect(Rect(0, 0, Width, Height), LPoint) then
     Click
   else
@@ -291,6 +327,11 @@ var
   LTextLeft: Single;
   LTrackRect: TRectF;
   LTokens: TDACControlTokens;
+  LDrawCaption: string;
+  LDrawColor: TAlphaColor;
+  LDrawBold: Boolean;
+  LFocusRect: TRectF;
+  LChrome: TDACFieldChromeResult;
 begin
   if (ACanvas = nil) or (ADest.Width <= 0) or (ADest.Height <= 0) then
     Exit;
@@ -300,12 +341,11 @@ begin
 
   LSurface := ParentSurfaceColor;
   LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  LChrome := TDACFieldChromeResolver.Resolve(ResolvedFieldState, LTokens);
   LScale := LTokens.BorderWidth;
   ACanvas.Clear(LSurface);
 
-  LTextColor := LTokens.SelectorText;
-  if not Enabled then
-    LTextColor := LTokens.SelectorDisabledText;
+  LTextColor := LChrome.TextColor;
 
   case FKind of
     mskToggleSwitch:
@@ -320,7 +360,9 @@ begin
         if FMouseInside and Enabled and not FChecked then
           LFill := LTokens.SelectorTrackHover;
         FRenderer.FillRoundRect(ACanvas, LTrackRect, LFill, LTrackRect.Height / 2,
-          IfThen(Enabled, LTokens.AlphaOpaque, LTokens.SelectorDisabledAlpha));
+          IfThen(Enabled, LTokens.AlphaOpaque, LTokens.InputBorderAlphaDisabled));
+        FRenderer.StrokeRoundRect(ACanvas, LTrackRect, LChrome.BorderColor,
+          LTrackRect.Height / 2, LChrome.BorderWidth, LChrome.BorderAlpha);
         LKnobCenter := TPointF.Create(LTrackRect.Left + Pixels(Round(LTokens.SelectorToggleKnobOffset)),
           LTrackRect.Top + (LTrackRect.Height / 2));
         if FChecked then
@@ -329,26 +371,38 @@ begin
           Pixels(Round(LTokens.SelectorToggleKnobRadius)), LTokens.SelectorKnob,
           False, LTokens.SelectorStrokeWidth, LTokens.AlphaOpaque);
         LTextLeft := LTrackRect.Right + Pixels(Round(LTokens.SelectorTextOffset - LTokens.SelectorCheckSize));
+        if Focused then
+        begin
+          LFocusRect := LTrackRect;
+          LFocusRect.Inflate(2, 2);
+          FRenderer.StrokeRoundRect(ACanvas, LFocusRect, LChrome.BorderColor,
+            (LTrackRect.Height / 2) + 2, LChrome.BorderWidth,
+            LChrome.BorderAlpha);
+        end;
       end;
     mskRadioButton:
       begin
         LKnobCenter := TPointF.Create(Pixels(Round(LTokens.SelectorRadioCenter)), ADest.Height / 2);
         DrawCircle(ACanvas, LKnobCenter, Pixels(Round(LTokens.SelectorRadioRadius)),
-          LTokens.SelectorBorder, True, Pixels(Round(LTokens.SelectorStrokeWidth)),
-          LTokens.AlphaOpaque);
-        if FMouseInside and Enabled then
-          DrawCircle(ACanvas, LKnobCenter, Pixels(Round(LTokens.SelectorRadioRadius)),
-            LTokens.Success, True, Pixels(Round(LTokens.SelectorStrokeWidth)), LTokens.SelectorHoverAlpha);
+          LChrome.BorderColor, True, LChrome.BorderWidth,
+          LChrome.BorderAlpha);
         if FChecked then
         begin
-          DrawCircle(ACanvas, LKnobCenter, Pixels(Round(LTokens.SelectorRadioRadius)),
-            LTokens.Success, True, LTokens.SelectorCheckedBorderWidth,
-            LTokens.AlphaOpaque);
           DrawCircle(ACanvas, LKnobCenter, Pixels(Round(LTokens.SelectorRadioDotRadius)),
             LTokens.Success, False, LTokens.SelectorStrokeWidth,
             LTokens.AlphaOpaque);
         end;
         LTextLeft := Pixels(Round(LTokens.SelectorTextOffset));
+        if Focused then
+        begin
+          LFocusRect := TRectF.Create(LKnobCenter.X - Pixels(Round(LTokens.SelectorRadioRadius)) - 2,
+            LKnobCenter.Y - Pixels(Round(LTokens.SelectorRadioRadius)) - 2,
+            LKnobCenter.X + Pixels(Round(LTokens.SelectorRadioRadius)) + 2,
+            LKnobCenter.Y + Pixels(Round(LTokens.SelectorRadioRadius)) + 2);
+          FRenderer.StrokeRoundRect(ACanvas, LFocusRect, LChrome.BorderColor,
+            (LFocusRect.Width / 2), LChrome.BorderWidth,
+            LChrome.BorderAlpha);
+        end;
       end;
   else
     begin
@@ -361,11 +415,10 @@ begin
         LFill := LTokens.Success;
       FRenderer.FillRoundRect(ACanvas, LBoxRect, LFill,
         Pixels(Round(LTokens.SelectorCheckRadius)),
-        IfThen(Enabled, LTokens.AlphaOpaque, LTokens.SelectorDisabledAlpha));
+        IfThen(Enabled, LTokens.AlphaOpaque, LTokens.InputBorderAlphaDisabled));
       FRenderer.StrokeRoundRect(ACanvas, LBoxRect,
-        LTokens.SelectorBorder, Pixels(Round(LTokens.SelectorCheckRadius)),
-        Pixels(Round(LTokens.SelectorStrokeWidth)), IfThen(FMouseInside and Enabled,
-          LTokens.AlphaOpaque, LTokens.SelectorHoverAlpha));
+        LChrome.BorderColor, Pixels(Round(LTokens.SelectorCheckRadius)),
+        LChrome.BorderWidth, LChrome.BorderAlpha);
       if FChecked then
       begin
         LIconRect := TRectF.Create(LBoxRect.Left + Pixels(Round(LTokens.SelectorCheckInset)), LBoxRect.Top + Pixels(Round(LTokens.SelectorCheckInset)),
@@ -375,14 +428,33 @@ begin
         FIconPainter.Draw(ACanvas, LIconRect, mikCheck, LIconStyle);
       end;
       LTextLeft := Pixels(Round(LTokens.SelectorTextOffset));
+      if Focused then
+      begin
+        LFocusRect := LBoxRect;
+        LFocusRect.Inflate(2, 2);
+        FRenderer.StrokeRoundRect(ACanvas, LFocusRect, LChrome.BorderColor,
+          Pixels(Round(LTokens.SelectorCheckRadius)) + 2,
+          LChrome.BorderWidth, LChrome.BorderAlpha);
+      end;
     end;
   end;
 
   if Caption <> '' then
-    FRenderer.Text(ACanvas, Caption,
+  begin
+    LDrawCaption := Caption;
+    LDrawColor := LTextColor;
+    LDrawBold := False;
+    if FRequired then
+    begin
+      LDrawCaption := LDrawCaption + ' *';
+      LDrawColor := LTokens.FieldRequiredText;
+      LDrawBold := True;
+    end;
+    FRenderer.Text(ACanvas, LDrawCaption,
       TDACComponentStyle.FontFamily, LTextLeft,
-      (ADest.Height / 2) + Pixels(Round(LTokens.SelectorTextBaselineOffset)), LTokens.SelectorTextSize, LTextColor, False,
+      (ADest.Height / 2) + Pixels(Round(LTokens.SelectorTextBaselineOffset)), LTokens.SelectorTextSize, LDrawColor, LDrawBold,
       ADest.Width - LTextLeft);
+  end;
   finally
     FRenderer.EndNativeText;
   end;
@@ -415,12 +487,22 @@ end;
 
 function TDACSelector.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.PopupBackground;
+  Result := TDACComponentColors.ResolveParentSurface(Self);
+end;
+
+function TDACSelector.ResolvedFieldState: TDACResolvedFieldState;
+begin
+  Result := TDACFieldStateResolver.Resolve(Enabled, False,
+    FReadOnly or not FBindingCanModify, Focused, FMouseInside, FChecked,
+    TDACFieldValidation(Ord(FStatus)));
 end;
 
 function TDACSelector.ResolvedTextColor: TAlphaColor;
+var
+  LTokens: TDACControlTokens;
 begin
-  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.SelectorText;
+  LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  Result := TDACFieldChromeResolver.Resolve(ResolvedFieldState, LTokens).TextColor;
 end;
 
 procedure TDACSelector.Resize;
@@ -455,7 +537,7 @@ begin
   if not FBindingCanModify then
     FPressed := False;
   Cursor := crHandPoint;
-  if not Enabled or not FBindingCanModify then
+  if not Enabled or FReadOnly or not FBindingCanModify then
     Cursor := crDefault;
   InvalidateSelector;
 end;
@@ -468,10 +550,39 @@ begin
   InvalidateSelector;
 end;
 
+procedure TDACSelector.SetReadOnly(const AValue: Boolean);
+begin
+  if FReadOnly = AValue then
+    Exit;
+  FReadOnly := AValue;
+  if FReadOnly then
+    FPressed := False;
+  Cursor := crHandPoint;
+  if not Enabled or FReadOnly or not FBindingCanModify then
+    Cursor := crDefault;
+  InvalidateSelector;
+end;
+
+procedure TDACSelector.SetRequired(const AValue: Boolean);
+begin
+  if FRequired = AValue then
+    Exit;
+  FRequired := AValue;
+  InvalidateSelector;
+end;
+
+procedure TDACSelector.SetStatus(const AValue: TDACEditStatus);
+begin
+  if FStatus = AValue then
+    Exit;
+  FStatus := AValue;
+  InvalidateSelector;
+end;
+
 procedure TDACSelector.SetThemeMode(const AValue: TDACThemeMode);
 begin
-  if FThemeMode = AValue then Exit;
-  FThemeMode := AValue;
+  if FThemeMode <> AValue then
+    FThemeMode := AValue;
   ThemeChanged(Self);
 end;
 

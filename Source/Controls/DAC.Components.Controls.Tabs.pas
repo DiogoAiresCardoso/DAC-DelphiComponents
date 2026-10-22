@@ -36,23 +36,29 @@ type
     PageIndex: Integer;
     Bounds: TRectF;
     TextBounds: TRectF;
+    Text: string;
   end;
   TDACTabLayout = array of TDACTabLayoutItem;
 
   TDACTabSheetAccess = class(TTabSheet)
   end;
 
-  // A TSkPaintBox is a TGraphicControl.  It cannot be layered over the native
-  // HWND owned by TPageControl, even when it is a sibling and brought to the
-  // front.  This lightweight windowed host gives the Skia surface a real VCL
-  // z-order slot while keeping all visual pixels in the child paint box.
+  // A windowed, owned header keeps Skia chrome and native Windows text
+  // together inside TDACTabs. The native TTabSheet layout reserves its bounds
+  // in both the VCL designer and runtime; no sibling overlay is required.
   TDACTabHeaderControl = class(TCustomControl)
   private
     FPaintBox: TSkPaintBox;
     FTabs: TDACTabs;
     FHotIndex: Integer;
     FRenderer: TDACSkiaRenderer;
-    FTextOverlay: TDACSystemTextOverlay;
+    FTextOverlay: TGraphicControl;
+    FMeasureBitmap: TBitmap;
+    FScrollOffset: Integer;
+    procedure DrawNativeText(const ACanvas: TCanvas);
+    procedure SetTextFont(const ACanvas: TCanvas; const ABold: Boolean);
+    function CaptionSize(const AText: string; const AWidth: Integer): TSize;
+    function WrappedCaption(const AText: string; const AWidth: Integer): string;
     function TabAt(const X, Y: Integer): Integer;
     procedure PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
@@ -63,6 +69,9 @@ type
     procedure ClearHot;
   protected
     procedure CMMouseLeave(var AMessage: TMessage); message CM_MOUSELEAVE;
+    procedure CMDesignHitTest(var AMessage: TCMDesignHitTest); message CM_DESIGNHITTEST;
+    function DoMouseWheel(Shift: TShiftState; WheelDelta: Integer;
+      MousePos: TPoint): Boolean; override;
   public
     constructor CreateForTabs(ATabs: TDACTabs);
     destructor Destroy; override;
@@ -92,12 +101,17 @@ type
     FPendingParent: TWinControl;
     FThemeMode: TDACThemeMode;
     FCustomContentColor: Boolean;
-    FPageContentBounds: TDictionary<TControl, TRect>;
     FShowContentBorder: Boolean;
     FSize: TDACTabSize;
     FStreamingHostUsed: Boolean;
+    FUpdatingHeader: Boolean;
+    FChromePixels: TArray<Cardinal>;
+    FChromeSurface: ISkSurface;
+    FChromeWidth, FChromeHeight: Integer;
+    FChromeRenderer: TDACSkiaRenderer;
     FTabHeightValue: Smallint;
     FTabWidthValue: Smallint;
+    function ContentFrameRect: TRect;
     function GetActiveIndex: Integer;
     function GetOrientation: TDACTabOrientation;
     function HeaderExtent: Integer;
@@ -136,6 +150,10 @@ type
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure CMVisibleChanged(var AMessage: TMessage); message CM_VISIBLECHANGED;
     procedure CMShowingChanged(var AMessage: TMessage); message CM_SHOWINGCHANGED;
+    procedure AdjustClientRect(var Rect: TRect); override;
+    procedure PaintWindow(DC: HDC); override;
+    procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
+    procedure WndProc(var Message: TMessage); override;
     procedure Change; override;
     procedure CreateParams(var Params: TCreateParams); override;
     procedure CreateWnd; override;
@@ -188,6 +206,28 @@ type
   TWinControlAccess = class(TWinControl)
   end;
 
+  TDACTabTextOverlay = class(TGraphicControl)
+  private
+    FHeader: TDACTabHeaderControl;
+  protected
+    procedure Paint; override;
+  public
+    constructor CreateForHeader(AHeader: TDACTabHeaderControl);
+  end;
+
+constructor TDACTabTextOverlay.CreateForHeader(AHeader: TDACTabHeaderControl);
+begin
+  inherited Create(AHeader);
+  FHeader := AHeader;
+  Enabled := False;
+  SetSubComponent(True);
+end;
+
+procedure TDACTabTextOverlay.Paint;
+begin
+  FHeader.DrawNativeText(Canvas);
+end;
+
 function CollectTabsDescendantWindow(const AWindow: HWND;
   const AParameter: LPARAM): BOOL; stdcall;
 begin
@@ -214,10 +254,11 @@ end;
 constructor TDACTabHeaderControl.CreateForTabs(ATabs: TDACTabs);
 begin
   inherited Create(ATabs);
-  ControlStyle := ControlStyle + [csOpaque];
+  ControlStyle := ControlStyle + [csOpaque, csDesignInteractive];
   FTabs := ATabs;
   FHotIndex := -1;
   FRenderer := TDACSkiaRenderer.Create;
+  FMeasureBitmap := TBitmap.Create;
   SetSubComponent(True);
   StyleElements := [];
   FPaintBox := TSkPaintBox.Create(Self);
@@ -229,7 +270,7 @@ begin
   FPaintBox.OnMouseDown := PaintBoxMouseDown;
   FPaintBox.OnMouseLeave := PaintBoxMouseLeave;
   FPaintBox.OnMouseMove := PaintBoxMouseMove;
-  FTextOverlay := TDACSystemTextOverlay.Create(Self);
+  FTextOverlay := TDACTabTextOverlay.CreateForHeader(Self);
   FTextOverlay.Parent := Self;
   FTextOverlay.SetSubComponent(True);
   FTextOverlay.Align := alClient;
@@ -241,6 +282,7 @@ begin
   // components after the window hierarchy is dismantled; freeing it here
   // also made its graphic-control removal race the host destruction.
   FTextOverlay.Free;
+  FMeasureBitmap.Free;
   FRenderer.Free;
   inherited;
 end;
@@ -260,147 +302,204 @@ begin
   ClearHot;
 end;
 
+procedure TDACTabHeaderControl.SetTextFont(const ACanvas: TCanvas;
+  const ABold: Boolean);
+begin
+  ACanvas.Font.Name := TDACComponentStyle.FontFamily;
+  ACanvas.Font.Height := -Round(FTabs.ResolveSizeMetrics.TextSize);
+  if ABold then ACanvas.Font.Style := [fsBold]
+  else ACanvas.Font.Style := [];
+end;
+
+function TDACTabHeaderControl.WrappedCaption(const AText: string;
+  const AWidth: Integer): string;
+var
+  I, Count: Integer;
+  Word, Glyph: string;
+begin
+  Result := '';
+  Word := '';
+  SetTextFont(FMeasureBitmap.Canvas, True);
+  I := 1;
+  while I <= Length(AText) do
+  begin
+    Count := 1;
+    if (Ord(AText[I]) >= $D800) and (Ord(AText[I]) <= $DBFF) and
+      (I < Length(AText)) and (Ord(AText[I + 1]) >= $DC00) and
+      (Ord(AText[I + 1]) <= $DFFF) then Count := 2;
+    Glyph := Copy(AText, I, Count);
+    if AText[I] <= ' ' then
+    begin
+      Result := Result + Word + Glyph;
+      Word := '';
+    end
+    else
+    begin
+      if (Word <> '') and
+        (FMeasureBitmap.Canvas.TextWidth(Word + Glyph) > Max(1, AWidth)) then
+      begin
+        Result := Result + Word + sLineBreak;
+        Word := '';
+      end;
+      Word := Word + Glyph;
+    end;
+    Inc(I, Count);
+  end;
+  Result := Result + Word;
+end;
+
+function TDACTabHeaderControl.CaptionSize(const AText: string;
+  const AWidth: Integer): TSize;
+var
+  R: TRect;
+  Text: string;
+begin
+  // Reserve the bold selection font for every page. Measurement and drawing
+  // share Windows font metrics; Skia glyph widths cannot size native text.
+  SetTextFont(FMeasureBitmap.Canvas, True);
+  if AWidth <= 0 then
+    Result := FMeasureBitmap.Canvas.TextExtent(AText)
+  else
+  begin
+    R := Rect(0, 0, Max(1, AWidth), 0);
+    Text := WrappedCaption(AText, AWidth);
+    DrawText(FMeasureBitmap.Canvas.Handle, PChar(Text), Length(Text), R,
+      DT_CALCRECT or DT_WORDBREAK or DT_NOPREFIX);
+    Result := TSize.Create(R.Width, R.Height);
+  end;
+end;
+
 function TDACTabHeaderControl.BuildTabLayout: TDACTabLayout;
 var
-  I: Integer;
-  LAvailable: Single;
-  LBottom: Single;
-  LCount: Integer;
-  LDesired: array of Single;
-  LGap: Single;
-  LItemHeight: Single;
-  LLeft: Single;
-  LMetrics: TDACControlSizeTokens;
-  LOuterInset: Single;
-  LPageIndex: Integer;
-  LRight: Single;
-  LScale: Single;
-  LTextWidth: Single;
-  LTop: Single;
-  LTotal: Single;
-  LWidth: Single;
+  I, J, N, RowStart: Integer;
+  Available, Gap, Inset, X, Y, W, H, RowHeight: Single;
+  Metrics: TDACControlSizeTokens;
+  TextSize: TSize;
 begin
   SetLength(Result, 0);
-  if FTabs = nil then
-    Exit;
-
-  LCount := 0;
+  if FTabs = nil then Exit;
+  Metrics := FTabs.ResolveSizeMetrics;
+  Inset := FTabs.ResolvedTokens.TabsHeaderInset;
+  Available := Max(1, Width - 2 * Inset);
+  if FTabs.Orientation = mtoHorizontal then
+    Available := Max(1, Available - FTabs.HeaderTrailingReserve);
+  N := 0;
   for I := 0 to FTabs.PageCount - 1 do
     if FTabs.Pages[I].TabVisible and
-      (not FTabs.FActivePageHeaderOnly or
-       (FTabs.Pages[I] = FTabs.ActivePage)) then
-      Inc(LCount);
-  if LCount = 0 then
-    Exit;
-
-  LMetrics := FTabs.ResolveSizeMetrics;
-  LOuterInset := FTabs.ResolvedTokens.TabsHeaderInset;
-  LItemHeight := LMetrics.Height;
-  SetLength(Result, LCount);
-
-  if FTabs.Orientation = mtoVertical then
-  begin
-    LLeft := LOuterInset;
-    LRight := Max(LLeft, Width - LOuterInset);
-    LTop := LOuterInset;
-    LBottom := Max(LTop, Height - LOuterInset -
-      FTabs.FHeaderTrailingReserve);
-    LCount := 0;
-    for I := 0 to FTabs.PageCount - 1 do
-    begin
-      if not FTabs.Pages[I].TabVisible or
-        (FTabs.FActivePageHeaderOnly and
-         (FTabs.Pages[I] <> FTabs.ActivePage)) then
-        Continue;
-      if LTop + LItemHeight > LBottom then
-        Break;
-      Result[LCount].PageIndex := I;
-      Result[LCount].Bounds := TRectF.Create(LLeft, LTop, LRight,
-        LTop + LItemHeight);
-      Result[LCount].TextBounds := Result[LCount].Bounds;
-      Result[LCount].TextBounds.Left := Result[LCount].TextBounds.Left +
-        LMetrics.PaddingHorizontal;
-      Result[LCount].TextBounds.Right := Result[LCount].TextBounds.Right -
-        LMetrics.PaddingHorizontal;
-      LTop := LTop + LItemHeight;
-      Inc(LCount);
-    end;
-    SetLength(Result, LCount);
-    Exit;
-  end;
-
-  LLeft := LOuterInset;
-  LRight := Max(LLeft, Width - LOuterInset - FTabs.FHeaderTrailingReserve);
-  LAvailable := LRight - LLeft;
-  if LAvailable <= 0 then
-  begin
-    SetLength(Result, 0);
-    Exit;
-  end;
-
-  if FTabs.Appearance = mtaPills then
-    LGap := FTabs.ResolvedTokens.TabsItemGap
-  else
-    LGap := 0;
-  SetLength(LDesired, LCount);
-  LTotal := LGap * Max(0, LCount - 1);
-  LCount := 0;
+      (not FTabs.ActivePageHeaderOnly or (FTabs.Pages[I] = FTabs.ActivePage)) then
+      Inc(N);
+  SetLength(Result, N);
+  if N = 0 then Exit;
+  Gap := 0;
+  if FTabs.Appearance = mtaPills then Gap := FTabs.ResolvedTokens.TabsItemGap;
+  X := Inset;
+  Y := Inset;
+  if FTabs.Orientation = mtoVertical then Y := Y - FScrollOffset;
+  N := 0;
+  RowStart := 0;
+  RowHeight := Metrics.Height;
   for I := 0 to FTabs.PageCount - 1 do
   begin
     if not FTabs.Pages[I].TabVisible or
-      (FTabs.FActivePageHeaderOnly and
-       (FTabs.Pages[I] <> FTabs.ActivePage)) then
+      (FTabs.ActivePageHeaderOnly and (FTabs.Pages[I] <> FTabs.ActivePage)) then
       Continue;
-    LTextWidth := FRenderer.MeasureText(FTabs.Pages[I].Caption,
-      TDACComponentStyle.FontFamily, LMetrics.TextSize, False);
-    LDesired[LCount] := Max(FTabs.ResolvedTokens.TabsHorizontalMinItem,
-      LTextWidth + (2 * LMetrics.PaddingHorizontal));
-    LTotal := LTotal + LDesired[LCount];
-    Inc(LCount);
-  end;
-
-  if FTabs.Appearance = mtaSegmented then
-  begin
-    LGap := 0;
-    for I := 0 to LCount - 1 do
-      LDesired[I] := LAvailable / LCount;
-    LTotal := LAvailable;
-  end
-  else if LTotal > LAvailable then
-  begin
-    LScale := (LAvailable - (LGap * Max(0, LCount - 1))) /
-      Max(1, LTotal - (LGap * Max(0, LCount - 1)));
-    LScale := Max(0, LScale);
-    LTotal := LGap * Max(0, LCount - 1);
-    for I := 0 to LCount - 1 do
+    TextSize := CaptionSize(FTabs.Pages[I].Caption, 0);
+    W := Max(Max(FTabs.ResolvedTokens.TabsHorizontalMinItem, FTabs.TabWidth),
+      TextSize.cx + 2 * Metrics.PaddingHorizontal + 2);
+    if FTabs.Orientation = mtoVertical then W := Available
+    else if FTabs.Appearance = mtaSegmented then W := Available / Length(Result);
+    W := Min(Available, W);
+    TextSize := CaptionSize(FTabs.Pages[I].Caption,
+      Max(1, Floor(W - 2 * Metrics.PaddingHorizontal)));
+    H := Max(Metrics.Height, TextSize.cy + 2 * Metrics.PaddingVertical);
+    if FTabs.Orientation = mtoVertical then
     begin
-      LDesired[I] := LDesired[I] * LScale;
-      LTotal := LTotal + LDesired[I];
+      X := Inset;
+      RowHeight := H;
+    end
+    else if (N > RowStart) and (X + W > Inset + Available + 0.01) then
+    begin
+      for J := RowStart to N - 1 do Result[J].Bounds.Bottom := Y + RowHeight;
+      Y := Y + RowHeight + Gap;
+      X := Inset;
+      RowStart := N;
+      RowHeight := Metrics.Height;
     end;
+    RowHeight := Max(RowHeight, H);
+    Result[N].PageIndex := I;
+    Result[N].Bounds := TRectF.Create(X, Y, X + W, Y + H);
+    if FTabs.Orientation = mtoVertical then Y := Y + H + Gap
+    else X := X + W + Gap;
+    Inc(N);
   end;
-
-  LLeft := LLeft + Max(0, (LAvailable - LTotal) / 2);
-  LTop := LOuterInset;
-  LCount := 0;
-  for I := 0 to FTabs.PageCount - 1 do
+  if FTabs.Orientation = mtoHorizontal then
+    for J := RowStart to N - 1 do Result[J].Bounds.Bottom := Y + RowHeight;
+  for I := 0 to N - 1 do
   begin
-    if not FTabs.Pages[I].TabVisible or
-      (FTabs.FActivePageHeaderOnly and
-       (FTabs.Pages[I] <> FTabs.ActivePage)) then
-      Continue;
-    LPageIndex := I;
-    LWidth := LDesired[LCount];
-    Result[LCount].PageIndex := LPageIndex;
-    Result[LCount].Bounds := TRectF.Create(LLeft, LTop,
-      Min(LRight, LLeft + LWidth), LTop + LItemHeight);
-    Result[LCount].TextBounds := Result[LCount].Bounds;
-    Result[LCount].TextBounds.Left := Result[LCount].TextBounds.Left +
-      LMetrics.PaddingHorizontal;
-    Result[LCount].TextBounds.Right := Result[LCount].TextBounds.Right -
-      LMetrics.PaddingHorizontal;
-    LLeft := LLeft + LWidth + LGap;
-    Inc(LCount);
+    Result[I].TextBounds := Result[I].Bounds;
+    Result[I].TextBounds.Inflate(-Metrics.PaddingHorizontal, -Metrics.PaddingVertical);
+    Result[I].Text := WrappedCaption(FTabs.Pages[Result[I].PageIndex].Caption,
+      Floor(Result[I].TextBounds.Width));
   end;
+end;
+
+procedure TDACTabHeaderControl.DrawNativeText(const ACanvas: TCanvas);
+var
+  I, Saved: Integer;
+  Layout: TDACTabLayout;
+  R, Measured: TRect;
+  Flags: Cardinal;
+  Page: TTabSheet;
+begin
+  if FTabs = nil then Exit;
+  Layout := BuildTabLayout;
+  Saved := SaveDC(ACanvas.Handle);
+  try
+    IntersectClipRect(ACanvas.Handle, 0, 0, Width, Height);
+    SetBkMode(ACanvas.Handle, TRANSPARENT);
+    for I := 0 to High(Layout) do
+    begin
+      Page := FTabs.Pages[Layout[I].PageIndex];
+      SetTextFont(ACanvas, Page = FTabs.ActivePage);
+      ACanvas.Font.Color := TDACComponentColors.ToVclColor(
+        ResolvedTextColorForPage(Layout[I].PageIndex, Layout[I].PageIndex = FHotIndex));
+      R := Rect(Ceil(Layout[I].TextBounds.Left), Ceil(Layout[I].TextBounds.Top),
+        Floor(Layout[I].TextBounds.Right), Floor(Layout[I].TextBounds.Bottom));
+      Flags := DT_WORDBREAK or DT_NOPREFIX;
+      if FTabs.Orientation = mtoVertical then Flags := Flags or DT_LEFT
+      else Flags := Flags or DT_CENTER;
+      Measured := R;
+      DrawText(ACanvas.Handle, PChar(Layout[I].Text), Length(Layout[I].Text),
+        Measured, Flags or DT_CALCRECT);
+      Inc(R.Top, Max(0, (R.Height - Measured.Height) div 2));
+      DrawText(ACanvas.Handle, PChar(Layout[I].Text), Length(Layout[I].Text), R, Flags);
+    end;
+  finally
+    RestoreDC(ACanvas.Handle, Saved);
+  end;
+end;
+
+procedure TDACTabHeaderControl.CMDesignHitTest(var AMessage: TCMDesignHitTest);
+begin
+  AMessage.Result := Ord(TabAt(AMessage.Pos.X, AMessage.Pos.Y) >= 0);
+end;
+
+function TDACTabHeaderControl.DoMouseWheel(Shift: TShiftState;
+  WheelDelta: Integer; MousePos: TPoint): Boolean;
+var
+  Layout: TDACTabLayout;
+  Limit: Integer;
+begin
+  Result := False;
+  if FTabs.Orientation <> mtoVertical then Exit;
+  Layout := BuildTabLayout;
+  if Length(Layout) = 0 then Exit;
+  Limit := Max(0, Ceil(Layout[High(Layout)].Bounds.Bottom) + FScrollOffset +
+    Round(FTabs.ResolvedTokens.TabsHeaderInset) - Height + FTabs.HeaderTrailingReserve);
+  FScrollOffset := EnsureRange(FScrollOffset - Round(WheelDelta / WHEEL_DELTA *
+    FTabs.ResolveSizeMetrics.Height), 0, Limit);
+  Redraw;
+  Result := True;
 end;
 
 procedure TDACTabHeaderControl.PaintBoxDraw(Sender: TObject;
@@ -417,16 +516,11 @@ var
   LMetrics: TDACControlSizeTokens;
   LPage: TTabSheet;
   LRect: TRectF;
-  LTextColor: TAlphaColor;
-  LTextRect: TRectF;
   LUnderline: TRectF;
   LTokens: TDACControlTokens;
 begin
   if (ACanvas = nil) or (FTabs = nil) then
     Exit;
-
-  FRenderer.BeginNativeText(FTextOverlay);
-  try
 
   LTokens := FTabs.ResolvedTokens;
   LMetrics := FTabs.ResolveSizeMetrics;
@@ -516,15 +610,6 @@ begin
         LTokens.TabsIndicator, LTokens.TabsUnderlineRadius);
     end;
 
-    LTextColor := ResolvedTextColorForPage(LLayout[I].PageIndex, LHot);
-    LTextRect := LLayout[I].TextBounds;
-    if FTabs.Orientation = mtoVertical then
-      LTextRect.Right := Min(LTextRect.Right, LTextRect.Left +
-        FRenderer.MeasureText(LPage.Caption, TDACComponentStyle.FontFamily,
-          LMetrics.TextSize, LActive));
-    FRenderer.TextCentered(ACanvas, LPage.Caption,
-      TDACComponentStyle.FontFamily, LTextRect, LMetrics.TextSize,
-      LTextColor, LActive);
     if LEnabled and LActive and LFocused then
     begin
       LFocusRect := FocusRectForPage(LLayout[I].PageIndex);
@@ -533,9 +618,7 @@ begin
         LTokens.TabsFocusWidth);
     end;
   end;
-  finally
-    FRenderer.EndNativeText;
-  end;
+  FTextOverlay.Invalidate;
 end;
 
 procedure TDACTabHeaderControl.PaintBoxMouseDown(Sender: TObject;
@@ -586,11 +669,12 @@ end;
 
 procedure TDACTabHeaderControl.Redraw;
 begin
-  if (FTabs <> nil) and not (csDestroying in ComponentState) and
-    not (csDesigning in ComponentState) and (FTabs.Parent <> nil) and
-    FTabs.HandleAllocated and FTabs.Parent.HandleAllocated and
-    (FPaintBox <> nil) then
-    FPaintBox.Redraw;
+  if (FTabs = nil) or (csDestroying in ComponentState) then Exit;
+  if HandleAllocated and (Parent <> nil) and Parent.HandleAllocated then
+    FPaintBox.Redraw
+  else
+    FPaintBox.Invalidate;
+  FTextOverlay.Invalidate;
 end;
 
 function TDACTabHeaderControl.TabAt(const X, Y: Integer): Integer;
@@ -663,7 +747,7 @@ end;
 constructor TDACTabs.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FPageContentBounds := TDictionary<TControl, TRect>.Create;
+  FChromeRenderer := TDACSkiaRenderer.Create;
   Width := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.TabsDefaultWidth);
   Height := Round(TDACComponentStyle.Resolve(dtmInherit).Tokens.Controls.TabsDefaultHeight);
   DoubleBuffered := True;
@@ -686,6 +770,9 @@ begin
   FSize := mtsMedium;
   OwnerDraw := False;
   Style := tsTabs;
+  EnsureHeader;
+  FHeader.SetBounds(0, 0, Width, Round(ResolveSizeMetrics.Height +
+    2 * ResolvedTokens.TabsHeaderInset));
   UpdateHeaderBounds;
   TDACThemeManager.RegisterListener(Self, ThemeChanged);
 end;
@@ -695,6 +782,7 @@ begin
   if FActivePageHeaderOnly = AValue then
     Exit;
   FActivePageHeaderOnly := AValue;
+  QueueContentLayout;
   InvalidateTabs;
 end;
 
@@ -759,7 +847,8 @@ begin
   TDACThemeManager.UnregisterListener(Self);
   // FHeader is owned by this tab control.  Let TComponent dispose it in its
   // normal ownership pass, after the page-control window lifecycle has run.
-  FPageContentBounds.Free;
+  FChromeSurface := nil;
+  FChromeRenderer.Free;
   inherited;
 end;
 
@@ -831,7 +920,7 @@ begin
 
   LTokens := ResolvedTokens;
   LRuntimeHostReady := not (csLoading in ComponentState) and
-    not (csDesigning in ComponentState) and (Parent <> nil) and
+    (Parent <> nil) and
     HandleAllocated and Parent.HandleAllocated;
 
   { TPageControl.Color and native tab metrics can touch Handle on Delphi 10.2.
@@ -992,15 +1081,11 @@ end;
 
 procedure TDACTabs.EnsureHeader;
 begin
-  if (FHeader <> nil) or (csLoading in ComponentState) or
-    (csDestroying in ComponentState) or (csDesigning in ComponentState) or
-    (Parent = nil) or not HandleAllocated or not Parent.HandleAllocated then
-    Exit;
+  if (FHeader <> nil) or (csDestroying in ComponentState) then Exit;
   FHeader := TDACTabHeaderControl.CreateForTabs(Self);
-  // A TPageControl paints its native page window above children that share
-  // its client area.  Keep the Skia header as a sibling so it stays visible
-  // over the native page chrome instead of becoming an empty 1px tab strip.
-  FHeader.Parent := Parent;
+  // The HWND header is a child of this component, never a designer sibling.
+  // AdjustClientRect reserves its area before the native pages are aligned.
+  FHeader.Parent := Self;
   FHeader.Visible := True;
 end;
 
@@ -1139,19 +1224,26 @@ end;
 
 function TDACTabs.HeaderExtent: Integer;
 var
-  LMetrics: TDACControlSizeTokens;
+  Layout: TDACTabLayout;
+  I: Integer;
+  Metrics: TDACControlSizeTokens;
 begin
-  LMetrics := ResolveSizeMetrics;
+  Metrics := ResolveSizeMetrics;
   if Orientation = mtoVertical then
-    Result := Pixels(Round(ResolvedTokens.TabsVerticalExtent))
-  else
-    Result := Pixels(Round(LMetrics.Height +
-      (2 * ResolvedTokens.TabsHeaderInset)));
+    Exit(Max(Round(ResolvedTokens.TabsVerticalExtent), FTabWidthValue));
+  Result := Round(Metrics.Height + 2 * ResolvedTokens.TabsHeaderInset);
+  if FHeader <> nil then
+  begin
+    Layout := FHeader.BuildTabLayout;
+    for I := 0 to High(Layout) do
+      Result := Max(Result, Ceil(Layout[I].Bounds.Bottom + ResolvedTokens.TabsHeaderInset));
+  end;
 end;
 
 function TDACTabs.HeaderShouldBeVisible: Boolean;
 begin
-  Result := Visible and Showing and not (csDestroying in ComponentState);
+  Result := Visible and (Showing or (csDesigning in ComponentState)) and
+    not (csDestroying in ComponentState);
 end;
 
 function TDACTabs.ContentInset: Integer;
@@ -1164,124 +1256,96 @@ end;
 
 procedure TDACTabs.InvalidateTabs;
 begin
-  if (FHeader <> nil) and FHeader.Visible then
-    FHeader.Redraw;
-  if (FHeader = nil) and HandleAllocated then
-    Invalidate;
+  if (FHeader <> nil) and FHeader.Visible then FHeader.Redraw;
+  if HandleAllocated then Invalidate;
+end;
+
+function TDACTabs.ContentFrameRect: TRect;
+begin
+  Result := Rect(0, 0, Width, Height);
+  if Orientation = mtoVertical then
+    Result.Left := Min(Width, ContentInset)
+  else
+    Result.Top := Min(Height, ContentInset);
+end;
+
+procedure TDACTabs.AdjustClientRect(var Rect: TRect);
+var
+  Inset: Integer;
+begin
+  // Native TTabSheet/alClient and ordinary child coordinates share the same
+  // page origin in the designer and at runtime. Never move page contents.
+  Rect := ContentFrameRect;
+  Inset := 0;
+  if FShowContentBorder then Inset := Max(1, FCornerRadius);
+  InflateRect(Rect, -Min(Inset, Max(0, Rect.Width div 2)),
+    -Min(Inset, Max(0, Rect.Height div 2)));
+  Inc(Rect.Left, Padding.Left);
+  Inc(Rect.Top, Padding.Top);
+  Dec(Rect.Right, Padding.Right);
+  Dec(Rect.Bottom, Padding.Bottom);
+end;
+
+procedure TDACTabs.PaintWindow(DC: HDC);
+var
+  Info: TBitmapInfo;
+  R: TRectF;
+  Tokens: TDACControlTokens;
+  FrameColor: TAlphaColor;
+begin
+  if (DC = 0) or (Width <= 0) or (Height <= 0) or (FChromeRenderer = nil) then Exit;
+  if (FChromeSurface = nil) or (FChromeWidth <> Width) or (FChromeHeight <> Height) then
+  begin
+    FChromeSurface := nil;
+    FChromeWidth := Width;
+    FChromeHeight := Height;
+    SetLength(FChromePixels, Width * Height);
+    FChromeSurface := TSkSurface.MakeRasterDirect(TSkImageInfo.Create(Width, Height),
+      @FChromePixels[0], Width * SizeOf(Cardinal));
+  end;
+  if FChromeSurface = nil then Exit;
+  Tokens := ResolvedTokens;
+  FChromeSurface.Canvas.Clear(Tokens.ContainerSuiteBackground);
+  FrameColor := Tokens.ContainerSuiteBackground;
+  if FCustomContentColor then FrameColor := FContentColor;
+  R := TRectF.Create(ContentFrameRect);
+  R.Inflate(-Tokens.TabsDividerWidth / 2, -Tokens.TabsDividerWidth / 2);
+  FChromeRenderer.FillRoundRect(FChromeSurface.Canvas, R, FrameColor, FCornerRadius);
+  if FShowContentBorder then
+    FChromeRenderer.StrokeRoundRect(FChromeSurface.Canvas, R, Tokens.TabsDivider,
+      FCornerRadius, Tokens.TabsDividerWidth);
+  FChromeSurface.Flush;
+  ZeroMemory(@Info, SizeOf(Info));
+  Info.bmiHeader.biSize := SizeOf(TBitmapInfoHeader);
+  Info.bmiHeader.biWidth := Width;
+  Info.bmiHeader.biHeight := -Height;
+  Info.bmiHeader.biPlanes := 1;
+  Info.bmiHeader.biBitCount := 32;
+  Info.bmiHeader.biCompression := BI_RGB;
+  SetDIBitsToDevice(DC, 0, 0, Width, Height, 0, 0, 0, Height,
+    @FChromePixels[0], Info, DIB_RGB_COLORS);
+end;
+
+procedure TDACTabs.WMEraseBkgnd(var AMessage: TWMEraseBkgnd);
+begin
+  AMessage.Result := 1;
+end;
+
+procedure TDACTabs.WndProc(var Message: TMessage);
+begin
+  inherited;
+  // Captions and page visibility can change without resizing the host.
+  // Schedule after the native item transaction, never during insertion.
+  case Message.Msg of
+    TCM_INSERTITEM, TCM_SETITEM, TCM_DELETEITEM, TCM_DELETEALLITEMS, TCM_SETCURSEL:
+      QueueContentLayout;
+  end;
 end;
 
 procedure TDACTabs.LayoutPageContent;
-var
-  I: Integer;
-  J: Integer;
-  LBounds: TRect;
-  LActualOrigin: TPoint;
-  LControl: TControl;
-  LDesiredLeft: Integer;
-  LDesiredTop: Integer;
-  LHeaderOrigin: TPoint;
-  LLeft: Integer;
-  LPage: TTabSheet;
-  LPageOrigin: TPoint;
-  LPageRight: Integer;
-  LPageBottom: Integer;
-  LRedrawDisabled: Boolean;
-  LTop: Integer;
-  LWidth: Integer;
 begin
-  // TTabSheet.Padding reserves aligned children only. Declarative children
-  // retain their DFM coordinates, so derive their bounds from the real screen
-  // coordinates of the page ClientRect and the sibling Skia header. This also
-  // avoids applying the padding twice for vertical pages.
-  if (csLoading in ComponentState) or (csDestroying in ComponentState) or
-    (csDesigning in ComponentState) or (Parent = nil) or not HandleAllocated or
-    not Parent.HandleAllocated then
-    Exit;
-  if (FHeader = nil) or (FHeader.Parent = nil) or not FHeader.HandleAllocated then
-    Exit;
-
-  LHeaderOrigin := FHeader.ClientToScreen(Point(0, 0));
-
-  for I := 0 to PageCount - 1 do
-  begin
-    LPage := Pages[I];
-    // TTabSheet can report no independent handle even while its inherited
-    // client coordinate conversion is valid. Use that real conversion rather
-    // than skipping the active page and leaving its DFM children under chrome.
-    if LPage = nil then
-      Continue;
-    LPageOrigin := LPage.ClientToScreen(Point(0, 0));
-    // Native editors and graphic Skia children can otherwise paint one frame
-    // at different coordinates while every control is being repositioned.
-    // Commit the active page as one VCL redraw transaction.
-    LRedrawDisabled := (LPage = ActivePage) and LPage.HandleAllocated;
-    if LRedrawDisabled then
-      LPage.Perform(WM_SETREDRAW, 0, 0);
-    try
-      for J := 0 to LPage.ControlCount - 1 do
-      begin
-        LControl := LPage.Controls[J];
-        if (LControl = nil) or (LControl.Align <> alNone) then
-          Continue;
-        if not FPageContentBounds.TryGetValue(LControl, LBounds) then
-        begin
-          LBounds := LControl.BoundsRect;
-          FPageContentBounds.Add(LControl, LBounds);
-        end;
-
-        LLeft := LBounds.Left;
-        LTop := LBounds.Top;
-        LWidth := LBounds.Width;
-        if Orientation = mtoVertical then
-        begin
-          LLeft := LPage.ScreenToClient(Point(
-            LHeaderOrigin.X + FHeader.Width + Max(Round(ResolvedTokens.TabsContentGutter), LBounds.Left),
-            LPageOrigin.Y)).X;
-          LPageRight := LPage.ScreenToClient(Point(
-            LHeaderOrigin.X + Width, LPageOrigin.Y)).X;
-          LWidth := Min(LWidth, Max(0, LPageRight - LLeft - Round(ResolvedTokens.TabsContentGutter)));
-        end
-        else
-        begin
-          LTop := LPage.ScreenToClient(Point(LPageOrigin.X,
-            LHeaderOrigin.Y + FHeader.Height + LBounds.Top)).Y;
-          LPageBottom := LPage.ScreenToClient(Point(LPageOrigin.X,
-            LHeaderOrigin.Y + Height)).Y;
-          LTop := Min(LTop, Max(0, LPageBottom - LBounds.Height));
-        end;
-        LControl.SetBounds(LLeft, LTop, LWidth, LBounds.Height);
-        // Padding and the native page-control client origin vary by tab
-        // orientation. Reconcile the final active-control position from its
-        // actual screen point so a VCL offset can never push it under/after
-        // the Skia header.
-        if LControl.Visible then
-        begin
-          LActualOrigin := LControl.ClientToScreen(Point(0, 0));
-          if Orientation = mtoVertical then
-          begin
-            LDesiredLeft := LHeaderOrigin.X + FHeader.Width + Round(ResolvedTokens.TabsContentGutter);
-            LWidth := Min(LBounds.Width, Max(0, (LHeaderOrigin.X + Width -
-              Round(ResolvedTokens.TabsContentGutter)) - LDesiredLeft));
-            LControl.SetBounds(LControl.Left + (LDesiredLeft - LActualOrigin.X),
-              LControl.Top, LWidth, LBounds.Height);
-          end
-          else
-          begin
-            LDesiredTop := LHeaderOrigin.Y + FHeader.Height + LBounds.Top;
-            LControl.SetBounds(LControl.Left, LControl.Top +
-              (LDesiredTop - LActualOrigin.Y), LBounds.Width, LBounds.Height);
-          end;
-        end;
-      end;
-    finally
-      if LRedrawDisabled then
-      begin
-        LPage.Perform(WM_SETREDRAW, 1, 0);
-        RedrawWindow(LPage.Handle, nil, 0,
-          RDW_INVALIDATE or RDW_ERASE or RDW_ALLCHILDREN);
-      end;
-    end;
-  end;
+  if (Parent <> nil) and HandleAllocated and Parent.HandleAllocated and
+    not (csLoading in ComponentState) then Realign;
 end;
 
 procedure TDACTabs.Loaded;
@@ -1331,8 +1395,7 @@ end;
 procedure TDACTabs.QueueContentLayout;
 begin
   if not ((Parent <> nil) and HandleAllocated and Parent.HandleAllocated and
-    not (csLoading in ComponentState) and not (csDestroying in ComponentState) and
-    not (csDesigning in ComponentState)) then
+    not (csLoading in ComponentState) and not (csDestroying in ComponentState)) then
     Exit;
   Inc(FContentLayoutRevision);
   PostMessage(Handle, WM_DAC_TABS_REFRESH_LAYOUT, FContentLayoutRevision, 0);
@@ -1461,6 +1524,7 @@ procedure TDACTabs.SetAppearance(const AValue: TDACTabAppearance);
 begin
   if FAppearance = AValue then Exit;
   FAppearance := AValue;
+  QueueContentLayout;
   InvalidateTabs;
 end;
 
@@ -1491,6 +1555,8 @@ begin
   else
     Result := ResolvedTokens.TabsMedium;
   end;
+  if FTabHeightValue > 0 then
+    Result.Height := Max(FTabHeightValue, Result.TextSize + 2 * Result.PaddingVertical);
 end;
 
 procedure TDACTabs.SetThemeMode(const AValue: TDACThemeMode);
@@ -1513,6 +1579,7 @@ procedure TDACTabs.SetCornerRadius(const AValue: Integer);
 begin
   if FCornerRadius = Max(0, AValue) then Exit;
   FCornerRadius := Max(0, AValue);
+  QueueContentLayout;
   InvalidateTabs;
 end;
 
@@ -1521,6 +1588,7 @@ begin
   if FHeaderTrailingReserve = Max(0, AValue) then
     Exit;
   FHeaderTrailingReserve := Max(0, AValue);
+  QueueContentLayout;
   InvalidateTabs;
 end;
 
@@ -1537,6 +1605,7 @@ procedure TDACTabs.SetShowContentBorder(const AValue: Boolean);
 begin
   if FShowContentBorder = AValue then Exit;
   FShowContentBorder := AValue;
+  QueueContentLayout;
   InvalidateTabs;
 end;
 
@@ -1571,11 +1640,13 @@ procedure TDACTabs.SetTabHeightValue(const AValue: Smallint);
 begin
   if AValue < 0 then
     raise EArgumentOutOfRangeException.Create('TabHeight must be non-negative.');
-  { Compatibility value only. The DAC header owns the visible extent and the
-    native strip is fixed to one pixel by ApplyNativeTabSize. Keeping this in
-    managed state avoids TCustomTabControl.SetTabHeight forcing Handle while a
-    parentless DFM root is being read. }
+  { Store without touching the native tab setter: that setter forces HWND
+    creation during standalone DFM reads. ResolveSizeMetrics applies the value
+    to the visible header in both the designer and runtime. }
   FTabHeightValue := AValue;
+  UpdateHeaderBounds;
+  QueueContentLayout;
+  InvalidateTabs;
 end;
 
 procedure TDACTabs.SetTabWidthValue(const AValue: Smallint);
@@ -1583,61 +1654,39 @@ begin
   if AValue < 0 then
     raise EArgumentOutOfRangeException.Create('TabWidth must be non-negative.');
   FTabWidthValue := AValue;
+  UpdateHeaderBounds;
+  QueueContentLayout;
+  InvalidateTabs;
 end;
 
 procedure TDACTabs.UpdateHeaderBounds;
 var
-  I: Integer;
-  LExtent: Integer;
-  LHeaderVisible: Boolean;
-  LPaddingLeft: Integer;
-  LPaddingTop: Integer;
-  LRestoreHeaderZOrder: Boolean;
-  LNeedsRealign: Boolean;
+  I, Extent: Integer;
 begin
-  if (csLoading in ComponentState) or (csDestroying in ComponentState) or
-    (csDesigning in ComponentState) or (Parent = nil) or not HandleAllocated or
-    not Parent.HandleAllocated then
-    Exit;
-  LExtent := HeaderExtent;
-  LHeaderVisible := HeaderShouldBeVisible;
-  LNeedsRealign := False;
-  if FHeader <> nil then
-  begin
-    LRestoreHeaderZOrder := (FHeader.Parent <> Parent) or
-      (LHeaderVisible and not FHeader.Visible);
-    if FHeader.Parent <> Parent then
-      FHeader.Parent := Parent;
-    if Orientation = mtoVertical then
-      FHeader.SetBounds(Left, Top, LExtent, Height)
-    else
-      FHeader.SetBounds(Left, Top, Width, LExtent);
-    FHeader.Visible := LHeaderVisible;
-    if LRestoreHeaderZOrder and LHeaderVisible and HandleAllocated and
-      (Parent <> nil) and Parent.HandleAllocated and
-      not (csDesigning in ComponentState) then
-      FHeader.BringToFront;
-  end;
-  for I := 0 to PageCount - 1 do
-  begin
-    LPaddingTop := 0;
-    LPaddingLeft := 0;
-    // Vertical explicit children are positioned from the header and actual
-    // ClientRect below. Applying Padding.Left as well would reserve it twice.
-    if Orientation <> mtoVertical then
-      LPaddingTop := LExtent + Pixels(Round(ResolvedTokens.TabsContentInset));
-    if (Pages[I].Padding.Top <> LPaddingTop) or
-      (Pages[I].Padding.Left <> LPaddingLeft) then
+  if FUpdatingHeader or (csLoading in ComponentState) or
+    (csDestroying in ComponentState) or (Parent = nil) or
+    not HandleAllocated or not Parent.HandleAllocated then Exit;
+  FUpdatingHeader := True;
+  try
+    EnsureHeader;
+    if FHeader = nil then Exit;
+    if Orientation = mtoHorizontal then
+      FHeader.SetBounds(0, 0, Width, FHeader.Height);
+    Extent := HeaderExtent;
+    if Orientation = mtoVertical then FHeader.SetBounds(0, 0, Extent, Height)
+    else FHeader.SetBounds(0, 0, Width, Extent);
+    FHeader.Visible := HeaderShouldBeVisible;
+    if FHeader.Visible and Showing then
+      TWinControlAccess(FHeader).UpdateControlState;
+    for I := 0 to PageCount - 1 do
     begin
-      LNeedsRealign := True;
-      Pages[I].Padding.Top := LPaddingTop;
-      Pages[I].Padding.Left := LPaddingLeft;
-      if Pages[I].HandleAllocated then
-        Pages[I].Realign;
+      Pages[I].Padding.Top := 0;
+      Pages[I].Padding.Left := 0;
     end;
-  end;
-  if LNeedsRealign and HandleAllocated then
     Realign;
+  finally
+    FUpdatingHeader := False;
+  end;
 end;
 
 procedure TDACTabs.WMTabsRefreshLayout(var AMessage: TMessage);

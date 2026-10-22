@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<test-results name="M:\MaxxSoft\MaxxRural\Desktop\maxxrural\EXE\ApiTestes.exe" total="17" errors="0" failures="5" ignored="0" inconclusive="0" not-run="0" skipped="0" invalid="0" date="2026-10-22" time="1.584">
+  <culture-info current-culture="en" current-uiculture="en" />
+  <test-suite type="Assembly" name="ApiTestes.exe" executed="true" result="Failure" success="False" time="1.584" asserts="0">
+    <results>
+        <test-suite type="Namespace" name="Teste" executed="true" result="Failure" success="False" time="1.584" asserts="0" >
+          <results>
+              <test-suite type="Fixture" name="TImportacaoOFXEstruturaTests" executed="True" result="Failure" success="False" time="1.584" >
+                <results>
+                  <test-case name="EstadoInicialCopiaContaSemConsultas" executed="True" result="Success" success="True" time="0.096" asserts="0" />
+                  <test-case name="DatasetGridSelecaoEOrdenacaoLocais" executed="True" result="Success" success="True" time="0.116" asserts="0" />
+                  <test-case name="DialogoSelecionaUmArquivoOFXExistente" executed="True" result="Success" success="True" time="0.027" asserts="0" />
+                  <test-case name="SelecaoComArquivoBloqueadoNaoPermiteImportacao" executed="True" result="Success" success="True" time="0.079" asserts="0" />
+                  <test-case name="CancelamentoPreservaArquivoEPermiteNovaEscolha" executed="True" result="Success" success="True" time="0.085" asserts="0" />
+                  <test-case name="SemContaConsultadaNaoAbreSeletor" executed="True" result="Success" success="True" time="0.129" asserts="0" />
+                  <test-case name="CoresDosHostsSeguemSuperficieDosPais" executed="True" result="Failure" success="False" time="0.080" asserts="0" >
+                    <failure>
+                      <message>
+                        <![CDATA[ Condition is False when True expected. [Altura OFX fora da tolerancia nativa] ]]>
+                      </message>
+                      <stack-trace>
+                        <![CDATA[  ]]>
+                      </stack-trace>
+                    </failure>
+                  </test-case>
+                  <test-case name="ViewLiberaControllerEComponentesUmaVez" executed="True" result="Success" success="True" time="0.142" asserts="0" />
+                  <test-case name="InjecaoRejeitaNuloEDuplicidade" executed="True" result="Success" success="True" time="0.032" asserts="0" />
+                  <test-case name="TabEShiftTabPermanecemNasAcoesDisponiveis" executed="True" result="Success" success="True" time="0.064" asserts="0" />
+                  <test-case name="FechamentoModalNaoImporta.Cancelar" executed="True" result="Success" success="True" time="0.111" asserts="0" />
+                  <test-case name="FechamentoModalNaoImporta.Escape" executed="True" result="Success" success="True" time="0.095" asserts="0" />
+                  <test-case name="FechamentoModalNaoImporta.FecharJanela" executed="True" result="Success" success="True" time="0.098" asserts="0" />
+                  <test-case name="LayoutSemSobreposicao.96" executed="True" result="Failure" success="False" time="0.100" asserts="0" >
+                    <failure>
+                      <message>
+                        <![CDATA[ Condition is False when True expected. [HISTORICO com largura excessiva] ]]>
+                      </message>
+                      <stack-trace>
+                        <![CDATA[  ]]>
+                      </stack-trace>
+                    </failure>
+                  </test-case>
+                  <test-case name="LayoutSemSobreposicao.144" executed="True" result="Failure" success="False" time="0.143" asserts="0" >
+                    <failure>
+                      <message>
+                        <![CDATA[ Condition is False when True expected. [HISTORICO com largura excessiva] ]]>
+                      </message>
+                      <stack-trace>
+                        <![CDATA[  ]]>
+                      </stack-trace>
+                    </failure>
+                  </test-case>
+                  <test-case name="LayoutSemSobreposicao.192" executed="True" result="Failure" success="False" time="0.115" asserts="0" >
+                    <failure>
+                      <message>
+                        <![CDATA[ Condition is False when True expected. [HISTORICO com largura excessiva] ]]>
+                      </message>
+                      <stack-trace>
+                        <![CDATA[  ]]>
+                      </stack-trace>
+                    </failure>
+                  </test-case>
+                  <test-case name="LayoutSemSobreposicao.Minimo" executed="True" result="Failure" success="False" time="0.081" asserts="0" >
+                    <failure>
+                      <message>
+                        <![CDATA[ Condition is False when True expected. [HISTORICO com largura excessiva] ]]>
+                      </message>
+                      <stack-trace>
+                        <![CDATA[  ]]>
+                      </stack-trace>
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+          </results>
+        </test-suite>
+    </results>
+  </test-suite>
+</test-results>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"
+     fill="none" role="img" aria-label="Trator" style="color:#2F9E22">
+  <g stroke="#2F9E22" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="36" cy="82" r="18"/><circle cx="88" cy="86" r="12"/><path d="M18 82 H22 L30 48 H62 L76 68 H98 L104 86 H100"/><path d="M50 48 V30 H76 L84 68"/><line x1="58" y1="30" x2="58" y2="48"/>
+  </g>
+</svg>

@@ -1,0 +1,257 @@
+{
+  "builtAt": "2026-09-23",
+  "platform": "Win32 Debug",
+  "package": {
+    "path": "Build/Distribution/DACChartsDemo-portable-2026-09-23.zip",
+    "bytes": 14557811,
+    "sha256": "4c4d3f513d6c5822fa0f64e5782028cd6184c8cffee879ca064a88fb1d6f857d"
+  },
+  "files": [
+    {
+      "path": "tmp/chart-portable-fix/demo-exe/DACChartsDemo.exe",
+      "bytes": 17185917,
+      "sha256": "646aaa08d050b7d9aea34d5c0cd242a0c046bb5cbd2255aa606b426b0ba63844"
+    },
+    {
+      "path": "tmp/chart-portable-fix/demo-exe/sk4d.dll",
+      "bytes": 20783616,
+      "sha256": "1d803454b095fcd7d40d10c8a2b4b132e80f5949f34c2ef87555d5f0c807083b"
+    },
+    {
+      "path": "tmp/chart-portable-fix/demo-exe/reference-cases.json",
+      "bytes": 36024,
+      "sha256": "1cc74321269b965b25f7c03dae5ea1243fd88e972c78c1b5c73fa179659c49a2"
+    }
+  ],
+  "sources": [
+    {
+      "path": "demo-charts/DACChartsDemo.Main.pas",
+      "bytes": 17728,
+      "sha256": "db8e48577086607e4b6257cf73d5ca9a2fc273d5cc77869eb5f5fce32838c783"
+    },
+    {
+      "path": "demo-charts/DACChartsDemo.Startup.pas",
+      "bytes": 2537,
+      "sha256": "9824bffc91c7a3acad3d6ff55a0eae5fbca425bf661099039395e18c3d8a0a21"
+    },
+    {
+      "path": "demo-charts/DACChartsDemo.dpr",
+      "bytes": 201,
+      "sha256": "931636bb48723e286adf6014aaaac0578fdf2cbdaa7d2a1361283f4c3a20ef23"
+    },
+    {
+      "path": "demo-charts/DACChartsDemo.dproj",
+      "bytes": 4242,
+      "sha256": "df2bf5ca8962a8bd086507979f9fb0403699ab8b82e4e6e359ef2541950e1bd5"
+    },
+    {
+      "path": "demo-charts/DACChartsHighDpi.dpr",
+      "bytes": 190,
+      "sha256": "41ae392cb55f1da7efb913ffa311b61c6194e410652db1f8bafdb15392da426c"
+    },
+    {
+      "path": "demo-charts/DACChartsHighDpi.dproj",
+      "bytes": 4311,
+      "sha256": "685ee095e9aaeaf498dc160d5abce97d18e6b8dff146336cb6406f43dcbbaf0d"
+    },
+    {
+      "path": "demo-charts/DACChartsNoHighDpi.dpr",
+      "bytes": 192,
+      "sha256": "329f92417415c267fc7b03da75d039cd8a472be9b78102e13ee15c743115b0b0"
+    },
+    {
+      "path": "demo-charts/DACChartsNoHighDpi.dproj",
+      "bytes": 4326,
+      "sha256": "60d82c2e28b186ab04fd0ac2dc57d6b78d792a1742defca577fea12c3faa9228"
+    }
+  ],
+  "portableTests": {
+    "tests": [
+      {
+        "name": "valid",
+        "exitCode": 0,
+        "passed": true,
+        "directory": "C:\\Users\\DIOGOC~1\\AppData\\Local\\Temp\\DACCharts-portable-test-aa207e6da8eb48fcb6f622957823b274\\valid"
+      },
+      {
+        "name": "missing-dll",
+        "exitCode": 1,
+        "passed": true,
+        "directory": "C:\\Users\\DIOGOC~1\\AppData\\Local\\Temp\\DACCharts-portable-test-aa207e6da8eb48fcb6f622957823b274\\missing-dll"
+      },
+      {
+        "name": "invalid-dll",
+        "exitCode": 1,
+        "passed": true,
+        "directory": "C:\\Users\\DIOGOC~1\\AppData\\Local\\Temp\\DACCharts-portable-test-aa207e6da8eb48fcb6f622957823b274\\invalid-dll"
+      },
+      {
+        "name": "missing-fixtures",
+        "exitCode": 1,
+        "passed": true,
+        "directory": "C:\\Users\\DIOGOC~1\\AppData\\Local\\Temp\\DACCharts-portable-test-aa207e6da8eb48fcb6f622957823b274\\missing-fixtures"
+      },
+      {
+        "name": "malformed-json",
+        "exitCode": 1,
+        "passed": true,
+        "directory": "C:\\Users\\DIOGOC~1\\AppData\\Local\\Temp\\DACCharts-portable-test-aa207e6da8eb48fcb6f622957823b274\\malformed-json"
+      },
+      {
+        "name": "missing-cases",
+        "exitCode": 1,
+        "passed": true,
+        "directory": "C:\\Users\\DIOGOC~1\\AppData\\Local\\Temp\\DACCharts-portable-test-aa207e6da8eb48fcb6f622957823b274\\missing-cases"
+      },
+      {
+        "name": "wrong-cases-type",
+        "exitCode": 1,
+        "passed": true,
+        "directory": "C:\\Users\\DIOGOC~1\\AppData\\Local\\Temp\\DACCharts-portable-test-aa207e6da8eb48fcb6f622957823b274\\wrong-cases-type"
+      },
+      {
+        "name": "empty-cases",
+        "exitCode": 1,
+        "passed": true,
+        "directory": "C:\\Users\\DIOGOC~1\\AppData\\Local\\Temp\\DACCharts-portable-test-aa207e6da8eb48fcb6f622957823b274\\empty-cases"
+      },
+      {
+        "name": "missing-option",
+        "exitCode": 1,
+        "passed": true,
+        "directory": "C:\\Users\\DIOGOC~1\\AppData\\Local\\Temp\\DACCharts-portable-test-aa207e6da8eb48fcb6f622957823b274\\missing-option"
+      },
+      {
+        "name": "invalid-option",
+        "exitCode": 1,
+        "passed": true,
+        "directory": "C:\\Users\\DIOGOC~1\\AppData\\Local\\Temp\\DACCharts-portable-test-aa207e6da8eb48fcb6f622957823b274\\invalid-option"
+      }
+    ],
+    "distribution": "M:\\Delphi Componentes\\DAC-DelphiComponents\\tmp\\chart-portable-fix\\demo-exe",
+    "capture": "buffers_only_not_physical_flicker",
+    "tempRoot": "C:\\Users\\DIOGOC~1\\AppData\\Local\\Temp\\DACCharts-portable-test-aa207e6da8eb48fcb6f622957823b274"
+  },
+  "pixelRegression": [
+    {
+      "id": "C01",
+      "unchangedPixels": true
+    },
+    {
+      "id": "C02",
+      "unchangedPixels": true
+    },
+    {
+      "id": "C03",
+      "unchangedPixels": true
+    },
+    {
+      "id": "C04",
+      "unchangedPixels": true
+    },
+    {
+      "id": "C05",
+      "unchangedPixels": true
+    },
+    {
+      "id": "C06",
+      "unchangedPixels": true
+    },
+    {
+      "id": "C07",
+      "unchangedPixels": true
+    },
+    {
+      "id": "C08",
+      "unchangedPixels": true
+    },
+    {
+      "id": "C09",
+      "unchangedPixels": true
+    },
+    {
+      "id": "C10",
+      "unchangedPixels": true
+    },
+    {
+      "id": "C11",
+      "unchangedPixels": true
+    },
+    {
+      "id": "C12",
+      "unchangedPixels": true
+    },
+    {
+      "id": "C13",
+      "unchangedPixels": true
+    },
+    {
+      "id": "C14",
+      "unchangedPixels": true
+    },
+    {
+      "id": "V01",
+      "unchangedPixels": true
+    },
+    {
+      "id": "V02",
+      "unchangedPixels": true
+    },
+    {
+      "id": "V03",
+      "unchangedPixels": true
+    },
+    {
+      "id": "V04",
+      "unchangedPixels": true
+    },
+    {
+      "id": "V05",
+      "unchangedPixels": true
+    },
+    {
+      "id": "V06",
+      "unchangedPixels": true
+    },
+    {
+      "id": "V07",
+      "unchangedPixels": true
+    },
+    {
+      "id": "V08",
+      "unchangedPixels": true
+    },
+    {
+      "id": "V09",
+      "unchangedPixels": true
+    },
+    {
+      "id": "V10",
+      "unchangedPixels": true
+    },
+    {
+      "id": "V11",
+      "unchangedPixels": true
+    },
+    {
+      "id": "V12",
+      "unchangedPixels": true
+    },
+    {
+      "id": "V13",
+      "unchangedPixels": true
+    },
+    {
+      "id": "V14",
+      "unchangedPixels": true
+    },
+    {
+      "id": "V15",
+      "unchangedPixels": true
+    }
+  ],
+  "loadedModules": {
+    "ModuleName": "sk4d.dll",
+    "FileName": "C:\\Users\\DIOGOC~1\\AppData\\Local\\Temp\\DACCharts-portable-test-aa207e6da8eb48fcb6f622957823b274\\valid\\sk4d.dll"
+  }
+}

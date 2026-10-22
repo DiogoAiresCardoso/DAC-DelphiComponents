@@ -11,6 +11,8 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Skia,
+  DAC.Components.Controls.Edit,
+  DAC.Components.Controls.FieldSupport,
   DAC.Components.Controls.SystemText,
   DAC.Components.DesignSystem.Theme,
   DAC.Components.Skia.Renderer;
@@ -29,6 +31,8 @@ type
     FTextOverlay: TDACSystemTextOverlay;
     FThemeMode: TDACThemeMode;
     FShowValue: Boolean;
+    FReadOnly: Boolean;
+    FStatus: TDACEditStatus;
     FValue: Integer;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure DrawCircle(const ACanvas: ISkCanvas; const ACenter: TPointF;
@@ -45,11 +49,14 @@ type
     procedure PaintBoxMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     function ParentSurfaceColor: TAlphaColor;
+    function ResolvedFieldState: TDACResolvedFieldState;
     function Percent: Single;
     function Pixels(const AValue: Integer): Integer;
     procedure SetMaximum(const AValue: Integer);
     procedure SetMinimum(const AValue: Integer);
     procedure SetShowValue(const AValue: Boolean);
+    procedure SetReadOnly(const AValue: Boolean);
+    procedure SetStatus(const AValue: TDACEditStatus);
     procedure SetValue(const AValue: Integer);
     procedure SetValueFromX(const AX: Integer);
     procedure SetThemeMode(const AValue: TDACThemeMode);
@@ -58,6 +65,8 @@ type
     procedure WMEraseBkgnd(var AMessage: TWMEraseBkgnd); message WM_ERASEBKGND;
   protected
     procedure CreateWnd; override;
+    procedure DoEnter; override;
+    procedure DoExit; override;
     procedure KeyDown(var Key: Word; Shift: TShiftState); override;
     procedure Loaded; override;
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
@@ -84,6 +93,8 @@ type
     property PopupMenu;
     property ShowHint;
     property ShowValue: Boolean read FShowValue write SetShowValue default True;
+    property ReadOnly: Boolean read FReadOnly write SetReadOnly default False;
+    property Status: TDACEditStatus read FStatus write SetStatus default mesNormal;
     property TabOrder;
     property TabStop default True;
     property ThemeMode: TDACThemeMode read FThemeMode write SetThemeMode default dtmInherit;
@@ -127,6 +138,8 @@ begin
   FValue := 0;
   FBindingCanModify := True;
   FShowValue := True;
+  FReadOnly := False;
+  FStatus := mesNormal;
   FThemeMode := dtmInherit;
   FRenderer := TDACSkiaRenderer.Create;
 
@@ -144,6 +157,12 @@ begin
   FTextOverlay.Parent := Self;
   FTextOverlay.SetSubComponent(True);
   FTextOverlay.Align := alClient;
+  FTextOverlay.Enabled := True;
+  FTextOverlay.OnMouseDown := PaintBoxMouseDown;
+  FTextOverlay.OnMouseEnter := PaintBoxMouseEnter;
+  FTextOverlay.OnMouseLeave := PaintBoxMouseLeave;
+  FTextOverlay.OnMouseMove := PaintBoxMouseMove;
+  FTextOverlay.OnMouseUp := PaintBoxMouseUp;
   TDACThemeManager.RegisterListener(Self, ThemeChanged);
 
   UpdatePaintBoxBounds;
@@ -162,7 +181,7 @@ procedure TDACSlider.CMEnabledChanged(var AMessage: TMessage);
 begin
   inherited;
   Cursor := crHandPoint;
-  if not Enabled or not FBindingCanModify then
+  if not Enabled or FReadOnly or not FBindingCanModify then
     Cursor := crDefault;
   InvalidateSlider;
 end;
@@ -171,6 +190,19 @@ procedure TDACSlider.CreateWnd;
 begin
   inherited;
   UpdatePaintBoxBounds;
+  InvalidateSlider;
+end;
+
+procedure TDACSlider.DoEnter;
+begin
+  inherited;
+  InvalidateSlider;
+end;
+
+procedure TDACSlider.DoExit;
+begin
+  inherited;
+  FDragging := False;
   InvalidateSlider;
 end;
 
@@ -212,7 +244,7 @@ end;
 procedure TDACSlider.KeyDown(var Key: Word; Shift: TShiftState);
 begin
   inherited;
-  if not Enabled or not FBindingCanModify then
+  if not Enabled or FReadOnly or not FBindingCanModify then
     Exit;
   case Key of
     VK_LEFT, VK_DOWN:
@@ -239,19 +271,20 @@ procedure TDACSlider.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 begin
   inherited;
-  if (Button = mbLeft) and Enabled and FBindingCanModify then
+  if (Button = mbLeft) and Enabled then
   begin
-    FDragging := True;
     if CanFocus then
       SetFocus;
-    SetValueFromX(X);
+    FDragging := FBindingCanModify and not FReadOnly;
+    if FDragging then
+      SetValueFromX(X);
   end;
 end;
 
 procedure TDACSlider.MouseMove(Shift: TShiftState; X, Y: Integer);
 begin
   inherited;
-  if FDragging and Enabled and FBindingCanModify then
+  if FDragging and Enabled and FBindingCanModify and not FReadOnly then
     SetValueFromX(X);
 end;
 
@@ -277,6 +310,9 @@ var
   LTrackRect: TRectF;
   LValueText: string;
   LTokens: TDACControlTokens;
+  LChrome: TDACFieldChromeResult;
+  LActiveColor: TAlphaColor;
+  LFocusRect: TRectF;
 begin
   if (ACanvas = nil) or (ADest.Width <= 0) or (ADest.Height <= 0) then
     Exit;
@@ -286,6 +322,7 @@ begin
 
   LSurface := ParentSurfaceColor;
   LTokens := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls;
+  LChrome := TDACFieldChromeResolver.Resolve(ResolvedFieldState, LTokens);
   ACanvas.Clear(LSurface);
 
   LCenterY := ADest.Height / 2;
@@ -300,7 +337,10 @@ begin
   LPercent := Percent;
   LActiveRect := LTrackRect;
   LActiveRect.Right := LTrackRect.Left + (LTrackRect.Width * LPercent);
-  FRenderer.FillRoundRect(ACanvas, LActiveRect, LTokens.Success,
+  LActiveColor := LTokens.Success;
+  if Focused or FMouseInside or (FStatus <> mesNormal) then
+    LActiveColor := LChrome.BorderColor;
+  FRenderer.FillRoundRect(ACanvas, LActiveRect, LActiveColor,
     Pixels(Round(LTokens.SliderTrackThickness)), IfThen(Enabled,
       LTokens.AlphaOpaque, LTokens.SliderDisabledAlpha));
 
@@ -308,9 +348,20 @@ begin
   DrawCircle(ACanvas, LKnobCenter, Pixels(Round(LTokens.SliderKnobRadius)),
     LTokens.SelectorKnob, False, LTokens.SelectorStrokeWidth,
     LTokens.AlphaOpaque);
-  DrawCircle(ACanvas, LKnobCenter, Pixels(Round(LTokens.SliderKnobRadius)), LTokens.Success,
-    True, LTokens.SelectorCheckedBorderWidth, IfThen(FMouseInside or FDragging,
-      LTokens.AlphaOpaque, LTokens.SliderHoverAlpha));
+  DrawCircle(ACanvas, LKnobCenter, Pixels(Round(LTokens.SliderKnobRadius)),
+    LChrome.BorderColor, True, LChrome.BorderWidth, LChrome.BorderAlpha);
+
+  if Focused then
+  begin
+    LFocusRect := TRectF.Create(
+      LKnobCenter.X - Pixels(Round(LTokens.SliderKnobRadius)) - 2,
+      LKnobCenter.Y - Pixels(Round(LTokens.SliderKnobRadius)) - 2,
+      LKnobCenter.X + Pixels(Round(LTokens.SliderKnobRadius)) + 2,
+      LKnobCenter.Y + Pixels(Round(LTokens.SliderKnobRadius)) + 2);
+    FRenderer.StrokeRoundRect(ACanvas, LFocusRect, LChrome.BorderColor,
+      LFocusRect.Width / 2, LTokens.InputFocusBorderWidth,
+      LChrome.BorderAlpha);
+  end;
 
   if FShowValue then
   begin
@@ -318,7 +369,7 @@ begin
     FRenderer.Text(ACanvas, LValueText,
       TDACComponentStyle.FontFamily, ADest.Width - Pixels(Round(LTokens.SliderValueRight)),
       LCenterY + Pixels(Round(LTokens.SliderValueBaselineOffset)), LTokens.SliderValueTextSize,
-      LTokens.SliderText, False, Pixels(Round(LTokens.SliderValueWidth)));
+      LChrome.TextColor, False, Pixels(Round(LTokens.SliderValueWidth)));
   end;
   finally
     FRenderer.EndNativeText;
@@ -358,7 +409,14 @@ end;
 
 function TDACSlider.ParentSurfaceColor: TAlphaColor;
 begin
-  Result := TDACComponentStyle.ResolveForSurface(Self, FThemeMode).Tokens.Controls.PopupBackground;
+  Result := TDACComponentColors.ResolveParentSurface(Self);
+end;
+
+function TDACSlider.ResolvedFieldState: TDACResolvedFieldState;
+begin
+  Result := TDACFieldStateResolver.Resolve(Enabled, False,
+    FReadOnly or not FBindingCanModify, Focused, FMouseInside,
+    FValue <> FMinimum, TDACFieldValidation(Ord(FStatus)));
 end;
 
 function TDACSlider.ResolvedTrackColor: TAlphaColor;
@@ -419,6 +477,27 @@ begin
   InvalidateSlider;
 end;
 
+procedure TDACSlider.SetReadOnly(const AValue: Boolean);
+begin
+  if FReadOnly = AValue then
+    Exit;
+  FReadOnly := AValue;
+  if FReadOnly then
+    FDragging := False;
+  Cursor := crHandPoint;
+  if not Enabled or FReadOnly or not FBindingCanModify then
+    Cursor := crDefault;
+  InvalidateSlider;
+end;
+
+procedure TDACSlider.SetStatus(const AValue: TDACEditStatus);
+begin
+  if FStatus = AValue then
+    Exit;
+  FStatus := AValue;
+  InvalidateSlider;
+end;
+
 procedure TDACSlider.SetBindingCanModify(const AValue: Boolean);
 begin
   if FBindingCanModify = AValue then
@@ -427,7 +506,7 @@ begin
   if not FBindingCanModify then
     FDragging := False;
   Cursor := crHandPoint;
-  if not Enabled or not FBindingCanModify then
+  if not Enabled or FReadOnly or not FBindingCanModify then
     Cursor := crDefault;
   InvalidateSlider;
 end;
@@ -463,8 +542,8 @@ end;
 
 procedure TDACSlider.SetThemeMode(const AValue: TDACThemeMode);
 begin
-  if FThemeMode = AValue then Exit;
-  FThemeMode := AValue;
+  if FThemeMode <> AValue then
+    FThemeMode := AValue;
   ThemeChanged(Self);
 end;
 

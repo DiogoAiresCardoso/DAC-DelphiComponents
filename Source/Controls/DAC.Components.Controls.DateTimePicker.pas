@@ -72,6 +72,7 @@ type
     function GetPickerControl: TMaskEdit;
     function GetReadOnlyValue: Boolean;
     function GetThemeModeValue: TDACThemeMode;
+    function IsEditorComplete: Boolean;
 {$IFDEF DAC_TESTING}
     function GetNativePresentationPending: Boolean;
 {$ENDIF}
@@ -168,6 +169,7 @@ implementation
 
 uses
   System.DateUtils,
+  System.MaskUtils,
   System.Math,
   Winapi.Windows,
   DAC.Components.DesignSystem.ComponentStyle;
@@ -363,6 +365,11 @@ begin
   end
   else
   begin
+    { TMaskEdit.Text exposes unfilled slots as spaces. TryStrToDate accepts
+      a partial year such as "2   " as 2002, and an OnChange consumer can then
+      write that value back and reset the caret. Only publish a complete mask. }
+    if not IsEditorComplete then
+      Exit;
     if not TryTextToValue(Text, LValue) then
       Exit;
     LChanged := FIsNull or not SameValue(FDateTime, LValue);
@@ -545,6 +552,34 @@ end;
 function TDACDateTimePicker.GetThemeModeValue: TDACThemeMode;
 begin
   Result := TDACEdit(Self).ThemeMode;
+end;
+
+function TDACDateTimePicker.IsEditorComplete: Boolean;
+var
+  I: Integer;
+  LMask: string;
+  LOffset: Integer;
+  LText: string;
+begin
+  LMask := EditControl.EditMask;
+  if LMask = '' then
+    LMask := BuildEditMask;
+  LText := EditControl.EditText;
+  LOffset := 1;
+  for I := 1 to Length(LMask) do
+    case MaskGetCharType(LMask, I) of
+      mcLiteral, mcIntlLiteral, mcMaskOpt:
+        Inc(LOffset);
+      mcMask:
+        begin
+          if (LOffset > Length(LText)) or
+            (LText[LOffset] = MaskGetMaskBlank(LMask)) or
+            (LText[LOffset] = ' ') then
+            Exit(False);
+          Inc(LOffset);
+        end;
+    end;
+  Result := True;
 end;
 
 {$IFDEF DAC_TESTING}

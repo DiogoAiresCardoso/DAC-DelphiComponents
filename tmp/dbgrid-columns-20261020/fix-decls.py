@@ -1,3 +1,0 @@
-from pathlib import Path
-p=Path('Source/Controls/DAC.Components.Controls.DBGrid.Column.pas');s=p.read_bytes().decode('cp1252').replace('\r\n','\n');a='    procedure SetHint(const AValue: string);\n    procedure SetTitleHint(const AValue: string);\n    procedure SetMinWidth(const AValue: Integer);\n';s=s.replace(a,'').replace('    procedure BadgeRulesChanged',a+'    procedure BadgeRulesChanged');p.write_bytes(s.replace('\n','\r\n').encode('cp1252'))
-p=Path('Source/Controls/DAC.Components.Controls.DBGrid.pas');s=p.read_bytes().decode('cp1252').replace('\r\n','\n');a='    function DisplayCellRect(const ACol, ARow: Integer): TRect;\n';s=s.replace(a,'').replace('  protected\n','  protected\n'+a,1);p.write_bytes(s.replace('\n','\r\n').encode('cp1252'))

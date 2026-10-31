@@ -1,8 +1,0 @@
-  Embarcadero Delphi for Win32 compiler version 32.0
-  Copyright (c) 1983,2017 Embarcadero Technologies, Inc.
-M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(513): Hint warning H2164: Variable 'Step' is declared but never used in 'TDACChartEngine.Render' [M:\Delphi Componentes\DAC-DelphiComponents\Package\DACSkiaComponents.dproj]
-M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(610): Hint warning H2077: Value assigned to 'V' never used [M:\Delphi Componentes\DAC-DelphiComponents\Package\DACSkiaComponents.dproj]
-M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(572): Hint warning H2164: Variable 'ShowAxis' is declared but never used in 'TDACChartEngine.DrawAxes' [M:\Delphi Componentes\DAC-DelphiComponents\Package\DACSkiaComponents.dproj]
-M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(573): Hint warning H2164: Variable 'Align' is declared but never used in 'TDACChartEngine.DrawAxes' [M:\Delphi Componentes\DAC-DelphiComponents\Package\DACSkiaComponents.dproj]
-M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(982): Hint warning H2164: Variable 'T' is declared but never used in 'TDACChartEngine.HitTest' [M:\Delphi Componentes\DAC-DelphiComponents\Package\DACSkiaComponents.dproj]
-  42666 lines, 0.56 seconds, 1293436 bytes code, 980 bytes data.

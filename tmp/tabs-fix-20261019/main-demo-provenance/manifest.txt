@@ -1,7 +1,0 @@
-project=Demo
-configuration=Debug
-platform=Win32
-exeOutput=M:\Delphi Componentes\DAC-DelphiComponents/tmp/tabs-fix-20261019/main-demo-exe
-runtimePackage=not-used
-skiaRuntime=M:\Delphi Componentes\DAC-DelphiComponents\demo\..\..\Build\EXE\sk4d.dll
-legacyArtifacts=preserved

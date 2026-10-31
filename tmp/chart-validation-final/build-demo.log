@@ -1,8 +1,0 @@
-  Embarcadero Delphi for Win32 compiler version 32.0
-  Copyright (c) 1983,2017 Embarcadero Technologies, Inc.
-M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(275): warning W1024: Combining signed and unsigned types - widened both operands [M:\Delphi Componentes\DAC-DelphiComponents\demo-charts\DACChartsDemo.dproj]
-M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(287): Hint warning H2164: Variable 'V' is declared but never used in 'TDACChartEngine.ItemStyle' [M:\Delphi Componentes\DAC-DelphiComponents\demo-charts\DACChartsDemo.dproj]
-M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(287): Hint warning H2164: Variable 'Pair' is declared but never used in 'TDACChartEngine.ItemStyle' [M:\Delphi Componentes\DAC-DelphiComponents\demo-charts\DACChartsDemo.dproj]
-M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(569): Hint warning H2077: Value assigned to 'V' never used [M:\Delphi Componentes\DAC-DelphiComponents\demo-charts\DACChartsDemo.dproj]
-M:\Delphi Componentes\DAC-DelphiComponents\Source\Skia\DAC.Components.Charts.Engine.pas(931): Hint warning H2164: Variable 'T' is declared but never used in 'TDACChartEngine.HitTest' [M:\Delphi Componentes\DAC-DelphiComponents\demo-charts\DACChartsDemo.dproj]
-  26939 lines, 0.53 seconds, 3325228 bytes code, 72092 bytes data.

@@ -1,4 +1,0 @@
-  Embarcadero Delphi for Win32 compiler version 32.0
-  Copyright (c) 1983,2017 Embarcadero Technologies, Inc.
-  54036 lines, 0.53 seconds, 2741872 bytes code, 63692 bytes data.
-M:\Delphi Componentes\DAC-DelphiComponents\Tests\DACComponentsInteraction.dproj(37,5): error : sk4d.dll nao foi encontrada em M:\Delphi Componentes\DAC-DelphiComponents\Tests\..\Build\EXE\sk4d.dll.

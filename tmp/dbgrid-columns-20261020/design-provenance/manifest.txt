@@ -1,8 +1,0 @@
-project=DACSkiaComponents
-configuration=Debug
-platform=Win32
-bplOutput=M:\Delphi Componentes\DAC-DelphiComponents/tmp/dbgrid-columns-20261020/design-bpl
-dcpOutput=M:\Delphi Componentes\DAC-DelphiComponents/tmp/dbgrid-columns-20261020/design-dcp
-dcuOutput=M:\Delphi Componentes\DAC-DelphiComponents/tmp/dbgrid-columns-20261020/design-dcu
-cBuilderOutput=None
-legacyArtifacts=preserved

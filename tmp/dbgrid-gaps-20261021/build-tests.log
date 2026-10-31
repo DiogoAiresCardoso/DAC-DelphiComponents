@@ -1,7 +1,0 @@
-  Embarcadero Delphi for Win32 compiler version 32.0
-  Copyright (c) 1983,2017 Embarcadero Technologies, Inc.
-M:\MaxxSoft\MaxxRural\Desktop\maxxrural\MaxxRural\MaxxCOM\uStatusServicoNFeService.pas(32): Hint warning H2219: Private symbol 'RaiseHttpError' declared but never used [M:\MaxxSoft\MaxxRural\Desktop\maxxrural\MaxxRural\src\Tests\ApiTestes.dproj]
-M:\MaxxSoft\MaxxRural\Desktop\maxxrural\MaxxRural\MaxxFIN\uMovimentoBancarioNovoApi.pas(34): Hint warning H2219: Private symbol 'RaiseHttpError' declared but never used [M:\MaxxSoft\MaxxRural\Desktop\maxxrural\MaxxRural\src\Tests\ApiTestes.dproj]
-M:\MaxxSoft\MaxxRural\Desktop\maxxrural\MaxxRural\src\Service\MaxxRural.Service.CEP.pas(42): Hint warning H2219: Private symbol 'JSONString' declared but never used [M:\MaxxSoft\MaxxRural\Desktop\maxxrural\MaxxRural\src\Tests\ApiTestes.dproj]
-M:\MaxxSoft\MaxxRural\Desktop\maxxrural\MaxxRural\src\MaxxRural.CEP.pas(42): Hint warning H2219: Private symbol 'Titulo' declared but never used [M:\MaxxSoft\MaxxRural\Desktop\maxxrural\MaxxRural\src\Tests\ApiTestes.dproj]
-  92728 lines, 1.49 seconds, 8744384 bytes code, 188268 bytes data.

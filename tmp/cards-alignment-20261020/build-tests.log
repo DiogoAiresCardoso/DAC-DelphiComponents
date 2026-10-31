@@ -1,6 +1,0 @@
-  Embarcadero Delphi for Win32 compiler version 32.0
-  Copyright (c) 1983,2017 Embarcadero Technologies, Inc.
-DACSummaryCardFonts.dpr(104): Hint warning H2443: Inline function 'TFont.GetStyle' has not been expanded because unit 'System.UITypes' is not specified in USES list [M:\Delphi Componentes\DAC-DelphiComponents\Tests\DACSummaryCardFonts.dproj]
-DACSummaryCardFonts.dpr(107): Hint warning H2443: Inline function 'TFont.GetStyle' has not been expanded because unit 'System.UITypes' is not specified in USES list [M:\Delphi Componentes\DAC-DelphiComponents\Tests\DACSummaryCardFonts.dproj]
-DACSummaryCardFonts.dpr(223): Hint warning H2443: Inline function 'TFont.GetStyle' has not been expanded because unit 'System.UITypes' is not specified in USES list [M:\Delphi Componentes\DAC-DelphiComponents\Tests\DACSummaryCardFonts.dproj]
-  41306 lines, 0.33 seconds, 2595444 bytes code, 67820 bytes data.

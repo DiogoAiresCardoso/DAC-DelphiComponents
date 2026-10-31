@@ -1,3 +1,0 @@
-@echo off
-call "C:\Program Files (x86)\Embarcadero\Studio\19.0\bin\rsvars.bat"
-"C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe" "demo-charts/DACChartsNoHighDpi.dproj" /t:Build /p:Config=Debug /p:Platform=Win32 /p:DCC_DcuOutput="M:\Delphi Componentes\DAC-DelphiComponents/tmp/chart-types-work/nodpi-dcu" /p:DCC_ExeOutput="M:\Delphi Componentes\DAC-DelphiComponents/tmp/chart-types-work/nodpi-exe" /p:DCC_BplOutput="M:\Delphi Componentes\DAC-DelphiComponents/tmp/chart-types-work/nodpi-bpl" /p:DCC_DcpOutput="M:\Delphi Componentes\DAC-DelphiComponents/tmp/chart-types-work/nodpi-dcp" /p:DAC_ProvenanceOutput="M:\Delphi Componentes\DAC-DelphiComponents/tmp/chart-types-work/nodpi-provenance" /v:minimal /nologo

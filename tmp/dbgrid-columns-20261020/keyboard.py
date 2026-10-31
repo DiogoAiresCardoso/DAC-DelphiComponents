@@ -1,4 +1,0 @@
-from pathlib import Path
-p=Path('Source/Controls/DAC.Components.Controls.DBGrid.pas');s=p.read_bytes().decode('cp1252').replace('\r\n','\n');s=s.replace('  FPressedTitleColumn := -1;\n  Redraw;\nend;\n\nprocedure TDACDBGrid.LayoutError', '  FPressedTitleColumn := -1;\n  UpdateHover(X, Y);\n  Redraw;\nend;\n\nprocedure TDACDBGrid.LayoutError');s=s.replace('  if (Message.Msg = WM_GETDLGCODE) and FActionMode then', '''  if (Message.Msg = WM_GETDLGCODE) and (FActionMode or
-    ((Message.WParam = VK_RETURN) and (GetKeyState(VK_CONTROL) < 0))) then''');p.write_bytes(s.replace('\n','\r\n').encode('cp1252'))
-p=Path('tmp/dbgrid-columns-20261020/build-existing-tests.cmd');s=p.read_text();s=s.replace('if errorlevel 1 exit /b %errorlevel%\n','if errorlevel 1 exit /b %errorlevel%\nset "PATH=M:\\MaxxSoft\\MaxxRural\\Desktop\\maxxrural\\EXE;%PATH%"\n');p.write_text(s)

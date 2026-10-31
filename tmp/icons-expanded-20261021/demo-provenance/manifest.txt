@@ -1,7 +1,0 @@
-project=Demo
-configuration=Debug
-platform=Win32
-exeOutput=M:\Delphi Componentes\DAC-DelphiComponents\tmp\icons-expanded-20261021\demo-exe
-runtimePackage=not-used
-skiaRuntime=M:\MaxxSoft\MaxxRural\Desktop\maxxrural\EXE\sk4d.dll
-legacyArtifacts=preserved

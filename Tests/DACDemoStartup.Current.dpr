@@ -5,6 +5,8 @@ program DACDemoStartupCurrent;
 
 uses
   System.SysUtils,
+  System.Variants,
+  MidasLib,
   DAC.Components.DesignSystem.IconAssets,
   Vcl.Forms,
   Demo.Principal in '..\demo\Demo.Principal.pas' {Form1};
@@ -35,6 +37,19 @@ begin
         (Form1.btnIconDatabase.Parent = Form1.gcButtonIcons), 'Exemplos fora da secao de icones.');
       Require(Form1.btnIconDatabase.Width >= Form1.btnIconDatabase.MinimumContentWidth,
         'Exemplo com icone nao recebeu a largura minima de conteudo.');
+      Require(Form1.tsDBTreeView <> nil, 'Official DBTreeView gallery page missing.');
+      Require(Form1.DBTreeDemo <> nil, 'Official gallery did not create the data-aware example.');
+      Require(Form1.DBTreeDemo.Parent = Form1.tsDBTreeView, 'Tree example is outside official gallery.');
+      Require(Form1.DBTreeDemo.Tree.IsDataValid, 'Official tree dataset was not loaded.');
+      Form1.GalleryTabs.ActivePage := Form1.tsDBTreeView;
+      Application.ProcessMessages;
+      Require(Form1.DBTreeDemo.Tree.Showing, 'Official tree page is not visible.');
+      Require(Form1.DBTreeDemo.Tree.TrySetChecked('011', True), 'Official example check failed.');
+      Require(Length(Form1.DBTreeDemo.Tree.CheckedKeys) = 1, 'Official example did not preserve marking.');
+      Require(not Form1.DBTreeDemo.Tree.TrySetChecked('001', True), 'Official example allowed a blocked group.');
+      Form1.DBTreeDemo.Search.Text := 'produtos';
+      Require(Form1.DBTreeDemo.Tree.Model.Visible.Count = 3, 'Official search did not preserve ancestors.');
+      Form1.DBTreeDemo.Search.Clear;
       Form1.Hide;
       Application.ProcessMessages;
     finally

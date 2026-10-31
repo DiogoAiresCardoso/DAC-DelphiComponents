@@ -1987,5 +1987,9 @@ object Form1: TForm1
         TabOrder = 0
       end
     end
+    object tsDBTreeView: TTabSheet
+      Caption = 'DBTreeView'
+      ImageIndex = 15
+    end
   end
 end

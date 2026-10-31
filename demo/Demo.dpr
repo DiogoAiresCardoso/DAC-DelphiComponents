@@ -2,6 +2,8 @@ program Demo;
 
 uses
   Vcl.Forms,
+  MidasLib,
+  DBTreeView.Demo.Main in '..\demo-db-treeview\DBTreeView.Demo.Main.pas' {DBTreeDemoForm},
   Demo.Principal in 'Demo.Principal.pas' {Form1},
   Vcl.Themes,
   Vcl.Styles;

@@ -37,6 +37,16 @@ requires
   Skia.Package.RTL;
 
 contains
+  DAC.Components.Controls.DBTreeView in '..\Source\Controls\DAC.Components.Controls.DBTreeView.pas',
+  DAC.Components.Controls.DBTreeView.Types in '..\Source\Controls\DAC.Components.Controls.DBTreeView.Types.pas',
+  DAC.Components.Controls.DBTreeView.Column in '..\Source\Controls\DAC.Components.Controls.DBTreeView.Column.pas',
+  DAC.Components.Controls.DBTreeView.Columns in '..\Source\Controls\DAC.Components.Controls.DBTreeView.Columns.pas',
+  DAC.Components.Controls.DBTreeView.Roots in '..\Source\Controls\DAC.Components.Controls.DBTreeView.Roots.pas',
+  DAC.Components.Controls.DBTreeView.Model in '..\Source\Controls\DAC.Components.Controls.DBTreeView.Model.pas',
+  DAC.Components.Controls.DBTreeView.DataLink in '..\Source\Controls\DAC.Components.Controls.DBTreeView.DataLink.pas',
+  DAC.Components.Controls.DBTreeView.Painter in '..\Source\Controls\DAC.Components.Controls.DBTreeView.Painter.pas',
+  DAC.Components.DesignSystem.DBTreeTokens in '..\Source\DesignSystem\DAC.Components.DesignSystem.DBTreeTokens.pas',
+  DAC.Components.Skia.RasterSurface in '..\Source\Skia\DAC.Components.Skia.RasterSurface.pas',
   DAC.Components.Types in '..\Source\Core\DAC.Components.Types.pas',
   DAC.Components.Geometry in '..\Source\Core\DAC.Components.Geometry.pas',
   DAC.Components.DesignSystem.ColorTokens in '..\Source\DesignSystem\DAC.Components.DesignSystem.ColorTokens.pas',

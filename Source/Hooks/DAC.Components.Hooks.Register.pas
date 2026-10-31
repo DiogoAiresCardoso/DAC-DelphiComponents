@@ -15,6 +15,7 @@ uses
   DAC.Components.Controls.Charts,
   DAC.Components.Controls.ComboBox,
   DAC.Components.Controls.Container,
+  DAC.Components.Controls.DBTreeView,
   DAC.Components.Controls.DBGrid,
   DAC.Components.Controls.Edit,
   DAC.Components.Controls.Feedback,
@@ -51,6 +52,7 @@ begin
     TDACScrollContainerStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACDBGrid,
     TDACDBGridScrollStyleHook);
+  TCustomStyleEngine.RegisterStyleHook(TDACDBTreeView, TDACSkiaControlStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACContainer, TDACSkiaControlStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACGridContainer, TDACSkiaControlStyleHook);
   TCustomStyleEngine.RegisterStyleHook(TDACButton, TDACSkiaControlStyleHook);
@@ -111,6 +113,7 @@ begin
   TCustomStyleEngine.UnRegisterStyleHook(TDACEdit, TDACSkiaControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACButton, TDACSkiaControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACGridContainer, TDACSkiaControlStyleHook);
+  TCustomStyleEngine.UnRegisterStyleHook(TDACDBTreeView, TDACSkiaControlStyleHook);
   TCustomStyleEngine.UnRegisterStyleHook(TDACContainer, TDACSkiaControlStyleHook);
 
   GHooksRegistered := False;

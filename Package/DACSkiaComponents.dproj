@@ -17,6 +17,16 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBTreeView.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBTreeView.Types.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBTreeView.Column.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBTreeView.Columns.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBTreeView.Roots.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBTreeView.Model.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBTreeView.DataLink.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBTreeView.Painter.pas"/>
+        <DCCReference Include="..\Source\DesignSystem\DAC.Components.DesignSystem.DBTreeTokens.pas"/>
+        <DCCReference Include="..\Source\Skia\DAC.Components.Skia.RasterSurface.pas"/>
         <DCCReference Include="rtl.dcp"/>
         <DCCReference Include="designide.dcp"/>
         <DCCReference Include="dbrtl.dcp"/>

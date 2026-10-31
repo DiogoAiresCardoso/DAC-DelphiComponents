@@ -16,6 +16,7 @@ uses
   DAC.Components.Controls.ComboBox,
   DAC.Components.Controls.Container,
   DAC.Components.Controls.DateTimePicker,
+  DAC.Components.Controls.DBTreeView,
   DAC.Components.Controls.DBGrid,
   DAC.Components.Controls.Edit,
   DAC.Components.Controls.NumericEdit,
@@ -48,6 +49,7 @@ begin
   RegisterClass(TDACContainer);
   RegisterClass(TDACChart);
   RegisterClass(TDACDateTimePicker);
+  RegisterClass(TDACDBTreeView);
   RegisterClass(TDACDBGrid);
   RegisterClass(TDACEdit);
   RegisterClass(TDACNumericEdit);

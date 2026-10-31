@@ -55,6 +55,10 @@ Source/DesignTime/
 - Skia4Delphi e obrigatorio para desenho visual.
 - Runtime nao depende de `DesignIntf`.
 - Design-time depende do runtime e registra componentes na IDE.
-- TreeView/menu lateral e toolbar/topbar continuam fora do escopo da suite.
+- TDACDBTreeView oferece arvore data-aware de dados com colunas. Menu lateral e toolbar/topbar continuam fora do escopo.
 - Cada classe concreta fica em sua propria unit.
 
+
+## Arvore data-aware
+
+- [TDACDBTreeView: API, exemplo e validacao](docs/dbtreeview/README.md).

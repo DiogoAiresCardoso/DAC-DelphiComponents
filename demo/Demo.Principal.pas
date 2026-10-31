@@ -15,6 +15,7 @@ uses
   Vcl.Graphics,
   Vcl.Skia,
   Vcl.StdCtrls,
+  DBTreeView.Demo.Main,
   DAC.Components.Controls.Badges,
   DAC.Components.Controls.Button,
   DAC.Components.Controls.ButtonEdit,
@@ -67,6 +68,7 @@ type
     tsLoading: TTabSheet;
     tsCharts: TTabSheet;
     tsReport: TTabSheet;
+    tsDBTreeView: TTabSheet;
     demoStatusTimeline: TDACStatusTimelineChart;
     scrButtons: TDACScrollContainer;
     lblButtonsTitle: TDACSystemText;
@@ -117,6 +119,7 @@ type
     btnUploadAction: TDACButton;
     procedure CardTypographyClick(Sender: TObject);
   private
+    FDBTreeDemo: TDBTreeDemoForm;
     FDashboardActivity: TDACContainer;
     FDashboardAgenda: TDACContainer;
     FDashboardCards: array[0..4] of TDACSummaryCard;
@@ -137,6 +140,7 @@ type
     FSelectorPreferredWidth: Integer;
     procedure ApplyDemoLayout;
     function CanApplyRuntimeLayout: Boolean;
+    procedure BuildDBTreeDemo;
     procedure BuildDemoNavigation;
     procedure BuildDashboard;
     procedure BuildThemeToggle;
@@ -163,6 +167,7 @@ type
   public
     destructor Destroy; override;
     property LayoutRevision: Cardinal read FLayoutRevision;
+    property DBTreeDemo: TDBTreeDemoForm read FDBTreeDemo;
   end;
 
 var
@@ -435,6 +440,20 @@ begin
   for I := Low(FDashboardCards) to High(FDashboardCards) do
     FDashboardCards[I] := FindComponent('dashKpi' + IntToStr(I + 1)) as TDACSummaryCard;
   ConfigureDashboardLayout;
+end;
+
+procedure TForm1.BuildDBTreeDemo;
+begin
+  if (csDesigning in ComponentState) or (FDBTreeDemo <> nil) or
+    (tsDBTreeView = nil) then Exit;
+  FDBTreeDemo := TDBTreeDemoForm.Create(Self);
+  FDBTreeDemo.BorderStyle := bsNone;
+  FDBTreeDemo.Position := poDesigned;
+  FDBTreeDemo.Constraints.MinWidth := 0;
+  FDBTreeDemo.Constraints.MinHeight := 0;
+  FDBTreeDemo.Parent := tsDBTreeView;
+  FDBTreeDemo.Align := alClient;
+  FDBTreeDemo.Visible := True;
 end;
 
 procedure TForm1.BuildDemoNavigation;
@@ -1426,6 +1445,11 @@ var
 begin
   LMode := TDACThemeManager.ApplicationMode;
   LControlTokens := TDACComponentStyle.Resolve(LMode).Tokens.Controls;
+  if FDBTreeDemo <> nil then
+  begin
+    FDBTreeDemo.Tree.ThemeMode := LMode;
+    TDACNativeThemeScopeApplicator.Apply(FDBTreeDemo, LControlTokens);
+  end;
   Color := TDACComponentColors.ToVclColor(
     LControlTokens.ScrollContainerViewportBackground);
   if FThemeToggle <> nil then
@@ -1452,6 +1476,7 @@ procedure TForm1.Loaded;
 begin
   inherited;
   BuildDashboard;
+  BuildDBTreeDemo;
   BuildDemoNavigation;
   BuildThemeToggle;
   FSelectorPreferredWidth := (FindComponent('demoCombo') as TControl).Width;

@@ -46,7 +46,7 @@
         <DCC_DcuOutput>..\Build\Dcu\$(Platform)\$(Config)\Demo</DCC_DcuOutput>
         <DCC_ExeOutput>..\Build\Exe\$(Platform)\$(Config)</DCC_ExeOutput>
         <DCC_CBuilderOutput>None</DCC_CBuilderOutput>
-        <DCC_UnitSearchPath>..\demo-db-treeview;..\Source\Core;..\Source\DesignSystem;..\Source\Skia;..\Source\Controls;..\Source\Hooks;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\demo-treeview;..\demo-db-treeview;..\Source\Core;..\Source\DesignSystem;..\Source\Skia;..\Source\Controls;..\Source\Hooks;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DCC_E>false</DCC_E>
         <DCC_N>false</DCC_N>
         <DCC_S>false</DCC_S>
@@ -97,6 +97,7 @@
         <DCC_UsePackage>rtl;vcl;vclimg;Skia.Package.RTL;Skia.Package.VCL</DCC_UsePackage>
     </PropertyGroup>
     <ItemGroup>
+        <DCCReference Include="..\demo-treeview\TreeView.Demo.Main.pas"><Form>TreeDemoForm</Form><FormType>dfm</FormType></DCCReference>
         <DCCReference Include="..\demo-db-treeview\DBTreeView.Demo.Main.pas">
             <Form>DBTreeDemoForm</Form>
             <FormType>dfm</FormType>

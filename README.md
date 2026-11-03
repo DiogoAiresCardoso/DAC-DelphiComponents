@@ -62,3 +62,8 @@ Source/DesignTime/
 ## Arvore data-aware
 
 - [TDACDBTreeView: API, exemplo e validacao](docs/dbtreeview/README.md).
+
+## Arvore de itens e objetos
+
+- [TDACTreeView: Items/AddChild e TObjectList](docs/treeview/README.md).
+- A galeria oficial inclui a pagina TreeView, alem da pagina DBTreeView.

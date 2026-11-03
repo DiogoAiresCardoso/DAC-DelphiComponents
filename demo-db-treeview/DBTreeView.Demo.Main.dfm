@@ -91,6 +91,17 @@ object DBTreeDemoForm: TDBTreeDemoForm
       TabOrder = 6
       OnClick = ReadOnlyBoxClick
     end
+    object ShowHeaderBox: TCheckBox
+      Left = 560
+      Top = 10
+      Width = 180
+      Height = 25
+      Caption = 'Exibir titulos'
+      Checked = True
+      State = cbChecked
+      TabOrder = 7
+      OnClick = ShowHeaderBoxClick
+    end
   end
   object Footer: TPanel
     Left = 0

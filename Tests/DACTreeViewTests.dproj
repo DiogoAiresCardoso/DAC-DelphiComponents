@@ -1,0 +1,32 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{10E756D5-FD8B-47C3-B701-0B3257F46C2A}</ProjectGuid>
+    <MainSource>DACTreeViewTests.dpr</MainSource>
+    <ProjectVersion>18.3</ProjectVersion>
+    <FrameworkType>VCL</FrameworkType>
+    <Config Condition="'$(Config)'==''">Debug</Config>
+    <Platform Condition="'$(Platform)'==''">Win32</Platform>
+    <AppType>Console</AppType>
+    <Base>true</Base>
+    <DCC_CBuilderOutput>None</DCC_CBuilderOutput>
+    <DCC_UnitSearchPath>..\Source\Core;..\Source\DesignSystem;..\Source\Skia;..\Source\Controls;..\Source\Hooks;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+    <DCC_Namespace>System;Xml;Data;Web;Soap;Vcl;Vcl.Imaging;Winapi;$(DCC_Namespace)</DCC_Namespace>
+    <DCC_DcuOutput>..\Build\TreeView\Dcu\DACTreeViewTests</DCC_DcuOutput>
+    <DCC_ExeOutput>..\Build\TreeView\Exe</DCC_ExeOutput>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Config)'=='Debug'">
+    <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+    <DCC_DebugInformation>true</DCC_DebugInformation>
+    <DCC_RangeChecking>true</DCC_RangeChecking>
+  </PropertyGroup>
+  <ItemGroup>
+    <DelphiCompile Include="$(MainSource)"><MainSource>MainSource</MainSource></DelphiCompile>
+    <BuildConfiguration Include="Base"><Key>Base</Key></BuildConfiguration>
+    <BuildConfiguration Include="Debug"><Key>Cfg_1</Key><CfgParent>Base</CfgParent></BuildConfiguration>
+  </ItemGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Delphi.Personality.12</Borland.Personality>
+    <BorlandProject><Delphi.Personality><Source><Source Name="MainSource">DACTreeViewTests.dpr</Source></Source></Delphi.Personality><Platforms><Platform value="Win32">True</Platform></Platforms></BorlandProject>
+  </ProjectExtensions>
+  <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+</Project>

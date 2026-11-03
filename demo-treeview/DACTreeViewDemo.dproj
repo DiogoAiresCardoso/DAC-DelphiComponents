@@ -1,0 +1,27 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{FC480A60-BE44-49F9-8B46-07B70BC20B5B}</ProjectGuid>
+    <MainSource>DACTreeViewDemo.dpr</MainSource>
+    <ProjectVersion>18.3</ProjectVersion>
+    <FrameworkType>VCL</FrameworkType>
+    <Config Condition="'$(Config)'==''">Debug</Config>
+    <Platform Condition="'$(Platform)'==''">Win32</Platform>
+    <Base>true</Base>
+    <AppType>Application</AppType>
+    <DCC_CBuilderOutput>None</DCC_CBuilderOutput>
+    <DCC_UnitSearchPath>..\Source\Core;..\Source\DesignSystem;..\Source\Skia;..\Source\Controls;..\Source\Hooks;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+    <DCC_Namespace>System;Xml;Data;Web;Soap;Vcl;Vcl.Imaging;Winapi</DCC_Namespace>
+    <DCC_DcuOutput>..\Build\TreeView\Dcu\DACTreeViewDemo</DCC_DcuOutput>
+    <DCC_ExeOutput>..\Build\TreeView\PlainDemo</DCC_ExeOutput>
+  </PropertyGroup>
+  <ItemGroup>
+    <DelphiCompile Include="$(MainSource)"><MainSource>MainSource</MainSource></DelphiCompile>
+    <BuildConfiguration Include="Base"><Key>Base</Key></BuildConfiguration>
+    <BuildConfiguration Include="Debug"><Key>Cfg_1</Key><CfgParent>Base</CfgParent></BuildConfiguration>
+  </ItemGroup>
+  <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+  <Target Name="BuildTreeManifest" BeforeTargets="_PasCoreCompile">
+    <MakeDir Directories="$(MSBuildProjectDirectory)\..\Build\TreeView\Resources"/>
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)" Command="&quot;$(BDS)\bin\brcc32.exe&quot; -fo&quot;$(MSBuildProjectDirectory)\..\Build\TreeView\Resources\DACTreeViewDemo.res&quot; DACTreeViewDemo.rc"/>
+  </Target>
+</Project>

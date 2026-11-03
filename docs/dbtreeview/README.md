@@ -9,6 +9,26 @@ financeiros, empresas, permissões de negócio, serviços ou persistência. Não
 cria conexão, executa SQL, acessa rede nem altera `Filter`, índices ou ordenação
 do dataset. Não propaga marcações entre pais e descendentes.
 
+## Visibilidade do cabecalho
+
+`ShowHeader: Boolean` tem padrao `True` e controla os titulos de colunas por
+instancia. Para uma arvore sem a faixa de titulos:
+
+```delphi
+arvPlanos.ShowHeader := False;
+```
+
+As linhas passam a comecar imediatamente apos a borda. Colunas, indentacao,
+checkboxes e rolagem horizontal continuam disponiveis. `TitleHint` so se aplica
+com cabecalho visivel; os hints de celulas seguem funcionando.
+
+O valor `False` persiste e recarrega pelo DFM; o padrao `True` pode ser omitido.
+Alternar em runtime recalcula a geometria e o scroll necessario para manter
+limites validos e a linha atual visivel. Nao altera selecao, marcacoes,
+expansao ou busca, nem provoca leitura do dataset ou nova carga do catalogo.
+O checkbox **Exibir titulos** no exemplo permite conferir os dois modos.
+Veja o [relatorio do ajuste](../treeview/showheader-validation.md).
+
 ## Instalação e compilação
 
 O alvo inicial é Delphi 10.2 Tokyo/Win32. Use a mesma versão de Skia4Delphi dos

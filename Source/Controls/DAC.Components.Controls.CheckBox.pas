@@ -315,8 +315,12 @@ end;
 
 procedure TDACSelector.PaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
   const ADest: TRectF; const AOpacity: Single);
+const
+  CheckFocusOutset = 2;
 var
+  LBoxPadding: Single;
   LBoxRect: TRectF;
+  LBoxSize: Single;
   LFill: TAlphaColor;
   LIconRect: TRectF;
   LIconStyle: TDACIconStyle;
@@ -406,10 +410,12 @@ begin
       end;
   else
     begin
-      LBoxRect := FRenderer.SnapRect(TRectF.Create(0,
-        (ADest.Height - Pixels(Round(LTokens.SelectorCheckSize))) / 2,
-        Pixels(Round(LTokens.SelectorCheckSize)),
-        (ADest.Height + Pixels(Round(LTokens.SelectorCheckSize))) / 2), LScale);
+      LBoxPadding := CheckFocusOutset +
+        Ceil(Max(LTokens.InputBorderWidth, LTokens.InputFocusBorderWidth) / 2);
+      LBoxSize := Min(Pixels(Round(LTokens.SelectorCheckSize)),
+        Max(0.0, Min(ADest.Width, ADest.Height) - 2 * LBoxPadding));
+      LBoxRect := TRectF.Create(LBoxPadding, (ADest.Height - LBoxSize) / 2,
+        LBoxPadding + LBoxSize, (ADest.Height + LBoxSize) / 2);
       LFill := LTokens.SelectorControlBackground;
       if FChecked then
         LFill := LTokens.Success;
@@ -419,7 +425,7 @@ begin
       FRenderer.StrokeRoundRect(ACanvas, LBoxRect,
         LChrome.BorderColor, Pixels(Round(LTokens.SelectorCheckRadius)),
         LChrome.BorderWidth, LChrome.BorderAlpha);
-      if FChecked then
+      if FChecked and (LBoxSize > 2 * Pixels(Round(LTokens.SelectorCheckInset))) then
       begin
         LIconRect := TRectF.Create(LBoxRect.Left + Pixels(Round(LTokens.SelectorCheckInset)), LBoxRect.Top + Pixels(Round(LTokens.SelectorCheckInset)),
           LBoxRect.Right - Pixels(Round(LTokens.SelectorCheckInset)), LBoxRect.Bottom - Pixels(Round(LTokens.SelectorCheckInset)));
@@ -428,12 +434,12 @@ begin
         FIconPainter.Draw(ACanvas, LIconRect, mikCheck, LIconStyle);
       end;
       LTextLeft := Pixels(Round(LTokens.SelectorTextOffset));
-      if Focused then
+      if Focused and (LBoxSize > 0) then
       begin
         LFocusRect := LBoxRect;
-        LFocusRect.Inflate(2, 2);
+        LFocusRect.Inflate(CheckFocusOutset, CheckFocusOutset);
         FRenderer.StrokeRoundRect(ACanvas, LFocusRect, LChrome.BorderColor,
-          Pixels(Round(LTokens.SelectorCheckRadius)) + 2,
+          Pixels(Round(LTokens.SelectorCheckRadius)) + CheckFocusOutset,
           LChrome.BorderWidth, LChrome.BorderAlpha);
       end;
     end;

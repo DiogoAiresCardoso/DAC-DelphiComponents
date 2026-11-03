@@ -20,6 +20,7 @@ type
     CollapseButton: TButton;
     ThemeButton: TButton;
     ReadOnlyBox: TCheckBox;
+    ShowHeaderBox: TCheckBox;
     Footer: TPanel;
     Status: TLabel;
     Instructions: TLabel;
@@ -34,6 +35,7 @@ type
     procedure CollapseButtonClick(Sender: TObject);
     procedure ThemeButtonClick(Sender: TObject);
     procedure ReadOnlyBoxClick(Sender: TObject);
+    procedure ShowHeaderBoxClick(Sender: TObject);
     procedure TreeBeforeCheckChange(Sender: TObject; const Key: Variant;
       const Checked: Boolean; var Allow: Boolean);
     procedure TreeCheckChanged(Sender: TObject; const Key: Variant;
@@ -127,6 +129,11 @@ procedure TDBTreeDemoForm.ThemeButtonClick(Sender: TObject);
 begin
   if Tree.ThemeMode = dtmLight then Tree.ThemeMode := dtmDark
   else Tree.ThemeMode := dtmLight;
+end;
+
+procedure TDBTreeDemoForm.ShowHeaderBoxClick(Sender: TObject);
+begin
+  Tree.ShowHeader := ShowHeaderBox.Checked;
 end;
 
 procedure TDBTreeDemoForm.ReadOnlyBoxClick(Sender: TObject);

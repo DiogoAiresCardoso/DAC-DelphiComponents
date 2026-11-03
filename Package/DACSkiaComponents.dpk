@@ -39,6 +39,15 @@ requires
   Skia.Package.RTL;
 
 contains
+  DAC.Components.Controls.TreeView.Types in '..\Source\Controls\DAC.Components.Controls.TreeView.Types.pas',
+  DAC.Components.Controls.TreeView.Model in '..\Source\Controls\DAC.Components.Controls.TreeView.Model.pas',
+  DAC.Components.Controls.TreeView.Column in '..\Source\Controls\DAC.Components.Controls.TreeView.Column.pas',
+  DAC.Components.Controls.TreeView.Columns in '..\Source\Controls\DAC.Components.Controls.TreeView.Columns.pas',
+  DAC.Components.Controls.TreeView.Roots in '..\Source\Controls\DAC.Components.Controls.TreeView.Roots.pas',
+  DAC.Components.Controls.TreeView.Painter in '..\Source\Controls\DAC.Components.Controls.TreeView.Painter.pas',
+  DAC.Components.Controls.TreeView.Item in '..\Source\Controls\DAC.Components.Controls.TreeView.Item.pas',
+  DAC.Components.Controls.TreeView.Items in '..\Source\Controls\DAC.Components.Controls.TreeView.Items.pas',
+  DAC.Components.Controls.TreeView in '..\Source\Controls\DAC.Components.Controls.TreeView.pas',
   DAC.Components.Controls.DBTreeView in '..\Source\Controls\DAC.Components.Controls.DBTreeView.pas',
   DAC.Components.Controls.DBTreeView.Types in '..\Source\Controls\DAC.Components.Controls.DBTreeView.Types.pas',
   DAC.Components.Controls.DBTreeView.Column in '..\Source\Controls\DAC.Components.Controls.DBTreeView.Column.pas',

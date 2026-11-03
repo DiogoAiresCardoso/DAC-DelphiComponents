@@ -1,4 +1,4 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{8D37F877-48D6-4C8A-8C87-2D5E3D4B31E1}</ProjectGuid>
         <MainSource>DACSkiaComponents.dpk</MainSource>
@@ -17,6 +17,23 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
+        <DCCReference Include="rtl.dcp"/>
+        <DCCReference Include="designide.dcp"/>
+        <DCCReference Include="dbrtl.dcp"/>
+        <DCCReference Include="vcldb.dcp"/>
+        <DCCReference Include="vcl.dcp"/>
+        <DCCReference Include="vclimg.dcp"/>
+        <DCCReference Include="Skia.Package.VCL.dcp"/>
+        <DCCReference Include="Skia.Package.RTL.dcp"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.TreeView.Types.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.TreeView.Model.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.TreeView.Column.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.TreeView.Columns.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.TreeView.Roots.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.TreeView.Painter.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.TreeView.Item.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.TreeView.Items.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.TreeView.pas"/>
         <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBTreeView.pas"/>
         <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBTreeView.Types.pas"/>
         <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBTreeView.Column.pas"/>
@@ -27,14 +44,6 @@
         <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBTreeView.Painter.pas"/>
         <DCCReference Include="..\Source\DesignSystem\DAC.Components.DesignSystem.DBTreeTokens.pas"/>
         <DCCReference Include="..\Source\Skia\DAC.Components.Skia.RasterSurface.pas"/>
-        <DCCReference Include="rtl.dcp"/>
-        <DCCReference Include="designide.dcp"/>
-        <DCCReference Include="dbrtl.dcp"/>
-        <DCCReference Include="vcldb.dcp"/>
-        <DCCReference Include="vcl.dcp"/>
-        <DCCReference Include="vclimg.dcp"/>
-        <DCCReference Include="Skia.Package.VCL.dcp"/>
-        <DCCReference Include="Skia.Package.RTL.dcp"/>
         <DCCReference Include="..\Source\Core\DAC.Components.Types.pas"/>
         <DCCReference Include="..\Source\Core\DAC.Components.Geometry.pas"/>
         <DCCReference Include="..\Source\DesignSystem\DAC.Components.DesignSystem.ColorTokens.pas"/>
@@ -88,6 +97,10 @@
         <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBGrid.BadgeRules.pas"/>
         <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBGrid.SelectionOptions.pas"/>
         <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBGrid.LayoutOptions.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBGrid.ActionTypes.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBGrid.Action.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBGrid.Actions.pas"/>
+        <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBGrid.ActionPainter.pas"/>
         <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBGrid.Column.pas"/>
         <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBGrid.Columns.pas"/>
         <DCCReference Include="..\Source\Controls\DAC.Components.Controls.DBGrid.DataLink.pas"/>

@@ -33,6 +33,7 @@ type
     FNavigationSnapshot: TDACDBTreeNode;
     FCaptureNavigation, FReadingNavigation: Boolean;
     FThemeMode: TDACThemeMode;
+    FShowHeader: Boolean;
     FReadOnly, FValid, FDirty, FPosted, FDestroying, FEditStructural,
       FEndEditNotification, FChecking: Boolean;
     FUpdateCount, FLock, FTopRow, FHorizontalOffset, FHoverRow,
@@ -57,6 +58,7 @@ type
     function GetSearchFields: TStrings;
     procedure SetSearchText(const Value: string);
     procedure SetReadOnly(Value: Boolean);
+    procedure SetShowHeader(Value: Boolean);
     procedure SetThemeMode(Value: TDACThemeMode);
     procedure SetSelectedKey(const Value: Variant);
     function GetCheckedKeys: TArray<Variant>;
@@ -129,6 +131,7 @@ type
     property RootValues: TDACDBTreeRoots read FRootValues write SetRootValues;
     property CheckField: string read FCheckField write SetCheckField;
     property CheckableField: string read FCheckableField write SetCheckableField;
+    property ShowHeader: Boolean read FShowHeader write SetShowHeader default True;
     property ReadOnly: Boolean read FReadOnly write SetReadOnly default False;
     property SearchFields: TStrings read GetSearchFields write SetSearchFields;
     property SearchText: string read FSearchText write SetSearchText;
@@ -227,6 +230,7 @@ begin
   FRootValues.OnChange := ConfigurationChanged;
   FSearchFields := TStringList.Create;
   FSearchFields.OnChange := ConfigurationChanged;
+  FShowHeader := True;
   FPainter := TDACDBTreePainter.Create;
   FDataLink := TDACDBTreeDataLink.Create;
   FDataLink.OnChanged := LinkChanged;
@@ -332,6 +336,18 @@ procedure TDACDBTreeView.SetSearchFields(Value: TStrings);
 begin FSearchFields.Assign(Value); end;
 function TDACDBTreeView.GetSearchFields: TStrings;
 begin Result := FSearchFields; end;
+procedure TDACDBTreeView.SetShowHeader(Value: Boolean);
+begin
+  if FShowHeader = Value then Exit;
+  FShowHeader := Value;
+  FPainter.ShowHeader := Value;
+  FHoverRow := -1;
+  FDragKind := thNone;
+  ClampScroll;
+  EnsureCurrentVisible;
+  Invalidate;
+end;
+
 procedure TDACDBTreeView.SetReadOnly(Value: Boolean);
 begin FReadOnly := Value; Invalidate; end;
 procedure TDACDBTreeView.SetThemeMode(Value: TDACThemeMode);
@@ -1109,7 +1125,7 @@ begin
       end;
     VK_LEFT:
       if N <> nil then
-        if N.EffectiveExpanded then Collapse(N.Key)
+        if N.EffectiveExpanded and (N.Children.Count > 0) then Collapse(N.Key)
         else if N.ParentIndex >= 0 then Navigate(FModel.Nodes[N.ParentIndex].Key, tcrUser);
     VK_RIGHT:
       if (N <> nil) and (N.Children.Count > 0) then

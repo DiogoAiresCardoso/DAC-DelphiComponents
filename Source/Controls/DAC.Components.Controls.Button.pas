@@ -219,12 +219,9 @@ end;
 function ButtonPalette(const AKind: TDACButtonKind;
   const AEnabled, ALoading, AHot, APressed, AFocused: Boolean;
   const ATokens: TDACControlTokens): TButtonPalette;
-var
-  LActive: Boolean;
 begin
   Result.Alpha := ATokens.ButtonAlphaOpaque;
   Result.BorderAlpha := ATokens.ButtonBorderAlphaNone;
-  LActive := AHot or AFocused;
   case AKind of
     mbkSecondary:
       begin
@@ -274,15 +271,11 @@ begin
     end;
   end;
 
-  if LActive then
+  if AHot or (AFocused and (AKind = mbkWarning)) then
   begin
     case AKind of
       mbkPrimary:
-        begin
-          Result.Background := ATokens.ButtonPrimaryPressedBackground;
-          if AHot then
-            Result.Background := ATokens.ButtonPrimaryHoverBackground;
-        end;
+        Result.Background := ATokens.ButtonPrimaryHoverBackground;
       mbkSecondary:
         begin
           Result.Background := ATokens.ButtonSecondaryHoverBackground;
@@ -930,6 +923,7 @@ var
   LBackgroundRect: TRectF;
   LBorder: TDACBorderStyle;
   LBorderRect: TRectF;
+  LFocusRect: TRectF;
   LIconRect: TRectF;
   LPalette: TButtonPalette;
   LScale: Single;
@@ -967,6 +961,24 @@ begin
     LBorder.Width := LTokens.ButtonBorderWidth;
     LBorder.Alpha := LPalette.BorderAlpha;
     FBorderPainter.Draw(ACanvas, LBorderRect, LBorder);
+  end;
+
+  if Focused and Enabled and not FLoading and
+    (FKind in [mbkPrimary, mbkSecondary, mbkGhost]) then
+  begin
+    LFocusRect := LBorderRect;
+    LFocusRect.Inflate(-LTokens.InputFocusBorderWidth, -LTokens.InputFocusBorderWidth);
+    if (LFocusRect.Width > LTokens.InputFocusBorderWidth) and
+      (LFocusRect.Height > LTokens.InputFocusBorderWidth) then
+    begin
+      LBorder.Color := LTokens.InputFocus;
+      if FKind = mbkPrimary then
+        LBorder.Color := LTokens.ButtonPrimaryText;
+      LBorder.Radius := Max(0.0, FCornerRadius - LTokens.InputFocusBorderWidth);
+      LBorder.Width := LTokens.InputFocusBorderWidth;
+      LBorder.Alpha := LTokens.ButtonBorderAlphaFull;
+      FBorderPainter.Draw(ACanvas, LFocusRect, LBorder);
+    end;
   end;
 
   if FKind = mbkInputAction then

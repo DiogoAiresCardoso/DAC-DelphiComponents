@@ -1666,8 +1666,8 @@ begin
   // editor's rounded right border or focus ring.
   Result.ButtonInputActionCanvasBackground := Result.InputBackground;
   Result.ButtonTransparent := TAlphaColor($00000000);
-  Result.ButtonPrimaryBackground := Result.ButtonPrimary;
-  Result.ButtonPrimaryHoverBackground := Result.ButtonPrimaryHover;
+  Result.ButtonPrimaryBackground := Result.ButtonPrimaryHover;
+  Result.ButtonPrimaryHoverBackground := Result.ButtonPrimary;
   Result.ButtonPrimaryPressedBackground := Result.ButtonPrimaryPressed;
   Result.ButtonPrimaryText := TAlphaColor($FFFFFFFF);
   Result.ButtonSecondaryBackground := Result.ButtonSecondary;
@@ -1965,8 +1965,8 @@ begin
   Result.ButtonCanvasBackground := Result.PopupBackground;
   Result.ButtonInputActionCanvasBackground := Result.InputBackground;
   Result.ButtonTransparent := TAlphaColor($00000000);
-  Result.ButtonPrimaryBackground := Result.ButtonPrimary;
-  Result.ButtonPrimaryHoverBackground := Result.ButtonPrimaryHover;
+  Result.ButtonPrimaryBackground := Result.ButtonPrimaryHover;
+  Result.ButtonPrimaryHoverBackground := Result.ButtonPrimary;
   Result.ButtonPrimaryPressedBackground := Result.ButtonPrimaryPressed;
   Result.ButtonPrimaryText := TAlphaColor($FFFFFFFF);
   Result.ButtonSecondaryBackground := Result.ButtonSecondary;

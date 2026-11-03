@@ -42,6 +42,7 @@ type
     FCount: Integer;
   public
     procedure Changed(Sender: TObject);
+    procedure ChangedAndRefresh(Sender: TObject);
     property Count: Integer read FCount;
   end;
 
@@ -89,6 +90,13 @@ end;
 procedure TChangeProbe.Changed(Sender: TObject);
 begin
   Inc(FCount);
+end;
+
+procedure TChangeProbe.ChangedAndRefresh(Sender: TObject);
+begin
+  Changed(Sender);
+  { Reproduce a consumer writing the accepted value back to the editor. }
+  TDACDateTimePicker(Sender).DateTime := TDACDateTimePicker(Sender).DateTime;
 end;
 
 procedure Require(const ACondition: Boolean; const AMessage: string);
@@ -554,6 +562,155 @@ begin
     LForm.Free;
     LProbe.Free;
     PumpMessages;
+  end;
+end;
+
+procedure RunIncrementalYearScenario(const ARefreshOnChange: Boolean);
+const
+  CYear = '2027';
+  CFullDate = '12092028';
+var
+  I: Integer;
+  LDate: TDACDateTimePicker;
+  LForm: TForm;
+  LOriginal: TDateTime;
+  LProbe: TChangeProbe;
+  LText: string;
+begin
+  TraceStage(Format('ano caractere a caractere refresh=%s',
+    [BoolToStr(ARefreshOnChange, True)]));
+  LForm := TForm.Create(nil);
+  LProbe := TChangeProbe.Create;
+  LDate := nil;
+  try
+    LDate := TDACDateTimePicker.Create(LForm);
+    LDate.Parent := LForm;
+    LDate.SetBounds(16, 16, 240, 30);
+    LDate.FormatString := 'dd/MM/yyyy';
+    LOriginal := EncodeDate(2026, 8, 29) + EncodeTime(14, 35, 0, 0);
+    LDate.DateTime := LOriginal;
+    if ARefreshOnChange then
+      LDate.OnChange := LProbe.ChangedAndRefresh
+    else
+      LDate.OnChange := LProbe.Changed;
+    LForm.Show;
+    PumpMessages;
+    LDate.SetFocus;
+    LDate.PickerControl.SelStart := 6;
+    LDate.PickerControl.SelLength := 4;
+    for I := 1 to Length(CYear) do
+    begin
+      SendMessage(LDate.PickerControl.Handle, WM_CHAR, Ord(CYear[I]), 0);
+      PumpMessages;
+      LText := LDate.PickerControl.EditText;
+      Writeln(Format('year[%d]: text="%s" year=%d caret=%d changes=%d',
+        [I, LText, YearOf(LDate.DateTime), LDate.PickerControl.SelStart,
+        LProbe.Count]));
+      if I < Length(CYear) then
+      begin
+        Require(SameValue(LDate.DateTime, LOriginal),
+          'Ano incompleto foi convertido/confirmado antes dos quatro digitos.');
+        Require(LText = '29/08/' + Copy(CYear, 1, I) +
+          StringOfChar('_', Length(CYear) - I),
+          'Digitacao completou ou reformatou o ano antecipadamente.');
+        Require((LDate.PickerControl.SelStart = 6 + I) and
+          LDate.PickerControl.Focused,
+          'Digitacao do ano perdeu foco ou reposicionou o cursor.');
+        Require(LProbe.Count = 0,
+          'Ano incompleto disparou OnChange.');
+      end;
+    end;
+    Require(SameValue(LDate.DateTime,
+      EncodeDate(2027, 8, 29) + TimeOf(LOriginal)),
+      'Ano completo nao atualizou DateTime ou perdeu a hora.');
+    Require(LText = '29/08/2027', 'Ano completo ficou incorreto no editor.');
+    Require(LProbe.Count = 1, 'Ano completo deve emitir um unico OnChange.');
+
+    LOriginal := LDate.DateTime;
+    LProbe.FCount := 0;
+    LDate.PickerControl.SelectAll;
+    for I := 1 to Length(CFullDate) do
+    begin
+      SendMessage(LDate.PickerControl.Handle, WM_CHAR, Ord(CFullDate[I]), 0);
+      PumpMessages;
+      if I < Length(CFullDate) then
+        Require(SameValue(LDate.DateTime, LOriginal) and (LProbe.Count = 0),
+          'Digitacao da data inteira confirmou um valor incompleto.');
+    end;
+    Require((LDate.PickerControl.EditText = '12/09/2028') and
+      SameValue(LDate.DateTime, EncodeDate(2028, 9, 12) + TimeOf(LOriginal)) and
+      (LProbe.Count = 1),
+      'Digitacao da data inteira nao confirmou uma unica data completa.');
+  finally
+    if LDate <> nil then
+      LDate.OnChange := nil;
+    LForm.Free;
+    LProbe.Free;
+  end;
+end;
+
+procedure RunPartialValueScenario;
+var
+  LDate: TDACDateTimePicker;
+  LForm: TForm;
+  LOriginal: TDateTime;
+  LProbe: TChangeProbe;
+begin
+  TraceStage('valores incompletos, ano curto e nulo');
+  LForm := TForm.Create(nil);
+  LProbe := TChangeProbe.Create;
+  try
+    LDate := TDACDateTimePicker.Create(LForm);
+    LDate.Parent := LForm;
+    LDate.FormatString := 'dd/MM/yyyy';
+    LOriginal := EncodeDate(2026, 8, 29);
+    LDate.DateTime := LOriginal;
+    LDate.OnChange := LProbe.Changed;
+    LForm.Show;
+    PumpMessages;
+
+    LDate.Text := '29/08/2';
+    LDate.OpenPopup;
+    Require(SameValue(LDate.DateTime, LOriginal) and (LProbe.Count = 0) and
+      LDate.PopupVisible and SameDate(LDate.PopupSelectedDateTime, LOriginal),
+      'Abrir popup confirmou o ano incompleto.');
+    LDate.SimulatePopupKey(VK_ESCAPE);
+    LDate.Text := '31/02/2027';
+    Require(SameValue(LDate.DateTime, LOriginal) and (LProbe.Count = 0),
+      'Data completa invalida foi confirmada.');
+    LDate.FormatString := 'dd/MM/yy';
+    LDate.Text := '29/08/2';
+    Require(SameValue(LDate.DateTime, LOriginal) and (LProbe.Count = 0),
+      'Formato de ano curto confirmou apenas um digito.');
+    LDate.Text := '29/08/27';
+    Require(SameDate(LDate.DateTime, EncodeDate(2027, 8, 29)) and
+      (LProbe.Count = 1), 'Formato explicito de ano curto deixou de funcionar.');
+
+    LDate.PickerKind := dtkTime;
+    LDate.FormatString := 'HH:mm';
+    LOriginal := LDate.DateTime;
+    LDate.Text := '16:4';
+    Require(SameValue(LDate.DateTime, LOriginal) and (LProbe.Count = 1),
+      'Hora incompleta foi confirmada.');
+    LDate.Text := '16:40';
+    Require((HourOf(LDate.DateTime) = 16) and
+      (MinuteOf(LDate.DateTime) = 40) and (LProbe.Count = 2),
+      'Hora completa nao foi confirmada.');
+
+    LDate.PickerKind := dtkDate;
+    LDate.FormatString := 'dd/MM/yyyy';
+    LDate.AllowNull := True;
+    LDate.IsNull := True;
+    LDate.Text := '29/08/2';
+    Require(LDate.IsNull and (LProbe.Count = 2),
+      'Campo nulo confirmou o ano incompleto sem mascara ativa.');
+    LDate.Text := '29/08/2027';
+    Require(not LDate.IsNull and
+      SameDate(LDate.DateTime, EncodeDate(2027, 8, 29)) and (LProbe.Count = 3),
+      'Campo nulo nao aceitou a data completa.');
+  finally
+    LForm.Free;
+    LProbe.Free;
   end;
 end;
 
@@ -1107,6 +1264,9 @@ begin
   TraceStage('Application.Initialize concluido');
   try
     RunValuePropagationScenario;
+    RunIncrementalYearScenario(True);
+    RunIncrementalYearScenario(False);
+    RunPartialValueScenario;
     RunTextEditingScenario;
     for LThemeIndex := 0 to 1 do
     begin

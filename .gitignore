@@ -83,3 +83,6 @@ modules/
 
 # TDACDBTreeView build and validation artifacts
 /Build/DBTree*/
+
+# TreeView generated builds and diagnostics
+/Build/TreeView*/

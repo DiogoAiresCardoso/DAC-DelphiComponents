@@ -3,14 +3,17 @@ unit DAC.Components.Controls.NumericEdit;
 interface
 
 uses
+  Data.FmtBcd,
   System.Classes,
   System.Skia,
+  System.SysUtils,
   System.Types,
   System.UITypes,
   Winapi.Messages,
   Vcl.Controls,
   Vcl.Skia,
   DAC.Components.Controls.Edit,
+  DAC.Components.Controls.FieldSupport,
   DAC.Components.Controls.SystemText,
   DAC.Components.DesignSystem.ControlTokens,
   DAC.Components.DesignSystem.Theme,
@@ -29,6 +32,7 @@ type
   );
 
   TDACNumericSuffixPosition = (nspRight, nspLeft);
+  TDACNumericValueMode = (nvmLegacy, nvmExactBcd);
 
   { Numeric specialization of the canonical TDACEdit. TDACEdit remains the
     sole owner of the native TMaskEdit, chrome, focus, labels, helper/error
@@ -48,11 +52,13 @@ type
     FSuffixWidth: Integer;
     FUseGrouping: Boolean;
     FValue: Double;
+    FValueMode: TDACNumericValueMode;
     FWeightUnit: string;
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure CMParentColorChanged(var AMessage: TMessage); message CM_PARENTCOLORCHANGED;
     procedure CMParentFontChanged(var AMessage: TMessage); message CM_PARENTFONTCHANGED;
     procedure CommitEditorText;
+    function BcdFormatSettings: TFormatSettings;
     procedure EditorEnter(Sender: TObject);
     procedure EditorExit(Sender: TObject);
     procedure EditorKeyPress(Sender: TObject; var Key: Char);
@@ -64,7 +70,10 @@ type
     function GetNumericMask: TDACNumericMaskKind;
     function GetReadOnlyValue: Boolean;
     function GetThemeModeValue: TDACThemeMode;
+    function GetValue: Double;
     function HasExternalSuffix: Boolean;
+    function IntrinsicBcdError(const AText: string): string;
+    function IsLegacyValueStored: Boolean;
     function NormalizeEditableText(const AText: string): string;
     function NumberFormat: string;
     procedure SetAllowNegative(const AValue: Boolean);
@@ -82,16 +91,19 @@ type
     procedure SetThemeModeValue(const AValue: TDACThemeMode);
     procedure SetUseGrouping(const AValue: Boolean);
     procedure SetValue(const AValue: Double);
+    procedure SetValueMode(const AValue: TDACNumericValueMode);
     procedure SetWeightUnit(const AValue: string);
     procedure SuffixPaintBoxDraw(Sender: TObject; const ACanvas: ISkCanvas;
       const ADest: TRectF; const AOpacity: Single);
     function TryTextToValue(const AText: string; out AValue: Double): Boolean;
+    function TryParseBcd(const AText: string; out AValue: TBcd): Boolean;
     procedure UpdateEditorText(const AForceValue: Boolean = False);
     procedure UpdateSuffixLayout;
     procedure UpdateSuffixState;
   protected
     procedure Change; override;
     procedure CreateWnd; override;
+    function IntrinsicValidator: TDACFieldIntrinsicValidator; override;
     procedure Loaded; override;
     procedure Resize; override;
     procedure SetStatus(const AValue: TDACEditStatus); override;
@@ -99,6 +111,8 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    procedure SetValueBcd(const AValue: TBcd);
+    function TryGetEditedValueBcd(out AValue: TBcd): Boolean;
     property SuffixControl: TDACSystemText read FSuffixLabel;
   published
     property AllowNegative: Boolean read FAllowNegative write SetAllowNegative
@@ -126,7 +140,10 @@ type
       write SetThemeModeValue default dtmInherit;
     property UseGrouping: Boolean read FUseGrouping write SetUseGrouping
       default True;
-    property Value: Double read FValue write SetValue;
+    property ValueMode: TDACNumericValueMode read FValueMode write SetValueMode
+      default nvmLegacy;
+    property Text stored IsLegacyValueStored;
+    property Value: Double read GetValue write SetValue stored IsLegacyValueStored;
     property WeightUnit: string read FWeightUnit write SetWeightUnit;
   end;
 
@@ -134,7 +151,6 @@ implementation
 
 uses
   System.Math,
-  System.SysUtils,
   DAC.Components.DesignSystem.ComponentStyle;
 
 constructor TDACNumericEdit.Create(AOwner: TComponent);
@@ -199,6 +215,12 @@ begin
   if FInternalTextUpdate then
     Exit;
 
+  if FValueMode = nvmExactBcd then
+  begin
+    inherited Change;
+    Exit;
+  end;
+
   LNormalized := NormalizeEditableText(Text);
   if Text <> LNormalized then
   begin
@@ -216,8 +238,15 @@ end;
 
 procedure TDACNumericEdit.CommitEditorText;
 var
+  LBcd: TBcd;
   LValue: Double;
 begin
+  if FValueMode = nvmExactBcd then
+  begin
+    if TryGetEditedValueBcd(LBcd) then
+      SetEditorText(FormatBcd(NumberFormat, LBcd, BcdFormatSettings));
+    Exit;
+  end;
   if (Trim(Text) = '') or (Trim(Text) = '-') then
   begin
     FValue := 0;
@@ -258,7 +287,7 @@ end;
 
 procedure TDACNumericEdit.EditorEnter(Sender: TObject);
 begin
-  if Trim(Text) <> '' then
+  if (FValueMode = nvmLegacy) and (Trim(Text) <> '') then
     SetEditorText(NormalizeEditableText(FloatToStr(FValue)));
   Redraw;
   if Assigned(OnEnter) then
@@ -278,6 +307,12 @@ var
   LDecimalSeparator: Char;
   LSelectionRemovesSeparator: Boolean;
 begin
+  if FValueMode = nvmExactBcd then
+  begin
+    if Assigned(OnKeyPress) then
+      OnKeyPress(Self, Key);
+    Exit;
+  end;
   if Key < #32 then
   begin
     if Assigned(OnKeyPress) then
@@ -617,11 +652,149 @@ end;
 
 procedure TDACNumericEdit.SetValue(const AValue: Double);
 begin
+  if FValueMode = nvmExactBcd then
+    raise EInvalidOperation.Create('Use SetValueBcd no modo decimal exato.');
   if not FAllowNegative and (AValue < 0) then
     FValue := 0
   else
     FValue := AValue;
   UpdateEditorText(True);
+end;
+
+function TDACNumericEdit.GetValue: Double;
+begin
+  if (FValueMode = nvmExactBcd) and not (csDesigning in ComponentState) then
+    raise EInvalidOperation.Create('Use TryGetEditedValueBcd no modo decimal exato.');
+  Result := FValue;
+end;
+
+function TDACNumericEdit.IsLegacyValueStored: Boolean;
+begin
+  Result := FValueMode = nvmLegacy;
+end;
+
+procedure TDACNumericEdit.SetValueMode(const AValue: TDACNumericValueMode);
+begin
+  if FValueMode = AValue then
+    Exit;
+  if Trim(Text) <> '' then
+    raise EInvalidOperation.Create('Limpe o campo antes de alterar ValueMode.');
+  FValueMode := AValue;
+  FValue := 0;
+end;
+
+function TDACNumericEdit.BcdFormatSettings: TFormatSettings;
+begin
+  Result := TFormatSettings.Invariant;
+  Result.DecimalSeparator := ',';
+  Result.ThousandSeparator := '.';
+end;
+
+function TDACNumericEdit.IntrinsicValidator: TDACFieldIntrinsicValidator;
+begin
+  if FValueMode = nvmExactBcd then
+    Result := IntrinsicBcdError
+  else
+    Result := nil;
+end;
+
+function TDACNumericEdit.IntrinsicBcdError(const AText: string): string;
+var
+  LValue: TBcd;
+begin
+  Result := '';
+  if (Trim(AText) <> '') and not TryParseBcd(AText, LValue) then
+    Result := Format('Informe um n' + #250 + 'mero v' + #225 +
+      'lido com at' + #233 + ' %d casas decimais.', [FDecimalPlaces]);
+end;
+
+function TDACNumericEdit.TryGetEditedValueBcd(out AValue: TBcd): Boolean;
+begin
+  AValue := Default(TBcd);
+  Result := (FValueMode = nvmExactBcd) and TryParseBcd(Text, AValue);
+end;
+
+procedure TDACNumericEdit.SetValueBcd(const AValue: TBcd);
+var
+  LValue: TBcd;
+begin
+  if FValueMode <> nvmExactBcd then
+    raise EInvalidOperation.Create('Configure ValueMode como nvmExactBcd.');
+  if ((AValue.SignSpecialPlaces and $40) <> 0) or
+    (AValue.Precision > MaxFMTBcdFractionSize) or
+    (BcdScale(AValue) > AValue.Precision) or
+    not TryParseBcd(BcdToStr(AValue, BcdFormatSettings), LValue) then
+    raise EConvertError.Create('Valor BCD fora dos limites do campo.');
+  SetEditorText(FormatBcd(NumberFormat, LValue, BcdFormatSettings));
+  Redraw;
+end;
+
+function TDACNumericEdit.TryParseBcd(const AText: string; out AValue: TBcd): Boolean;
+var
+  I: Integer;
+  LCanonical: string;
+  LDecimalIndex: Integer;
+  LFraction: string;
+  LGroups: TArray<string>;
+  LInteger: string;
+  LNegative: Boolean;
+  LText: string;
+
+  function IsDigits(const APart: string): Boolean;
+  var
+    LChar: Char;
+  begin
+    for LChar in APart do
+      if not CharInSet(LChar, ['0'..'9']) then
+        Exit(False);
+    Result := APart <> '';
+  end;
+
+begin
+  AValue := Default(TBcd);
+  LText := Trim(AText);
+  if LText = '' then
+    Exit(False);
+  LNegative := LText[1] = '-';
+  if LNegative then
+  begin
+    if not FAllowNegative then
+      Exit(False);
+    Delete(LText, 1, 1);
+  end;
+
+  LDecimalIndex := Pos(',', LText);
+  LInteger := LText;
+  LFraction := '';
+  if LDecimalIndex > 0 then
+  begin
+    LInteger := Copy(LText, 1, LDecimalIndex - 1);
+    LFraction := Copy(LText, LDecimalIndex + 1, MaxInt);
+    if (Length(LFraction) > FDecimalPlaces) or not IsDigits(LFraction) then
+      Exit(False);
+  end;
+
+  if (Length(LInteger) > MaxFMTBcdFractionSize + (MaxFMTBcdFractionSize - 1) div 3) or
+    LInteger.StartsWith('.') or LInteger.EndsWith('.') or (Pos('..', LInteger) > 0) then
+    Exit(False);
+  LGroups := LInteger.Split(['.']);
+  LCanonical := '';
+  for I := 0 to High(LGroups) do
+  begin
+    if not IsDigits(LGroups[I]) or ((I > 0) and (Length(LGroups[I]) <> 3)) or
+      ((I = 0) and (Length(LGroups) > 1) and (Length(LGroups[I]) > 3)) then
+      Exit(False);
+    LCanonical := LCanonical + LGroups[I];
+  end;
+  { Reserve space for zero padding before calling the RTL BCD parser. }
+  if (LCanonical = '') or
+    (Length(LCanonical) + FDecimalPlaces > MaxFMTBcdFractionSize) then
+    Exit(False);
+  if LFraction <> '' then
+    LCanonical := LCanonical + '.' + LFraction;
+  if LNegative then
+    LCanonical := '-' + LCanonical;
+  Result := TryStrToBcd(LCanonical, AValue, TFormatSettings.Invariant);
 end;
 
 procedure TDACNumericEdit.SetWeightUnit(const AValue: string);
@@ -685,6 +858,11 @@ end;
 
 procedure TDACNumericEdit.UpdateEditorText(const AForceValue: Boolean);
 begin
+  if FValueMode = nvmExactBcd then
+  begin
+    Redraw;
+    Exit;
+  end;
   if not AForceValue and (Trim(Text) = '') then
   begin
     Redraw;

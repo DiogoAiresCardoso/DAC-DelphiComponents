@@ -4,6 +4,7 @@ program DACDemoStartupCurrent;
 {$MINSTACKSIZE $00200000}
 
 uses
+  Data.FmtBcd,
   System.SysUtils,
   System.Types,
   System.Variants,
@@ -132,6 +133,8 @@ var
   LEditKinds: set of TDACEditKind;
   LLeftNumber: TDACNumericEdit;
   LNumber: TDACNumericEdit;
+  LExactNumber: TDACNumericEdit;
+  LExactValue: TBcd;
   LNumberGrid: TControl;
   LNumberKinds: set of TDACNumericKind;
   LNumberMasks: set of TDACNumericMaskKind;
@@ -214,6 +217,23 @@ begin
   Application.ProcessMessages;
   Require((LNumber.Value = 5) and (LNumber.Status = mesNormal) and
     LEditError.EditControl.Focused, 'Corrigir o percentual nao liberou o foco.');
+
+  LExactNumber := Form1.demoNumericExactBcd;
+  Require((LExactNumber.ValueMode = nvmExactBcd) and
+    (LExactNumber.SuffixPosition = nspLeft) and (LExactNumber.SuffixText = 'R$') and
+    LExactNumber.TryGetEditedValueBcd(LExactValue) and
+    (BcdToStr(LExactValue, TFormatSettings.Invariant) = '1234567890123.12345'),
+    'A galeria deve carregar a moeda exata com R$ e cinco casas.');
+  LExactNumber.Text := '10.50';
+  Require(not LExactNumber.Validate, 'A moeda exata aceitou ponto decimal.');
+  VerifyPaintedError(LExactNumber, LExactNumber.ErrorText);
+  LExactNumber.SuffixPosition := nspRight;
+  TDACThemeManager.SetApplicationMode(dtmLight);
+  VerifyPaintedError(LExactNumber, LExactNumber.ErrorText);
+  LExactNumber.SuffixPosition := nspLeft;
+  TDACThemeManager.SetApplicationMode(dtmDark);
+  LExactNumber.SetValueBcd(LExactValue);
+  Require(LExactNumber.Validate, 'Recarregar o valor BCD valido deve remover o erro.');
 
   Form1.GalleryTabs.ActivePage := Form1.tsSelectors;
   Application.ProcessMessages;

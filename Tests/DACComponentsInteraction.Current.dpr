@@ -6,6 +6,7 @@ program DACComponentsInteractionCurrent;
 uses
   DACComponentsButtonLayout.Tests in 'DACComponentsButtonLayout.Tests.pas',
   DACComponentsIcons.Tests in 'DACComponentsIcons.Tests.pas',
+  Data.FmtBcd,
   System.Classes,
   System.SysUtils,
   System.Types,
@@ -700,6 +701,116 @@ begin
   end;
 end;
 
+procedure RequireExactBcd(const ANumeric: TDACNumericEdit; const ANext: TDACEdit);
+const
+  ExactText = '1234567890123.12345';
+var
+  LProbe: TValidationProbe;
+  LSettings: TFormatSettings;
+  LValue: TBcd;
+  LTypedText: string;
+  LLegacyValue: Double;
+
+  procedure RejectText(const AText: string);
+  begin
+    ANumeric.Text := AText;
+    Require((ANumeric.Text = AText) and not ANumeric.TryGetEditedValueBcd(LValue) and
+      not ANumeric.Validate, 'Entrada exata invalida foi alterada ou aceita: ' + AText);
+  end;
+
+begin
+  LSettings := FormatSettings;
+  LProbe := TValidationProbe.Create;
+  try
+    FormatSettings.DecimalSeparator := '.';
+    FormatSettings.ThousandSeparator := ',';
+    ANumeric.Text := '';
+    ANumeric.ValueMode := nvmExactBcd;
+    ANumeric.DecimalPlaces := 5;
+    ANumeric.UseGrouping := True;
+    ANumeric.AllowNegative := True;
+    ANumeric.OnValidate := LProbe.Check;
+    ANumeric.SetFocus;
+    SendMessage(ANumeric.EditControl.Handle, WM_CHAR, Ord('-'), 1);
+    Require((ANumeric.Text = '-') and (LProbe.LastText = '-'),
+      'Modo exato deve entregar a entrada parcial ao callback.');
+    SendMessage(ANumeric.EditControl.Handle, WM_CHAR, Ord('x'), 1);
+    Require((ANumeric.Text = '-x') and (LProbe.LastText = '-x') and
+      not ANumeric.Validate and (ANumeric.ErrorText = 'Valor invalido: -x'),
+      'O callback deve poder personalizar o erro da entrada original.');
+    ANumeric.OnValidate := nil;
+
+    RejectText('-');
+    RejectText('10,');
+    RejectText('10.50');
+    RejectText('10,123456');
+    RejectText('12.34,50');
+    RejectText('1.234.');
+    RejectText('1e2');
+    ANumeric.AllowNegative := False;
+    RejectText('-1');
+    ANumeric.AllowNegative := True;
+    RejectText(StringOfChar('9', MaxFMTBcdFractionSize - 4));
+
+    { Exercise the edit insertion used by a paste without changing the clipboard. }
+    LTypedText := '10,123456';
+    ANumeric.EditControl.SelectAll;
+    SendMessage(ANumeric.EditControl.Handle, EM_REPLACESEL, 1, LPARAM(PChar(LTypedText)));
+    Require((ANumeric.Text = LTypedText) and not ANumeric.Validate,
+      'Insercao deve manter as casas excedentes visiveis para validacao.');
+
+    ANext.SetFocus;
+    Require(ANumeric.EditControl.Focused and (ANumeric.Status = mesDanger),
+      'Modo exato permitiu sair com texto invalido.');
+    ANumeric.Text := '1.234';
+    Require(ANumeric.Validate and ANumeric.TryGetEditedValueBcd(LValue) and
+      (BcdToStr(LValue, TFormatSettings.Invariant) = '1234'),
+      'Ponto de milhar deve ser pt-BR mesmo em outra regiao.');
+
+    ANumeric.SetValueBcd(StrToBcd(ExactText, TFormatSettings.Invariant));
+    LTypedText := '1.234.567.890.123,12345';
+    Require(ANumeric.Text = LTypedText, 'Atribuicao BCD perdeu a representacao exata.');
+    try
+      ANumeric.SetValueBcd(StrToBcd('10.123456', TFormatSettings.Invariant));
+      Require(False, 'Atribuicao BCD aceitou casas excedentes.');
+    except
+      on E: EConvertError do
+        Require(ANumeric.Text = LTypedText, 'Atribuicao rejeitada alterou o texto.');
+    end;
+    try
+      LLegacyValue := ANumeric.Value;
+      Require(False, Format('Leitura Double aceitou %f em modo exato.', [LLegacyValue]));
+    except
+      on E: EInvalidOperation do
+        Require(Pos('TryGetEditedValueBcd', E.Message) > 0, 'Leitura Double sem orientacao.');
+    end;
+    try
+      ANumeric.Value := 12.5;
+      Require(False, 'Modo exato aceitou atribuicao Double.');
+    except
+      on E: EInvalidOperation do
+        Require(ANumeric.Text = LTypedText, 'Atribuicao Double alterou o texto.');
+    end;
+
+    ANumeric.Text := '1234567890123,12345';
+    ANext.SetFocus;
+    ANumeric.SetFocus;
+    Require((ANumeric.Text = LTypedText) and ANumeric.TryGetEditedValueBcd(LValue) and
+      (BcdToStr(LValue, TFormatSettings.Invariant) = ExactText),
+      'Entrar e sair do campo alterou a precisao exata.');
+    LTypedText := StringOfChar('9', MaxFMTBcdFractionSize - 5) + ',12345';
+    ANumeric.UseGrouping := False;
+    ANumeric.Text := LTypedText;
+    ANext.SetFocus;
+    Require(ANext.EditControl.Focused and (ANumeric.Text = LTypedText) and
+      ANumeric.TryGetEditedValueBcd(LValue), 'Limite BCD foi truncado no foco.');
+  finally
+    ANumeric.OnValidate := nil;
+    FormatSettings := LSettings;
+    LProbe.Free;
+  end;
+end;
+
 procedure RequireRuntimeValidation(const AEdit, ANext: TDACEdit;
   const ANumeric: TDACNumericEdit; const AMemo: TDACMemo; const ACombo: TDACComboBox;
   const ADate: TDACDateTimePicker);
@@ -973,6 +1084,7 @@ begin
     RequireRuntimeValidation(LEdit, LButtonEdit, LNumeric, LMemo, LCombo, LDate);
     RequireLegacyNegative(LNumeric, LButtonEdit);
     RequireIntrinsicDateValidation(LDate, LButtonEdit);
+    RequireExactBcd(LNumeric, LButtonEdit);
   finally
     LProbe.Free;
     LForm.Free;

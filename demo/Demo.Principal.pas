@@ -3,6 +3,7 @@ unit Demo.Principal;
 interface
 
 uses
+  Data.FmtBcd,
   System.Classes,
   System.Math,
   System.SysUtils,
@@ -29,6 +30,7 @@ uses
   DAC.Components.Controls.GridContainer,
   DAC.Components.DesignSystem.IconAssets,
   DAC.Components.Controls.Loading,
+  DAC.Components.Controls.NumericEdit,
   DAC.Components.Controls.Pagination,
   DAC.Components.Controls.Progress,
   DAC.Components.Controls.Register,
@@ -57,6 +59,7 @@ type
     tsDashboard: TTabSheet;
     tsButtons: TTabSheet;
     tsInputs: TTabSheet;
+    demoNumericExactBcd: TDACNumericEdit;
     tsSelectors: TTabSheet;
     tsControls: TTabSheet;
     tsTabs: TTabSheet;
@@ -1480,6 +1483,7 @@ end;
 procedure TForm1.Loaded;
 begin
   inherited;
+  demoNumericExactBcd.SetValueBcd(StrToBcd('1234567890123.12345', TFormatSettings.Invariant));
   BuildDashboard;
   BuildDBTreeDemo;
   BuildTreeDemo;

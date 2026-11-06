@@ -2,6 +2,10 @@
 
 Package base para a nova suite de componentes VCL desenhada com Skia4Delphi.
 
+## Documentação dos campos de entrada
+
+- [Configuração dos campos e validação em runtime](docs/inputs/README.md).
+
 ## Documentacao da DBGrid
 
 - [TDACDBGrid: multiplas acoes por celula, eventos e teclado](docs/dbgrid/actions.md).

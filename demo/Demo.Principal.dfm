@@ -1276,6 +1276,21 @@ object Form1: TForm1
             TabOrder = 5
             Value = 5.000000000000000000
           end
+          object demoNumericExactBcd: TDACNumericEdit
+            Left = 948
+            Top = 122
+            Width = 196
+            Height = 88
+            DecimalPlaces = 5
+            HelperText = 'At'#233' cinco casas decimais'
+            LabelText = 'Moeda exata em BCD'
+            NumericKind = dnkCurrency
+            SuffixPosition = nspLeft
+            SuffixText = 'R$'
+            SuffixWidth = 38
+            TabOrder = 6
+            ValueMode = nvmExactBcd
+          end
         end
         object gcInputStates: TDACGridContainer
           AlignWithMargins = True

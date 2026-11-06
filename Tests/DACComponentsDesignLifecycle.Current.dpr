@@ -4,6 +4,7 @@ program DACComponentsDesignLifecycleCurrent;
 {$MINSTACKSIZE $00200000}
 
 uses
+  Data.FmtBcd,
   System.Classes,
   System.SysUtils,
   Winapi.Windows,
@@ -177,6 +178,42 @@ begin
   end;
 end;
 
+procedure RunNumericBcdStreaming;
+var
+  LForm: TForm;
+  LLoadedForm: TForm;
+  LLoaded: TDACNumericEdit;
+  LNumeric: TDACNumericEdit;
+  LStream: TMemoryStream;
+begin
+  System.Classes.RegisterClass(TDACNumericEdit);
+  LForm := TForm.CreateNew(nil);
+  LLoadedForm := TForm.CreateNew(nil);
+  LStream := TMemoryStream.Create;
+  try
+    LNumeric := TDACNumericEdit.Create(LForm);
+    LNumeric.Name := 'ExactNumber';
+    LNumeric.Parent := LForm;
+    LNumeric.ValueMode := nvmExactBcd;
+    LNumeric.DecimalPlaces := 5;
+    LNumeric.SetValueBcd(StrToBcd('1234567890123.12345', TFormatSettings.Invariant));
+    LStream.WriteComponent(LForm);
+    LStream.Position := 0;
+    LStream.ReadComponent(LLoadedForm);
+    LLoaded := LLoadedForm.FindComponent('ExactNumber') as TDACNumericEdit;
+    Require(Assigned(LLoaded) and (LLoaded.ValueMode = nvmExactBcd) and
+      (LLoaded.DecimalPlaces = 5) and (LLoaded.Text = '') and not LLoaded.HandleAllocated,
+      'DFM exato deve salvar a configuracao e carregar sem valor inicial.');
+    TComponentAccess(LNumeric).EnterDesignMode;
+    Require((LNumeric.Value = 0) and not LNumeric.HandleAllocated,
+      'O Object Inspector deve poder consultar Value sem criar janela.');
+  finally
+    LStream.Free;
+    LLoadedForm.Free;
+    LForm.Free;
+  end;
+end;
+
 procedure RunDateTimeDesignerInsertion;
 var
   LDate: TDACDateTimePicker;
@@ -246,6 +283,7 @@ begin
     RunButtonEditDesignerInsertion;
     Writeln('TDACButtonEdit designer insertion: PASS');
     RunNumericSuffixDesignerInsertion;
+    RunNumericBcdStreaming;
     RunDateTimeDesignerInsertion;
     Writeln('TDACDateTimePicker designer insertion: PASS');
     RunLifecycle;

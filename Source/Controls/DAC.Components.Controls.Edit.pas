@@ -79,17 +79,20 @@ type
     FLabelText: string;
     FMouseInside: Boolean;
     FOnChange: TNotifyEvent;
+    FOnValidate: TDACFieldValidateEvent;
     FPaintBox: TSkPaintBox;
     FPlaceholder: string;
     FRenderer: TDACSkiaRenderer;
     FRequired: Boolean;
     FLoading: Boolean;
     FLoadingTabStopCaptured: Boolean;
+    FLeftContentReserve: Integer;
     FReadOnly: Boolean;
     FRightContentReserve: Integer;
     FStatus: TDACEditStatus;
     FThemeMode: TDACThemeMode;
     FTabStopBeforeLoading: Boolean;
+    FValidator: TDACFieldValidator;
     FVariant: TDACInputVariant;
     function BorderAlpha: Byte;
     function BorderColor: TAlphaColor;
@@ -108,6 +111,9 @@ type
     function GetPasswordChar: Char;
     function GetReadOnly: Boolean;
     function GetText: string;
+    function RunValidation(const ATrigger: TDACFieldValidationTrigger): Boolean;
+    function HasIntrinsicValidator: Boolean;
+    procedure ValidateEditorExit;
     function EffectiveEditMask: string;
     function RightIconKind: TDACIconKind;
     function HasRightIcon: Boolean;
@@ -141,11 +147,9 @@ type
     procedure SetReadOnly(const AValue: Boolean);
     procedure SetRequired(const AValue: Boolean);
     procedure SetRightContentReserve(const AValue: Integer);
-    procedure SetStatus(const AValue: TDACEditStatus);
     procedure SetText(const AValue: string);
     procedure SetThemeMode(const AValue: TDACThemeMode);
     procedure SetVariant(const AValue: TDACInputVariant);
-    procedure ThemeChanged(Sender: TObject);
     procedure UpdateChildBounds;
     procedure UpdateEditStyle;
     procedure UpdateDesignValuePreview;
@@ -160,11 +164,18 @@ type
       public OnChange event is emitted.  The base editor remains the sole
       owner of caret, IME, clipboard and notification ordering. }
     procedure Change; virtual;
+    function CanValidateEditorExit: Boolean; virtual;
+    function IntrinsicValidator: TDACFieldIntrinsicValidator; virtual;
     procedure CreateWnd; override;
     procedure Loaded; override;
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
     procedure Resize; override;
     procedure SetBindingCanModify(const AValue: Boolean);
+    procedure SetContentReserves(const ALeft, ARight: Integer);
+    procedure SetStatus(const AValue: TDACEditStatus); virtual;
+    procedure ThemeChanged(Sender: TObject); virtual;
+    procedure ValidateChange;
+    function ValidationText: string;
     { Composite fields such as TDACButtonEdit may cover part of the edit with
       an action child. Keep the canonical edit responsible for the hover
       chrome even when the pointer entered through that child. }
@@ -177,6 +188,7 @@ type
     function InputChromeTop: Integer;
     function InputChromeHeight: Integer;
     function LabelFontSize: Integer;
+    function Validate: Boolean;
     procedure Redraw;
     procedure SetFocus; reintroduce;
     procedure SetBounds(ALeft, ATop, AWidth, AHeight: Integer); override;
@@ -221,6 +233,7 @@ type
     property Variant: TDACInputVariant read FVariant write SetVariant default mivOutlined;
     property Visible;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
+    property OnValidate: TDACFieldValidateEvent read FOnValidate write FOnValidate;
     property OnClick;
     property OnDblClick;
     property OnEnter;
@@ -238,9 +251,43 @@ type
 implementation
 
 uses
+  System.MaskUtils,
   System.Math,
   Winapi.Windows,
   DAC.Components.DesignSystem.ColorTokens;
+
+type
+  TDACNativeMaskEdit = class(TMaskEdit)
+  private
+    FSkipExitMaskValidation: Boolean;
+    procedure CMExit(var AMessage: TCMExit); message CM_EXIT;
+  public
+    procedure ValidateEdit; override;
+  end;
+
+procedure TDACNativeMaskEdit.CMExit(var AMessage: TCMExit);
+var
+  LSkipExitMaskValidation: Boolean;
+begin
+  { VCL checks the mask before OnExit. Give the field rule the partial text
+    first so it can present its own message and keep the caret. }
+  TDACEdit(Owner).ValidateEditorExit;
+  LSkipExitMaskValidation := FSkipExitMaskValidation;
+  FSkipExitMaskValidation := TDACEdit(Owner).HasIntrinsicValidator;
+  try
+    inherited;
+  finally
+    FSkipExitMaskValidation := LSkipExitMaskValidation;
+  end;
+end;
+
+procedure TDACNativeMaskEdit.ValidateEdit;
+begin
+  if FSkipExitMaskValidation or (Assigned(TDACEdit(Owner).FOnValidate) and
+    (TDACEdit(Owner).ValidationText = '')) then
+    Exit;
+  inherited;
+end;
 
 function EditVclColor(const AColor: TAlphaColor): TColor;
 begin
@@ -285,7 +332,7 @@ begin
   FPaintBox.OnMouseEnter := DoMouseEnter;
   FPaintBox.OnMouseLeave := DoMouseLeave;
 
-  FEdit := TMaskEdit.Create(Self);
+  FEdit := TDACNativeMaskEdit.Create(Self);
   FEdit.Parent := Self;
   FEdit.SetSubComponent(True);
   FEdit.BorderStyle := bsNone;
@@ -317,6 +364,7 @@ end;
 
 destructor TDACEdit.Destroy;
 begin
+  FOnValidate := nil;
   TDACThemeManager.UnregisterListener(Self);
   FDesignValueLabel.Free;
   FEdit.Free;
@@ -437,6 +485,7 @@ end;
 
 procedure TDACEdit.Change;
 begin
+  ValidateChange;
   Redraw;
   if Assigned(OnChange) then
     OnChange(Self);
@@ -459,6 +508,103 @@ begin
   Redraw;
   if Assigned(OnExit) then
     OnExit(Self);
+end;
+
+procedure TDACEdit.ValidateEditorExit;
+begin
+  if CanValidateEditorExit and not RunValidation(mfvtExit) then
+    DACFieldRejectExit(FEdit);
+end;
+
+function TDACEdit.CanValidateEditorExit: Boolean;
+begin
+  Result := (Assigned(FOnValidate) or HasIntrinsicValidator) and
+    DACFieldIsLeaving(Self);
+end;
+
+function TDACEdit.IntrinsicValidator: TDACFieldIntrinsicValidator;
+begin
+  Result := nil;
+end;
+
+function TDACEdit.HasIntrinsicValidator: Boolean;
+var
+  LIntrinsic: TDACFieldIntrinsicValidator;
+begin
+  LIntrinsic := IntrinsicValidator();
+  Result := Assigned(LIntrinsic);
+end;
+
+procedure TDACEdit.ValidateChange;
+begin
+  if Showing and (Assigned(FOnValidate) or HasIntrinsicValidator) then
+    RunValidation(mfvtChange);
+end;
+
+function TDACEdit.Validate: Boolean;
+begin
+  Result := RunValidation(mfvtExplicit);
+end;
+
+function TDACEdit.RunValidation(const ATrigger: TDACFieldValidationTrigger): Boolean;
+var
+  LError: string;
+  LIntrinsic: TDACFieldIntrinsicValidator;
+begin
+  Result := True;
+  if (ATrigger <> mfvtExplicit) and
+    (not Enabled or FLoading or FReadOnly or not FBindingCanModify) then
+    Exit;
+  LIntrinsic := IntrinsicValidator();
+  if not Assigned(FOnValidate) and not Assigned(LIntrinsic) then
+    Exit;
+  if not FValidator.TryValidate(Self, ValidationText, FOnValidate, ATrigger,
+    FStatus = mesDanger, LError, LIntrinsic) then
+    Exit;
+
+  Result := LError = '';
+  if not Result then
+  begin
+    ErrorText := LError;
+    Status := mesDanger;
+  end
+  else if Status = mesDanger then
+  begin
+    Status := mesNormal;
+    ErrorText := '';
+  end;
+end;
+
+function TDACEdit.ValidationText: string;
+var
+  I: Integer;
+  LBlank: Char;
+  LEditorText: string;
+  LMask: string;
+  LOffset: Integer;
+begin
+  Result := Text;
+  if not FEdit.IsMasked then
+    Exit;
+
+  { Mask literals and unfilled positions do not count as user input. }
+  LMask := FEdit.EditMask;
+  LBlank := MaskGetMaskBlank(LMask);
+  LEditorText := FEdit.EditText;
+  LOffset := 1;
+  for I := 1 to Length(LMask) do
+    case MaskGetCharType(LMask, I) of
+      mcLiteral, mcIntlLiteral:
+        Inc(LOffset);
+      mcMask, mcMaskOpt:
+        begin
+          if (LOffset <= Length(LEditorText)) and (LEditorText[LOffset] > ' ') and
+            (LEditorText[LOffset] <> LBlank) then
+            Exit;
+          Inc(LOffset);
+        end;
+    end;
+  Result := '';
 end;
 
 procedure TDACEdit.DoMouseEnter(Sender: TObject);
@@ -1070,16 +1216,24 @@ begin
   InvalidateChrome;
 end;
 
-procedure TDACEdit.SetRightContentReserve(const AValue: Integer);
+procedure TDACEdit.SetContentReserves(const ALeft, ARight: Integer);
 var
-  LValue: Integer;
+  LLeft: Integer;
+  LRight: Integer;
 begin
-  LValue := Max(0, AValue);
-  if FRightContentReserve = LValue then
+  LLeft := Max(0, ALeft);
+  LRight := Max(0, ARight);
+  if (FLeftContentReserve = LLeft) and (FRightContentReserve = LRight) then
     Exit;
-  FRightContentReserve := LValue;
+  FLeftContentReserve := LLeft;
+  FRightContentReserve := LRight;
   UpdateChildBounds;
   Invalidate;
+end;
+
+procedure TDACEdit.SetRightContentReserve(const AValue: Integer);
+begin
+  SetContentReserves(FLeftContentReserve, AValue);
 end;
 
 procedure TDACEdit.SetStatus(const AValue: TDACEditStatus);
@@ -1134,6 +1288,7 @@ procedure TDACEdit.UpdateChildBounds;
 var
   LHorizontalPadding: Integer;
   LInputHeight: Integer;
+  LLeftPadding: Integer;
   LRightPadding: Integer;
   LTextHeight: Integer;
   LTop: Integer;
@@ -1169,6 +1324,7 @@ begin
 
   LTokens := ResolvedTokens;
   LHorizontalPadding := Pixels(Round(LTokens.InputNativeHorizontalPadding));
+  LLeftPadding := LHorizontalPadding + FLeftContentReserve;
   LRightPadding := LHorizontalPadding;
   if HasRightIcon then
     LRightPadding := Pixels(Round(LTokens.InputNativeRightReserveWithIcon));
@@ -1187,8 +1343,8 @@ begin
   LTop := ChromeTop + Max(0, (LInputHeight - LTextHeight) div 2) +
     Pixels(Round(LTokens.InputNativeVerticalOffset));
   LTop := Min(ChromeTop + Max(0, LInputHeight - LTextHeight), LTop);
-  FEdit.SetBounds(LHorizontalPadding, LTop,
-    Max(0, Width - LHorizontalPadding - LRightPadding), LTextHeight);
+  FEdit.SetBounds(LLeftPadding, LTop,
+    Max(0, Width - LLeftPadding - LRightPadding), LTextHeight);
   UpdateNativeLabel;
 end;
 
@@ -1205,6 +1361,7 @@ procedure TDACEdit.UpdateDesignValuePreview;
 var
   LHorizontalPadding: Integer;
   LInputHeight: Integer;
+  LLeftPadding: Integer;
   LRightPadding: Integer;
   LText: string;
   LTextHeight: Integer;
@@ -1234,6 +1391,7 @@ begin
   FDesignValueLabel.Visible := LText <> '';
 
   LHorizontalPadding := Pixels(Round(LTokens.InputNativeHorizontalPadding));
+  LLeftPadding := LHorizontalPadding + FLeftContentReserve;
   LRightPadding := LHorizontalPadding;
   if HasRightIcon then
     LRightPadding := Pixels(Round(LTokens.InputNativeRightReserveWithIcon));
@@ -1249,8 +1407,8 @@ begin
   LTop := ChromeTop + Max(0, (LInputHeight - LTextHeight) div 2) +
     Pixels(Round(LTokens.InputNativeVerticalOffset));
   LTop := Min(ChromeTop + Max(0, LInputHeight - LTextHeight), LTop);
-  FDesignValueLabel.SetBounds(LHorizontalPadding, LTop,
-    Max(0, Width - LHorizontalPadding - LRightPadding), LTextHeight);
+  FDesignValueLabel.SetBounds(LLeftPadding, LTop,
+    Max(0, Width - LLeftPadding - LRightPadding), LTextHeight);
 end;
 
 procedure TDACEdit.UpdatePaintBoxBounds;

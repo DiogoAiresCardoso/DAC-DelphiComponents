@@ -62,6 +62,7 @@ type
     FOnCloseUp: TNotifyEvent;
     FOnChange: TNotifyEvent;
     FOnDropDown: TNotifyEvent;
+    FOnValidate: TDACFieldValidateEvent;
     FPaintBox: TSkPaintBox;
     FRenderer: TDACSkiaRenderer;
     FRequired: Boolean;
@@ -73,6 +74,7 @@ type
     FText: string;
     FVariant: TDACInputVariant;
     FStyle: TComboBoxStyle;
+    FValidator: TDACFieldValidator;
     function CanModifyValue: Boolean;
     procedure AttachComboToHost;
     function CanUpdateChildren: Boolean;
@@ -84,6 +86,8 @@ type
     procedure DoComboChange(Sender: TObject);
     procedure DoComboEnter(Sender: TObject);
     procedure DoComboExit(Sender: TObject);
+    procedure NotifyValueChanged;
+    function RunValidation(const ATrigger: TDACFieldValidationTrigger): Boolean;
     procedure DoMouseEnter(Sender: TObject);
     procedure DoMouseLeave(Sender: TObject);
     function ChromeTop: Integer;
@@ -152,6 +156,7 @@ type
     procedure WMSetFocus(var AMessage: TWMSetFocus); message WM_SETFOCUS;
   protected
     procedure CreateWnd; override;
+    procedure DoExit; override;
     procedure Loaded; override;
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
     procedure Resize; override;
@@ -161,6 +166,7 @@ type
     destructor Destroy; override;
     procedure SetBounds(ALeft, ATop, AWidth, AHeight: Integer); override;
     function LabelFontSize: Integer;
+    function Validate: Boolean;
     function PopupVisible: Boolean;
     function ResolvedChromeColor: TAlphaColor;
     function ResolvedPopupBackground: TAlphaColor;
@@ -205,6 +211,7 @@ type
     property Variant: TDACInputVariant read FVariant write SetVariant default mivOutlined;
     property Visible;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
+    property OnValidate: TDACFieldValidateEvent read FOnValidate write FOnValidate;
     property OnCloseUp: TNotifyEvent read FOnCloseUp write FOnCloseUp;
     property OnClick;
     property OnDblClick;
@@ -469,6 +476,7 @@ end;
 
 destructor TDACComboBox.Destroy;
 begin
+  FOnValidate := nil;
   TDACThemeManager.UnregisterListener(Self);
   FItems.OnChange := nil;
   FDropDownForm.Free;
@@ -618,6 +626,13 @@ begin
     end;
   end;
   Redraw;
+  NotifyValueChanged;
+end;
+
+procedure TDACComboBox.NotifyValueChanged;
+begin
+  if Showing then
+    RunValidation(mfvtChange);
   if Assigned(FOnChange) then
     FOnChange(Self);
 end;
@@ -631,9 +646,50 @@ end;
 
 procedure TDACComboBox.DoComboExit(Sender: TObject);
 begin
+  if Assigned(FOnValidate) and (FDropDownState = cdsClosed) and
+    DACFieldIsLeaving(Self) and not RunValidation(mfvtExit) then
+    DACFieldRejectExit(FCombo);
   Redraw;
   if Assigned(OnExit) then
     OnExit(Self);
+end;
+
+procedure TDACComboBox.DoExit;
+begin
+  if (FStyle = csDropDownList) and Assigned(FOnValidate) and
+    (FDropDownState = cdsClosed) and DACFieldIsLeaving(Self) and
+    not RunValidation(mfvtExit) then
+    DACFieldRejectExit(Self);
+  inherited;
+end;
+
+function TDACComboBox.Validate: Boolean;
+begin
+  Result := RunValidation(mfvtExplicit);
+end;
+
+function TDACComboBox.RunValidation(const ATrigger: TDACFieldValidationTrigger): Boolean;
+var
+  LError: string;
+begin
+  Result := True;
+  if (ATrigger <> mfvtExplicit) and not CanModifyValue then
+    Exit;
+  if not FValidator.TryValidate(Self, Text, FOnValidate, ATrigger,
+    FStatus = mesDanger, LError) then
+    Exit;
+
+  Result := LError = '';
+  if not Result then
+  begin
+    ErrorText := LError;
+    Status := mesDanger;
+  end
+  else if Status = mesDanger then
+  begin
+    Status := mesNormal;
+    ErrorText := '';
+  end;
 end;
 
 procedure TDACComboBox.DropDownDeactivate(Sender: TObject);
@@ -686,8 +742,7 @@ begin
           Exit;
         SetItemIndex(LIndex);
         FDropDownHotIndex := LIndex;
-        if Assigned(FOnChange) then
-          FOnChange(Self);
+        NotifyValueChanged;
         if FDropDownPaintBox <> nil then
           FDropDownPaintBox.Redraw;
       end;
@@ -829,8 +884,7 @@ begin
   begin
     SetItemIndex(LIndex);
     CloseDropDown;
-    if Assigned(FOnChange) then
-      FOnChange(Self);
+    NotifyValueChanged;
   end
   else
     CloseDropDown;

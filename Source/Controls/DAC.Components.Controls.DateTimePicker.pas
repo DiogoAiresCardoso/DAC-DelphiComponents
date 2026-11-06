@@ -15,6 +15,7 @@ uses
   DAC.Components.Controls.Button,
   DAC.Components.Controls.DateTimePickerPopup,
   DAC.Components.Controls.Edit,
+  DAC.Components.Controls.FieldSupport,
   DAC.Components.DesignSystem.ControlTokens,
   DAC.Components.DesignSystem.IconAssets,
   DAC.Components.DesignSystem.Theme;
@@ -97,11 +98,15 @@ type
     procedure SetTimeStepMinutes(const AValue: Integer);
     procedure ShowCalendarPopup;
     function TryTextToValue(const AText: string; out AValue: TDateTime): Boolean;
+    function TryReadEditedDateTime(const AText: string; out AValue: TDateTime): Boolean;
+    function IntrinsicDateError(const AText: string): string;
     procedure UpdateActionLayout;
     procedure UpdateActionState;
     procedure UpdateEditorText;
   protected
     procedure Change; override;
+    function CanValidateEditorExit: Boolean; override;
+    function IntrinsicValidator: TDACFieldIntrinsicValidator; override;
     procedure CreateWnd; override;
     procedure DoAcceptValue(const AValue: TDateTime); virtual;
     procedure DoClearValue; virtual;
@@ -119,6 +124,7 @@ type
     function PopupDisplayMonth: TDateTime;
     function PopupSelectedDateTime: TDateTime;
     function PopupVisible: Boolean;
+    function TryGetEditedDateTime(out AValue: TDateTime): Boolean;
     function ResolvedPopupBackground: TAlphaColor;
     procedure OpenPopup;
     procedure RequestNativePickerActivation;
@@ -350,13 +356,15 @@ end;
 function TDACDateTimePicker.CommitEditorValue: Boolean;
 var
   LChanged: Boolean;
+  LText: string;
   LValue: TDateTime;
 begin
   if FInternalTextUpdate then
     Exit(True);
 
   Result := False;
-  if Trim(Text) = '' then
+  LText := ValidationText;
+  if Trim(LText) = '' then
   begin
     if not FAllowNull then
       Exit;
@@ -365,12 +373,7 @@ begin
   end
   else
   begin
-    { TMaskEdit.Text exposes unfilled slots as spaces. TryStrToDate accepts
-      a partial year such as "2   " as 2002, and an OnChange consumer can then
-      write that value back and reset the caret. Only publish a complete mask. }
-    if not IsEditorComplete then
-      Exit;
-    if not TryTextToValue(Text, LValue) then
+    if not TryReadEditedDateTime(LText, LValue) then
       Exit;
     LChanged := FIsNull or not SameValue(FDateTime, LValue);
     FDateTime := LValue;
@@ -381,14 +384,57 @@ begin
   if LChanged then
     inherited Change
   else
+  begin
+    ValidateChange;
     Redraw;
+  end;
+end;
+
+function TDACDateTimePicker.TryGetEditedDateTime(out AValue: TDateTime): Boolean;
+begin
+  Result := TryReadEditedDateTime(ValidationText, AValue);
+end;
+
+function TDACDateTimePicker.TryReadEditedDateTime(const AText: string;
+  out AValue: TDateTime): Boolean;
+begin
+  { The regional parser alone can interpret a partial year as a full year. }
+  AValue := 0;
+  Result := (Trim(AText) <> '') and IsEditorComplete and
+    TryTextToValue(AText, AValue);
+end;
+
+function TDACDateTimePicker.CanValidateEditorExit: Boolean;
+begin
+  Result := not FPopupActive and inherited CanValidateEditorExit;
+end;
+
+function TDACDateTimePicker.IntrinsicValidator: TDACFieldIntrinsicValidator;
+begin
+  Result := IntrinsicDateError;
+end;
+
+function TDACDateTimePicker.IntrinsicDateError(const AText: string): string;
+var
+  LValue: TDateTime;
+begin
+  Result := '';
+  if (Trim(AText) = '') and FAllowNull then
+    Exit;
+  if TryReadEditedDateTime(AText, LValue) then
+    Exit;
+  if FPickerKind = dtkTime then
+    Result := 'Informe uma hora completa e v' + #225 + 'lida.'
+  else
+    Result := 'Informe uma data completa e v' + #225 + 'lida.';
 end;
 
 procedure TDACDateTimePicker.Change;
 begin
   if FInternalTextUpdate then
     Exit;
-  CommitEditorValue;
+  if not CommitEditorValue then
+    ValidateChange;
 end;
 
 procedure TDACDateTimePicker.CMEnabledChanged(var AMessage: TMessage);
@@ -468,7 +514,9 @@ begin
   FIsNull := False;
   UpdateEditorText;
   if LChanged then
-    inherited Change;
+    inherited Change
+  else
+    ValidateChange;
 end;
 
 procedure TDACDateTimePicker.DoClearValue;
@@ -514,7 +562,7 @@ begin
   if FFormatString <> '' then
     Exit(FormatDateTime(FFormatString, AValue));
   if FPickerKind = dtkTime then
-    Result := TimeToStr(AValue)
+    Result := FormatDateTime(FormatSettings.ShortTimeFormat, AValue)
   else
     Result := DateToStr(AValue);
 end;

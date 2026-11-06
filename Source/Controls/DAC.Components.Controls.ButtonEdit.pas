@@ -33,6 +33,7 @@ type
     procedure CMEnabledChanged(var AMessage: TMessage); message CM_ENABLEDCHANGED;
     procedure CMParentColorChanged(var AMessage: TMessage); message CM_PARENTCOLORCHANGED;
     procedure CMParentFontChanged(var AMessage: TMessage); message CM_PARENTFONTCHANGED;
+    procedure EditorKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     function GetButtonIconKind: TDACIconKind;
     function GetButtonKind: TDACButtonKind;
     function GetCornerRadiusValue: Integer;
@@ -124,6 +125,7 @@ begin
   { The composite field is a single dialog tab stop. TDACEdit transfers focus
     to this native editor, retaining caret, IME and accessibility. }
   EditControl.TabStop := False;
+  EditControl.OnKeyDown := EditorKeyDown;
   UpdateActionState;
   UpdateActionLayout;
 end;
@@ -196,6 +198,18 @@ begin
   inherited;
   UpdateActionState;
   UpdateActionLayout;
+end;
+
+procedure TDACButtonEdit.EditorKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  KeyDown(Key, Shift);
+  if (Key = VK_F3) and (Shift = []) and Assigned(FOnButtonClick) and
+    CanModifyValue then
+  begin
+    Key := 0;
+    ActionClick(Sender);
+  end;
 end;
 
 function TDACButtonEdit.GetButtonIconKind: TDACIconKind;

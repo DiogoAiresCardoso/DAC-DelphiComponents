@@ -49,6 +49,7 @@ type
     FMemo: TMemo;
     FMouseInside: Boolean;
     FOnChange: TNotifyEvent;
+    FOnValidate: TDACFieldValidateEvent;
     FPaintBox: TSkPaintBox;
     FDesignValueLabel: TLabel;
     FNativeLabel: TLabel;
@@ -62,6 +63,7 @@ type
     FTabStopBeforeLoading: Boolean;
     FText: string;
     FUpdatingLines: Boolean;
+    FValidator: TDACFieldValidator;
     procedure ApplyTextToMemo;
     function ParentSurfaceColor: TAlphaColor;
     function CanUpdateChildren: Boolean;
@@ -80,6 +82,7 @@ type
     function GetWordWrap: Boolean;
     function HasLabel: Boolean;
     function HasSupportText: Boolean;
+    function RunValidation(const ATrigger: TDACFieldValidationTrigger): Boolean;
     function ChromeTop: Integer;
     function ChromeHeight: Integer;
     function ResolvedFieldState: TDACResolvedFieldState;
@@ -122,6 +125,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     function LabelFontSize: Integer;
+    function Validate: Boolean;
     procedure Redraw;
     procedure SetFocus; reintroduce;
     procedure SetBounds(ALeft, ATop, AWidth, AHeight: Integer); override;
@@ -155,6 +159,7 @@ type
     property Visible;
     property WordWrap: Boolean read GetWordWrap write SetWordWrap default True;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
+    property OnValidate: TDACFieldValidateEvent read FOnValidate write FOnValidate;
     property OnEnter;
     property OnExit;
     property OnKeyDown;
@@ -457,6 +462,7 @@ end;
 
 destructor TDACMemo.Destroy;
 begin
+  FOnValidate := nil;
   TDACThemeManager.UnregisterListener(Self);
   FLines.OnChange := nil;
   FFieldText.Free;
@@ -542,6 +548,8 @@ begin
   finally
     FUpdatingLines := False;
   end;
+  if Showing then
+    RunValidation(mfvtChange);
   Redraw;
   if Assigned(FOnChange) then
     FOnChange(Self);
@@ -556,6 +564,9 @@ end;
 
 procedure TDACMemo.DoMemoExit(Sender: TObject);
 begin
+  if Assigned(FOnValidate) and DACFieldIsLeaving(Self) and
+    not RunValidation(mfvtExit) then
+    DACFieldRejectExit(FMemo);
   Redraw;
   if Assigned(OnExit) then
     OnExit(Self);
@@ -569,6 +580,36 @@ begin
   Redraw;
   if Assigned(OnMouseEnter) then
     OnMouseEnter(Self);
+end;
+
+function TDACMemo.Validate: Boolean;
+begin
+  Result := RunValidation(mfvtExplicit);
+end;
+
+function TDACMemo.RunValidation(const ATrigger: TDACFieldValidationTrigger): Boolean;
+var
+  LError: string;
+begin
+  Result := True;
+  if (ATrigger <> mfvtExplicit) and
+    (not Enabled or FLoading or FReadOnly or not FBindingCanModify) then
+    Exit;
+  if not FValidator.TryValidate(Self, Text, FOnValidate, ATrigger,
+    FStatus = mesDanger, LError) then
+    Exit;
+
+  Result := LError = '';
+  if not Result then
+  begin
+    ErrorText := LError;
+    Status := mesDanger;
+  end
+  else if Status = mesDanger then
+  begin
+    Status := mesNormal;
+    ErrorText := '';
+  end;
 end;
 
 procedure TDACMemo.DoMouseLeave(Sender: TObject);

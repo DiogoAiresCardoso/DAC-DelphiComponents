@@ -16,6 +16,23 @@ type
   TDACFieldValidation = (mfvNormal, mfvSuccess, mfvWarning, mfvDanger);
   TDACFieldInteraction = (mfiRest, mfiHover, mfiFocused);
   TDACFieldContent = (mfcEmpty, mfcFilled);
+  TDACFieldValidationTrigger = (mfvtExplicit, mfvtChange, mfvtExit);
+  { Set AErrorText to a nonempty message to reject the current value. }
+  TDACFieldValidateEvent = procedure(Sender: TObject; const AText: string;
+    var AErrorText: string) of object;
+  TDACFieldIntrinsicValidator = function(const AText: string): string of object;
+
+  TDACFieldValidator = record
+  private
+    FRunning: Boolean;
+    FShowOnChange: Boolean;
+  public
+    function TryValidate(const AHost: TWinControl; const AText: string;
+      const AValidator: TDACFieldValidateEvent;
+      const ATrigger: TDACFieldValidationTrigger; const AHasError: Boolean;
+      out AErrorText: string;
+      const AIntrinsic: TDACFieldIntrinsicValidator = nil): Boolean;
+  end;
 
   TDACResolvedFieldState = record
     Availability: TDACFieldAvailability;
@@ -93,6 +110,8 @@ procedure DACFieldBeginLoadingTabPolicy(const AHost: TWinControl;
 procedure DACFieldEndLoadingTabPolicy(const AHost: TWinControl;
   var APreviousTabStop, ACaptured: Boolean);
 procedure DACFieldRelinquishFocus(const AHost, AEditor: TWinControl);
+function DACFieldIsLeaving(const AHost: TWinControl): Boolean;
+procedure DACFieldRejectExit(const AEditor: TWinControl);
 
 { Mede a largura de AText em pixels usando a API GDI nativa com a fonte AFont.
   Use esta funcao em controles que precisam alinhar texto nativo (TLabel, DrawText)
@@ -107,6 +126,7 @@ implementation
 uses
   System.Math,
   Winapi.Windows,
+  Vcl.Forms,
   DAC.Components.DesignSystem.Fonts;
 
 type
@@ -211,6 +231,64 @@ begin
   LFocus := Winapi.Windows.GetFocus;
   if (LFocus = AHost.Handle) or IsChild(AHost.Handle, LFocus) then
     Winapi.Windows.SetFocus(0);
+end;
+
+function DACFieldIsLeaving(const AHost: TWinControl): Boolean;
+var
+  LForm: TCustomForm;
+begin
+  LForm := GetParentForm(AHost);
+  Result := AHost.Showing and (LForm <> nil) and
+    not (csDestroying in LForm.ComponentState) and
+    not AHost.ContainsControl(LForm.ActiveControl);
+end;
+
+procedure DACFieldRejectExit(const AEditor: TWinControl);
+begin
+  if AEditor.Showing and AEditor.CanFocus then
+  begin
+    AEditor.SetFocus;
+    Abort;
+  end;
+end;
+
+function TDACFieldValidator.TryValidate(const AHost: TWinControl; const AText: string;
+  const AValidator: TDACFieldValidateEvent;
+  const ATrigger: TDACFieldValidationTrigger; const AHasError: Boolean;
+  out AErrorText: string; const AIntrinsic: TDACFieldIntrinsicValidator): Boolean;
+var
+  LBlank: Boolean;
+  LIntrinsicError: string;
+begin
+  Result := False;
+  if (not Assigned(AValidator) and not Assigned(AIntrinsic)) or FRunning or
+    (AHost.ComponentState * [csDesigning, csLoading, csDestroying] <> []) then
+    Exit;
+
+  FRunning := True;
+  try
+    LIntrinsicError := '';
+    if Assigned(AIntrinsic) then
+      LIntrinsicError := AIntrinsic(AText);
+    AErrorText := '';
+    if Assigned(AValidator) then
+      AValidator(AHost, AText, AErrorText);
+    AErrorText := Trim(AErrorText);
+    if AErrorText = '' then
+      AErrorText := LIntrinsicError;
+    LBlank := Trim(AText) = '';
+    { Clearing the field releases focus. Explicit validation, such as saving,
+      can still reject a blank value. }
+    if (ATrigger <> mfvtExplicit) and LBlank then
+      AErrorText := '';
+    Result := (ATrigger <> mfvtChange) or AHasError or FShowOnChange;
+    if Result and (AErrorText <> '') then
+      FShowOnChange := True
+    else if (ATrigger = mfvtExit) or LBlank then
+      FShowOnChange := False;
+  finally
+    FRunning := False;
+  end;
 end;
 
 function DACFieldVclColor(const AColor: TAlphaColor): TColor;
@@ -415,6 +493,7 @@ begin
   ALabel.AutoSize := False;
   ALabel.Transparent := True;
   ALabel.ParentFont := False;
+  ALabel.StyleElements := ALabel.StyleElements - [seFont];
   ALabel.Font.Name := DACComponentFontFamily;
   ALabel.Font.Size := 9;
   ALabel.Font.Style := [];
@@ -445,7 +524,9 @@ begin
   else
     FCaptionLabel.Font.Style := [];
   FCaptionLabel.Caption := ACaption;
-  if ARequired then
+  if AState.Validation = mfvDanger then
+    FCaptionLabel.Font.Color := DACFieldVclColor(ATokens.FieldDangerText)
+  else if ARequired then
     { Required fields use the exact focus-border token. This keeps the native
       label visually coupled to the primary selected outline in both themes. }
     FCaptionLabel.Font.Color := DACFieldVclColor(ATokens.FieldRequiredText)
@@ -457,7 +538,6 @@ begin
 
   LCaptionWidth := MeasureTextWidth(ACaption, FCaptionLabel.Font);
   FRequiredLabel.Font.Assign(FCaptionLabel.Font);
-  FRequiredLabel.Font.Color := DACFieldVclColor(ATokens.FieldRequiredText);
   FRequiredLabel.Visible := FCaptionLabel.Visible and ARequired;
   FRequiredLabel.SetBounds(LCaptionWidth + Round(ATokens.FieldRequiredGap), 0,
     Max(0, AWidth - LCaptionWidth), Round(ATokens.FieldLabelRowHeight));
@@ -470,7 +550,7 @@ begin
     mfvWarning: LSupportColor := ATokens.FieldWarningText;
     mfvDanger: LSupportColor := ATokens.FieldDangerText;
   end;
-  if AState.Availability = mfaDisabled then
+  if (AState.Availability = mfaDisabled) and (AState.Validation <> mfvDanger) then
     LSupportColor := ATokens.FieldDisabledText;
 
   LSupportTop := AChromeTop + AChromeHeight +

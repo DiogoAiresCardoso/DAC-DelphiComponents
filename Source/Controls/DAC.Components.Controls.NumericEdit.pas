@@ -28,6 +28,8 @@ type
     nmkDecimal
   );
 
+  TDACNumericSuffixPosition = (nspRight, nspLeft);
+
   { Numeric specialization of the canonical TDACEdit. TDACEdit remains the
     sole owner of the native TMaskEdit, chrome, focus, labels, helper/error
     rows, theme and design-time preview. }
@@ -40,6 +42,7 @@ type
     FNumericKind: TDACNumericKind;
     FSuffixLabel: TDACSystemText;
     FSuffixPaintBox: TSkPaintBox;
+    FSuffixPosition: TDACNumericSuffixPosition;
     FSuffixRenderer: TDACSkiaRenderer;
     FSuffixText: string;
     FSuffixWidth: Integer;
@@ -73,6 +76,7 @@ type
     procedure SetNumericMask(const AValue: TDACNumericMaskKind);
     procedure SetNumericKind(const AValue: TDACNumericKind);
     procedure SetReadOnlyValue(const AValue: Boolean);
+    procedure SetSuffixPosition(const AValue: TDACNumericSuffixPosition);
     procedure SetSuffixText(const AValue: string);
     procedure SetSuffixWidth(const AValue: Integer);
     procedure SetThemeModeValue(const AValue: TDACThemeMode);
@@ -90,6 +94,8 @@ type
     procedure CreateWnd; override;
     procedure Loaded; override;
     procedure Resize; override;
+    procedure SetStatus(const AValue: TDACEditStatus); override;
+    procedure ThemeChanged(Sender: TObject); override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -111,6 +117,8 @@ type
       default dnkNumber;
     property ReadOnly: Boolean read GetReadOnlyValue write SetReadOnlyValue
       default False;
+    property SuffixPosition: TDACNumericSuffixPosition read FSuffixPosition
+      write SetSuffixPosition default nspRight;
     property SuffixText: string read FSuffixText write SetSuffixText;
     property SuffixWidth: Integer read FSuffixWidth write SetSuffixWidth
       default DACButtonEditDefaultButtonWidth;
@@ -210,9 +218,11 @@ procedure TDACNumericEdit.CommitEditorText;
 var
   LValue: Double;
 begin
-  if Trim(Text) = '' then
+  if (Trim(Text) = '') or (Trim(Text) = '-') then
   begin
     FValue := 0;
+    if Trim(Text) = '-' then
+      SetEditorText('');
     Exit;
   end;
   if TryTextToValue(Text, LValue) then
@@ -392,6 +402,8 @@ var
   LSource: string;
 begin
   LSource := Trim(AText);
+  if FAllowNegative and (LSource = '-') then
+    Exit('-');
   LHasNegative := FAllowNegative and
     ((Pos('-', LSource) > 0) or
      ((Pos('(', LSource) > 0) and (Pos(')', LSource) > 0)));
@@ -545,6 +557,22 @@ begin
   UpdateSuffixState;
 end;
 
+procedure TDACNumericEdit.SetStatus(const AValue: TDACEditStatus);
+begin
+  if Status = AValue then
+    Exit;
+  inherited;
+  UpdateSuffixState;
+end;
+
+procedure TDACNumericEdit.SetSuffixPosition(const AValue: TDACNumericSuffixPosition);
+begin
+  if FSuffixPosition = AValue then
+    Exit;
+  FSuffixPosition := AValue;
+  UpdateSuffixLayout;
+end;
+
 procedure TDACNumericEdit.SetSuffixText(const AValue: string);
 begin
   if FSuffixText = AValue then
@@ -576,7 +604,6 @@ end;
 procedure TDACNumericEdit.SetThemeModeValue(const AValue: TDACThemeMode);
 begin
   TDACEdit(Self).ThemeMode := AValue;
-  UpdateSuffixState;
   UpdateSuffixLayout;
 end;
 
@@ -608,6 +635,9 @@ end;
 procedure TDACNumericEdit.SuffixPaintBoxDraw(Sender: TObject;
   const ACanvas: ISkCanvas; const ADest: TRectF; const AOpacity: Single);
 var
+  LDividerColor: TAlphaColor;
+  LDividerLeft: Single;
+  LDividerWidth: Single;
   LTokens: TDACControlTokens;
 begin
   if (ACanvas = nil) or (ADest.Width <= 0) or (ADest.Height <= 0) or
@@ -615,14 +645,27 @@ begin
     Exit;
   LTokens := TDACComponentStyle.ResolveForSurface(Self,
     TDACEdit(Self).ThemeMode).Tokens.Controls;
+  LDividerColor := LTokens.ButtonInputActionDivider;
+  if Status = mesDanger then
+    LDividerColor := LTokens.FieldDangerText;
+  LDividerWidth := Min(ADest.Width, LTokens.ButtonInputActionDividerWidth);
+  LDividerLeft := 0;
+  if FSuffixPosition = nspLeft then
+    LDividerLeft := ADest.Width - LDividerWidth;
   { This layer only owns the divider. Keeping the canvas transparent lets the
     canonical TDACEdit surface and rounded corners remain the sole chrome. }
   ACanvas.Clear(LTokens.TransparentSurfaceFallback);
   FSuffixRenderer.FillRoundRect(ACanvas,
-    TRectF.Create(0, LTokens.ButtonInputActionDividerVerticalInset,
-      LTokens.ButtonInputActionDividerWidth,
+    TRectF.Create(LDividerLeft, LTokens.ButtonInputActionDividerVerticalInset,
+      LDividerLeft + LDividerWidth,
       ADest.Height - LTokens.ButtonInputActionDividerVerticalInset),
-    LTokens.ButtonInputActionDivider, 0, LTokens.AlphaOpaque);
+    LDividerColor, 0, LTokens.AlphaOpaque);
+end;
+
+procedure TDACNumericEdit.ThemeChanged(Sender: TObject);
+begin
+  inherited;
+  UpdateSuffixState;
 end;
 
 function TDACNumericEdit.TryTextToValue(const AText: string;
@@ -658,9 +701,11 @@ procedure TDACNumericEdit.UpdateSuffixLayout;
 var
   LChromeHeight: Integer;
   LChromeTop: Integer;
+  LDividerWidth: Integer;
   LOuterInset: Integer;
   LRight: Integer;
   LSuffixLeft: Integer;
+  LSuffixTextLeft: Integer;
   LSuffixWidth: Integer;
   LTokens: TDACControlTokens;
 begin
@@ -673,7 +718,7 @@ begin
   FSuffixLabel.Visible := HasExternalSuffix;
   if not HasExternalSuffix then
   begin
-    RightContentReserve := 0;
+    SetContentReserves(0, 0);
     FSuffixPaintBox.Redraw;
     FSuffixLabel.Invalidate;
     Redraw;
@@ -688,15 +733,32 @@ begin
   LChromeHeight := Min(InputChromeHeight, Max(0, Height - LChromeTop));
   LRight := Max(LOuterInset, Width - LOuterInset);
   LSuffixWidth := Min(FSuffixWidth, Max(0, LRight - LOuterInset));
-  LSuffixLeft := Max(LOuterInset, LRight - LSuffixWidth);
+  LDividerWidth := Min(LSuffixWidth, Round(LTokens.ButtonInputActionDividerWidth));
+  if FSuffixPosition = nspLeft then
+  begin
+    LSuffixLeft := LOuterInset;
+    LSuffixTextLeft := LSuffixLeft;
+    SetContentReserves(LSuffixLeft + LSuffixWidth, 0);
+  end
+  else
+  begin
+    LSuffixLeft := LRight - LSuffixWidth;
+    LSuffixTextLeft := LSuffixLeft + LDividerWidth;
+    SetContentReserves(0, Width - LSuffixLeft);
+  end;
 
-  RightContentReserve := Max(0, Width - LSuffixLeft);
   FSuffixPaintBox.SetBounds(LSuffixLeft, LChromeTop + LOuterInset,
     LSuffixWidth, Max(0, LChromeHeight - (LOuterInset * 2)));
-  FSuffixLabel.SetBounds(LSuffixLeft + Round(LTokens.ButtonInputActionDividerWidth),
-    LChromeTop + LOuterInset,
-    Max(0, LSuffixWidth - Round(LTokens.ButtonInputActionDividerWidth)),
+  FSuffixLabel.SetBounds(LSuffixTextLeft, LChromeTop + LOuterInset,
+    LSuffixWidth - LDividerWidth,
     Max(0, LChromeHeight - (LOuterInset * 2)));
+  if (csDesigning in ComponentState) or (Parent = nil) or
+    not HandleAllocated or not Parent.HandleAllocated then
+  begin
+    FSuffixPaintBox.Invalidate;
+    FSuffixLabel.Invalidate;
+    Exit;
+  end;
   FSuffixPaintBox.BringToFront;
   FSuffixLabel.BringToFront;
   FSuffixPaintBox.Redraw;
@@ -718,7 +780,9 @@ begin
     FSuffixLabel.FontFamily := TDACComponentStyle.FontFamily;
     FSuffixLabel.FontSize := Round(LTokens.InputSmallTextSize);
     FSuffixLabel.Bold := False;
-    if not Enabled or Loading then
+    if Status = mesDanger then
+      FSuffixLabel.TextColor := LTokens.FieldDangerText
+    else if not Enabled or Loading then
       FSuffixLabel.TextColor := LTokens.InputDisabledText
     else
       FSuffixLabel.TextColor := LTokens.ButtonInputActionText;

@@ -1096,14 +1096,195 @@ object Form1: TForm1
         Appearance = mscaViewport
         ScrollBarMode = msbmVertical
         TabOrder = 0
-        object gcInputStates: TDACGridContainer
+        object gcInputEditKinds: TDACGridContainer
           AlignWithMargins = True
           Left = 16
           Top = 16
           Width = 1144
-          Height = 1140
+          Height = 204
           Margins.Left = 16
           Margins.Top = 16
+          Margins.Right = 16
+          Margins.Bottom = 0
+          Align = alTop
+          AutoContentHeight = True
+          Appearance = mgcaTransparent
+          Columns = 7
+          MinimumColumnWidth = 180
+          SizeRowsToContent = True
+          TabOrder = 0
+          object lblInputEditKinds: TDACSystemText
+            Left = 12
+            Top = 12
+            Width = 1120
+            Height = 22
+            Bold = True
+            Role = mtrBody
+            Tag = 12
+            Text = 'Varia'#231#245'es do TDACEdit'
+          end
+          object demoEditMasked: TDACEdit
+            Left = 12
+            Top = 46
+            Width = 300
+            Height = 64
+            EditKind = mekMasked
+            EditMask = '000.000.000\-00;1;_'
+            LabelText = 'CPF com m'#225'scara'
+            TabOrder = 0
+          end
+          object demoEditPassword: TDACEdit
+            Left = 324
+            Top = 46
+            Width = 300
+            Height = 64
+            EditKind = mekPassword
+            LabelText = 'Senha'
+            TabOrder = 1
+            Text = 'Exemplo123'
+          end
+          object demoEditSearch: TDACEdit
+            Left = 636
+            Top = 46
+            Width = 300
+            Height = 64
+            EditKind = mekSearch
+            LabelText = 'Busca'
+            Placeholder = 'Digite para buscar'
+            TabOrder = 2
+          end
+          object demoEditNumericMask: TDACEdit
+            Left = 12
+            Top = 122
+            Width = 300
+            Height = 64
+            EditKind = mekNumeric
+            LabelText = 'M'#225'scara num'#233'rica'
+            TabOrder = 3
+          end
+          object demoEditDateMask: TDACEdit
+            Left = 324
+            Top = 122
+            Width = 300
+            Height = 64
+            EditKind = mekDate
+            LabelText = 'Data com m'#225'scara'
+            TabOrder = 4
+          end
+          object demoEditTimeMask: TDACEdit
+            Left = 636
+            Top = 122
+            Width = 300
+            Height = 64
+            EditKind = mekTime
+            LabelText = 'Hora com m'#225'scara'
+            TabOrder = 5
+          end
+        end
+        object gcInputNumericKinds: TDACGridContainer
+          AlignWithMargins = True
+          Left = 16
+          Top = 220
+          Width = 1144
+          Height = 234
+          Margins.Left = 16
+          Margins.Top = 0
+          Margins.Right = 16
+          Margins.Bottom = 0
+          Align = alTop
+          AutoContentHeight = True
+          Appearance = mgcaTransparent
+          Columns = 7
+          MinimumColumnWidth = 180
+          SizeRowsToContent = True
+          TabOrder = 1
+          object lblInputNumericKinds: TDACSystemText
+            Left = 12
+            Top = 12
+            Width = 1120
+            Height = 22
+            Bold = True
+            Role = mtrBody
+            Tag = 12
+            Text = 'TDACNumericEdit'
+          end
+          object demoNumericInteger: TDACNumericEdit
+            Left = 12
+            Top = 46
+            Width = 300
+            Height = 64
+            LabelText = 'N'#250'mero inteiro'
+            TabOrder = 0
+            Value = 1250.000000000000000000
+          end
+          object demoNumericDecimal: TDACNumericEdit
+            Left = 324
+            Top = 46
+            Width = 300
+            Height = 64
+            DecimalPlaces = 2
+            LabelText = 'N'#250'mero decimal'
+            TabOrder = 1
+            Value = 18.750000000000000000
+          end
+          object demoNumericCurrency: TDACNumericEdit
+            Left = 636
+            Top = 46
+            Width = 300
+            Height = 64
+            LabelText = 'Moeda regional'
+            NumericKind = dnkCurrency
+            TabOrder = 2
+            Value = 1299.900000000000000000
+          end
+          object demoNumericWeight: TDACNumericEdit
+            Left = 12
+            Top = 122
+            Width = 300
+            Height = 64
+            LabelText = 'Peso com unidade fixa'
+            NumericKind = dnkWeight
+            SuffixText = 'kg'
+            SuffixWidth = 40
+            TabOrder = 3
+            Value = 25.375000000000000000
+          end
+          object demoNumericPercentError: TDACNumericEdit
+            Left = 324
+            Top = 122
+            Width = 300
+            Height = 88
+            HelperText = 'Informe um valor de 0 a 100'
+            LabelText = 'Percentual'
+            Required = True
+            SuffixText = '%'
+            SuffixWidth = 32
+            TabOrder = 4
+            Value = 125.000000000000000000
+            OnValidate = ValidatePercent
+          end
+          object demoNumericCurrencyLeft: TDACNumericEdit
+            Left = 636
+            Top = 122
+            Width = 300
+            Height = 64
+            LabelText = 'Moeda com s'#237'mbolo fixo'
+            NumericKind = dnkCurrency
+            SuffixPosition = nspLeft
+            SuffixText = #163
+            SuffixWidth = 40
+            TabOrder = 5
+            Value = 5.000000000000000000
+          end
+        end
+        object gcInputStates: TDACGridContainer
+          AlignWithMargins = True
+          Left = 16
+          Top = 454
+          Width = 1144
+          Height = 1140
+          Margins.Left = 16
+          Margins.Top = 0
           Margins.Right = 16
           Margins.Bottom = 16
           Align = alTop
@@ -1112,7 +1293,7 @@ object Form1: TForm1
           Columns = 7
           MinimumColumnWidth = 180
           SizeRowsToContent = True
-          TabOrder = 0
+          TabOrder = 2
           object lblInputs: TDACSystemText
             Left = 12
             Top = 12
@@ -1121,17 +1302,27 @@ object Form1: TForm1
             Bold = True
             Role = mtrBody
             Tag = 12
-            Text = 'Input e Memo - estados declarativos (hover/foco por interacao real)'
+            Text = 'Estados dos campos de entrada'
           end
-          object lblInputEditStates: TDACSystemText
+          object lblInputEditStates: TDACContainer
             Left = 12
             Top = 54
             Width = 1120
             Height = 22
-            Bold = True
-            Role = mtrBody
+            Appearance = mcaTransparent
+            ContentPadding = 0
+            ShowHeader = False
             Tag = 12
-            Text = 'Edit'
+            TabOrder = 21
+            object lblInputEditStatesText: TDACSystemText
+              Left = 0
+              Top = 0
+              Width = 160
+              Height = 22
+              Bold = True
+              Role = mtrBody
+              Text = 'Edit'
+            end
           end
           object demoEdit: TDACEdit
             Left = 12
@@ -1210,15 +1401,25 @@ object Form1: TForm1
             Text = 'Carregando...'
             TabOrder = 6
           end
-          object lblInputMemoStates: TDACSystemText
+          object lblInputMemoStates: TDACContainer
             Left = 12
             Top = 364
             Width = 1120
             Height = 22
-            Bold = True
-            Role = mtrBody
+            Appearance = mcaTransparent
+            ContentPadding = 0
+            ShowHeader = False
             Tag = 12
-            Text = 'Memo'
+            TabOrder = 22
+            object lblInputMemoStatesText: TDACSystemText
+              Left = 0
+              Top = 0
+              Width = 160
+              Height = 22
+              Bold = True
+              Role = mtrBody
+              Text = 'Memo'
+            end
           end
           object demoMemo: TDACMemo
             Left = 12
@@ -1302,15 +1503,25 @@ object Form1: TForm1
             Loading = True
             TabOrder = 13
           end
-          object lblInputButtonEditStates: TDACSystemText
+          object lblInputButtonEditStates: TDACContainer
             Left = 12
             Top = 818
             Width = 1120
             Height = 22
-            Bold = True
-            Role = mtrBody
+            Appearance = mcaTransparent
+            ContentPadding = 0
+            ShowHeader = False
             Tag = 12
-            Text = 'ButtonEdit'
+            TabOrder = 23
+            object lblInputButtonEditStatesText: TDACSystemText
+              Left = 0
+              Top = 0
+              Width = 160
+              Height = 22
+              Bold = True
+              Role = mtrBody
+              Text = 'ButtonEdit'
+            end
           end
           object demoButtonEdit: TDACButtonEdit
             Left = 12
@@ -1395,160 +1606,247 @@ object Form1: TForm1
     object tsSelectors: TTabSheet
       Caption = 'Seletores'
       ImageIndex = 2
-      object lblSelectors: TLabel
-        Left = 24
-        Top = 24
-        Caption = 'ComboBox e DateTimePicker - estados declarativos'
-      end
-      object demoCombo: TDACComboBox
-        Left = 24
-        Top = 88
-        Width = 196
-        Height = 64
-        LabelText = 'Combo / Default'
-        Items.Strings = (
-          'Opcao A'
-          'Opcao B'
-          'Opcao C')
+      object scrSelectors: TDACScrollContainer
+        Left = 0
+        Top = 0
+        Width = 1192
+        Height = 708
+        Align = alClient
+        AutoScroll = True
+        BorderStyle = bsNone
+        Appearance = mscaViewport
+        ScrollBarMode = msbmVertical
         TabOrder = 0
-      end
-      object demoComboFilled: TDACComboBox
-        Left = 236
-        Top = 88
-        Width = 196
-        Height = 64
-        Items.Strings = (
-          'Opcao A'
-          'Opcao B'
-          'Opcao C')
-        ItemIndex = 0
-        LabelText = 'Combo / Filled'
-        TabOrder = 1
-        Text = 'Opcao A'
-      end
-      object demoComboError: TDACComboBox
-        Left = 24
-        Top = 184
-        Width = 196
-        Height = 88
-        ErrorText = 'Mensagem de erro'
-        Items.Strings = (
-          'Opcao A'
-          'Opcao B')
-        LabelText = 'Combo / Error'
-        Status = mesDanger
-        TabOrder = 2
-      end
-      object demoComboSuccess: TDACComboBox
-        Left = 236
-        Top = 184
-        Width = 196
-        Height = 88
-        HelperText = 'Mensagem de sucesso'
-        Items.Strings = (
-          'Opcao A'
-          'Opcao B')
-        ItemIndex = 0
-        LabelText = 'Combo / Success'
-        Status = mesSuccess
-        TabOrder = 3
-        Text = 'Opcao A'
-      end
-      object demoComboDisabled: TDACComboBox
-        Left = 24
-        Top = 288
-        Width = 196
-        Height = 64
-        Enabled = False
-        LabelText = 'Combo / Disabled'
-        TabOrder = 4
-      end
-      object demoComboReadOnly: TDACComboBox
-        Left = 236
-        Top = 288
-        Width = 196
-        Height = 64
-        Items.Strings = (
-          'Opcao A')
-        ItemIndex = 0
-        LabelText = 'Combo / ReadOnly'
-        ReadOnly = True
-        TabOrder = 5
-        Text = 'Opcao A'
-      end
-      object demoComboLoading: TDACComboBox
-        Left = 24
-        Top = 384
-        Width = 196
-        Height = 64
-        LabelText = 'Combo / Loading'
-        Loading = True
-        TabOrder = 6
-        Text = 'Carregando...'
-      end
-      object demoDateTime: TDACDateTimePicker
-        Left = 520
-        Top = 88
-        Width = 220
-        Height = 64
-        LabelText = 'Date / Default'
-        TabOrder = 7
-      end
-      object demoDateTimeFilled: TDACDateTimePicker
-        Left = 756
-        Top = 88
-        Width = 220
-        Height = 64
-        DateTime = 46067.625000000000000000
-        LabelText = 'Date / Filled'
-        TabOrder = 8
-      end
-      object demoDateTimeError: TDACDateTimePicker
-        Left = 520
-        Top = 184
-        Width = 220
-        Height = 88
-        ErrorText = 'Mensagem de erro'
-        LabelText = 'Date / Error'
-        Status = mesDanger
-        TabOrder = 9
-      end
-      object demoDateTimeSuccess: TDACDateTimePicker
-        Left = 756
-        Top = 184
-        Width = 220
-        Height = 88
-        HelperText = 'Mensagem de sucesso'
-        LabelText = 'Date / Success'
-        Status = mesSuccess
-        TabOrder = 10
-      end
-      object demoDateTimeDisabled: TDACDateTimePicker
-        Left = 520
-        Top = 288
-        Width = 220
-        Height = 64
-        Enabled = False
-        LabelText = 'Date / Disabled'
-        TabOrder = 11
-      end
-      object demoDateTimeReadOnly: TDACDateTimePicker
-        Left = 756
-        Top = 288
-        Width = 220
-        Height = 64
-        LabelText = 'Date / ReadOnly'
-        ReadOnly = True
-        TabOrder = 12
-      end
-      object demoDateTimeLoading: TDACDateTimePicker
-        Left = 520
-        Top = 384
-        Width = 220
-        Height = 64
-        LabelText = 'Date / Loading'
-        Loading = True
-        TabOrder = 13
+        object gcSelectorCombos: TDACGridContainer
+          AlignWithMargins = True
+          Left = 16
+          Top = 16
+          Width = 1144
+          Height = 246
+          Margins.Left = 16
+          Margins.Top = 16
+          Margins.Right = 16
+          Margins.Bottom = 0
+          Align = alTop
+          AutoContentHeight = True
+          Appearance = mgcaTransparent
+          Columns = 4
+          MinimumColumnWidth = 180
+          SizeRowsToContent = True
+          TabOrder = 0
+          object lblSelectors: TDACSystemText
+            Left = 12
+            Top = 12
+            Width = 1120
+            Height = 22
+            Bold = True
+            Role = mtrBody
+            Tag = 12
+            Text = 'TDACComboBox'
+          end
+          object demoCombo: TDACComboBox
+            Left = 12
+            Top = 46
+            Width = 220
+            Height = 64
+            LabelText = 'Combo / Default'
+            Items.Strings = (
+              'Opcao A'
+              'Opcao B'
+              'Opcao C')
+            TabOrder = 0
+          end
+          object demoComboFilled: TDACComboBox
+            Left = 248
+            Top = 46
+            Width = 220
+            Height = 64
+            Items.Strings = (
+              'Opcao A'
+              'Opcao B'
+              'Opcao C')
+            ItemIndex = 0
+            LabelText = 'Combo / Filled'
+            TabOrder = 1
+            Text = 'Opcao A'
+          end
+          object demoComboError: TDACComboBox
+            Left = 484
+            Top = 46
+            Width = 220
+            Height = 88
+            ErrorText = 'Mensagem de erro'
+            Items.Strings = (
+              'Opcao A'
+              'Opcao B')
+            LabelText = 'Combo / Error'
+            Status = mesDanger
+            TabOrder = 2
+          end
+          object demoComboSuccess: TDACComboBox
+            Left = 720
+            Top = 46
+            Width = 220
+            Height = 88
+            HelperText = 'Mensagem de sucesso'
+            Items.Strings = (
+              'Opcao A'
+              'Opcao B')
+            ItemIndex = 0
+            LabelText = 'Combo / Success'
+            Status = mesSuccess
+            TabOrder = 3
+            Text = 'Opcao A'
+          end
+          object demoComboDisabled: TDACComboBox
+            Left = 12
+            Top = 150
+            Width = 220
+            Height = 64
+            Enabled = False
+            LabelText = 'Combo / Disabled'
+            TabOrder = 4
+          end
+          object demoComboReadOnly: TDACComboBox
+            Left = 248
+            Top = 150
+            Width = 220
+            Height = 64
+            Items.Strings = (
+              'Opcao A')
+            ItemIndex = 0
+            LabelText = 'Combo / ReadOnly'
+            ReadOnly = True
+            TabOrder = 5
+            Text = 'Opcao A'
+          end
+          object demoComboLoading: TDACComboBox
+            Left = 484
+            Top = 150
+            Width = 220
+            Height = 64
+            LabelText = 'Combo / Loading'
+            Loading = True
+            TabOrder = 6
+            Text = 'Carregando...'
+          end
+          object demoComboEditable: TDACComboBox
+            Left = 720
+            Top = 150
+            Width = 220
+            Height = 64
+            Items.Strings = (
+              'Op'#231#227'o A'
+              'Op'#231#227'o B'
+              'Op'#231#227'o C')
+            LabelText = 'Combo edit'#225'vel'
+            Style = csDropDown
+            TabOrder = 7
+            Text = 'Valor digitado'
+          end
+        end
+        object gcSelectorDates: TDACGridContainer
+          AlignWithMargins = True
+          Left = 16
+          Top = 262
+          Width = 1144
+          Height = 246
+          Margins.Left = 16
+          Margins.Top = 0
+          Margins.Right = 16
+          Margins.Bottom = 16
+          Align = alTop
+          AutoContentHeight = True
+          Appearance = mgcaTransparent
+          Columns = 4
+          MinimumColumnWidth = 180
+          SizeRowsToContent = True
+          TabOrder = 1
+          object lblSelectorDates: TDACSystemText
+            Left = 12
+            Top = 12
+            Width = 1120
+            Height = 22
+            Bold = True
+            Role = mtrBody
+            Tag = 12
+            Text = 'TDACDateTimePicker - data e hora'
+          end
+          object demoDateTime: TDACDateTimePicker
+            Left = 12
+            Top = 46
+            Width = 220
+            Height = 64
+            LabelText = 'Date / Default'
+            TabOrder = 0
+          end
+          object demoDateTimeFilled: TDACDateTimePicker
+            Left = 248
+            Top = 46
+            Width = 220
+            Height = 64
+            DateTime = 46067.625000000000000000
+            LabelText = 'Date / Filled'
+            TabOrder = 1
+          end
+          object demoDateTimeError: TDACDateTimePicker
+            Left = 484
+            Top = 46
+            Width = 220
+            Height = 88
+            ErrorText = 'Mensagem de erro'
+            LabelText = 'Date / Error'
+            Status = mesDanger
+            TabOrder = 2
+          end
+          object demoDateTimeSuccess: TDACDateTimePicker
+            Left = 720
+            Top = 46
+            Width = 220
+            Height = 88
+            HelperText = 'Mensagem de sucesso'
+            LabelText = 'Date / Success'
+            Status = mesSuccess
+            TabOrder = 3
+          end
+          object demoDateTimeDisabled: TDACDateTimePicker
+            Left = 12
+            Top = 150
+            Width = 220
+            Height = 64
+            Enabled = False
+            LabelText = 'Date / Disabled'
+            TabOrder = 4
+          end
+          object demoDateTimeReadOnly: TDACDateTimePicker
+            Left = 248
+            Top = 150
+            Width = 220
+            Height = 64
+            LabelText = 'Date / ReadOnly'
+            ReadOnly = True
+            TabOrder = 5
+          end
+          object demoDateTimeLoading: TDACDateTimePicker
+            Left = 484
+            Top = 150
+            Width = 220
+            Height = 64
+            LabelText = 'Date / Loading'
+            Loading = True
+            TabOrder = 6
+          end
+          object demoTime: TDACDateTimePicker
+            Left = 720
+            Top = 150
+            Width = 220
+            Height = 64
+            DateTime = 0.625000000000000000
+            LabelText = 'Seletor de hora'
+            PickerKind = dtkTime
+            TabOrder = 7
+          end
+        end
       end
     end
     object tsControls: TTabSheet

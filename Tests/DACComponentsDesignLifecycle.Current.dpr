@@ -154,6 +154,29 @@ begin
   end;
 end;
 
+procedure RunNumericSuffixDesignerInsertion;
+var
+  LNumeric: TDACNumericEdit;
+  LRightPosition: Integer;
+begin
+  LNumeric := TDACNumericEdit.Create(nil);
+  try
+    TComponentAccess(LNumeric).EnterDesignMode;
+    LNumeric.SetBounds(24, 24, 220, 48);
+    LNumeric.Value := 5;
+    LNumeric.SuffixText := #163;
+    LRightPosition := LNumeric.SuffixControl.Left;
+    LNumeric.SuffixPosition := nspLeft;
+    Require(LNumeric.SuffixControl.Visible and
+      (LNumeric.SuffixControl.BoundsRect.Right < LRightPosition),
+      'A previa do sufixo nao acompanhou a posicao a esquerda.');
+    Require(not LNumeric.HandleAllocated and not LNumeric.EditControl.HandleAllocated,
+      'Alterar o lado do sufixo criou HWND no designer antes de receber Parent.');
+  finally
+    LNumeric.Free;
+  end;
+end;
+
 procedure RunDateTimeDesignerInsertion;
 var
   LDate: TDACDateTimePicker;
@@ -222,6 +245,7 @@ begin
     Application.Initialize;
     RunButtonEditDesignerInsertion;
     Writeln('TDACButtonEdit designer insertion: PASS');
+    RunNumericSuffixDesignerInsertion;
     RunDateTimeDesignerInsertion;
     Writeln('TDACDateTimePicker designer insertion: PASS');
     RunLifecycle;

@@ -120,6 +120,8 @@ type
     btnDeleteAction: TDACButton;
     btnUploadAction: TDACButton;
     procedure CardTypographyClick(Sender: TObject);
+    procedure ValidatePercent(Sender: TObject; const AText: string;
+      var AErrorText: string);
   private
     FDBTreeDemo: TDBTreeDemoForm;
     FTreeDemo: TTreeDemoForm;
@@ -140,7 +142,6 @@ type
     FThemeToggle: TDACButton;
     FLayoutApplying: Boolean;
     FLayoutRevision: Cardinal;
-    FSelectorPreferredWidth: Integer;
     procedure ApplyDemoLayout;
     function CanApplyRuntimeLayout: Boolean;
     procedure BuildDBTreeDemo;
@@ -1006,34 +1007,6 @@ var
   LHorizontal, LVertical: TDACTabs;
   LAvailable, LColumn, LInset, LGap: Integer;
   LCaption: TLabel;
-  procedure LayoutSelectors;
-  var
-    LAvailableWidth: Integer;
-    LCombo: TControl;
-    LDateTime: TControl;
-    LRightInset: Integer;
-  begin
-    if (GalleryTabs.ActivePage <> tsSelectors) or
-      not tsSelectors.HandleAllocated then
-      Exit;
-    LRightInset := Round(TDACSpacingTokens.Default.S24);
-    LCombo := FindComponent('demoCombo') as TControl;
-    LDateTime := FindComponent('demoDateTime') as TControl;
-    if LCombo <> nil then
-    begin
-      LAvailableWidth := Max(0, tsSelectors.ClientWidth -
-        LCombo.Left - LRightInset);
-      LCombo.SetBounds(LCombo.Left, LCombo.Top,
-        Min(FSelectorPreferredWidth, LAvailableWidth), LCombo.Height);
-    end;
-    if LDateTime <> nil then
-    begin
-      LAvailableWidth := Max(0, tsSelectors.ClientWidth -
-        LDateTime.Left - LRightInset);
-      LDateTime.SetBounds(LDateTime.Left, LDateTime.Top,
-        Min(FSelectorPreferredWidth, LAvailableWidth), LDateTime.Height);
-    end;
-  end;
   procedure LayoutPageCaptions(const APage: TTabSheet);
   var
     I: Integer;
@@ -1414,6 +1387,15 @@ begin
   RequestDemoLayout;
 end;
 
+procedure TForm1.ValidatePercent(Sender: TObject; const AText: string;
+  var AErrorText: string);
+var
+  LValue: Double;
+begin
+  if not TryStrToFloat(AText, LValue) or (LValue < 0) or (LValue > 100) then
+    AErrorText := 'Informe um valor de 0 a 100';
+end;
+
 procedure TForm1.CardTypographyClick(Sender: TObject);
 var
   Card: TDACSummaryCard;
@@ -1503,7 +1485,6 @@ begin
   BuildTreeDemo;
   BuildDemoNavigation;
   BuildThemeToggle;
-  FSelectorPreferredWidth := (FindComponent('demoCombo') as TControl).Width;
   TDACThemeManager.RegisterListener(Self, ThemeChanged);
   TDACThemeManager.SetApplicationMode(dtmDark);
   ThemeChanged(Self);

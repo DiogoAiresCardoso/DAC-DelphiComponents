@@ -1156,6 +1156,7 @@ begin
       (LProbe.Count = 0), 'Disabled permitiu alteracao por clique fisico.');
     LDate.Enabled := True;
 
+    LDate.FormatString := '';
     LDate.PickerKind := dtkTime;
     TraceStage('fisico: modo hora');
     LDate.TimeStepMinutes := 5;
